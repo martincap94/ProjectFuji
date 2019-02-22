@@ -116,6 +116,8 @@ void saveConfigParam(string param, string val);
 void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor);
 
 
+void refreshProjectionMatrix();
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///// ENUMS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,6 +149,9 @@ Grid *grid;				///< Pointer to the current grid
 Camera *camera;			///< Pointer to the current camera
 ParticleSystem *particleSystem;		///< Pointer to the particle system that is to be used throughout the whole application
 Timer timer;
+Camera *viewportCamera;
+Camera2D *diagramCamera;
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///// DEFAULT VALUES THAT ARE TO BE REWRITTEN FROM THE CONFIG FILE
@@ -162,6 +167,8 @@ double lastFrameTime;		///< Duration of the last frame
 
 glm::mat4 view;				///< View matrix
 glm::mat4 projection;		///< Projection matrix
+glm::mat4 viewportProjection;
+glm::mat4 diagramProjection;
 
 float nearPlane = 0.1f;		///< Near plane of the view frustum
 float farPlane = 1000.0f;	///< Far plane of the view frustum
@@ -209,6 +216,16 @@ bool mouseDown = false;
 STLPDiagram stlpDiagram;	///< SkewT/LogP diagram instance
 int mode = 0;				///< Mode: 0 - show SkewT/LogP diagram, 1 - show 3D simulator
 
+
+ShaderProgram *singleColorShader;
+ShaderProgram *singleColorShaderVBO;
+ShaderProgram *singleColorShaderAlpha;
+ShaderProgram *unlitColorShader;
+ShaderProgram *dirLightOnlyShader;
+ShaderProgram *textShader;
+ShaderProgram *curveShader;
+ShaderProgram *pointSpriteTestShader;
+ShaderProgram *coloredParticleShader;
 
 
 /// Main - runs the application and sets seed for the random number generator.
@@ -360,6 +377,11 @@ int runApp() {
 
 			break;
 	}
+	viewportCamera = camera;
+	diagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
+
+	viewportProjection = projection;
+
 	camera->setLatticeDimensions(latticeWidth, latticeHeight, latticeDepth);
 	camera->movementSpeed = cameraSpeed;
 
@@ -370,22 +392,22 @@ int runApp() {
 	///// SHADERS - should be simplified with helper classes, unfortunately due to time constraints
 	/////			it has remained in this shape
 	//////////////////////////////////////////////////////////////////////////////////////////////////
-	ShaderProgram singleColorShader("singleColor.vert", "singleColor.frag");
-	ShaderProgram singleColorShaderAlpha("singleColor.vert", "singleColor_alpha.frag");
-	ShaderProgram singleColorShaderVBO("singleColor_VBO.vert", "singleColor_VBO.frag");
+	singleColorShader = new ShaderProgram("singleColor.vert", "singleColor.frag");
+	singleColorShaderAlpha = new ShaderProgram("singleColor.vert", "singleColor_alpha.frag");
+	singleColorShaderVBO = new ShaderProgram("singleColor_VBO.vert", "singleColor_VBO.frag");
 
-	ShaderProgram unlitColorShader("unlitColor.vert", "unlitColor.frag");
-	ShaderProgram dirLightOnlyShader("dirLightOnly.vert", "dirLightOnly.frag");
-	ShaderProgram pointSpriteTestShader("pointSpriteTest.vert", "pointSpriteTest.frag");
-	ShaderProgram coloredParticleShader("coloredParticle.vert", "coloredParticle.frag");
+	unlitColorShader = new ShaderProgram("unlitColor.vert", "unlitColor.frag");
+	dirLightOnlyShader = new ShaderProgram("dirLightOnly.vert", "dirLightOnly.frag");
+	pointSpriteTestShader = new ShaderProgram("pointSpriteTest.vert", "pointSpriteTest.frag");
+	coloredParticleShader = new ShaderProgram("coloredParticle.vert", "coloredParticle.frag");
 
-	ShaderProgram textShader("text.vert", "text.frag");
-	ShaderProgram curveShader("curve.vert", "curve.frag");
+	textShader = new ShaderProgram("text.vert", "text.frag");
+	curveShader = new ShaderProgram("curve.vert", "curve.frag");
 
 
 
 	if (lbmType == LBM3D) {
-		((LBM3D_1D_indices*)lbm)->heightMap->shader = &dirLightOnlyShader;
+		((LBM3D_1D_indices*)lbm)->heightMap->shader = dirLightOnlyShader;
 	}
 
 	DirectionalLight dirLight;
@@ -394,29 +416,16 @@ int runApp() {
 	dirLight.diffuse = glm::vec3(1.0f, 0.0f, 0.0f);
 	dirLight.specular = glm::vec3(0.0f, 1.0f, 0.0f);
 
-	glUseProgram(dirLightOnlyShader.id);
+	glUseProgram(dirLightOnlyShader->id);
 
-	dirLightOnlyShader.setVec3("dirLight.direction", dirLight.direction);
-	dirLightOnlyShader.setVec3("dirLight.ambient", dirLight.ambient);
-	dirLightOnlyShader.setVec3("dirLight.diffuse", dirLight.diffuse);
-	dirLightOnlyShader.setVec3("dirLight.specular", dirLight.specular);
-	dirLightOnlyShader.setVec3("vViewPos", camera->position);
+	dirLightOnlyShader->setVec3("dirLight.direction", dirLight.direction);
+	dirLightOnlyShader->setVec3("dirLight.ambient", dirLight.ambient);
+	dirLightOnlyShader->setVec3("dirLight.diffuse", dirLight.diffuse);
+	dirLightOnlyShader->setVec3("dirLight.specular", dirLight.specular);
+	dirLightOnlyShader->setVec3("vViewPos", camera->position);
 
 
-	glUseProgram(singleColorShader.id);
-	singleColorShader.setMat4fv("uProjection", projection);
-	glUseProgram(singleColorShaderAlpha.id);
-	singleColorShaderAlpha.setMat4fv("uProjection", projection);
-	glUseProgram(unlitColorShader.id);
-	unlitColorShader.setMat4fv("uProjection", projection);
-
-	glUseProgram(dirLightOnlyShader.id);
-	dirLightOnlyShader.setMat4fv("uProjection", projection);
-	glUseProgram(pointSpriteTestShader.id);
-	pointSpriteTestShader.setMat4fv("uProjection", projection);
-
-	glUseProgram(coloredParticleShader.id);
-	coloredParticleShader.setMat4fv("uProjection", projection);
+	refreshProjectionMatrix();
 
 	GeneralGrid gGrid(100, 5, (lbmType == LBM3D));
 
@@ -461,7 +470,7 @@ int runApp() {
 
 	while (!glfwWindowShouldClose(window) && appRunning) {
 		// enable flags each frame because nuklear disables them when it is rendered	
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LIGHTING);
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_TEXTURE_1D);
@@ -486,83 +495,160 @@ int runApp() {
 		}
 		//cout << " Delta time = " << (deltaTime * 1000.0f) << " [ms]" << endl;
 		//cout << " Framerate = " << (1.0f / deltaTime) << endl;
+		if (mode == 0 || mode == 1) {
+			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+			glfwSwapInterval(1);
+			camera = diagramCamera;
+			glDisable(GL_DEPTH_TEST);
+		} else {
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glfwSwapInterval(0);
+			camera = viewportCamera;
+			glEnable(GL_DEPTH_TEST);
 
+
+		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
 
 		glfwPollEvents();
 		processInput(window);
 		constructUserInterface(ctx, particlesColor);
+
+
+
+		// UPDATE SHADER VIEW MATRICES
+		view = camera->getViewMatrix();
+
+		glUseProgram(singleColorShader->id);
+		singleColorShader->setMat4fv("uView", view);
+		singleColorShader->setMat4fv("uProjection", projection);
+
+		glUseProgram(unlitColorShader->id);
+		unlitColorShader->setMat4fv("uView", view);
+		unlitColorShader->setMat4fv("uProjection", projection);
+
+		glUseProgram(singleColorShaderVBO->id);
+		singleColorShaderVBO->setMat4fv("uView", view);
+
+
+		glUseProgram(dirLightOnlyShader->id);
+		dirLightOnlyShader->setMat4fv("uView", view);
+		dirLightOnlyShader->setVec3("vViewPos", camera->position);
+		dirLightOnlyShader->setMat4fv("uProjection", projection);
+
+
+
+		glUseProgram(singleColorShaderAlpha->id);
+		singleColorShaderAlpha->setMat4fv("uView", view);
+		singleColorShaderAlpha->setMat4fv("uProjection", projection);
+
+
+		glUseProgram(pointSpriteTestShader->id);
+		pointSpriteTestShader->setMat4fv("uView", view);
+		pointSpriteTestShader->setMat4fv("uProjection", projection);
+
+
+		glUseProgram(coloredParticleShader->id);
+		coloredParticleShader->setMat4fv("uView", view);
+		coloredParticleShader->setMat4fv("uProjection", projection);
+
+		glUseProgram(textShader->id);
+		textShader->setMat4fv("uView", view);
+
+		glUseProgram(curveShader->id);
+		curveShader->setMat4fv("uView", view);
+
 
 		if (measureTime) {
 			timer.clockAvgStart();
 		}
 
 		// MAIN SIMULATION STEP
-		if (!paused) {
-			if (useCUDA) {
-				lbm->doStepCUDA();
+		//if (!paused) {
+		//	if (useCUDA) {
+		//		lbm->doStepCUDA();
+		//	} else {
+		//		lbm->doStep();
+		//	}
+		//}
+
+		//if (measureTime) {
+		//	if (useCUDA) {
+		//		cudaDeviceSynchronize();
+		//	}
+		//	if (timer.clockAvgEnd() && exitAfterFirstAvg) {
+		//		cout << "Exiting main loop..." << endl;
+		//		break;
+		//	}
+		//}
+
+
+
+		if (mode == 0 || mode == 1) {
+
+			if (mode == 1) {
+				sim.doStep();
+			}
+
+			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
+			stlpDiagram.drawText(*textShader);
+
+		} else {
+
+			if (!paused) {
+				if (useCUDA) {
+					lbm->doStepCUDA();
+				} else {
+					lbm->doStep();
+				}
+			}
+
+			if (measureTime) {
+				if (useCUDA) {
+					cudaDeviceSynchronize();
+				}
+				if (timer.clockAvgEnd() && exitAfterFirstAvg) {
+					cout << "Exiting main loop..." << endl;
+					break;
+				}
+			}
+
+			// DRAW SCENE
+			grid->draw(*singleColorShader);
+			lbm->draw(*singleColorShader);
+
+			if (usePointSprites) {
+			particleSystem->draw(*pointSpriteTestShader, useCUDA);
+			} else if (lbm->visualizeVelocity) {
+			particleSystem->draw(*coloredParticleShader, useCUDA);
 			} else {
-				lbm->doStep();
+			particleSystem->draw(*singleColorShader, useCUDA);
 			}
+			gGrid.draw(*unlitColorShader);
+
+			/*sim.doStep();
+
+			grid->draw(*singleColorShader);
+
+			gGrid.draw(*unlitColorShader);
+			sim.draw(*singleColorShader);*/
 		}
-
-		if (measureTime) {
-			if (useCUDA) {
-				cudaDeviceSynchronize();
-			}
-			if (timer.clockAvgEnd() && exitAfterFirstAvg) {
-				cout << "Exiting main loop..." << endl;
-				break;
-			}
-		}
-
-		// UPDATE SHADER VIEW MATRICES
-		view = camera->getViewMatrix();
-
-		glUseProgram(singleColorShader.id);
-		singleColorShader.setMat4fv("uView", view);
-		singleColorShader.setMat4fv("uProjection", projection);
-
-		glUseProgram(unlitColorShader.id);
-		unlitColorShader.setMat4fv("uView", view);
-		unlitColorShader.setMat4fv("uProjection", projection);
-
-
-		glUseProgram(dirLightOnlyShader.id);
-		dirLightOnlyShader.setMat4fv("uView", view);
-		dirLightOnlyShader.setVec3("vViewPos", camera->position);
-		dirLightOnlyShader.setMat4fv("uProjection", projection);
-
-
-
-		glUseProgram(singleColorShaderAlpha.id);
-		singleColorShaderAlpha.setMat4fv("uView", view);
-		singleColorShaderAlpha.setMat4fv("uProjection", projection);
-
-
-		glUseProgram(pointSpriteTestShader.id);
-		pointSpriteTestShader.setMat4fv("uView", view);
-		pointSpriteTestShader.setMat4fv("uProjection", projection);
-
-
-		glUseProgram(coloredParticleShader.id);
-		coloredParticleShader.setMat4fv("uView", view);
-		coloredParticleShader.setMat4fv("uProjection", projection);
-
 
 
 		// DRAW SCENE
-		grid->draw(singleColorShader);
-		lbm->draw(singleColorShader);
+		/*grid->draw(*singleColorShader);
+		lbm->draw(*singleColorShader);
 
 		if (usePointSprites) {
-			particleSystem->draw(pointSpriteTestShader, useCUDA);
+			particleSystem->draw(*pointSpriteTestShader, useCUDA);
 		} else if (lbm->visualizeVelocity) {
-			particleSystem->draw(coloredParticleShader, useCUDA);
+			particleSystem->draw(*coloredParticleShader, useCUDA);
 		} else {
-			particleSystem->draw(singleColorShader, useCUDA);
+			particleSystem->draw(*singleColorShader, useCUDA);
 		}
-		gGrid.draw(unlitColorShader);
+		gGrid.draw(*unlitColorShader);*/
 
 		// Render the user interface
 		nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
@@ -579,6 +665,7 @@ int runApp() {
 	delete lbm;
 	delete grid;
 	delete camera;
+	delete diagramCamera;
 
 
 
@@ -593,6 +680,17 @@ int runApp() {
 	*/
 
 
+	delete singleColorShader;
+	delete singleColorShaderVBO;
+	delete singleColorShaderAlpha;
+	delete unlitColorShader;
+	delete dirLightOnlyShader;
+	delete textShader;
+	delete curveShader;
+	delete pointSpriteTestShader;
+	delete coloredParticleShader;
+
+
 	nk_glfw3_shutdown();
 	glfwTerminate();
 
@@ -603,6 +701,39 @@ int runApp() {
 	return 0;
 
 
+}
+
+
+
+void refreshProjectionMatrix() {
+	if (mode == 0 || mode == 1) {
+		projection = glm::ortho(-0.2f, 1.2f, 1.2f, -0.2f, nearPlane, farPlane);
+		camera->movementSpeed = 4.0f;
+	} else {
+		projection = viewportProjection; /*glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, nearPlane, farPlane);*/
+		mode = 2;
+		camera->movementSpeed = 40.0f;
+	}
+	glUseProgram(singleColorShaderVBO->id);
+	singleColorShaderVBO->setMat4fv("uProjection", projection);
+	glUseProgram(singleColorShader->id);
+	singleColorShader->setMat4fv("uProjection", projection);
+	glUseProgram(singleColorShaderAlpha->id);
+	singleColorShaderAlpha->setMat4fv("uProjection", projection);
+	glUseProgram(unlitColorShader->id);
+	unlitColorShader->setMat4fv("uProjection", projection);
+	glUseProgram(dirLightOnlyShader->id);
+	dirLightOnlyShader->setMat4fv("uProjection", projection);
+	glUseProgram(textShader->id);
+	textShader->setMat4fv("uProjection", projection);
+	glUseProgram(curveShader->id);
+	curveShader->setMat4fv("uProjection", projection);
+
+	glUseProgram(pointSpriteTestShader->id);
+	pointSpriteTestShader->setMat4fv("uProjection", projection);
+
+	glUseProgram(coloredParticleShader->id);
+	coloredParticleShader->setMat4fv("uProjection", projection);
 }
 
 
@@ -655,6 +786,46 @@ void processInput(GLFWwindow* window) {
 	} else {
 		prevPauseKeyState = GLFW_RELEASE;
 	}
+
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+		mode = 0;
+		glDisable(GL_DEPTH_TEST); // painters algorithm for now
+		refreshProjectionMatrix();
+	}
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+		mode = 1;
+		glDisable(GL_DEPTH_TEST); // painters algorithm for now
+		refreshProjectionMatrix();
+	}
+	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
+		mode = 2;
+		glEnable(GL_DEPTH_TEST);
+		refreshProjectionMatrix();
+	}
+
+
+	if (mouseDown) {
+		//cout << "mouse down" << endl;
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
+
+		//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
+		//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
+		//Z_ndc = 2.0 * depth - 1.0;
+		xpos = xpos * 2.0f / (float)screenWidth - 1.0f;
+		ypos = screenHeight - ypos;
+		ypos = ypos * 2.0f / (float)screenHeight - 1.0f;
+
+		glm::vec4 mouseCoords(xpos, ypos, 0.0f, 1.0f);
+		mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
+		//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
+
+		//stlpDiagram.findClosestSoundingPoint(mouseCoords);
+
+		stlpDiagram.moveSelectedPoint(mouseCoords);
+
+	}
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -678,6 +849,13 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		glm::vec4 mouseCoords(xpos, ypos, 0.0f, 1.0f);
 		mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
 		//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
+
+		stlpDiagram.findClosestSoundingPoint(mouseCoords);
+
+		mouseDown = true;
+	} else if (action == GLFW_RELEASE) {
+		mouseDown = false;
+
 	}
 }
 
