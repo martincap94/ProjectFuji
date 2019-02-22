@@ -21,6 +21,24 @@
 #define SCENES_DIR "scenes/"			///< Scenes directory
 #define SHADERS_DIR "shaders/"			///< Shaders directory
 #define LOG_FILENAME_BASE "logs/"		///< Logs directory
+#define SOUNDING_DATA_DIR "sounding_data/"	///< Directory in which sounding data files reside
+
+#define MIN_X -40.0f	///< Minimum x value for the diagram
+#define MAX_X 40.0f		///< Maximum x value for the diagram
+
+#define MIN_TEMP MIN_X	///< Minimum temperature shown in the diagram
+#define MAX_TEMP MAX_X	///< Maximum temperature shown in the diagram
+
+#define MIN_P 100.0f	///< Minimum pressure shown in the diagram, should be constant for all soundings
+#define MAX_P 1025.0f
+
+#define MAX_PARTICLE_COUNT 10000	///< Maximum amount of particles to be generated
+
+// For SkewT/LogP integration (delete later)
+#define GRID_WIDTH 50	///< Old setting for lattice width
+#define GRID_HEIGHT 50	///< Old setting for lattice height
+#define GRID_DEPTH 50	///< Old setting for lattice depth
+
 
 //#define LBM_EXPERIMENTAL // experimental features
 

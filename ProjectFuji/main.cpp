@@ -39,6 +39,8 @@
 #include "Grid.h"
 #include "Utils.h"
 #include "Timer.h"
+#include "STLPDiagram.h"
+#include "Simulator.h"
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
@@ -199,6 +201,14 @@ int pauseKey = GLFW_KEY_T;				///< Pause key
 
 int prevResetKeyState = GLFW_RELEASE;	///< Reset key state from previous frame
 int resetKey = GLFW_KEY_R;				///< Reset key
+
+string soundingFile;		///< Name of the sounding file to be loaded
+
+bool mouseDown = false;
+
+STLPDiagram stlpDiagram;	///< SkewT/LogP diagram instance
+int mode = 0;				///< Mode: 0 - show SkewT/LogP diagram, 1 - show 3D simulator
+
 
 
 /// Main - runs the application and sets seed for the random number generator.
@@ -362,10 +372,17 @@ int runApp() {
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	ShaderProgram singleColorShader("singleColor.vert", "singleColor.frag");
 	ShaderProgram singleColorShaderAlpha("singleColor.vert", "singleColor_alpha.frag");
+	ShaderProgram singleColorShaderVBO("singleColor_VBO.vert", "singleColor_VBO.frag");
+
 	ShaderProgram unlitColorShader("unlitColor.vert", "unlitColor.frag");
 	ShaderProgram dirLightOnlyShader("dirLightOnly.vert", "dirLightOnly.frag");
 	ShaderProgram pointSpriteTestShader("pointSpriteTest.vert", "pointSpriteTest.frag");
 	ShaderProgram coloredParticleShader("coloredParticle.vert", "coloredParticle.frag");
+
+	ShaderProgram textShader("text.vert", "text.frag");
+	ShaderProgram curveShader("curve.vert", "curve.frag");
+
+
 
 	if (lbmType == LBM3D) {
 		((LBM3D_1D_indices*)lbm)->heightMap->shader = &dirLightOnlyShader;
@@ -410,6 +427,18 @@ int runApp() {
 	int totalFrameCounter = 0;
 	//int measurementFrameCounter = 0;
 	//double accumulatedTime = 0.0;
+
+
+	stlpDiagram.init(soundingFile);
+
+	Simulator sim;
+	if (lbmType == LBM3D) {
+		sim.heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
+	}
+
+	sim.stlpDiagram = &stlpDiagram;
+	sim.initParticles();
+
 
 	// Set these callbacks after nuklear initialization, otherwise they won't work!
 	glfwSetScrollCallback(window, scroll_callback);
@@ -708,6 +737,8 @@ void printHelpMessage(string errorMsg) {
 	cout << " -mexit: " << endl << "   exit after first average measurement finished (true or false)" << endl;
 	cout << " -autoplay, -auto, -a: " << endl << "   start simulation right away (true or false)" << endl;
 	cout << " -tau:" << endl << "   value of tau (float between 0.51 and 10.0)" << endl;
+	cout << " -sf:" << endl << "  Sounding filename (with extension)" << endl;
+
 }
 
 void parseArguments(int argc, char **argv) {
@@ -806,8 +837,13 @@ void parseArguments(int argc, char **argv) {
 				saveConfigParam(arg, val);
 				i++;
 			}
+		} else if (arg == "-sf") {
+			if (i + 1 < argc) {
+				val = argv[i + 1];
+				saveConfigParam(arg, val);
+				i++;
+			}
 		}
-
 	}
 
 
@@ -865,6 +901,8 @@ void saveConfigParam(string param, string val) {
 		timer.printToConsole = (val == "true") ? true : false;
 	} else if (param == "exit_after_first_avg" || param == "-mexit") {
 		exitAfterFirstAvg = (val == "true") ? true : false;
+	} else if (param == "sounding_file" || param == "-sf") {
+		soundingFile = val;
 	}
 }
 

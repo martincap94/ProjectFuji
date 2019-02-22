@@ -114,6 +114,21 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLPDiagram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLPUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -176,6 +191,21 @@
     <ClInclude Include="Curve.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Particle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLPDiagram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLPUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -214,6 +244,24 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\unlitColor.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\curve.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\curve.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\singleColor_VBO.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\singleColor_VBO.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\text.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\text.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
