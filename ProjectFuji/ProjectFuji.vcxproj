@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Camera2D.cpp" />
+    <ClCompile Include="Curve.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="GeneralGrid.cpp" />
     <ClCompile Include="Grid.cpp" />
@@ -125,6 +126,7 @@
     </ClCompile>
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <CudaCompile Include="LBM2D_1D_indices.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
@@ -143,6 +145,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Camera2D.h" />
     <ClCompile Include="DataStructures.h" />
+    <ClInclude Include="Curve.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="GeneralGrid.h" />
     <ClInclude Include="Grid.h" />
