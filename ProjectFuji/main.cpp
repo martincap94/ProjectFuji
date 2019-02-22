@@ -226,6 +226,7 @@ ShaderProgram *textShader;
 ShaderProgram *curveShader;
 ShaderProgram *pointSpriteTestShader;
 ShaderProgram *coloredParticleShader;
+ShaderProgram *diagramShader;
 
 
 /// Main - runs the application and sets seed for the random number generator.
@@ -265,8 +266,8 @@ int runApp() {
 
 	glfwInit();
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -400,6 +401,7 @@ int runApp() {
 	dirLightOnlyShader = new ShaderProgram("dirLightOnly.vert", "dirLightOnly.frag");
 	pointSpriteTestShader = new ShaderProgram("pointSpriteTest.vert", "pointSpriteTest.frag");
 	coloredParticleShader = new ShaderProgram("coloredParticle.vert", "coloredParticle.frag");
+	diagramShader = new ShaderProgram("diagram.vert", "diagram.frag");
 
 	textShader = new ShaderProgram("text.vert", "text.frag");
 	curveShader = new ShaderProgram("curve.vert", "curve.frag");
@@ -559,7 +561,10 @@ int runApp() {
 
 		glUseProgram(curveShader->id);
 		curveShader->setMat4fv("uView", view);
-
+/*
+		glUseProgram(diagramShader->id);
+		diagramShader->setMat4fv("uView", view);
+*/
 
 		if (measureTime) {
 			timer.clockAvgStart();
@@ -584,6 +589,22 @@ int runApp() {
 		//	}
 		//}
 
+		glViewport(0, 0, stlpDiagram.textureResolution, stlpDiagram.textureResolution);
+		glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramFramebuffer);
+		glClear(GL_COLOR_BUFFER_BIT);
+		//glBindTextureUnit(0, stlpDiagram.diagramTexture);
+
+		stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
+		stlpDiagram.drawText(*textShader);
+
+
+
+
+		glViewport(0, 0, screenWidth, screenHeight);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+
 
 
 		if (mode == 0 || mode == 1) {
@@ -594,6 +615,17 @@ int runApp() {
 
 			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
 			stlpDiagram.drawText(*textShader);
+
+			glUseProgram(diagramShader->id);
+			glBindTextureUnit(0, stlpDiagram.diagramTexture);
+			glUniform1i(glGetUniformLocation(diagramShader->id, "u_InputTexture"), 0);
+
+			glBindVertexArray(stlpDiagram.quadVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
+
+			//Show2DTexture(stlpDiagram.diagramTexture, 0, 0, 200, 200);
 
 		} else {
 
@@ -664,7 +696,7 @@ int runApp() {
 	delete particleSystem;
 	delete lbm;
 	delete grid;
-	delete camera;
+	delete viewportCamera;
 	delete diagramCamera;
 
 
@@ -734,6 +766,9 @@ void refreshProjectionMatrix() {
 
 	glUseProgram(coloredParticleShader->id);
 	coloredParticleShader->setMat4fv("uProjection", projection);
+
+	//glUseProgram(diagramShader->id);
+	//diagramShader->setMat4fv("uProjection", projection);
 }
 
 

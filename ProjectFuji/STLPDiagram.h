@@ -79,6 +79,13 @@ public:
 	vector<Curve> moistAdiabatProfiles;
 
 
+	GLuint diagramTexture;
+	GLuint diagramFramebuffer;
+	GLint textureResolution = 2048;
+	GLuint quadVAO;
+	GLuint quadVBO;
+
+
 	/// Constructs the diagram instance without loading any sounding data.
 	STLPDiagram();
 
@@ -192,6 +199,7 @@ private:
 
 	GLuint TcVAO;
 	GLuint TcVBO;
+
 
 };
 

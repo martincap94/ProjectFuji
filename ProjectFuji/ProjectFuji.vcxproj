@@ -200,6 +200,8 @@
     <None Include="shaders\singleColor_alpha.frag" />
     <None Include="shaders\singleColor_VBO.frag" />
     <None Include="shaders\singleColor_VBO.vert" />
+    <None Include="shaders\diagram.frag" />
+    <None Include="shaders\diagram.vert" />
     <None Include="shaders\text.frag" />
     <None Include="shaders\text.vert" />
     <None Include="shaders\unlitColor.frag" />

@@ -959,7 +959,7 @@ void STLPDiagram::initBuffersNormalized() {
 				moistAdiabat_LCL_EL.vertices.push_back(glm::vec2(x, y));
 			}
 		}
-		numMoistAdiabats++;
+		//numMoistAdiabats++;
 
 
 		LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
@@ -1014,7 +1014,7 @@ void STLPDiagram::initBuffersNormalized() {
 	
 #endif
 
-	numMoistAdiabats++;
+	//numMoistAdiabats++;
 
 	if (!vertices.empty()) {
 
@@ -1100,6 +1100,40 @@ void STLPDiagram::initBuffersNormalized() {
 	glBindVertexArray(0);
 
 
+	// QUAD
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	glBindVertexArray(0);
+
+	// TEXTURE AND FRAMEBUFFER
+
+	glGenTextures(1, &diagramTexture);
+	glBindTexture(GL_TEXTURE_2D, diagramTexture);
+
+	//glTextureParameteri(diagramTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+	glGenFramebuffers(1, &diagramFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, diagramTexture, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 	GLfloat lineWidthRange[2] = { 0.0f, 0.0f };
