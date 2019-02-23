@@ -107,13 +107,26 @@ public:
 	/// Loads the sounding data to the soundingData vector.
 	void loadSoundingData(string filename);
 
+
+	void generateIsobars();
+	void generateIsotherms();
+	void initDewpointCurve();
+	void initAmbientTemperatureCurve();
+	
+
+	void initBuffers();
+
+	void recalculateParameters();
+
+
+
 	/// Initializes all buffers and therefore curves of the diagram.
 	/**
 		Initializes all buffers and therefore curves of the diagram.
 		Prototype function that does all the work - should be separated into multiple
 		methods and utilize Curve class that will be extended.
 	*/
-	void initBuffersNormalized();
+	void initBuffersOld();
 
 
 	///////////////////////////////////////////////////////////////////////////
@@ -196,12 +209,21 @@ private:
 	vector<int> moistAdiabatEdgeCount; // quick fix
 
 
+	// deprecated
 	GLuint CCLVAO;
 	GLuint CCLVBO;
 
+	// deprecated
 	GLuint TcVAO;
 	GLuint TcVBO;
 
+
+	float xmin;
+	float xmax;
+	float ymin;
+	float ymax;
+
+	float sP0;
 
 };
 

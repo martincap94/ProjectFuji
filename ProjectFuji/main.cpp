@@ -123,13 +123,6 @@ void refreshProjectionMatrix();
 ///// ENUMS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Unused enum that may be used to simplify shader usage.
-enum eShaderProgram {
-	DIR_LIGHT_SHADER,
-	POINT_SPRITE_SHADER,
-	SINGLE_COLOR_SHADER,
-	SINGLE_COLOR_ALPHA_SHADER
-};
 
 /// Enum listing all possible LBM types. LBM2D_reindex and LBM3D_reindexed were deprecated, hence they are absent.
 enum eLBMType {
@@ -152,6 +145,7 @@ ParticleSystem *particleSystem;		///< Pointer to the particle system that is to 
 Timer timer;
 Camera *viewportCamera;
 Camera2D *diagramCamera;
+Camera2D *overlayDiagramCamera;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -298,6 +292,12 @@ int runApp() {
 
 	glViewport(0, 0, screenWidth, screenHeight);
 
+	float aspectRatio = (float)screenWidth / (float)screenHeight;
+	cout << "Aspect ratio = " << aspectRatio << endl;
+
+	float offset = 0.2f;
+	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
+
 
 	struct nk_context *ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
 
@@ -385,6 +385,7 @@ int runApp() {
 	}
 	viewportCamera = camera;
 	diagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
+	overlayDiagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
 
 	viewportProjection = projection;
 
@@ -499,36 +500,11 @@ int runApp() {
 			frameCounter = 0;
 			accumulatedTime = 0.0;
 		}
-		//cout << " Delta time = " << (deltaTime * 1000.0f) << " [ms]" << endl;
-		//cout << " Framerate = " << (1.0f / deltaTime) << endl;
-		if (mode == 0 || mode == 1) {
-			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-			glfwSwapInterval(1);
-			camera = diagramCamera;
-			glDisable(GL_DEPTH_TEST);
-		} else {
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			glfwSwapInterval(0);
-			camera = viewportCamera;
-			glEnable(GL_DEPTH_TEST);
-
-
-		}
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
 
 		glfwPollEvents();
 		processInput(window);
 		constructUserInterface(ctx, particlesColor);
 
-
-
-		// UPDATE SHADER VIEW MATRICES
-		view = camera->getViewMatrix();
-
-		ShaderManager::updateViewMatrixUniforms(view);
-		dirLightOnlyShader->setVec3("vViewPos", camera->position);
 
 
 		if (measureTime) {
@@ -566,6 +542,10 @@ int runApp() {
 		stlpDiagram.drawText(*textShader);
 		*/
 
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		view = overlayDiagramCamera->getViewMatrix();
+		ShaderManager::updatePVMatrixUniforms(diagramProjection, view);
+
 		GLint res = stlpDiagram.textureResolution;
 		glViewport(0, 0, res, res);
 		glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
@@ -593,6 +573,29 @@ int runApp() {
 
 
 
+		//cout << " Delta time = " << (deltaTime * 1000.0f) << " [ms]" << endl;
+		//cout << " Framerate = " << (1.0f / deltaTime) << endl;
+		if (mode == 0 || mode == 1) {
+			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+			glfwSwapInterval(1);
+			camera = diagramCamera;
+			glDisable(GL_DEPTH_TEST);
+		} else {
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glfwSwapInterval(0);
+			camera = viewportCamera;
+			glEnable(GL_DEPTH_TEST);
+
+
+		}
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// UPDATE SHADER VIEW MATRICES
+		view = camera->getViewMatrix();
+
+		ShaderManager::updateViewMatrixUniforms(view);
+		dirLightOnlyShader->setVec3("vViewPos", camera->position);
+
 
 		if (mode == 0 || mode == 1) {
 
@@ -617,6 +620,7 @@ int runApp() {
 			//Show2DTexture(stlpDiagram.diagramTexture, 0, 0, 200, 200);
 
 		} else {
+			refreshProjectionMatrix();
 
 			if (!paused) {
 				if (useCUDA) {
@@ -641,13 +645,24 @@ int runApp() {
 			lbm->draw(*singleColorShader);
 
 			if (usePointSprites) {
-			particleSystem->draw(*pointSpriteTestShader, useCUDA);
+				particleSystem->draw(*pointSpriteTestShader, useCUDA);
 			} else if (lbm->visualizeVelocity) {
-			particleSystem->draw(*coloredParticleShader, useCUDA);
+				particleSystem->draw(*coloredParticleShader, useCUDA);
 			} else {
-			particleSystem->draw(*singleColorShader, useCUDA);
+				particleSystem->draw(*singleColorShader, useCUDA);
 			}
 			gGrid.draw(*unlitColorShader);
+
+			glDisable(GL_DEPTH_TEST);
+			glUseProgram(diagramShader->id);
+			glBindTextureUnit(0, stlpDiagram.diagramTexture);
+			glUniform1i(glGetUniformLocation(diagramShader->id, "u_InputTexture"), 0);
+			glUniform2i(glGetUniformLocation(diagramShader->id, "u_ScreenSize"), screenWidth, screenHeight);
+
+			glBindVertexArray(stlpDiagram.quadVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glEnable(GL_DEPTH_TEST);
+
 
 			/*sim.doStep();
 
@@ -655,6 +670,7 @@ int runApp() {
 
 			gGrid.draw(*unlitColorShader);
 			sim.draw(*singleColorShader);*/
+
 		}
 
 
@@ -719,10 +735,11 @@ int runApp() {
 
 void refreshProjectionMatrix() {
 	if (mode == 0 || mode == 1) {
-		projection = glm::ortho(-0.2f, 1.2f, 1.2f, -0.2f, nearPlane, farPlane);
+		//projection = glm::ortho(-0.2f, 1.2f, 1.2f, -0.2f, nearPlane, farPlane);
+		projection = diagramProjection;
 		camera->movementSpeed = 4.0f;
 	} else {
-		projection = viewportProjection; /*glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, nearPlane, farPlane);*/
+		projection = viewportProjection;
 		mode = 2;
 		camera->movementSpeed = 40.0f;
 	}
@@ -1201,21 +1218,30 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 void window_size_callback(GLFWwindow* window, int width, int height) {
-	float ratio = (float)width / (float)height;
+	float aspectRatio = (float)width / (float)height;
+
+	screenWidth = width;
+	screenHeight = height;
+
+	float offset = 0.2f;
+	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
+
+	cout << "Aspect ratio = " << aspectRatio << endl;
+
 
 	if (lbmType == LBM2D) {
 		if (latticeWidth >= latticeHeight) {
 			projWidth = (float)latticeWidth;
-			projHeight = projWidth / ratio;
+			projHeight = projWidth / aspectRatio;
 		} else {
 			projHeight = (float)latticeHeight;
-			projWidth = projHeight * ratio;
+			projWidth = projHeight * aspectRatio;
 		}
-		projection = glm::ortho(-1.0f, projWidth, -1.0f, projHeight, nearPlane, farPlane);
+		viewportProjection = glm::ortho(-1.0f, projWidth, -1.0f, projHeight, nearPlane, farPlane);
 	} else {
 		projHeight = projectionRange;
-		projWidth = projHeight * ratio;
-		projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
+		projWidth = projHeight * aspectRatio;
+		viewportProjection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
 
 	}
 
