@@ -395,22 +395,20 @@ int runApp() {
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
-	///// SHADERS - should be simplified with helper classes, unfortunately due to time constraints
-	/////			it has remained in this shape
+	///// SHADERS
 	//////////////////////////////////////////////////////////////////////////////////////////////////
-	//singleColorShader = new ShaderProgram("singleColor.vert", "singleColor.frag");
 	singleColorShader = ShaderManager::getShaderPtr("singleColor");
-	singleColorShaderAlpha = new ShaderProgram("singleColor.vert", "singleColor_alpha.frag");
-	singleColorShaderVBO = new ShaderProgram("singleColor_VBO.vert", "singleColor_VBO.frag");
+	singleColorShaderAlpha = ShaderManager::getShaderPtr("singleColorAlpha");
+	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
 
-	unlitColorShader = new ShaderProgram("unlitColor.vert", "unlitColor.frag");
-	dirLightOnlyShader = new ShaderProgram("dirLightOnly.vert", "dirLightOnly.frag");
-	pointSpriteTestShader = new ShaderProgram("pointSpriteTest.vert", "pointSpriteTest.frag");
-	coloredParticleShader = new ShaderProgram("coloredParticle.vert", "coloredParticle.frag");
-	diagramShader = new ShaderProgram("diagram.vert", "diagram.frag");
+	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
+	dirLightOnlyShader = ShaderManager::getShaderPtr("dirLightOnly");
+	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
+	coloredParticleShader = ShaderManager::getShaderPtr("coloredParticle");
+	diagramShader = ShaderManager::getShaderPtr("diagram");
 
-	textShader = new ShaderProgram("text.vert", "text.frag");
-	curveShader = new ShaderProgram("curve.vert", "curve.frag");
+	textShader = ShaderManager::getShaderPtr("text");
+	curveShader = ShaderManager::getShaderPtr("curve");
 
 
 
@@ -529,48 +527,9 @@ int runApp() {
 		// UPDATE SHADER VIEW MATRICES
 		view = camera->getViewMatrix();
 
-		glUseProgram(singleColorShader->id);
-		singleColorShader->setMat4fv("u_View", view);
-		//singleColorShader->setMat4fv("u_Projection", projection);
-
-		glUseProgram(unlitColorShader->id);
-		unlitColorShader->setMat4fv("u_View", view);
-		//unlitColorShader->setMat4fv("u_Projection", projection);
-
-		glUseProgram(singleColorShaderVBO->id);
-		singleColorShaderVBO->setMat4fv("u_View", view);
-
-
-		glUseProgram(dirLightOnlyShader->id);
-		dirLightOnlyShader->setMat4fv("u_View", view);
+		ShaderManager::updateViewMatrixUniforms(view);
 		dirLightOnlyShader->setVec3("vViewPos", camera->position);
-		//dirLightOnlyShader->setMat4fv("u_Projection", projection);
 
-
-
-		glUseProgram(singleColorShaderAlpha->id);
-		singleColorShaderAlpha->setMat4fv("u_View", view);
-		//singleColorShaderAlpha->setMat4fv("u_Projection", projection);
-
-
-		glUseProgram(pointSpriteTestShader->id);
-		pointSpriteTestShader->setMat4fv("u_View", view);
-		//pointSpriteTestShader->setMat4fv("u_Projection", projection);
-
-
-		glUseProgram(coloredParticleShader->id);
-		coloredParticleShader->setMat4fv("u_View", view);
-		//coloredParticleShader->setMat4fv("u_Projection", projection);
-
-		glUseProgram(textShader->id);
-		textShader->setMat4fv("u_View", view);
-
-		glUseProgram(curveShader->id);
-		curveShader->setMat4fv("u_View", view);
-/*
-		glUseProgram(diagramShader->id);
-		diagramShader->setMat4fv("u_View", view);
-*/
 
 		if (measureTime) {
 			timer.clockAvgStart();
@@ -741,17 +700,6 @@ int runApp() {
 	cout << " TOTAL CUDA MEMORY = " << cudaMemTotal << endl;
 	*/
 
-
-	//delete singleColorShader;
-	delete singleColorShaderVBO;
-	delete singleColorShaderAlpha;
-	delete unlitColorShader;
-	delete dirLightOnlyShader;
-	delete textShader;
-	delete curveShader;
-	delete pointSpriteTestShader;
-	delete coloredParticleShader;
-
 	ShaderManager::tearDown();
 
 
@@ -778,29 +726,8 @@ void refreshProjectionMatrix() {
 		mode = 2;
 		camera->movementSpeed = 40.0f;
 	}
-	glUseProgram(singleColorShaderVBO->id);
-	singleColorShaderVBO->setMat4fv("u_Projection", projection);
-	glUseProgram(singleColorShader->id);
-	singleColorShader->setMat4fv("u_Projection", projection);
-	glUseProgram(singleColorShaderAlpha->id);
-	singleColorShaderAlpha->setMat4fv("u_Projection", projection);
-	glUseProgram(unlitColorShader->id);
-	unlitColorShader->setMat4fv("u_Projection", projection);
-	glUseProgram(dirLightOnlyShader->id);
-	dirLightOnlyShader->setMat4fv("u_Projection", projection);
-	glUseProgram(textShader->id);
-	textShader->setMat4fv("u_Projection", projection);
-	glUseProgram(curveShader->id);
-	curveShader->setMat4fv("u_Projection", projection);
 
-	glUseProgram(pointSpriteTestShader->id);
-	pointSpriteTestShader->setMat4fv("u_Projection", projection);
-
-	glUseProgram(coloredParticleShader->id);
-	coloredParticleShader->setMat4fv("u_Projection", projection);
-
-	//glUseProgram(diagramShader->id);
-	//diagramShader->setMat4fv("u_Projection", projection);
+	ShaderManager::updateProjectionMatrixUniforms(projection);
 }
 
 
