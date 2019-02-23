@@ -84,8 +84,13 @@ public:
 	GLuint diagramMultisampledFramebuffer;
 	GLuint diagramMultisampledTexture;
 	GLint textureResolution = 1024;
-	GLuint quadVAO;
-	GLuint quadVBO;
+	GLuint overlayDiagramVAO;
+	GLuint overlayDiagramVBO;
+
+	GLuint overlayDiagramX = 0;
+	GLuint overlayDiagramY = 0;
+	GLuint overlayDiagramWidth = 256;
+	GLuint overlayDiagramHeight = 256;
 
 
 	/// Constructs the diagram instance without loading any sounding data.
@@ -117,7 +122,6 @@ public:
 	void initBuffers();
 
 	void recalculateParameters();
-
 
 
 	/// Initializes all buffers and therefore curves of the diagram.
@@ -153,6 +157,11 @@ public:
 
 	/// Draws the text label for the diagram.
 	void drawText(ShaderProgram &shader);
+
+
+	void drawOverlayDiagram(ShaderProgram *shader);
+	void refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight);
+
 
 	/// Only sets existing point!
 	void setVisualizationPoint(glm::vec3 position, glm::vec3 color, int index, bool positionIsNormalized);

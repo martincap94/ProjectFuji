@@ -164,6 +164,7 @@ glm::mat4 view;				///< View matrix
 glm::mat4 projection;		///< Projection matrix
 glm::mat4 viewportProjection;
 glm::mat4 diagramProjection;
+glm::mat4 overlayDiagramProjection;
 
 float nearPlane = 0.1f;		///< Near plane of the view frustum
 float farPlane = 1000.0f;	///< Far plane of the view frustum
@@ -297,7 +298,7 @@ int runApp() {
 
 	float offset = 0.2f;
 	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
-
+	overlayDiagramProjection = glm::ortho(0.0f - offset, 1.0f + offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
 
 	struct nk_context *ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
 
@@ -544,7 +545,7 @@ int runApp() {
 
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		view = overlayDiagramCamera->getViewMatrix();
-		ShaderManager::updatePVMatrixUniforms(diagramProjection, view);
+		ShaderManager::updatePVMatrixUniforms(overlayDiagramProjection, view);
 
 		GLint res = stlpDiagram.textureResolution;
 		glViewport(0, 0, res, res);
@@ -595,6 +596,8 @@ int runApp() {
 
 		ShaderManager::updateViewMatrixUniforms(view);
 		dirLightOnlyShader->setVec3("vViewPos", camera->position);
+		
+		refreshProjectionMatrix();
 
 
 		if (mode == 0 || mode == 1) {
@@ -606,21 +609,20 @@ int runApp() {
 			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
 			stlpDiagram.drawText(*textShader);
 
-			glUseProgram(diagramShader->id);
+			/*glUseProgram(diagramShader->id);
 			glBindTextureUnit(0, stlpDiagram.diagramTexture);
-			glUniform1i(glGetUniformLocation(diagramShader->id, "u_InputTexture"), 0);
+			glUniform1i(glGetUniformLocation(diagramShader->id, "u_Texture"), 0);
 			glUniform2i(glGetUniformLocation(diagramShader->id, "u_ScreenSize"), screenWidth, screenHeight);
 
 
-			glBindVertexArray(stlpDiagram.quadVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glBindVertexArray(stlpDiagram.overlayDiagramVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);*/
 
 
 
 			//Show2DTexture(stlpDiagram.diagramTexture, 0, 0, 200, 200);
 
 		} else {
-			refreshProjectionMatrix();
 
 			if (!paused) {
 				if (useCUDA) {
@@ -653,16 +655,18 @@ int runApp() {
 			}
 			gGrid.draw(*unlitColorShader);
 
-			glDisable(GL_DEPTH_TEST);
+			/*glDisable(GL_DEPTH_TEST);
 			glUseProgram(diagramShader->id);
 			glBindTextureUnit(0, stlpDiagram.diagramTexture);
-			glUniform1i(glGetUniformLocation(diagramShader->id, "u_InputTexture"), 0);
+			glUniform1i(glGetUniformLocation(diagramShader->id, "u_Texture"), 0);
 			glUniform2i(glGetUniformLocation(diagramShader->id, "u_ScreenSize"), screenWidth, screenHeight);
 
-			glBindVertexArray(stlpDiagram.quadVAO);
+			glBindVertexArray(stlpDiagram.overlayDiagramVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
-			glEnable(GL_DEPTH_TEST);
+			glEnable(GL_DEPTH_TEST);*/
 
+			//display2DTexture(stlpDiagram.diagramTexture, diagramShader->id, 0, 0, 200, 200);
+			stlpDiagram.drawOverlayDiagram(diagramShader);
 
 			/*sim.doStep();
 
@@ -1244,5 +1248,5 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 		viewportProjection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
 
 	}
-
+	stlpDiagram.refreshOverlayDiagram(screenWidth, screenHeight);
 }

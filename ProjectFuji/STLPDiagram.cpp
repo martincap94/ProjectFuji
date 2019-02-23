@@ -876,11 +876,28 @@ void STLPDiagram::initBuffers() {
 
 
 	// QUAD
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(quadVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+
+	glm::vec4 vp;
+	glGetFloatv(GL_VIEWPORT, &vp.x);
+	float width = overlayDiagramWidth;
+	float height = overlayDiagramHeight;
+	x = overlayDiagramX;
+	y = overlayDiagramY;
+
+	const GLfloat normalized_coords_with_tex_coords[] = {
+		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 0.0f,
+		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 0.0f,
+		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 1.0f,
+		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 1.0f,
+	};
+
+	glGenVertexArrays(1, &overlayDiagramVAO);
+	glGenBuffers(1, &overlayDiagramVBO);
+	glBindVertexArray(overlayDiagramVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(normalized_coords_with_tex_coords), &normalized_coords_with_tex_coords, GL_STATIC_DRAW);
+
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
@@ -1094,6 +1111,56 @@ void STLPDiagram::drawText(ShaderProgram &shader) {
 	textRend->RenderText(shader, "P (hPa)", -0.15f, 0.5f);
 
 	textRend->RenderText(shader, "SkewT/LogP (" + soundingFile + ")", 0.4f, -0.05f, 0.0006f);
+
+
+}
+
+void STLPDiagram::drawOverlayDiagram(ShaderProgram *shader) {
+	//GLint current_program_id = 0;
+	//glGetIntegerv(GL_CURRENT_PROGRAM, &current_program_id);
+	GLboolean depth_test_enabled = glIsEnabled(GL_DEPTH_TEST);
+
+	glDisable(GL_DEPTH_TEST);
+	shader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTextureUnit(0, diagramTexture);
+	glUniform1i(glGetUniformLocation(shader->id, "u_Texture"), 0);
+
+	glBindVertexArray(overlayDiagramVAO);
+
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	if (depth_test_enabled) {
+		glEnable(GL_DEPTH_TEST);
+	}
+
+}
+
+void STLPDiagram::refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight) {
+
+	glm::vec4 vp;
+	//glGetFloatv(GL_VIEWPORT, &vp.x);
+	vp.x = 0;
+	vp.y = 0;
+	vp.z = viewportWidth;
+	vp.w = viewportHeight;
+	float width = overlayDiagramWidth;
+	float height = overlayDiagramHeight;
+	float x = overlayDiagramX;
+	float y = overlayDiagramY;
+
+	const GLfloat normalized_coords_with_tex_coords[] = {
+		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 0.0f,
+		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 0.0f,
+		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 1.0f,
+		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 1.0f,
+	};
+
+	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(normalized_coords_with_tex_coords), &normalized_coords_with_tex_coords, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 }
@@ -2206,10 +2273,10 @@ void STLPDiagram::initBuffersOld() {
 
 
 	// QUAD
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(quadVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glGenVertexArrays(1, &overlayDiagramVAO);
+	glGenBuffers(1, &overlayDiagramVBO);
+	glBindVertexArray(overlayDiagramVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);

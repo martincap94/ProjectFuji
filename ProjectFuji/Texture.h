@@ -74,6 +74,11 @@ public:
 
 };
 
+// Inspired by PGR2 framework by David Ambroz and Petr Felkel
+void display2DTexture(GLuint textureId, GLuint shaderId, GLint x, GLint y, GLsizei width, GLsizei height);
+
+
+// Taken from PGR2 framework by David Ambroz and Petr Felkel
 inline void Show2DTexture(GLuint tex_id, GLint x, GLint y, GLsizei width, GLsizei height) {
 	if (glIsTexture(tex_id) == GL_FALSE) {
 		return;

@@ -10,7 +10,7 @@ uniform vec3 color;
 void main() {
 
 	if (vPos.x < 0.0 || vPos.x > 1.0) {
-		//discard;
+		discard;
 	}
 
 	fragColor = vec4(color, 1.0);
