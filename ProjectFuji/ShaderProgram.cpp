@@ -103,6 +103,48 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath) {
 ShaderProgram::~ShaderProgram() {
 }
 
+void ShaderProgram::use() {
+	glUseProgram(id);
+}
+
+void ShaderProgram::setBool(const std::string &name, bool value) const {
+	glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value);
+}
+
+void ShaderProgram::setInt(const std::string &name, int value) const {
+	glUniform1i(glGetUniformLocation(id, name.c_str()), value);
+}
+
+void ShaderProgram::setFloat(const std::string &name, float value) const {
+	glUniform1f(glGetUniformLocation(id, name.c_str()), value);
+}
+
 void ShaderProgram::setMat4fv(const string &name, glm::mat4 value) const {
 	glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+}
+
+
+void ShaderProgram::setVec3(const std::string &name, float x, float y, float z) const {
+	glUniform3f(glGetUniformLocation(id, name.c_str()), x, y, z);
+}
+
+void ShaderProgram::setVec3(const std::string &name, glm::vec3 value) const {
+	glUniform3fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);
+}
+
+void ShaderProgram::setVec4(const std::string &name, glm::vec4 value) const {
+	glUniform4fv(glGetUniformLocation(id, name.c_str()), 1, &value[0]);
+}
+
+
+void ShaderProgram::setProjectionMatrix(glm::mat4 projectionMatrix, string uniformName) {
+	setMat4fv(uniformName, projectionMatrix);
+}
+
+void ShaderProgram::setViewMatrix(glm::mat4 viewMatrix, string uniformName) {
+	setMat4fv(uniformName, viewMatrix);
+}
+
+void ShaderProgram::setModelMatrix(glm::mat4 modelMatrix, string uniformName) {
+	setMat4fv(uniformName, modelMatrix);
 }

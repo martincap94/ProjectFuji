@@ -14,8 +14,11 @@
 #pragma once
 
 #include "Config.h"
+#include <glad\glad.h>
+
 #include <string>
-#include "ShaderProgram.h"
+
+class ShaderProgram;
 
 /// Lattice collider that is used as an obstacle in LBM 2D simulation.
 /**

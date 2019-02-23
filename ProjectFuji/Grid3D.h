@@ -18,9 +18,9 @@
 
 #include <glad\glad.h>
 #include <vector>
-#include "ShaderProgram.h"
-
 #include "Grid.h"
+
+#include "ShaderProgram.h"
 
 /// Grid that is used for LBM 3D visualization. Draw 3D grid of lines and lattice nodes. Furthermore, draws the bounding box of the scene.
 class Grid3D : public Grid {

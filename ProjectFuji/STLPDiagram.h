@@ -81,7 +81,9 @@ public:
 
 	GLuint diagramTexture;
 	GLuint diagramFramebuffer;
-	GLint textureResolution = 2048;
+	GLuint diagramMultisampledFramebuffer;
+	GLuint diagramMultisampledTexture;
+	GLint textureResolution = 1024;
 	GLuint quadVAO;
 	GLuint quadVBO;
 

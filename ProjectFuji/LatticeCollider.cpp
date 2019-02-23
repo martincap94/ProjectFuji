@@ -4,6 +4,8 @@
 #include <fstream>
 #include <glm\glm.hpp>
 #include <vector>
+#include "ShaderProgram.h"
+
 
 LatticeCollider::LatticeCollider(string filename) {
 

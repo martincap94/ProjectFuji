@@ -18,9 +18,8 @@
 
 #include <glad/glad.h>
 #include <vector>
-#include "ShaderProgram.h"
-
 #include "Grid.h"
+#include "ShaderProgram.h"
 
 /// Grid that is used for LBM 2D visualization.
 class Grid2D : public Grid {

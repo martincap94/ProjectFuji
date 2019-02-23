@@ -589,6 +589,9 @@ int runApp() {
 		//	}
 		//}
 
+
+
+		/*
 		glViewport(0, 0, stlpDiagram.textureResolution, stlpDiagram.textureResolution);
 		glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramFramebuffer);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -596,8 +599,27 @@ int runApp() {
 
 		stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
 		stlpDiagram.drawText(*textShader);
+		*/
+
+		GLint res = stlpDiagram.textureResolution;
+		glViewport(0, 0, res, res);
+		glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
+		glClear(GL_COLOR_BUFFER_BIT);
+		//glBindTextureUnit(0, stlpDiagram.diagramTexture);
+
+		stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
+		stlpDiagram.drawText(*textShader);
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stlpDiagram.diagramFramebuffer);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
+
+		glDrawBuffer(GL_BACK);
+
+		glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 
 		glViewport(0, 0, screenWidth, screenHeight);
@@ -619,6 +641,8 @@ int runApp() {
 			glUseProgram(diagramShader->id);
 			glBindTextureUnit(0, stlpDiagram.diagramTexture);
 			glUniform1i(glGetUniformLocation(diagramShader->id, "u_InputTexture"), 0);
+			glUniform2i(glGetUniformLocation(diagramShader->id, "u_ScreenSize"), screenWidth, screenHeight);
+
 
 			glBindVertexArray(stlpDiagram.quadVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 6);

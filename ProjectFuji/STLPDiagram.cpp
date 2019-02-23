@@ -1136,6 +1136,15 @@ void STLPDiagram::initBuffersNormalized() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
+	glGenTextures(1, &diagramMultisampledTexture);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA32F, textureResolution, textureResolution, false);
+
+	glGenFramebuffers(1, &diagramMultisampledFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, diagramMultisampledFramebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture, 0);
+
+
 	GLfloat lineWidthRange[2] = { 0.0f, 0.0f };
 	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, lineWidthRange);
 	// Maximum supported line width is in lineWidthRange[1].
