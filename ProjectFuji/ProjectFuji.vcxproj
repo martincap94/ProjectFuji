@@ -125,6 +125,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Particle.cpp" />
+    <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Simulator.cpp" />
     <ClCompile Include="STLPDiagram.cpp" />
     <ClCompile Include="STLPUtils.cpp" />
@@ -160,6 +161,7 @@
     <ClCompile Include="Config.h" />
     <ClInclude Include="Grid2D.h" />
     <ClInclude Include="Particle.h" />
+    <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Simulator.h" />
     <ClInclude Include="STLPDiagram.h" />
     <ClInclude Include="STLPUtils.h" />

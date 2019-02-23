@@ -7,12 +7,12 @@ out vec3 vFragPos;
 out vec3 vNormal;
 
 
-uniform mat4 uView;
-uniform mat4 uProjection;
+uniform mat4 u_View;
+uniform mat4 u_Projection;
 
 void main() {
 	vNormal = aNormal;
 	vFragPos = aPos;
-	gl_Position = uProjection * uView * vec4(aPos, 1.0);
+	gl_Position = u_Projection * u_View * vec4(aPos, 1.0);
 }
 

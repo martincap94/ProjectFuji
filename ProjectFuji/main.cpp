@@ -41,6 +41,7 @@
 #include "Timer.h"
 #include "STLPDiagram.h"
 #include "Simulator.h"
+#include "ShaderManager.h"
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
@@ -291,6 +292,10 @@ int runApp() {
 	}
 
 
+	ShaderManager::init();
+
+
+
 	glViewport(0, 0, screenWidth, screenHeight);
 
 
@@ -393,7 +398,8 @@ int runApp() {
 	///// SHADERS - should be simplified with helper classes, unfortunately due to time constraints
 	/////			it has remained in this shape
 	//////////////////////////////////////////////////////////////////////////////////////////////////
-	singleColorShader = new ShaderProgram("singleColor.vert", "singleColor.frag");
+	//singleColorShader = new ShaderProgram("singleColor.vert", "singleColor.frag");
+	singleColorShader = ShaderManager::getShaderPtr("singleColor");
 	singleColorShaderAlpha = new ShaderProgram("singleColor.vert", "singleColor_alpha.frag");
 	singleColorShaderVBO = new ShaderProgram("singleColor_VBO.vert", "singleColor_VBO.frag");
 
@@ -524,46 +530,46 @@ int runApp() {
 		view = camera->getViewMatrix();
 
 		glUseProgram(singleColorShader->id);
-		singleColorShader->setMat4fv("uView", view);
-		singleColorShader->setMat4fv("uProjection", projection);
+		singleColorShader->setMat4fv("u_View", view);
+		//singleColorShader->setMat4fv("u_Projection", projection);
 
 		glUseProgram(unlitColorShader->id);
-		unlitColorShader->setMat4fv("uView", view);
-		unlitColorShader->setMat4fv("uProjection", projection);
+		unlitColorShader->setMat4fv("u_View", view);
+		//unlitColorShader->setMat4fv("u_Projection", projection);
 
 		glUseProgram(singleColorShaderVBO->id);
-		singleColorShaderVBO->setMat4fv("uView", view);
+		singleColorShaderVBO->setMat4fv("u_View", view);
 
 
 		glUseProgram(dirLightOnlyShader->id);
-		dirLightOnlyShader->setMat4fv("uView", view);
+		dirLightOnlyShader->setMat4fv("u_View", view);
 		dirLightOnlyShader->setVec3("vViewPos", camera->position);
-		dirLightOnlyShader->setMat4fv("uProjection", projection);
+		//dirLightOnlyShader->setMat4fv("u_Projection", projection);
 
 
 
 		glUseProgram(singleColorShaderAlpha->id);
-		singleColorShaderAlpha->setMat4fv("uView", view);
-		singleColorShaderAlpha->setMat4fv("uProjection", projection);
+		singleColorShaderAlpha->setMat4fv("u_View", view);
+		//singleColorShaderAlpha->setMat4fv("u_Projection", projection);
 
 
 		glUseProgram(pointSpriteTestShader->id);
-		pointSpriteTestShader->setMat4fv("uView", view);
-		pointSpriteTestShader->setMat4fv("uProjection", projection);
+		pointSpriteTestShader->setMat4fv("u_View", view);
+		//pointSpriteTestShader->setMat4fv("u_Projection", projection);
 
 
 		glUseProgram(coloredParticleShader->id);
-		coloredParticleShader->setMat4fv("uView", view);
-		coloredParticleShader->setMat4fv("uProjection", projection);
+		coloredParticleShader->setMat4fv("u_View", view);
+		//coloredParticleShader->setMat4fv("u_Projection", projection);
 
 		glUseProgram(textShader->id);
-		textShader->setMat4fv("uView", view);
+		textShader->setMat4fv("u_View", view);
 
 		glUseProgram(curveShader->id);
-		curveShader->setMat4fv("uView", view);
+		curveShader->setMat4fv("u_View", view);
 /*
 		glUseProgram(diagramShader->id);
-		diagramShader->setMat4fv("uView", view);
+		diagramShader->setMat4fv("u_View", view);
 */
 
 		if (measureTime) {
@@ -736,7 +742,7 @@ int runApp() {
 	*/
 
 
-	delete singleColorShader;
+	//delete singleColorShader;
 	delete singleColorShaderVBO;
 	delete singleColorShaderAlpha;
 	delete unlitColorShader;
@@ -745,6 +751,8 @@ int runApp() {
 	delete curveShader;
 	delete pointSpriteTestShader;
 	delete coloredParticleShader;
+
+	ShaderManager::tearDown();
 
 
 	nk_glfw3_shutdown();
@@ -771,28 +779,28 @@ void refreshProjectionMatrix() {
 		camera->movementSpeed = 40.0f;
 	}
 	glUseProgram(singleColorShaderVBO->id);
-	singleColorShaderVBO->setMat4fv("uProjection", projection);
+	singleColorShaderVBO->setMat4fv("u_Projection", projection);
 	glUseProgram(singleColorShader->id);
-	singleColorShader->setMat4fv("uProjection", projection);
+	singleColorShader->setMat4fv("u_Projection", projection);
 	glUseProgram(singleColorShaderAlpha->id);
-	singleColorShaderAlpha->setMat4fv("uProjection", projection);
+	singleColorShaderAlpha->setMat4fv("u_Projection", projection);
 	glUseProgram(unlitColorShader->id);
-	unlitColorShader->setMat4fv("uProjection", projection);
+	unlitColorShader->setMat4fv("u_Projection", projection);
 	glUseProgram(dirLightOnlyShader->id);
-	dirLightOnlyShader->setMat4fv("uProjection", projection);
+	dirLightOnlyShader->setMat4fv("u_Projection", projection);
 	glUseProgram(textShader->id);
-	textShader->setMat4fv("uProjection", projection);
+	textShader->setMat4fv("u_Projection", projection);
 	glUseProgram(curveShader->id);
-	curveShader->setMat4fv("uProjection", projection);
+	curveShader->setMat4fv("u_Projection", projection);
 
 	glUseProgram(pointSpriteTestShader->id);
-	pointSpriteTestShader->setMat4fv("uProjection", projection);
+	pointSpriteTestShader->setMat4fv("u_Projection", projection);
 
 	glUseProgram(coloredParticleShader->id);
-	coloredParticleShader->setMat4fv("uProjection", projection);
+	coloredParticleShader->setMat4fv("u_Projection", projection);
 
 	//glUseProgram(diagramShader->id);
-	//diagramShader->setMat4fv("uProjection", projection);
+	//diagramShader->setMat4fv("u_Projection", projection);
 }
 
 

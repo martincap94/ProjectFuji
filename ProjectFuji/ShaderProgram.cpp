@@ -107,6 +107,12 @@ void ShaderProgram::use() {
 	glUseProgram(id);
 }
 
+/*
+
+Important note from: https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glUniform.xhtml
+If location is a value other than -1 and it does not represent a valid uniform variable location in the current program object, an error will be generated, and no changes will be made to the uniform variable storage of the current program object. If location is equal to -1, the data passed in will be silently ignored and the specified uniform variable will not be changed.
+*/
+
 void ShaderProgram::setBool(const std::string &name, bool value) const {
 	glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value);
 }
