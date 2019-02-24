@@ -257,6 +257,32 @@ void STLPDiagram::generateMixingRatioLine() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 }
 
+void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve) {
+
+	int vertexCounter = 0;
+
+	float x, y, T, P;
+
+	for (P = MAX_P; P >= MIN_P; P -= deltaP) {
+
+		T = computeAbsoluteFromTheta(theta, P, P0);
+
+		y = getNormalizedPres(P);
+		x = getNormalizedTemp(T, y);
+
+		vertices.push_back(glm::vec2(x, y));
+		vertexCounter++;
+	}
+
+	if (incrementCounter && edgeCounter != nullptr) {
+		numDryAdiabats++;
+		edgeCounter->push_back(vertexCounter);
+		//dryAdiabatEdgeCount.push_back(vertexCounter);
+	}
+	
+
+}
+
 
 
 void STLPDiagram::resetToDefault() {
@@ -498,24 +524,27 @@ void STLPDiagram::initCurves() {
 
 	
 	
-	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += 10.0f) {
-		counter = 0;
+	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += dryAdiabatDeltaT) {
 
-		for (P = MAX_P; P >= MIN_P; P -= 25.0f) {
-		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
-			//float P = soundingData[profileIndex].data[PRES];
+		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount);
 
-			
-			T = computeAbsoluteFromTheta(theta, P, P0);
+		//counter = 0;
 
-			y = getNormalizedPres(P);
-			x = getNormalizedTemp(T, y);
+		//for (P = MAX_P; P >= MIN_P; P -= 25.0f) {
+		////for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
+		//	//float P = soundingData[profileIndex].data[PRES];
 
-			vertices.push_back(glm::vec2(x, y));
-			counter++;
-		}
-		numDryAdiabats++;
-		dryAdiabatEdgeCount.push_back(counter);
+		//	
+		//	T = computeAbsoluteFromTheta(theta, P, P0);
+
+		//	y = getNormalizedPres(P);
+		//	x = getNormalizedTemp(T, y);
+
+		//	vertices.push_back(glm::vec2(x, y));
+		//	counter++;
+		//}
+		//numDryAdiabats++;
+		//dryAdiabatEdgeCount.push_back(counter);
 	}
 
 

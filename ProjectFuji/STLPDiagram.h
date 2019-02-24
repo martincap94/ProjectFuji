@@ -105,6 +105,8 @@ public:
 	GLuint overlayDiagramWidth = 256;
 	GLuint overlayDiagramHeight = 256;
 
+	float dryAdiabatDeltaT = 10.0f;
+
 
 	/// Constructs the diagram instance without loading any sounding data.
 	STLPDiagram();
@@ -131,7 +133,7 @@ public:
 	void initDewpointCurve();
 	void initAmbientTemperatureCurve();
 	void generateMixingRatioLine();
-	void generateDryAdiabat();
+	void generateDryAdiabat(float theta, vector<glm::vec2> &vertices, float P0 = 1000.0f, vector<int> *edgeCounter = nullptr, bool incrementCounter = true, float deltaP = 25.0f, Curve *curve = nullptr);
 	void generateMoistAdiabat();
 
 
