@@ -322,9 +322,6 @@ void STLPDiagram::initBuffers() {
 	// -> the points (T,P) nad (T(P + delta), P + delta) define a mixing ratio line, whose points all have the same mixing ratio
 
 
-	Curve mixingCCL;
-	Curve TcDryAdiabat;
-
 	// Compute CCL using a mixing ratio line
 	float w0 = soundingData[0].data[MIXR];
 	T = soundingData[0].data[DWPT];
@@ -492,7 +489,6 @@ void STLPDiagram::initBuffers() {
 	// TESTING LCL computation - special dry adiabat (starts in ground ambient temp.)
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
-	Curve LCLDryAdiabatCurve;
 	{
 		P0 = soundingData[0].data[PRES];
 
@@ -875,34 +871,25 @@ void STLPDiagram::initBuffers() {
 	glBindVertexArray(0);
 
 
-	// QUAD
+	// Overlay DIAGRAM
 
 	glm::vec4 vp;
 	glGetFloatv(GL_VIEWPORT, &vp.x);
-	float width = overlayDiagramWidth;
-	float height = overlayDiagramHeight;
-	x = overlayDiagramX;
-	y = overlayDiagramY;
-
-	const GLfloat normalized_coords_with_tex_coords[] = {
-		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 0.0f,
-		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 0.0f,
-		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 1.0f,
-		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 1.0f,
-	};
 
 	glGenVertexArrays(1, &overlayDiagramVAO);
 	glGenBuffers(1, &overlayDiagramVBO);
 	glBindVertexArray(overlayDiagramVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(normalized_coords_with_tex_coords), &normalized_coords_with_tex_coords, GL_STATIC_DRAW);
-
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 	glBindVertexArray(0);
+
+	refreshOverlayDiagram(vp.z, vp.w, vp.x, vp.y);
+
+
 
 	// TEXTURE AND FRAMEBUFFER
 
@@ -944,6 +931,73 @@ void STLPDiagram::initBuffers() {
 }
 
 void STLPDiagram::recalculateParameters() {
+
+	// TODO
+
+	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
+	CCL = getDenormalizedCoords(CCLNormalized);
+
+
+	TcNormalized = TcDryAdiabat.vertices[0];
+	Tc = getDenormalizedCoords(TcNormalized);
+
+
+	LCLNormalized = findIntersectionNaive(LCLDryAdiabatCurve, mixingCCL);
+	LCL = getDenormalizedCoords(LCLNormalized);
+
+	reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // temporary reverse for finding EL
+	ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve);
+	EL = getDenormalizedCoords(ELNormalized);
+	reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // reverse back for the simulation
+
+
+	LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+	LFC = getDenormalizedCoords(LFCNormalized);
+
+	reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end()); // temporary reverse for finding EL
+	OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+	OrographicEL = getDenormalizedCoords(OrographicELNormalized);
+	reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end()); // reverse back for the simulation
+
+
+	/*for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
+
+		CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve));
+
+		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
+
+		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve);
+		ELProfiles[profileIndex] = getDenormalizedCoords(tmp);
+
+		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
+	}*/
+
+
+	// very hacky - rewrite
+	mainParameterPoints.clear();
+	mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(0.0f));
+	mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(0.0f));
+
+	mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(0.0f));
+
+	mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(0.0f));
+
+	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(0.0f));
+
+	mainParameterPoints.push_back(glm::vec3(OrographicELNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(0.0f));
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mainParameterPoints.size(), &mainParameterPoints[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 
@@ -1136,12 +1190,12 @@ void STLPDiagram::drawOverlayDiagram(ShaderProgram *shader) {
 
 }
 
-void STLPDiagram::refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight) {
+void STLPDiagram::refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight, GLuint viewport_x, GLuint viewport_y) {
 
 	glm::vec4 vp;
 	//glGetFloatv(GL_VIEWPORT, &vp.x);
-	vp.x = 0;
-	vp.y = 0;
+	vp.x = viewport_x;
+	vp.y = viewport_y;
 	vp.z = viewportWidth;
 	vp.w = viewportHeight;
 	float width = overlayDiagramWidth;
@@ -1474,9 +1528,6 @@ void STLPDiagram::initBuffersOld() {
 	// -> the points (T,P) nad (T(P + delta), P + delta) define a mixing ratio line, whose points all have the same mixing ratio
 
 
-	Curve mixingCCL;
-	Curve TcDryAdiabat;
-
 	// Compute CCL using a mixing ratio line
 	float w0 = soundingData[0].data[MIXR];
 	T = soundingData[0].data[DWPT];
@@ -1658,7 +1709,6 @@ void STLPDiagram::initBuffersOld() {
 	// TESTING LCL computation - special dry adiabat (starts in ground ambient temp.)
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
-	Curve LCLDryAdiabatCurve;
 	{
 		P0 = soundingData[0].data[PRES];
 

@@ -147,6 +147,7 @@ Camera *viewportCamera;
 Camera2D *diagramCamera;
 Camera2D *overlayDiagramCamera;
 
+struct nk_context *ctx;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///// DEFAULT VALUES THAT ARE TO BE REWRITTEN FROM THE CONFIG FILE
@@ -300,7 +301,7 @@ int runApp() {
 	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
 	overlayDiagramProjection = glm::ortho(0.0f - offset, 1.0f + offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
 
-	struct nk_context *ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
+	ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
 
 	{
 		struct nk_font_atlas *atlas;
@@ -849,6 +850,16 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+	/*
+	Use one of these functions to detect whether we want to react to the callback:
+		1) nk_item_is_any_active (suggested by Vurtun)
+		2) nk_window_is_any_hovered
+	*/
+	if (nk_window_is_any_hovered(ctx)) {
+		cout << "Mouse callback not valid, hovering over Nuklear window/widget." << endl;
+		return;
+	}
+
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
@@ -1216,6 +1227,20 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	}
 	nk_end(ctx);
 
+
+
+
+	if (nk_begin(ctx, "Diagram", nk_rect(300, 300, 200, 300),
+				 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+				 NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) {
+
+		nk_layout_row_static(ctx, 30, 80, 3);
+		if (nk_button_label(ctx, "Recalculate Params")) {
+			//lbm->resetSimulation();
+			stlpDiagram.recalculateParameters();
+		}
+	}
+	nk_end(ctx);
 
 
 }

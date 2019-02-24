@@ -59,6 +59,12 @@ public:
 	Curve moistAdiabat_CCL_EL;
 	Curve moistAdiabat_LCL_EL;
 
+	Curve mixingCCL;
+	Curve LCLDryAdiabatCurve;
+
+
+
+
 	float minP;						///< Minimum pressure in normalized (diagram) coordinates 
 	float maxP;						///< Maximum pressure in normalized (diagram) coordinates
 	float minT;						///< Minimum temperature in normalized (diagram) coordinates
@@ -160,7 +166,7 @@ public:
 
 
 	void drawOverlayDiagram(ShaderProgram *shader);
-	void refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight);
+	void refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight, GLuint viewport_x = 0, GLuint viewport_y = 0);
 
 
 	/// Only sets existing point!
