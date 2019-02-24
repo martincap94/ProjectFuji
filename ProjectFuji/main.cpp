@@ -623,7 +623,7 @@ int runApp() {
 
 			//Show2DTexture(stlpDiagram.diagramTexture, 0, 0, 200, 200);
 
-		} else {
+		} else if (mode == 2) {
 
 			if (!paused) {
 				if (useCUDA) {
@@ -667,14 +667,23 @@ int runApp() {
 			glEnable(GL_DEPTH_TEST);*/
 
 			//display2DTexture(stlpDiagram.diagramTexture, diagramShader->id, 0, 0, 200, 200);
-			stlpDiagram.drawOverlayDiagram(diagramShader);
 
-			/*sim.doStep();
+
+
+			//stlpDiagram.drawOverlayDiagram(diagramShader);
+
+
+
+		} else if (mode == 3) {
+
+			sim.doStep();
 
 			grid->draw(*singleColorShader);
 
 			gGrid.draw(*unlitColorShader);
-			sim.draw(*singleColorShader);*/
+			sim.draw(*singleColorShader);
+
+			stlpDiagram.drawOverlayDiagram(diagramShader);
 
 		}
 
@@ -745,7 +754,7 @@ void refreshProjectionMatrix() {
 		camera->movementSpeed = 4.0f;
 	} else {
 		projection = viewportProjection;
-		mode = 2;
+		//mode = 2;
 		camera->movementSpeed = 40.0f;
 	}
 
@@ -817,6 +826,12 @@ void processInput(GLFWwindow* window) {
 		mode = 2;
 		glEnable(GL_DEPTH_TEST);
 		refreshProjectionMatrix();
+	}
+	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
+		mode = 3;
+		glEnable(GL_DEPTH_TEST);
+		refreshProjectionMatrix();
+		
 	}
 
 
@@ -1113,6 +1128,9 @@ void saveConfigParam(string param, string val) {
 void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	nk_glfw3_new_frame();
 
+	ctx->style.window.padding = nk_vec2(10.0f, 10.0f);
+
+
 	/* GUI */
 	if (nk_begin(ctx, "Control Panel", nk_rect(50, 50, 275, 400),
 				 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
@@ -1230,7 +1248,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 
-	if (nk_begin(ctx, "Diagram", nk_rect(300, 300, 200, 300),
+	if (nk_begin(ctx, "Diagram", nk_rect(300, 50, 400, 300),
 				 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 				 NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) {
 
@@ -1239,8 +1257,69 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			//lbm->resetSimulation();
 			stlpDiagram.recalculateParameters();
 		}
+
+		
+
+
+		nk_checkbox_label(ctx, "Show isobars", &stlpDiagram.showIsobars);
+		nk_checkbox_label(ctx, "Show isotherms", &stlpDiagram.showIsotherms);
+		nk_checkbox_label(ctx, "Show isohumes", &stlpDiagram.showIsohumes);
+		nk_checkbox_label(ctx, "Show dry adiabats", &stlpDiagram.showDryAdiabats);
+		nk_checkbox_label(ctx, "Show moist adiabats", &stlpDiagram.showMoistAdiabats);
+		nk_checkbox_label(ctx, "Show dewpoint curve", &stlpDiagram.showDewpointCurve);
+		nk_checkbox_label(ctx, "Show ambient temp. curve", &stlpDiagram.showAmbientTemperatureCurve);
+
+
+		int tmp = stlpDiagram.overlayDiagramWidth;
+		int maxDiagramWidth = (screenWidth < screenHeight) ? screenWidth : screenHeight;
+		nk_slider_int(ctx, 10, (int *)&stlpDiagram.overlayDiagramWidth, maxDiagramWidth, 1);
+		if (tmp != stlpDiagram.overlayDiagramWidth) {
+			stlpDiagram.overlayDiagramHeight = stlpDiagram.overlayDiagramWidth;
+			stlpDiagram.refreshOverlayDiagram(screenWidth, screenHeight);
+		}
+
+
+
 	}
 	nk_end(ctx);
+
+
+
+	ctx->style.window.padding = nk_vec2(0, 0);
+
+	if (nk_begin(ctx, "test", nk_rect(0, 0, screenWidth, 32), NK_WINDOW_NO_SCROLLBAR)) {
+
+		int numToolbarItems = 3;
+
+		//nk_layout_row_static(ctx, 32, screenWidth, numToolbarItems);
+		//nk_menu
+
+		/* menubar */
+		enum menu_states { MENU_DEFAULT, MENU_WINDOWS };
+		static nk_size mprog = 60;
+		static int mslider = 10;
+		static int mcheck = nk_true;
+		nk_menubar_begin(ctx);
+
+		/* menu #1 */
+		nk_layout_row_begin(ctx, NK_DYNAMIC, 25, 5);
+		nk_layout_row_push(ctx, 0.45f);
+		if (nk_menu_begin_label(ctx, "MENU", NK_TEXT_LEFT, nk_vec2(120, 200))) {
+			static size_t prog = 40;
+			static int slider = 10;
+			static int check = nk_true;
+			nk_layout_row_dynamic(ctx, 25, 1);
+			nk_menu_item_label(ctx, "Hide", NK_TEXT_LEFT);
+			nk_menu_item_label(ctx, "About", NK_TEXT_LEFT);
+			nk_progress(ctx, &prog, 100, NK_MODIFIABLE);
+			nk_slider_int(ctx, 0, &slider, 16, 1);
+			nk_checkbox_label(ctx, "check", &check);
+			nk_menu_end(ctx);
+		}
+
+	}
+	nk_end(ctx);
+
 
 
 }

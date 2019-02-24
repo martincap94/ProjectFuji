@@ -62,7 +62,14 @@ public:
 	Curve mixingCCL;
 	Curve LCLDryAdiabatCurve;
 
-
+	// use int values for user interface (easier to use than temporary int values)
+	int showIsobars = 1;
+	int showIsotherms = 1;
+	int showIsohumes = 1;
+	int showDryAdiabats = 1;
+	int showMoistAdiabats = 1;
+	int showDewpointCurve = 1;
+	int showAmbientTemperatureCurve = 1;
 
 
 	float minP;						///< Minimum pressure in normalized (diagram) coordinates 
