@@ -42,12 +42,14 @@ float getCelsius(float T);
 void toKelvin(float &T);
 void toCelsius(float &T);
 
-float computeThetaFromAbsolute(float T, float P);
+float computeThetaFromAbsoluteK(float T, float P, float P0 = 1000.0f);
+float computeThetaFromAbsoluteC(float T, float P, float P0 = 1000.0f);
 
 
-/* expects theta in [degC], P and P0 in hPa
+float computeAbsoluteFromThetaK(float theta, float P, float P0 = 1000.0f);
+/* expects theta in [degC], P and P0 in [hPa]
 */
-float computeAbsoluteFromTheta(float theta, float P, float P0 = 1000.0f);
+float computeAbsoluteFromThetaC(float theta, float P, float P0 = 1000.0f);
 
 
 

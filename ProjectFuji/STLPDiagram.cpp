@@ -265,12 +265,15 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, f
 
 	for (P = MAX_P; P >= MIN_P; P -= deltaP) {
 
-		T = computeAbsoluteFromTheta(theta, P, P0);
+		T = computeAbsoluteFromThetaC(theta, P, P0);
 
 		y = getNormalizedPres(P);
 		x = getNormalizedTemp(T, y);
 
 		vertices.push_back(glm::vec2(x, y));
+		if (curve != nullptr) {
+			curve->vertices.push_back(glm::vec2(x, y));
+		}
 		vertexCounter++;
 	}
 
@@ -425,6 +428,7 @@ void STLPDiagram::initCurves() {
 	float P0 = soundingData[0].data[PRES];
 	float P;
 	float T;
+	float y0 = getNormalizedPres(P0);
 
 	xaxis.vertices.push_back(glm::vec2(xmin, ymax));
 	xaxis.vertices.push_back(glm::vec2(xmax, ymax));
@@ -433,6 +437,11 @@ void STLPDiagram::initCurves() {
 
 	xaxis.initBuffers();
 	yaxis.initBuffers();
+
+	groundIsobar.vertices.push_back(glm::vec2(xmin, y0));
+	groundIsobar.vertices.push_back(glm::vec2(xmax, y0));
+
+	groundIsobar.initBuffers();
 
 	TcProfiles.reserve(numProfiles);
 	CCLProfiles.reserve(numProfiles);
@@ -483,9 +492,6 @@ void STLPDiagram::initCurves() {
 	///////////////////////////////////////////////////////////////////////////////////////
 	// ISOHUMES (MIXING RATIO LINES)
 	///////////////////////////////////////////////////////////////////////////////////////
-	cout << "////////////////////////////////////////////////////" << endl;
-	cout << "// ISOHUMES (MIXING RATIO LINES)" << endl;
-	cout << "////////////////////////////////////////////////////" << endl;
 
 	generateMixingRatioLine();
 	
@@ -496,134 +502,41 @@ void STLPDiagram::initCurves() {
 	///////////////////////////////////////////////////////////////////////////////////////
 	// DRY ADIABATS
 	///////////////////////////////////////////////////////////////////////////////////////
-	cout << "////////////////////////////////////////////////////" << endl;
-	cout << "// DRY ADIABATS" << endl;
-	cout << "////////////////////////////////////////////////////" << endl;
-
 	vertices.clear();
-
-	/*
-		Dry adiabats feature the thermodynamic behaviour of unsaturated air parcels moving upwards (or downwards).
-		They represent the dry adiabatic lapse rate (DALR).
-		This thermodynamic behaviour is valid for all air parcels moving between the ground and the convective
-		condensation level (CCL).
-
-		T(P) = theta / ((P0 / P)^(Rd / cp))
-			where
-					P0 is the initial value of pressure (profileIndex.e. ground pressure)
-					cp is the heat capacity of dry air at constant pressure
-					(cv is the heat capacity of dry air at constant volume)
-					Rd is the gas constant for dry air [J kg^-1 K^-1]
-					k = Rd / cp = (cp - cv) / cp =(approx)= 0.286
-	*/
-
-	float k = 0.286f; // Rd / cp
-
 	numDryAdiabats = 0;
 	int counter;
 
-	
-	
 	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += dryAdiabatDeltaT) {
-
 		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount);
-
-		//counter = 0;
-
-		//for (P = MAX_P; P >= MIN_P; P -= 25.0f) {
-		////for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
-		//	//float P = soundingData[profileIndex].data[PRES];
-
-		//	
-		//	T = computeAbsoluteFromTheta(theta, P, P0);
-
-		//	y = getNormalizedPres(P);
-		//	x = getNormalizedTemp(T, y);
-
-		//	vertices.push_back(glm::vec2(x, y));
-		//	counter++;
-		//}
-		//numDryAdiabats++;
-		//dryAdiabatEdgeCount.push_back(counter);
 	}
 
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// DRY ADIABAT: T_c <-> CCL
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	float theta = computeThetaFromAbsoluteC(CCL.x, CCL.y, P0);
+	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &TcDryAdiabat);
+
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// DRY ADIABAT: Ground ambient temperature <-> LCL
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	theta = computeThetaFromAbsoluteC(soundingData[0].data[TEMP], P0, P0);
+	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &LCLDryAdiabatCurve);
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	// TESTING Tc computation - special dry adiabat (and its x axis intersection)
+	// Tc and LCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	{
-		P0 = soundingData[0].data[PRES];
-
-		float theta = (CCL.x + 273.15f) * powf(P0 / CCL.y, k);
-		theta -= 273.15f;
-		cout << "CCL theta = " << theta << endl;
-		cout << "Tc Dry adiabat: " << endl;
-		
-		counter = 0;
-
-
-		for (int i = 0; i < soundingData.size(); i++) {
-
-			float P = soundingData[i].data[PRES];
-
-			float T = computeAbsoluteFromTheta(theta, P, P0);
-			y = getNormalizedPres(P);
-			x = getNormalizedTemp(T, y);
-
-			TcDryAdiabat.vertices.push_back(glm::vec2(x, y));
-			vertices.push_back(glm::vec2(x, y));
-			counter++;
-
-			cout << " | " << x << ", " << y << endl;
-		}
-		cout << endl;
-		numDryAdiabats++;
-		dryAdiabatEdgeCount.push_back(counter);
-
-	}
-
-
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// TESTING LCL computation - special dry adiabat (starts in ground ambient temp.)
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	
-	{
-		P0 = soundingData[0].data[PRES];
-
-		float theta = (soundingData[0].data[TEMP] + 273.15f)/* * powf(P0 / P0, k)*/;
-		theta -= 273.15f;
-		cout << "LCL Dry adiabat theta = " << theta << endl;
-
-		for (int i = 0; i < soundingData.size(); i++) {
-
-			float P = soundingData[i].data[PRES];
-			float T = computeAbsoluteFromTheta(theta, P, P0);
-			y = getNormalizedPres(P);
-			x = getNormalizedTemp(T, y);
-
-			LCLDryAdiabatCurve.vertices.push_back(glm::vec2(x, y));
-			//vertices.push_back(glm::vec2(x, y));
-			cout << " | " << x << ", " << y << endl;
-		}
-		cout << endl;
-		//numDryAdiabats++;
-	}
-
-
-	//TcNormalized = findIntersectionNaive(xaxis, TcDryAdiabat);
-	TcNormalized = TcDryAdiabat.vertices[0]; // no need for intersection search here
-	cout << "TcNormalized: " << TcNormalized.x << ", " << TcNormalized.y << endl;
+	TcNormalized = findIntersectionNaive(groundIsobar, TcDryAdiabat);
 	Tc = getDenormalizedCoords(TcNormalized);
-	cout << "Tc: " << Tc.x << ", " << Tc.y << endl;
 
 	// Check correctness by computing thetaCCL == Tc
-	float thetaCCL = (CCL.x + 273.15f) * pow((P0 / CCL.y), k);
+	float thetaCCL = (CCL.x + 273.15f) * pow((P0 / CCL.y), k_ratio);
 	thetaCCL -= 273.15f;
-	cout << "THETA CCL = " << thetaCCL << endl;
 
 	LCLNormalized = findIntersectionNaive(LCLDryAdiabatCurve, mixingCCL);
 	LCL = getDenormalizedCoords(LCLNormalized);
+	///////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 	// Testing out profiles
@@ -635,34 +548,13 @@ void STLPDiagram::initCurves() {
 		visualizationPoints.push_back(glm::vec3(tint, 0.0f, 0.0f)); // color	
 	}
 
-	cout << "NUMBER OF PROFILES = " << numProfiles << ", profileDelta = " << profileDelta << endl;
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
 
 		dryAdiabatProfiles.push_back(Curve());
 
-		counter = 0;
+		float theta = computeAbsoluteFromThetaC(TcProfiles[profileIndex].x, P0, P0);
+		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &dryAdiabatProfiles[profileIndex]);
 
-		P0 = soundingData[0].data[PRES];
-
-		float theta = (TcProfiles[profileIndex].x + 273.15f)/* * powf(P0 / P0, k)*/;
-		theta -= 273.15f;
-
-		for (int i = 0; i < soundingData.size(); i++) {
-
-			float P = soundingData[i].data[PRES];
-
-			float T = (theta + 273.15f) * pow((P / P0), k); // do not forget to use Kelvin
-			T -= 273.15f; // convert back to Celsius
-
-			y = getNormalizedPres(P);
-			x = getNormalizedTemp(T, y);
-
-			dryAdiabatProfiles[profileIndex].vertices.push_back(glm::vec2(x, y));
-			vertices.push_back(glm::vec2(x, y));
-			counter++;
-		}
-		numDryAdiabats++;
-		dryAdiabatEdgeCount.push_back(counter);
 
 		CCLProfiles.push_back(getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve)));
 
@@ -1215,6 +1107,7 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 
 	xaxis.draw(shader);
 	yaxis.draw(shader);
+	groundIsobar.draw(shader);
 
 	glPointSize(3.0f);
 	glUseProgram(altShader.id);

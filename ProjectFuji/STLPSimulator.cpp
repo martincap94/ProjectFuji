@@ -75,9 +75,9 @@ void STLPSimulator::doStep() {
 			cout << "dewpoint temp [K] = " << dewpointTemp << endl;
 
 
-			float ambientTheta = computeThetaFromAbsolute(ambientTemp, testParticle.pressure);
-			float dewpointTheta = computeThetaFromAbsolute(dewpointTemp, testParticle.pressure);
-			float particleTheta = computeThetaFromAbsolute(getKelvin(T), testParticle.pressure);
+			float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, testParticle.pressure);
+			float dewpointTheta = computeThetaFromAbsoluteK(dewpointTemp, testParticle.pressure);
+			float particleTheta = computeThetaFromAbsoluteK(getKelvin(T), testParticle.pressure);
 
 			cout << "convective temp [K] = " << getKelvin(testParticle.convectiveTemperature) << endl;
 			cout << "ambient theta [K] = " << ambientTheta << ", dewpoint theta [K] = " << dewpointTheta << endl;
@@ -136,8 +136,8 @@ void STLPSimulator::doStep() {
 			toKelvin(ambientTemp);
 			toKelvin(particleTemp);
 
-			float ambientTheta = computeThetaFromAbsolute(ambientTemp, testParticle.pressure);
-			float particleTheta = computeThetaFromAbsolute(particleTemp, testParticle.pressure);
+			float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, testParticle.pressure);
+			float particleTheta = computeThetaFromAbsoluteK(particleTemp, testParticle.pressure);
 
 			cout << "convective temp [K] = " << getKelvin(testParticle.convectiveTemperature) << endl;
 			cout << "ambient theta [K] = " << ambientTheta << ", particle theta [K] = " << particleTheta << endl;
@@ -190,8 +190,8 @@ void STLPSimulator::doStep() {
 			toKelvin(ambientTemp);
 			toKelvin(particleTemp);
 
-			float ambientTheta = computeThetaFromAbsolute(ambientTemp, testParticle.pressure);
-			float particleTheta = computeThetaFromAbsolute(particleTemp, testParticle.pressure);
+			float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, testParticle.pressure);
+			float particleTheta = computeThetaFromAbsoluteK(particleTemp, testParticle.pressure);
 
 			cout << "convective temp [K] = " << getKelvin(testParticle.convectiveTemperature) << endl;
 			cout << "ambient theta [K] = " << ambientTheta << ", particle theta [K] = " << particleTheta << endl;
@@ -269,9 +269,9 @@ void STLPSimulator::doStep() {
 				toKelvin(ambientTemp);
 				toKelvin(dewpointTemp);
 
-				float ambientTheta = computeThetaFromAbsolute(ambientTemp, particles[i].pressure);
-				float dewpointTheta = computeThetaFromAbsolute(dewpointTemp, particles[i].pressure);
-				float particleTheta = computeThetaFromAbsolute(getKelvin(T), particles[i].pressure);
+				float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
+				float dewpointTheta = computeThetaFromAbsoluteK(dewpointTemp, particles[i].pressure);
+				float particleTheta = computeThetaFromAbsoluteK(getKelvin(T), particles[i].pressure);
 
 				//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
 				//float a = 9.81f * (getKelvin(particles[i].convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
@@ -312,8 +312,8 @@ void STLPSimulator::doStep() {
 				toKelvin(ambientTemp);
 				toKelvin(particleTemp);
 
-				float ambientTheta = computeThetaFromAbsolute(ambientTemp, particles[i].pressure);
-				float particleTheta = computeThetaFromAbsolute(particleTemp, particles[i].pressure);
+				float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
+				float particleTheta = computeThetaFromAbsoluteK(particleTemp, particles[i].pressure);
 
 
 				//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
@@ -351,8 +351,8 @@ void STLPSimulator::doStep() {
 				toKelvin(ambientTemp);
 				toKelvin(particleTemp);
 
-				float ambientTheta = computeThetaFromAbsolute(ambientTemp, particles[i].pressure);
-				float particleTheta = computeThetaFromAbsolute(particleTemp, particles[i].pressure);
+				float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
+				float particleTheta = computeThetaFromAbsoluteK(particleTemp, particles[i].pressure);
 
 				//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
 				//float a = 9.81f * (getKelvin(particles[i].convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)

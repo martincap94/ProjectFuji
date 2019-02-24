@@ -53,6 +53,8 @@ public:
 	Curve xaxis;					///< x axis curve (single line)
 	Curve yaxis;					///< y axis curve (single line)
 
+	Curve groundIsobar;
+
 	Curve ambientCurve;				///< Sounding curve with ambient temperatures
 	Curve dewpointCurve;			///< Sounding curve with dewpoint temperatures
 	Curve TcDryAdiabat;				///< Dry adiabat that has convective temperature at ground level
@@ -133,7 +135,25 @@ public:
 	void initDewpointCurve();
 	void initAmbientTemperatureCurve();
 	void generateMixingRatioLine();
+
+
+	/*
+		Dry adiabats feature the thermodynamic behaviour of unsaturated air parcels moving upwards (or downwards).
+		They represent the dry adiabatic lapse rate (DALR).
+		This thermodynamic behaviour is valid for all air parcels moving between the ground and the convective
+		condensation level (CCL).
+
+		T(P) = theta / ((P0 / P)^(Rd / cp))
+		where
+		P0 is the initial value of pressure (profileIndex.e. ground pressure)
+		cp is the heat capacity of dry air at constant pressure
+		(cv is the heat capacity of dry air at constant volume)
+		Rd is the gas constant for dry air [J kg^-1 K^-1]
+		k = Rd / cp = (cp - cv) / cp =(approx)= 0.286
+	*/
 	void generateDryAdiabat(float theta, vector<glm::vec2> &vertices, float P0 = 1000.0f, vector<int> *edgeCounter = nullptr, bool incrementCounter = true, float deltaP = 25.0f, Curve *curve = nullptr);
+
+
 	void generateMoistAdiabat();
 
 

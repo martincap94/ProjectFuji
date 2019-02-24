@@ -67,15 +67,25 @@ void toCelsius(float &T) {
 }
 
 
-float computeThetaFromAbsolute(float T, float P) {
-	return T * pow(1000.0f / P, 0.286f);
+float computeThetaFromAbsoluteK(float T, float P, float P0) {
+	float tmp = (P == P0) ? 1.0f : pow(P0 / P, k_ratio);
+	return T * tmp;
+}
+
+float computeThetaFromAbsoluteC(float T, float P, float P0) {
+	float tmp = (P == P0) ? 1.0f : pow(P0 / P, k_ratio);
+	return getCelsius(getKelvin(T) * tmp);
+}
+
+float computeAbsoluteFromThetaK(float theta, float P, float P0) {
+	float tmp = (P == P0) ? 1.0f : pow(P / P0, k_ratio);
+	return (theta * tmp);
 }
 
 
-float computeAbsoluteFromTheta(float theta, float P, float P0) {
-	float T = (theta + 273.15f) * pow((P / P0), k_ratio); // do not forget to use Kelvin
-	T -= 273.15f; // convert back to Celsius
-	return T;
+float computeAbsoluteFromThetaC(float theta, float P, float P0) {
+	float tmp = (P == P0) ? 1.0f : pow(P / P0, k_ratio);
+	return getCelsius(getKelvin(theta) * tmp);
 }
 
 
