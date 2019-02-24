@@ -7,6 +7,7 @@
 #define R_m 461.5f			///< Moist air gas constant
 #define R_v R_m
 #define EPS (R_d / R_m)
+#define k_ratio 0.286f
 
 
 // testing values for 300 K (27 degC) ////////////////////////////////////////
@@ -43,6 +44,10 @@ void toCelsius(float &T);
 
 float computeThetaFromAbsolute(float T, float P);
 
+
+/* expects theta in [degC], P and P0 in hPa
+*/
+float computeAbsoluteFromTheta(float theta, float P, float P0 = 1000.0f);
 
 
 

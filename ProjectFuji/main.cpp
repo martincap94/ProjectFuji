@@ -40,7 +40,7 @@
 #include "Utils.h"
 #include "Timer.h"
 #include "STLPDiagram.h"
-#include "Simulator.h"
+#include "STLPSimulator.h"
 #include "ShaderManager.h"
 
 //#include <omp.h>	// OpenMP for CPU parallelization
@@ -449,7 +449,7 @@ int runApp() {
 
 	stlpDiagram.init(soundingFile);
 
-	Simulator sim;
+	STLPSimulator sim;
 	if (lbmType == LBM3D) {
 		sim.heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
 	}
@@ -1247,12 +1247,12 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 
+	// if NK_WINDOW_MOVABLE or NK_WINDOW_SCALABLE -> does not change rectange when window size (screen size) changes
+	if (nk_begin(ctx, "Diagram", nk_rect(screenWidth - 150, 32, 150, screenHeight - 32),
+				 NK_WINDOW_BORDER /*| NK_WINDOW_MOVABLE*/ /*| NK_WINDOW_SCALABLE*/ /*|
+				 NK_WINDOW_MINIMIZABLE*/ /*| NK_WINDOW_TITLE*/)) {
 
-	if (nk_begin(ctx, "Diagram", nk_rect(300, 50, 400, 300),
-				 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-				 NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) {
-
-		nk_layout_row_static(ctx, 30, 80, 3);
+		nk_layout_row_static(ctx, 30, 150, 1);
 		if (nk_button_label(ctx, "Recalculate Params")) {
 			//lbm->resetSimulation();
 			stlpDiagram.recalculateParameters();
@@ -1277,6 +1277,12 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			stlpDiagram.overlayDiagramHeight = stlpDiagram.overlayDiagramWidth;
 			stlpDiagram.refreshOverlayDiagram(screenWidth, screenHeight);
 		}
+
+		if (nk_button_label(ctx, "Reset to default")) {
+			stlpDiagram.resetToDefault();
+		}
+
+
 
 
 

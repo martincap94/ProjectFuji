@@ -126,8 +126,8 @@
     </ClCompile>
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
-    <ClCompile Include="Simulator.cpp" />
     <ClCompile Include="STLPDiagram.cpp" />
+    <ClCompile Include="STLPSimulator.cpp" />
     <ClCompile Include="STLPUtils.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -162,7 +162,7 @@
     <ClInclude Include="Grid2D.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ShaderManager.h" />
-    <ClInclude Include="Simulator.h" />
+    <ClInclude Include="STLPSimulator.h" />
     <ClInclude Include="STLPDiagram.h" />
     <ClInclude Include="STLPUtils.h" />
     <ClInclude Include="TextRenderer.h" />

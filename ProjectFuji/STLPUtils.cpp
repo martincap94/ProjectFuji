@@ -72,6 +72,13 @@ float computeThetaFromAbsolute(float T, float P) {
 }
 
 
+float computeAbsoluteFromTheta(float theta, float P, float P0) {
+	float T = (theta + 273.15f) * pow((P / P0), k_ratio); // do not forget to use Kelvin
+	T -= 273.15f; // convert back to Celsius
+	return T;
+}
+
+
 
 
 

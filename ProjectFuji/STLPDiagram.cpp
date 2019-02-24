@@ -27,6 +27,7 @@ void STLPDiagram::init(string filename) {
 	initFreetype();
 
 	initBuffers();
+	initCurves();
 }
 
 void STLPDiagram::loadSoundingData(string filename) {
@@ -98,17 +99,8 @@ void STLPDiagram::generateIsobars() {
 	numIsobars++;
 
 
-	glGenVertexArrays(1, &isobarsVAO);
-	glBindVertexArray(isobarsVAO);
-	glGenBuffers(1, &isobarsVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, isobarsVBO);
-
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
 }
 
 void STLPDiagram::generateIsotherms() {
@@ -131,18 +123,8 @@ void STLPDiagram::generateIsotherms() {
 		isothermsCount++;
 	}
 
-
-	glGenVertexArrays(1, &isothermsVAO);
-	glBindVertexArray(isothermsVAO);
-	glGenBuffers(1, &isothermsVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, isothermsVBO);
-
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
 
 }
 
@@ -164,17 +146,8 @@ void STLPDiagram::initDewpointCurve() {
 	dewpointCurve.vertices = vertices;
 
 
-	glGenVertexArrays(1, &dewTemperatureVAO);
-	glBindVertexArray(dewTemperatureVAO);
-	glGenBuffers(1, &dewTemperatureVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, dewTemperatureVBO);
-
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
 
 }
 
@@ -195,20 +168,221 @@ void STLPDiagram::initAmbientTemperatureCurve() {
 
 	ambientCurve.vertices = vertices;
 
-	glGenVertexArrays(1, &ambientTemperatureVAO);
-	glBindVertexArray(ambientTemperatureVAO);
-	glGenBuffers(1, &ambientTemperatureVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, ambientTemperatureVBO);
-
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+}
+
+void STLPDiagram::generateMixingRatioLine() {
+	vector<glm::vec2> vertices;
+
+
+	float Rd = 287.05307f;	// gas constant for dry air [J kg^-1 K^-1]
+	float Rm = 461.5f;		// gas constant for moist air [J kg^-1 K^-1]
+
+							// w(T,P) = (eps * e(T)) / (P - e(T))
+							// where
+							//		eps = Rd / Rm
+							//		e(T) ... saturation vapor pressure (can be approx'd by August-Roche-Magnus formula
+							//		e(T) =(approx)= C exp( (A*T) / (T + B))
+							//		where
+							//				A = 17.625
+							//				B = 243.04
+							//				C = 610.94
+
+	float A = 17.625f;
+	float B = 243.04f;
+	float C = 610.94f;
+
+	// given that w(T,P) is const., let W = w(T,P), we can express T in terms of P (see Equation 3.13)
+
+	// to determine the mixing ratio line that passes through (T,P), we calculate the value of the temperature
+	// T(P + delta) where delta is a small integer
+	// -> the points (T,P) nad (T(P + delta), P + delta) define a mixing ratio line, whose points all have the same mixing ratio
+
+
+	// Compute CCL using a mixing ratio line
+	float w0 = soundingData[0].data[MIXR];
+	float T = soundingData[0].data[DWPT];
+	float P = soundingData[0].data[PRES];
+
+
+	float eps = Rd / Rm;
+	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
+	float satVP = getSaturationVaporPressure(T);
+	//float W = (eps * satVP) / (P - satVP);
+	float W = getMixingRatioOfWaterVapor(T, P);
+
+	cout << " -> Computed W = " << W << endl;
+
+	float deltaP = 20.0f;
+
+
+	float x, y;
+	while (P >= MIN_P) {
+
+
+		float fracPart = log((W * P) / (C * (W + eps)));
+		float computedT = (B * fracPart) / (A - fracPart);
+
+		cout << " -> Computed T = " << computedT << endl;
+
+		y = getNormalizedPres(P);
+		x = getNormalizedTemp(T, y);
+
+		if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
+			break;
+		}
+
+		vertices.push_back(glm::vec2(x, y));
+
+
+		float delta = 10.0f; // should be a small integer - produces dashed line (logarithmic)
+							 //float offsetP = P - delta;
+		float offsetP = P - deltaP; // produces continuous line
+		fracPart = log((W * offsetP) / (C * (W + eps)));
+		computedT = (B * fracPart) / (A - fracPart);
+		cout << " -> Second computed T = " << computedT << endl;
+
+
+		y = getNormalizedPres(offsetP);
+		x = getNormalizedTemp(T, y);
+		vertices.push_back(glm::vec2(x, y));
+
+		P -= deltaP;
+
+	}
+	mixingCCL.vertices = vertices;
+
+	glBindBuffer(GL_ARRAY_BUFFER, isohumesVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+}
+
+
+
+void STLPDiagram::resetToDefault() {
+	cout << "Resetting diagram to default sounding data values" << endl;
+
+}
+
+void STLPDiagram::initBuffers() {
+	///////////////////////////////////////////////////////////////////////////////////////
+	// ISOBARS
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	glGenVertexArrays(1, &isobarsVAO);
+	glBindVertexArray(isobarsVAO);
+	glGenBuffers(1, &isobarsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, isobarsVBO);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
 
 	glBindVertexArray(0);
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// TEMPERATURE POINTS
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	glGenVertexArrays(1, &temperaturePointsVAO);
+	glBindVertexArray(temperaturePointsVAO);
+	glGenBuffers(1, &temperaturePointsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, temperaturePointsVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// ISOTHERMS
+	///////////////////////////////////////////////////////////////////////////////////////
+	glGenVertexArrays(1, &isothermsVAO);
+	glBindVertexArray(isothermsVAO);
+	glGenBuffers(1, &isothermsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, isothermsVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// AMBIENT TEMPERATURE PIECE-WISE LINEAR CURVE
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	glGenVertexArrays(1, &ambientTemperatureVAO);
+	glBindVertexArray(ambientTemperatureVAO);
+	glGenBuffers(1, &ambientTemperatureVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, ambientTemperatureVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// DEWPOINT TEMPERATURE PIECE-WISE LINEAR CURVE
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	glGenVertexArrays(1, &dewTemperatureVAO);
+	glBindVertexArray(dewTemperatureVAO);
+	glGenBuffers(1, &dewTemperatureVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, dewTemperatureVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// ISOHUMES (MIXING RATIO LINES)
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	glGenVertexArrays(1, &isohumesVAO);
+	glBindVertexArray(isohumesVAO);
+	glGenBuffers(1, &isohumesVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, isohumesVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// DRY ADIABATS
+	///////////////////////////////////////////////////////////////////////////////////////
+	glGenVertexArrays(1, &dryAdiabatsVAO);
+	glBindVertexArray(dryAdiabatsVAO);
+	glGenBuffers(1, &dryAdiabatsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// MOIST ADIABATS
+	///////////////////////////////////////////////////////////////////////////////////////
+	glGenVertexArrays(1, &moistAdiabatsVAO);
+	glBindVertexArray(moistAdiabatsVAO);
+	glGenBuffers(1, &moistAdiabatsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
 }
 
-void STLPDiagram::initBuffers() {
+void STLPDiagram::initCurves() {
 
 	float x, y;
 	// Initialize main variables
@@ -261,17 +435,8 @@ void STLPDiagram::initBuffers() {
 		temperaturePointsCount++;
 	}
 
-	glGenVertexArrays(1, &temperaturePointsVAO);
-	glBindVertexArray(temperaturePointsVAO);
-	glGenBuffers(1, &temperaturePointsVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, temperaturePointsVBO);
-
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * temperaturePoints.size(), &temperaturePoints[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
 
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -296,105 +461,10 @@ void STLPDiagram::initBuffers() {
 	cout << "// ISOHUMES (MIXING RATIO LINES)" << endl;
 	cout << "////////////////////////////////////////////////////" << endl;
 
-	vertices.clear();
-
-	float Rd = 287.05307f;	// gas constant for dry air [J kg^-1 K^-1]
-	float Rm = 461.5f;		// gas constant for moist air [J kg^-1 K^-1]
-
-	// w(T,P) = (eps * e(T)) / (P - e(T))
-	// where
-	//		eps = Rd / Rm
-	//		e(T) ... saturation vapor pressure (can be approx'd by August-Roche-Magnus formula
-	//		e(T) =(approx)= C exp( (A*T) / (T + B))
-	//		where
-	//				A = 17.625
-	//				B = 243.04
-	//				C = 610.94
-
-	float A = 17.625f;
-	float B = 243.04f;
-	float C = 610.94f;
-
-	// given that w(T,P) is const., let W = w(T,P), we can express T in terms of P (see Equation 3.13)
-
-	// to determine the mixing ratio line that passes through (T,P), we calculate the value of the temperature
-	// T(P + delta) where delta is a small integer
-	// -> the points (T,P) nad (T(P + delta), P + delta) define a mixing ratio line, whose points all have the same mixing ratio
-
-
-	// Compute CCL using a mixing ratio line
-	float w0 = soundingData[0].data[MIXR];
-	T = soundingData[0].data[DWPT];
-	P = soundingData[0].data[PRES];
-
-
-	float eps = Rd / Rm;
-	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	float satVP = getSaturationVaporPressure(T);
-	//float W = (eps * satVP) / (P - satVP);
-	float W = getMixingRatioOfWaterVapor(T, P);
-
-	cout << " -> Computed W = " << W << endl;
-
-	float deltaP = 20.0f;
-
-	while (P >= MIN_P) {
-
-
-		float fracPart = log((W * P) / (C * (W + eps)));
-		float computedT = (B * fracPart) / (A - fracPart);
-
-		cout << " -> Computed T = " << computedT << endl;
-
-		y = getNormalizedPres(P);
-		x = getNormalizedTemp(T, y);
-
-		if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
-			break;
-		}
-
-		vertices.push_back(glm::vec2(x, y));
-
-
-		float delta = 10.0f; // should be a small integer - produces dashed line (logarithmic)
-		//float offsetP = P - delta;
-		float offsetP = P - deltaP; // produces continuous line
-		fracPart = log((W * offsetP) / (C * (W + eps)));
-		computedT = (B * fracPart) / (A - fracPart);
-		cout << " -> Second computed T = " << computedT << endl;
-
-
-		y = getNormalizedPres(offsetP);
-		x = getNormalizedTemp(T, y);
-		vertices.push_back(glm::vec2(x, y));
-
-		P -= deltaP;
-
-	}
-
-	mixingCCL.vertices = vertices;
-
-
+	generateMixingRatioLine();
+	
 	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
-	cout << "CCL (normalized) = " << CCLNormalized.x << ", " << CCLNormalized.y << endl;
-
 	CCL = getDenormalizedCoords(CCLNormalized);
-
-	cout << "CCL = " << CCL.x << ", " << CCL.y << endl;
-
-
-	glGenVertexArrays(1, &isohumesVAO);
-	glBindVertexArray(isohumesVAO);
-	glGenBuffers(1, &isohumesVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, isohumesVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
 
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -410,7 +480,7 @@ void STLPDiagram::initBuffers() {
 		Dry adiabats feature the thermodynamic behaviour of unsaturated air parcels moving upwards (or downwards).
 		They represent the dry adiabatic lapse rate (DALR).
 		This thermodynamic behaviour is valid for all air parcels moving between the ground and the convective
-		condensation level (CCLNormalized).
+		condensation level (CCL).
 
 		T(P) = theta / ((P0 / P)^(Rd / cp))
 			where
@@ -426,6 +496,8 @@ void STLPDiagram::initBuffers() {
 	numDryAdiabats = 0;
 	int counter;
 
+	
+	
 	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += 10.0f) {
 		counter = 0;
 
@@ -433,8 +505,8 @@ void STLPDiagram::initBuffers() {
 		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
 			//float P = soundingData[profileIndex].data[PRES];
 
-			float T = (theta + 273.16f) / pow((P0 / P), k);
-			T -= 273.16f;
+			
+			T = computeAbsoluteFromTheta(theta, P, P0);
 
 			y = getNormalizedPres(P);
 			x = getNormalizedTemp(T, y);
@@ -466,9 +538,7 @@ void STLPDiagram::initBuffers() {
 
 			float P = soundingData[i].data[PRES];
 
-			float T = (theta + 273.15f) * pow((P / P0), k); // do not forget to use Kelvin
-			T -= 273.15f; // convert back to Celsius
-
+			float T = computeAbsoluteFromTheta(theta, P, P0);
 			y = getNormalizedPres(P);
 			x = getNormalizedTemp(T, y);
 
@@ -499,10 +569,7 @@ void STLPDiagram::initBuffers() {
 		for (int i = 0; i < soundingData.size(); i++) {
 
 			float P = soundingData[i].data[PRES];
-
-			float T = (theta + 273.15f) * pow((P / P0), k); // do not forget to use Kelvin
-			T -= 273.15f; // convert back to Celsius
-
+			float T = computeAbsoluteFromTheta(theta, P, P0);
 			y = getNormalizedPres(P);
 			x = getNormalizedTemp(T, y);
 
@@ -578,18 +645,8 @@ void STLPDiagram::initBuffers() {
 	}
 
 
-	glGenVertexArrays(1, &dryAdiabatsVAO);
-	glBindVertexArray(dryAdiabatsVAO);
-	glGenBuffers(1, &dryAdiabatsVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO);
-
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
 
 
 
@@ -599,6 +656,8 @@ void STLPDiagram::initBuffers() {
 	cout << "////////////////////////////////////////////////////" << endl;
 	cout << "// MOIST ADIABATS" << endl;
 	cout << "////////////////////////////////////////////////////" << endl;
+
+	float deltaP = 20.0f;
 
 	vertices.clear();
 
@@ -786,21 +845,9 @@ void STLPDiagram::initBuffers() {
 
 	
 	//numMoistAdiabats++;
-
-	if (!vertices.empty()) {
-
-		glGenVertexArrays(1, &moistAdiabatsVAO);
-		glBindVertexArray(moistAdiabatsVAO);
-		glGenBuffers(1, &moistAdiabatsVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
-
-		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-		glBindVertexArray(0);
-	}
+	glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	
 
 
 
@@ -1056,64 +1103,75 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 
 	glUseProgram(shader.id);
 
-	shader.setVec3("color", glm::vec3(0.8f, 0.8f, 0.8f));
-	glBindVertexArray(isobarsVAO);
-	glDrawArrays(GL_LINES, 0, numIsobars * 2);
+	if (showIsobars) {
+		shader.setVec3("color", glm::vec3(0.8f, 0.8f, 0.8f));
+		glBindVertexArray(isobarsVAO);
+		glDrawArrays(GL_LINES, 0, numIsobars * 2);
+	}
 
 	glPointSize(8.0f);
 	shader.setVec3("color", glm::vec3(0.5f, 0.7f, 0.0f));
 	glBindVertexArray(temperaturePointsVAO);
 	glDrawArrays(GL_POINTS, 0, temperaturePointsCount);
 
-
-	glPointSize(8.0f);
-	shader.setVec3("color", glm::vec3(0.8f, 0.8f, 0.8f));
-	glBindVertexArray(isothermsVAO);
-	glDrawArrays(GL_LINES, 0, isothermsCount * 2);
-
-
-	shader.setVec3("color", glm::vec3(0.7f, 0.1f, 0.15f));
-	glBindVertexArray(ambientTemperatureVAO);
-	glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
-
-	shader.setVec3("color", glm::vec3(0.1f, 0.7f, 0.15f));
-	glBindVertexArray(dewTemperatureVAO);
-	glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
-
-	shader.setVec3("color", glm::vec3(0.1f, 0.15f, 0.7f));
-	glBindVertexArray(isohumesVAO);
-	glDrawArrays(GL_LINES, 0, soundingData.size() * 2);
-
-	shader.setVec3("color", glm::vec3(0.6f, 0.6f, 0.6f));
-	glBindVertexArray(dryAdiabatsVAO);
-
-	glLineWidth(0.01f);
-
-	counter = 0;
-	for (int i = 0; i < numDryAdiabats; i++) {
-		//glDrawArrays(GL_LINE_STRIP, (numIsobars-1) * i, numIsobars - 1);
-
-		glDrawArrays(GL_LINE_STRIP, counter, dryAdiabatEdgeCount[i]);
-		counter += dryAdiabatEdgeCount[i];
+	if (showIsotherms) {
+		glPointSize(8.0f);
+		shader.setVec3("color", glm::vec3(0.8f, 0.8f, 0.8f));
+		glBindVertexArray(isothermsVAO);
+		glDrawArrays(GL_LINES, 0, isothermsCount * 2);
 	}
 
-	glPointSize(2.0f);
-	shader.setVec3("color", glm::vec3(0.2f, 0.6f, 0.8f));
-	glBindVertexArray(moistAdiabatsVAO);
-	//glDrawArrays(GL_LINE_STRIP, 0, 1000000);
-	//glDrawArrays(GL_POINTS, 0, 100000);
-
-	counter = 0;
-	for (int i = 0; i < numMoistAdiabats; i++) {
-		//glDrawArrays(GL_LINE_STRIP, (numIsobars - 1) * profileIndex, numIsobars - 1);
-		//glDrawArrays(GL_POINTS, 2 * (numIsobars - 1) * profileIndex, 2 * (numIsobars - 1));
-		//glDrawArrays(GL_LINE_STRIP, numMoistAdiabatEdges * i, numMoistAdiabatEdges);
-		//glDrawArrays(GL_POINTS, 2 * numMoistAdiabatEdges * profileIndex, 2 * numMoistAdiabatEdges);
-
-		glDrawArrays(GL_LINE_STRIP, counter, moistAdiabatEdgeCount[i]);
-		counter += moistAdiabatEdgeCount[i];
+	if (showAmbientTemperatureCurve) {
+		shader.setVec3("color", glm::vec3(0.7f, 0.1f, 0.15f));
+		glBindVertexArray(ambientTemperatureVAO);
+		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
 	}
 
+	if (showDewpointCurve) {
+		shader.setVec3("color", glm::vec3(0.1f, 0.7f, 0.15f));
+		glBindVertexArray(dewTemperatureVAO);
+		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
+	}
+
+	if (showIsohumes) {
+		shader.setVec3("color", glm::vec3(0.1f, 0.15f, 0.7f));
+		glBindVertexArray(isohumesVAO);
+		glDrawArrays(GL_LINES, 0, soundingData.size() * 2);
+	}
+
+	if (showDryAdiabats) {
+		shader.setVec3("color", glm::vec3(0.6f, 0.6f, 0.6f));
+		glBindVertexArray(dryAdiabatsVAO);
+
+		glLineWidth(0.01f);
+
+		counter = 0;
+		for (int i = 0; i < numDryAdiabats; i++) {
+			//glDrawArrays(GL_LINE_STRIP, (numIsobars-1) * i, numIsobars - 1);
+
+			glDrawArrays(GL_LINE_STRIP, counter, dryAdiabatEdgeCount[i]);
+			counter += dryAdiabatEdgeCount[i];
+		}
+	}
+
+	if (showMoistAdiabats) {
+		glPointSize(2.0f);
+		shader.setVec3("color", glm::vec3(0.2f, 0.6f, 0.8f));
+		glBindVertexArray(moistAdiabatsVAO);
+		//glDrawArrays(GL_LINE_STRIP, 0, 1000000);
+		//glDrawArrays(GL_POINTS, 0, 100000);
+
+		counter = 0;
+		for (int i = 0; i < numMoistAdiabats; i++) {
+			//glDrawArrays(GL_LINE_STRIP, (numIsobars - 1) * profileIndex, numIsobars - 1);
+			//glDrawArrays(GL_POINTS, 2 * (numIsobars - 1) * profileIndex, 2 * (numIsobars - 1));
+			//glDrawArrays(GL_LINE_STRIP, numMoistAdiabatEdges * i, numMoistAdiabatEdges);
+			//glDrawArrays(GL_POINTS, 2 * numMoistAdiabatEdges * profileIndex, 2 * numMoistAdiabatEdges);
+
+			glDrawArrays(GL_LINE_STRIP, counter, moistAdiabatEdgeCount[i]);
+			counter += moistAdiabatEdgeCount[i];
+		}
+	}
 
 	//glPointSize(9.0f);
 	//shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));

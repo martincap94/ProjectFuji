@@ -28,7 +28,7 @@
 	Simulator to be extended for orographic cloud simulation. Currently just spawns
 	particles on the terrain.
 */
-class Simulator {
+class STLPSimulator {
 public:
 
 	STLPDiagram *stlpDiagram;
@@ -48,10 +48,10 @@ public:
 	int numParticles = 0;					///< Current number of particles
 
 	/// Initializes buffers (calls initBuffers).
-	Simulator();
+	STLPSimulator();
 
 	/// Default destructor.
-	~Simulator();
+	~STLPSimulator();
 
 
 	/// Initializes buffers for the particles.

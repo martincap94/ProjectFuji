@@ -1,4 +1,4 @@
-#include "Simulator.h"
+#include "STLPSimulator.h"
 
 #include <iostream>
 
@@ -7,15 +7,15 @@
 
 using namespace std;
 
-Simulator::Simulator() {
+STLPSimulator::STLPSimulator() {
 	initBuffers();
 }
 
 
-Simulator::~Simulator() {
+STLPSimulator::~STLPSimulator() {
 }
 
-void Simulator::initBuffers() {
+void STLPSimulator::initBuffers() {
 	glGenVertexArrays(1, &particlesVAO);
 	glBindVertexArray(particlesVAO);
 	glGenBuffers(1, &particlesVBO);
@@ -30,7 +30,7 @@ void Simulator::initBuffers() {
 
 }
 
-void Simulator::doStep() {
+void STLPSimulator::doStep() {
 
 	if (!testing) {
 		while (numParticles < MAX_PARTICLE_COUNT) {
@@ -86,6 +86,10 @@ void Simulator::doStep() {
 			//float a = 9.81f * (getKelvin(testParticle.convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
 
 			cout << "Particle theta [K] = " << particleTheta << endl;
+
+			//toCelsius(ambientTheta);
+			//toCelsius(particleTheta);
+
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
 			cout << "ACCELERATION a = " << a << endl;
@@ -142,6 +146,11 @@ void Simulator::doStep() {
 			//float a = 9.81f * (getKelvin(testParticle.convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
 
 			cout << "Particle theta [K] = " << particleTheta << endl;
+
+
+	/*		toCelsius(ambientTheta);
+			toCelsius(particleTheta);*/
+
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
 			cout << "ACCELERATION a = " << a << endl;
@@ -191,6 +200,11 @@ void Simulator::doStep() {
 			//float a = 9.81f * (getKelvin(testParticle.convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
 
 			cout << "Particle theta [K] = " << particleTheta << endl;
+
+
+			//toCelsius(ambientTheta);
+			//toCelsius(particleTheta);
+
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
 			cout << "ACCELERATION a = " << a << endl;
@@ -340,7 +354,6 @@ void Simulator::doStep() {
 				float ambientTheta = computeThetaFromAbsolute(ambientTemp, particles[i].pressure);
 				float particleTheta = computeThetaFromAbsolute(particleTemp, particles[i].pressure);
 
-
 				//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
 				//float a = 9.81f * (getKelvin(particles[i].convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
 
@@ -371,7 +384,7 @@ void Simulator::doStep() {
 
 }
 
-void Simulator::generateParticle(bool setTestParticle) {
+void STLPSimulator::generateParticle(bool setTestParticle) {
 
 	float randx = (float)(rand() / (float)(RAND_MAX / ((float)GRID_WIDTH - 2.0f)));
 	float randz = (float)(rand() / (float)(RAND_MAX / ((float)GRID_DEPTH - 2.0f)));
@@ -444,7 +457,7 @@ void Simulator::generateParticle(bool setTestParticle) {
 	numParticles++;*/
 }
 
-void Simulator::draw(ShaderProgram &particlesShader) {
+void STLPSimulator::draw(ShaderProgram &particlesShader) {
 	heightMap->draw();
 
 	glUseProgram(particlesShader.id);
@@ -463,6 +476,6 @@ void Simulator::draw(ShaderProgram &particlesShader) {
 
 }
 
-void Simulator::initParticles() {
+void STLPSimulator::initParticles() {
 	generateParticle(true); // testing particle for dry and moist lift
 }

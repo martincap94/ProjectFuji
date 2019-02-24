@@ -66,14 +66,14 @@ glm::vec2 Curve::getIntersectionWithIsobar(float normalizedPressure) {
 
 
 // Based on: https://martin-thoma.com/how-to-check-if-two-line-segments-intersect/
-glm::vec2 findIntersectionNaive(const Curve & first, const Curve & second) {
+glm::vec2 findIntersectionNaive(const Curve & c1, const Curve & c2) {
 	// Test each edge pair ( O(|E|^2) )
-	for (int i = 0; i < first.vertices.size() - 1; i++) {
-		for (int j = 0; j < second.vertices.size() - 1; j++) {
-			bool result = doLineSegmentsIntersect(first.vertices[i], first.vertices[i + 1], second.vertices[j], second.vertices[j + 1]);
+	for (int i = 0; i < c1.vertices.size() - 1; i++) {
+		for (int j = 0; j < c2.vertices.size() - 1; j++) {
+			bool result = doLineSegmentsIntersect(c1.vertices[i], c1.vertices[i + 1], c2.vertices[j], c2.vertices[j + 1]);
 			if (result) {
 				cout << "Lines intersect! Looking for intersection point..." << endl;
-				return getIntersectionPoint(first.vertices[i], first.vertices[i + 1], second.vertices[j], second.vertices[j + 1]);
+				return getIntersectionPoint(c1.vertices[i], c1.vertices[i + 1], c2.vertices[j], c2.vertices[j + 1]);
 			}
 		}
 

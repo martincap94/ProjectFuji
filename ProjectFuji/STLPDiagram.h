@@ -72,7 +72,7 @@ public:
 	int showAmbientTemperatureCurve = 1;
 
 
-	float minP;						///< Minimum pressure in normalized (diagram) coordinates 
+	float minP;						//!< Minimum pressure in normalized (diagram) coordinates 
 	float maxP;						///< Maximum pressure in normalized (diagram) coordinates
 	float minT;						///< Minimum temperature in normalized (diagram) coordinates
 	float maxT;						///< Maximum temperature in normalized (diagram) coordinates
@@ -130,9 +130,16 @@ public:
 	void generateIsotherms();
 	void initDewpointCurve();
 	void initAmbientTemperatureCurve();
-	
+	void generateMixingRatioLine();
+	void generateDryAdiabat();
+	void generateMoistAdiabat();
+
+
+	void resetToDefault();
+
 
 	void initBuffers();
+	void initCurves();
 
 	void recalculateParameters();
 
