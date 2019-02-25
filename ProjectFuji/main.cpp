@@ -436,7 +436,7 @@ int runApp() {
 	DirectionalLight dirLight;
 	dirLight.direction = glm::vec3(41.0f, 45.0f, 1.0f);
 	dirLight.ambient = glm::vec3(0.1f);
-	dirLight.diffuse = glm::vec3(0.5f, 0.1f, 0.1f);
+	dirLight.diffuse = glm::vec3(0.8f, 0.4f, 0.4f);
 	dirLight.specular = glm::vec3(0.6f, 0.2f, 0.2f);
 
 	glUseProgram(dirLightOnlyShader->id);
@@ -1162,7 +1162,8 @@ void saveConfigParam(string param, string val) {
 void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	nk_glfw3_new_frame();
 
-	ctx->style.window.padding = nk_vec2(10.0f, 10.0f);
+	//ctx->style.window.padding = nk_vec2(10.0f, 10.0f);
+	ctx->style.window.padding = nk_vec2(0.0f, 0.0f);
 
 
 	/* GUI */
@@ -1296,7 +1297,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 	// if NK_WINDOW_MOVABLE or NK_WINDOW_SCALABLE -> does not change rectange when window size (screen size) changes
 	if (nk_begin(ctx, "Diagram", nk_rect(screenWidth - 150, 32, 150, screenHeight - 32),
-				 NK_WINDOW_BORDER /*| NK_WINDOW_MOVABLE*/ /*| NK_WINDOW_SCALABLE*/ /*|
+				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR /*| NK_WINDOW_MOVABLE*/ /*| NK_WINDOW_SCALABLE*/ /*|
 				 NK_WINDOW_MINIMIZABLE*/ /*| NK_WINDOW_TITLE*/)) {
 
 		nk_layout_row_static(ctx, 30, 150, 1);
@@ -1328,6 +1329,12 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		if (nk_button_label(ctx, "Reset to default")) {
 			stlpDiagram.resetToDefault();
 		}
+
+		if (nk_button_label(ctx, "Reset simulation")) {
+			stlpSim->resetSimulation();
+		}
+
+		nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
 
 		nk_property_float(ctx, "delta t", 0.0001f, &stlpSim->delta_t, 1000.0f, 0.1f, 1.0f);
 

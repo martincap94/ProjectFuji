@@ -38,16 +38,17 @@ public:
 	//glm::vec2 CCL;
 	//glm::vec2 EL;
 
-	float delta_t = 1.0f;
+	float delta_t = 60.0f;
 
 	Particle testParticle; // test particle for initial implementation of convection process
-	bool testing = true;
+	bool testing = false;
 
 	HeightMap *heightMap;	///< Pointer to the heightmap
 
 	vector<Particle> particles;
 	vector<glm::vec3> particlePositions;	///< Particle positions
 	int numParticles = 0;					///< Current number of particles
+	float simulationSpeedMultiplier = 1.0f;
 
 	/// Initializes buffers (calls initBuffers).
 	STLPSimulator();
@@ -62,6 +63,9 @@ public:
 	/// Does single step of the simulation.
 	void doStep();
 
+	void resetSimulation();
+
+
 	/// Generates single particle on the terrain.
 	void generateParticle(bool setTestParticle = false);
 
@@ -69,6 +73,7 @@ public:
 	void draw(ShaderProgram &particlesShader);
 
 	void initParticles();
+
 
 private:
 

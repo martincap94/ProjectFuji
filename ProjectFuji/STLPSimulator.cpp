@@ -106,69 +106,9 @@ void STLPSimulator::doStep() {
 
 
 
-		} else if (testParticle.pressure <= stlpDiagram->CCL.y && testParticle.pressure > stlpDiagram->EL.y) {
-			cout << "===== MOIST LIFT STEP =======================================================================================" << endl;
-
-
-
-
-
-
-			// l <- isobar line
-
-			// find intersection of isobar at P_i with C_a and C_d (ambient and dewpoint sounding curves)
-			float normP = stlpDiagram->getNormalizedPres(testParticle.pressure);
-			glm::vec2 ambientIntersection = stlpDiagram->ambientCurve.getIntersectionWithIsobar(normP);
-			glm::vec2 moistAdiabatIntersection = stlpDiagram->moistAdiabat_CCL_EL.getIntersectionWithIsobar(normP);
-
-			float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
-			float particleTemp = stlpDiagram->getDenormalizedTemp(moistAdiabatIntersection.x, normP);
-
-			stlpDiagram->setVisualizationPoint(glm::vec3(ambientTemp, testParticle.pressure, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 1, false);
-			stlpDiagram->setVisualizationPoint(glm::vec3(particleTemp, testParticle.pressure, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 2, false);
-
-
-			cout << "ambient temp = " << ambientTemp << endl;
-			cout << "particle temp = " << particleTemp << endl;
-
-			toKelvin(ambientTemp);
-			toKelvin(particleTemp);
-
-			float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, testParticle.pressure);
-			float particleTheta = computeThetaFromAbsoluteK(particleTemp, testParticle.pressure);
-
-			cout << "convective temp [K] = " << getKelvin(testParticle.convectiveTemperature) << endl;
-			cout << "ambient theta [K] = " << ambientTheta << ", particle theta [K] = " << particleTheta << endl;
-
-			//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
-			//float a = 9.81f * (getKelvin(testParticle.convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
-
-			cout << "Particle theta [K] = " << particleTheta << endl;
-
-
-	/*		toCelsius(ambientTheta);
-			toCelsius(particleTheta);*/
-
-			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
-
-			cout << "ACCELERATION a = " << a << endl;
-
-			testParticle.velocity.y = testParticle.velocity.y + a * delta_t;
-			float deltaY = testParticle.velocity.y + 0.5f * a * delta_t * delta_t;
-
-			testParticle.position.y += deltaY;
-
-			printf("Particle velocity = (%f, %f, %f)\n", testParticle.velocity.x, testParticle.velocity.y, testParticle.velocity.z);
-			cout << "Particle height = " << testParticle.position.y << endl;
-
-
-			testParticle.updatePressureVal();
-
-			stlpDiagram->setVisualizationPoint(glm::vec3(getCelsius(particleTemp), testParticle.pressure, 0.0f), glm::vec3(0.0f, 1.0f, 0.3f), 0, false);
-
 		} else {
 
-			cout << "===== MOIST LIFT STEP (after EL) ========================================================================" << endl;
+			cout << "===== MOIST LIFT STEP ============================================================================" << endl;
 
 
 			float normP = stlpDiagram->getNormalizedPres(testParticle.pressure);
@@ -290,46 +230,6 @@ void STLPSimulator::doStep() {
 
 
 
-			} else if (particles[i].pressure <= stlpDiagram->CCL.y && particles[i].pressure > stlpDiagram->EL.y) {
-
-
-				// l <- isobar line
-
-				// find intersection of isobar at P_i with C_a and C_d (ambient and dewpoint sounding curves)
-				float normP = stlpDiagram->getNormalizedPres(particles[i].pressure);
-				glm::vec2 ambientIntersection = stlpDiagram->ambientCurve.getIntersectionWithIsobar(normP);
-				glm::vec2 moistAdiabatIntersection = stlpDiagram->moistAdiabatProfiles[particles[i].profileIndex].getIntersectionWithIsobar(normP);
-
-				float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
-				float particleTemp = stlpDiagram->getDenormalizedTemp(moistAdiabatIntersection.x, normP);
-
-				/*stlpDiagram->setVisualizationPoint(glm::vec3(ambientTemp, particles[i].pressure, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 1, false);
-				stlpDiagram->setVisualizationPoint(glm::vec3(particleTemp, particles[i].pressure, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 2, false);*/
-
-
-				toKelvin(ambientTemp);
-				toKelvin(particleTemp);
-
-				float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
-				float particleTheta = computeThetaFromAbsoluteK(particleTemp, particles[i].pressure);
-
-
-				//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
-				//float a = 9.81f * (getKelvin(particles[i].convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
-
-				float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
-
-
-				particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
-				float deltaY = particles[i].velocity.y + 0.5f * a * delta_t * delta_t;
-
-				particles[i].position.y += deltaY;
-
-
-				particles[i].updatePressureVal();
-
-				//stlpDiagram->setVisualizationPoint(glm::vec3(getCelsius(particleTemp), particles[i].pressure, 0.0f), glm::vec3(0.0f, 1.0f, 0.3f), 0, false);
-
 			} else {
 
 				// l <- isobar line
@@ -379,6 +279,17 @@ void STLPSimulator::doStep() {
 
 		}
 	}
+
+}
+
+
+// naive solution
+void STLPSimulator::resetSimulation() {
+
+	cout << "Resetting simulation" << endl;
+	particles.clear();
+	particlePositions.clear();
+	numParticles = 0;
 
 }
 

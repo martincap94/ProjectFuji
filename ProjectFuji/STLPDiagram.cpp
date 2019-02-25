@@ -202,8 +202,13 @@ void STLPDiagram::generateMixingRatioLine() {
 
 	// Compute CCL using a mixing ratio line
 	float w0 = soundingData[0].data[MIXR];
-	float T = soundingData[0].data[DWPT];
+
 	float P = soundingData[0].data[PRES];
+
+
+	//float T = soundingData[0].data[DWPT]; // default computation from initial sounding data, does not take changes to curves into consideration
+	float T = getDenormalizedTemp(findIntersectionNaive(groundIsobar, dewpointCurve).x, getNormalizedPres(P));	// this is more general (when user changes dewpoint curve for example)
+
 
 
 	float eps = Rd / Rm;
@@ -825,6 +830,9 @@ void STLPDiagram::initCurves() {
 void STLPDiagram::recalculateParameters() {
 
 	// TODO
+
+
+	generateMixingRatioLine();
 
 	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
