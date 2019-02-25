@@ -38,6 +38,8 @@ public:
 	//glm::vec2 CCL;
 	//glm::vec2 EL;
 
+	float delta_t = 1.0f;
+
 	Particle testParticle; // test particle for initial implementation of convection process
 	bool testing = true;
 

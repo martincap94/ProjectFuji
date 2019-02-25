@@ -151,6 +151,8 @@ Camera *viewportCamera;
 Camera2D *diagramCamera;
 Camera2D *overlayDiagramCamera;
 
+STLPSimulator *stlpSim;
+
 struct nk_context *ctx;
 
 int projectionMode = ORTHOGRAPHIC;
@@ -433,9 +435,9 @@ int runApp() {
 
 	DirectionalLight dirLight;
 	dirLight.direction = glm::vec3(41.0f, 45.0f, 1.0f);
-	dirLight.ambient = glm::vec3(0.5f);
-	dirLight.diffuse = glm::vec3(1.0f, 0.0f, 0.0f);
-	dirLight.specular = glm::vec3(0.0f, 1.0f, 0.0f);
+	dirLight.ambient = glm::vec3(0.1f);
+	dirLight.diffuse = glm::vec3(0.5f, 0.1f, 0.1f);
+	dirLight.specular = glm::vec3(0.6f, 0.2f, 0.2f);
 
 	glUseProgram(dirLightOnlyShader->id);
 
@@ -461,13 +463,13 @@ int runApp() {
 
 	stlpDiagram.init(soundingFile);
 
-	STLPSimulator sim;
+	stlpSim = new STLPSimulator();
 	if (lbmType == LBM3D) {
-		sim.heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
+		stlpSim->heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
 	}
 
-	sim.stlpDiagram = &stlpDiagram;
-	sim.initParticles();
+	stlpSim->stlpDiagram = &stlpDiagram;
+	stlpSim->initParticles();
 
 
 	// Set these callbacks after nuklear initialization, otherwise they won't work!
@@ -628,7 +630,7 @@ int runApp() {
 		if (mode == 0 || mode == 1) {
 
 			if (mode == 1) {
-				sim.doStep();
+				stlpSim->doStep();
 			}
 
 			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
@@ -700,12 +702,12 @@ int runApp() {
 
 		} else if (mode == 3) {
 
-			sim.doStep();
+			stlpSim->doStep();
 
 			grid->draw(*singleColorShader);
 
 			gGrid.draw(*unlitColorShader);
-			sim.draw(*singleColorShader);
+			stlpSim->draw(*singleColorShader);
 
 			stlpDiagram.drawOverlayDiagram(diagramShader);
 
@@ -744,6 +746,8 @@ int runApp() {
 	delete overlayDiagramCamera;
 
 	delete skybox;
+
+	delete stlpSim;
 
 
 	size_t cudaMemFree = 0;
@@ -1325,7 +1329,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			stlpDiagram.resetToDefault();
 		}
 
-
+		nk_property_float(ctx, "delta t", 0.0001f, &stlpSim->delta_t, 1000.0f, 0.1f, 1.0f);
 
 
 

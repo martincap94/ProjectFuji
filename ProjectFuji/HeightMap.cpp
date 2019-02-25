@@ -64,6 +64,12 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 		}
 	}
 
+	/*
+	vector<glm::vec3> triangles;
+	vector<glm::vec3> normals;
+	*/
+
+	// it would be useful to create a DCEL for the terrain so it would be much easier to modify later on
 	for (int z = height - 1; z >= 1; z--) {
 		for (int x = 0; x < width - 1; x++) {
 
@@ -74,6 +80,44 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 
 			glm::vec3 n1 = glm::normalize(glm::cross(p1 - p2, p3 - p2));
 			glm::vec3 n2 = glm::normalize(glm::cross(p3 - p4, p1 - p4)); // flat shading normals
+
+
+			glm::vec3 normalP1 = computeNormal(x, z);
+			glm::vec3 normalP2 = computeNormal(x + 1, z);
+			glm::vec3 normalP3 = computeNormal(x + 1, z - 1);
+			glm::vec3 normalP4 = computeNormal(x, z - 1);
+
+
+			areaPoints.push_back(p1);
+			areaPoints.push_back(normalP1);
+			areaPoints.push_back(p2);
+			areaPoints.push_back(normalP2);
+			areaPoints.push_back(p3);
+			areaPoints.push_back(normalP3);
+
+
+			areaPoints.push_back(p3);
+			areaPoints.push_back(normalP3);
+			areaPoints.push_back(p4);
+			areaPoints.push_back(normalP4);
+			areaPoints.push_back(p1);
+			areaPoints.push_back(normalP1);
+
+
+			/*
+			triangles.push_back(p1);
+			triangles.push_back(p2);
+			triangles.push_back(p3);
+
+			triangles.push_back(p3);
+			triangles.push_back(p4);
+			triangles.push_back(p1);
+			*/
+
+
+
+			/*
+			// FLAT SHADING APPROACH
 
 			areaPoints.push_back(p1);
 			areaPoints.push_back(n1);
@@ -89,7 +133,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 			areaPoints.push_back(n2);
 			areaPoints.push_back(p1);
 			areaPoints.push_back(n2);
-
+			*/
 
 			//areaPoints.push_back(glm::vec3(x, data[x][z], z));
 			//areaPoints.push_back(glm::vec3(x + 1, data[x + 1][z], z));
@@ -103,6 +147,12 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 		}
 	}
 
+	/*
+	for (int i = 0; i < triangles.size(); i++) {
+		areaPoints.push_back(triangles[i]);
+		areaPoints.push_back(normals[i]);
+	}
+	*/
 
 
 	glGenVertexArrays(1, &VAO);
@@ -146,3 +196,50 @@ void HeightMap::draw() {
 
 
 }
+
+// Based on: https://stackoverflow.com/questions/13983189/opengl-how-to-calculate-normals-in-a-terrain-height-grid
+glm::vec3 HeightMap::computeNormal(int x, int z) {
+
+	int offset = 2;
+
+	int xLeft = x - offset;
+	int xRight = x + offset;
+	int zBottom = z + offset;
+	int zTop = z - offset;
+
+	if (xLeft < 0) {
+		xLeft = 0;
+	}
+	if (xRight > width - 1) {
+		xRight = width - 1;
+	}
+	if (zBottom > height - 1) {
+		zBottom = height - 1;
+	}
+	if (zTop < 0) {
+		zTop = 0;
+	}
+	float hLeft = data[xLeft][z];
+	float hRight = data[xRight][z];
+	float hBottom = data[x][zBottom];
+	float hTop = data[x][zTop];
+
+	glm::vec3 normal;
+	normal.x = hLeft - hRight;
+	normal.y = hBottom - hTop;
+	normal.z = 2.0f;
+
+	return glm::normalize(normal);
+}
+
+
+
+
+
+
+
+
+
+
+
+

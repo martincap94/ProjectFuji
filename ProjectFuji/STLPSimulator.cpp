@@ -41,8 +41,6 @@ void STLPSimulator::doStep() {
 		//	generateParticle();
 		//}
 	}
-	float t = 1.0f;
-
 	
 	if (testing) {
 		// TESTING PARTICLE MOTION
@@ -94,8 +92,8 @@ void STLPSimulator::doStep() {
 
 			cout << "ACCELERATION a = " << a << endl;
 
-			testParticle.velocity.y = testParticle.velocity.y + a * t;
-			float deltaY = testParticle.velocity.y + 0.5f * a * t * t;
+			testParticle.velocity.y = testParticle.velocity.y + a * delta_t;
+			float deltaY = testParticle.velocity.y + 0.5f * a * delta_t * delta_t;
 
 			testParticle.position.y += deltaY;
 
@@ -155,8 +153,8 @@ void STLPSimulator::doStep() {
 
 			cout << "ACCELERATION a = " << a << endl;
 
-			testParticle.velocity.y = testParticle.velocity.y + a * t;
-			float deltaY = testParticle.velocity.y + 0.5f * a * t * t;
+			testParticle.velocity.y = testParticle.velocity.y + a * delta_t;
+			float deltaY = testParticle.velocity.y + 0.5f * a * delta_t * delta_t;
 
 			testParticle.position.y += deltaY;
 
@@ -209,8 +207,8 @@ void STLPSimulator::doStep() {
 
 			cout << "ACCELERATION a = " << a << endl;
 
-			testParticle.velocity.y = testParticle.velocity.y + a * t;
-			float deltaY = testParticle.velocity.y + 0.5f * a * t * t;
+			testParticle.velocity.y = testParticle.velocity.y + a * delta_t;
+			float deltaY = testParticle.velocity.y + 0.5f * a * delta_t * delta_t;
 
 			testParticle.position.y += deltaY;
 
@@ -281,8 +279,8 @@ void STLPSimulator::doStep() {
 
 				float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
-				particles[i].velocity.y = particles[i].velocity.y + a * t;
-				float deltaY = particles[i].velocity.y + 0.5f * a * t * t;
+				particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
+				float deltaY = particles[i].velocity.y + 0.5f * a * delta_t * delta_t;
 
 				particles[i].position.y += deltaY;
 
@@ -322,8 +320,8 @@ void STLPSimulator::doStep() {
 				float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
 
-				particles[i].velocity.y = particles[i].velocity.y + a * t;
-				float deltaY = particles[i].velocity.y + 0.5f * a * t * t;
+				particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
+				float deltaY = particles[i].velocity.y + 0.5f * a * delta_t * delta_t;
 
 				particles[i].position.y += deltaY;
 
@@ -360,8 +358,8 @@ void STLPSimulator::doStep() {
 				float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
 
-				particles[i].velocity.y = particles[i].velocity.y + a * t;
-				float deltaY = particles[i].velocity.y + 0.5f * a * t * t;
+				particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
+				float deltaY = particles[i].velocity.y + 0.5f * a * delta_t * delta_t;
 
 				particles[i].position.y += deltaY;
 

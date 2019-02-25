@@ -63,7 +63,7 @@ private:
 
 	int numPoints = 0;	///< Number of vertices; helper value for rendering
 
-
+	glm::vec3 computeNormal(int x, int z);
 
 };
 
