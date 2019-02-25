@@ -837,17 +837,87 @@ void STLPDiagram::recalculateParameters() {
 	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
 
+	
+	float P0 = soundingData[0].data[PRES];
+	vector<glm::vec2> vertices;
 
-	TcNormalized = TcDryAdiabat.vertices[0];
+	numDryAdiabats = 0;
+	dryAdiabatEdgeCount.clear();
+
+	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += dryAdiabatDeltaT) {
+		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// DRY ADIABAT: T_c <-> CCL
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	float theta = computeThetaFromAbsoluteC(CCL.x, CCL.y, P0);
+	TcDryAdiabat.vertices.clear(); // hack
+	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &TcDryAdiabat);
+
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// DRY ADIABAT: Ground ambient temperature <-> LCL
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	theta = computeThetaFromAbsoluteC(soundingData[0].data[TEMP], P0, P0); // will need line-to-line intersection for the ground temperature
+	LCLDryAdiabatCurve.vertices.clear(); // hack
+	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &LCLDryAdiabatCurve);
+
+
+
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// Tc and LCL
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	TcNormalized = findIntersectionNaive(groundIsobar, TcDryAdiabat);
 	Tc = getDenormalizedCoords(TcNormalized);
-
 
 	LCLNormalized = findIntersectionNaive(LCLDryAdiabatCurve, mixingCCL);
 	LCL = getDenormalizedCoords(LCLNormalized);
+	///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	//// Profiles
+	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
+		TcProfiles[profileIndex] = Tc + glm::vec2((profileIndex + 1) * profileDelta, 0.0f);
+
+		float theta = computeAbsoluteFromThetaC(TcProfiles[profileIndex].x, P0, P0);
+		dryAdiabatProfiles[profileIndex].vertices.clear();
+		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &dryAdiabatProfiles[profileIndex]);
+
+		CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve));
+	}
+
+	int sum = 0;
+	for (int i = 0; i < numDryAdiabats - numProfiles - 2; i++) {
+		sum += dryAdiabatEdgeCount[i];
+	}
+	
+	glNamedBufferData(dryAdiabatsVBO, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+
+
+
+	vertices.clear();
+	numMoistAdiabats = 0;
+	moistAdiabatEdgeCount.clear();
+
+	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += moistAdiabatDeltaT) {
+		generateMoistAdiabat(currT, MAX_P, vertices, P0, &moistAdiabatEdgeCount);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// TESTING EL (regular) computation - special moist adiabat (goes through CCL)
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabat_CCL_EL);
+
 
 	ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve, true);
 	EL = getDenormalizedCoords(ELNormalized);
 
+
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// TESTING EL (orographic) computation - special moist adiabat (goes through LCL)
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabat_LCL_EL);
 
 	LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
 	LFC = getDenormalizedCoords(LFCNormalized);
@@ -856,17 +926,15 @@ void STLPDiagram::recalculateParameters() {
 	OrographicEL = getDenormalizedCoords(OrographicELNormalized);
 
 
-	/*for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
 
-		CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve));
+	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
+		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabatProfiles[profileIndex]);
 
-		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
-
-		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve);
+		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve, true);
 		ELProfiles[profileIndex] = getDenormalizedCoords(tmp);
+	}
 
-		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
-	}*/
+	glNamedBufferData(moistAdiabatsVBO, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 
 	// very hacky - rewrite
