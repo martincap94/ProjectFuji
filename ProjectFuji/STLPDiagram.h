@@ -108,6 +108,7 @@ public:
 	GLuint overlayDiagramHeight = 256;
 
 	float dryAdiabatDeltaT = 10.0f;
+	float moistAdiabatDeltaT = 5.0f;
 
 
 	/// Constructs the diagram instance without loading any sounding data.
@@ -154,7 +155,7 @@ public:
 	void generateDryAdiabat(float theta, vector<glm::vec2> &vertices, float P0 = 1000.0f, vector<int> *edgeCounter = nullptr, bool incrementCounter = true, float deltaP = 25.0f, Curve *curve = nullptr);
 
 
-	void generateMoistAdiabat();
+	void generateMoistAdiabat(float theta, float startP, vector<glm::vec2> &vertices, float P0 = 1000.0f, vector<int> *edgeCounter = nullptr, bool incrementCounter = true, float deltaP = 25.0f, Curve *curve = nullptr, float smallDeltaP = 1.0f);
 
 
 	void resetToDefault();

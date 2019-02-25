@@ -286,6 +286,39 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, f
 
 }
 
+void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::vec2>& vertices, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve, float smallDeltaP) {
+
+	float T = getKelvin(theta);
+	int vertexCounter = 0;
+	float x, y;
+
+	for (float p = startP; p >= MIN_P; p -= smallDeltaP) {
+		p *= 100.0f;
+		T -= dTdp_moist(T, p) * smallDeltaP * 100.0f;
+		p /= 100.0f;
+
+		if ((int)p % (int)deltaP == 0 || (int)p % (int)startP == 0) {
+			y = getNormalizedPres(p);
+			x = getNormalizedTemp(getCelsius(T), y);
+			vertices.push_back(glm::vec2(x, y));
+			if (curve != nullptr) {
+				curve->vertices.push_back(glm::vec2(x, y));
+			}
+			vertexCounter++;
+		}
+	}
+	//cout << "Counter = " << counter << ", num isobars = " << numIsobars << endl;
+	if (incrementCounter && edgeCounter != nullptr) {
+		numMoistAdiabats++;
+		edgeCounter->push_back(vertexCounter);
+	}
+
+	
+
+
+
+}
+
 
 
 void STLPDiagram::resetToDefault() {
@@ -582,98 +615,32 @@ void STLPDiagram::initCurves() {
 
 	vertices.clear();
 
+	numMoistAdiabats = 0;
 
-	float a = -6.14342f * 0.00001f;
+
+	/*float a = -6.14342f * 0.00001f;
 	float b = 1.58927 * 0.001f;
 	float c = -2.36418f;
 	float d = 2500.79f;
 
-	float g = -9.81f;
-	numMoistAdiabats = 0;
-
+	float g = -9.81f;*/
 	// Lv(T) = (aT^3 + bT^2 + cT + d) * 1000
 	// Lv(T)	... latent heat of vaporisation/condensation
-
 	//for (float T = MIN_TEMP; T <= MAX_TEMP; T++) {
-	T = 30.0f; // for example - create first testing curvePtr
 	//float Lv = (a*T*T*T + b*T*T + c*T + d) * 1000.0f;
 
-	float T_P0;
-	float T_P1;
-	float P1;
 	float currP;
 
-
-	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += 5.0f) {
-		//T = -10.0f;
-		T = currT;
-		T += 273.15f;
-		float origT = T;
-
-		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
-		//	float p = soundingData[profileIndex].data[PRES];
-		deltaP = 1.0f;
-		int counter = 0;
-
-		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
-			p *= 100.0f;
-			T += dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-			
-			if ((int)p % 25 == 0 && p != 1000.0f) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				vertices.push_back(glm::vec2(x, y));
-				counter++;
-			}
-		}
-		reverse(vertices.end() - counter, vertices.end()); // to draw continuous line
-		T = origT;
-
-		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
-			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			if ((int)p % 25 == 0) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				vertices.push_back(glm::vec2(x, y));
-				counter++;
-			}
-		}
-		//cout << "Counter = " << counter << ", num isobars = " << numIsobars << endl;
-		numMoistAdiabatEdges = counter;
-		numMoistAdiabats++;
-		moistAdiabatEdgeCount.push_back(counter);
-
+	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += moistAdiabatDeltaT) {
+		generateMoistAdiabat(currT, MAX_P, vertices, P0, &moistAdiabatEdgeCount);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// TESTING EL (regular) computation - special moist adiabat (goes through CCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
+	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabat_CCL_EL);
+
 	{
-		int counter = 0;
-		T = CCL.x + 273.15f;
-		deltaP = 1.0f;
-		for (float p = CCL.y; p >= MIN_P; p -= deltaP) {
-			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			if ((int)p % 25 == 0 || p == CCL.y) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				vertices.push_back(glm::vec2(x, y));
-				moistAdiabat_CCL_EL.vertices.push_back(glm::vec2(x, y));
-				counter++;
-			}
-		}
-		numMoistAdiabats++;
-		moistAdiabatEdgeCount.push_back(counter);
-
-
-
 		///////////////////////////////////////////////////////////////////////////////////////////////
 		// Find EL 
 		///////////////////////////////////////////////////////////////////////////////////////////////
@@ -692,26 +659,12 @@ void STLPDiagram::initCurves() {
 		visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
 	}
 
+
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// TESTING EL (orographic) computation - special moist adiabat (goes through LCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
+	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabat_LCL_EL);
 	{
-		T = LCL.x + 273.15f;
-		deltaP = 1.0f;
-		for (float p = LCL.y; p >= MIN_P; p -= deltaP) {
-			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			if ((int)p % 25 == 0 || p == LCL.y) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				//vertices.push_back(glm::vec2(x, y));
-				moistAdiabat_LCL_EL.vertices.push_back(glm::vec2(x, y));
-			}
-		}
-		//numMoistAdiabats++;
-
 
 		LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
 		LFC = getDenormalizedCoords(LFCNormalized);
@@ -727,28 +680,9 @@ void STLPDiagram::initCurves() {
 	}
 
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
-		int counter = 0;
+		//int counter = 0;
 		moistAdiabatProfiles.push_back(Curve());
-		T = CCLProfiles[profileIndex].x + 273.15f;
-		deltaP = 1.0f;
-		for (float p = CCLProfiles[profileIndex].y; p >= MIN_P; p -= deltaP) {
-			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			if ((int)p % 25 == 0 || p == CCLProfiles[profileIndex].y) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				vertices.push_back(glm::vec2(x, y));
-				//moistAdiabat_LCL_EL.vertices.push_back(glm::vec2(x, y));
-				moistAdiabatProfiles[profileIndex].vertices.push_back(glm::vec2(x, y));
-				counter++;
-			}
-		}
-		numMoistAdiabats++;
-		moistAdiabatEdgeCount.push_back(counter);
-
-
+		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabatProfiles[profileIndex]);
 
 		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
 
@@ -1277,6 +1211,21 @@ void STLPDiagram::moveSelectedPoint(glm::vec2 mouseCoords) {
 
 		
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
