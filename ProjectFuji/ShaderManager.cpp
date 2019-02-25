@@ -51,6 +51,7 @@ namespace {
 		addShader("diagram", "diagram.vert", "diagram.frag");
 		addShader("text", "text.vert", "text.frag");
 		addShader("curve", "curve.vert", "curve.frag");
+		addShader("skybox", "skybox.vert", "skybox.frag");
 
 	}
 

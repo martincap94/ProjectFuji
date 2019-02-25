@@ -126,6 +126,7 @@
     </ClCompile>
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
+    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="STLPDiagram.cpp" />
     <ClCompile Include="STLPSimulator.cpp" />
     <ClCompile Include="STLPUtils.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Camera2D.h" />
     <ClCompile Include="DataStructures.h" />
+    <ClInclude Include="Cubemap.h" />
     <ClInclude Include="Curve.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="GeneralGrid.h" />
@@ -162,6 +164,7 @@
     <ClInclude Include="Grid2D.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ShaderManager.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="STLPSimulator.h" />
     <ClInclude Include="STLPDiagram.h" />
     <ClInclude Include="STLPUtils.h" />
@@ -204,6 +207,8 @@
     <None Include="shaders\singleColor_VBO.vert" />
     <None Include="shaders\diagram.frag" />
     <None Include="shaders\diagram.vert" />
+    <None Include="shaders\skybox.frag" />
+    <None Include="shaders\skybox.vert" />
     <None Include="shaders\text.frag" />
     <None Include="shaders\text.vert" />
     <None Include="shaders\unlitColor.frag" />

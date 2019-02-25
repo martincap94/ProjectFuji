@@ -44,6 +44,7 @@ public:
 	};
 
 
+
 	glm::vec3 position;		///< Current position
 	glm::vec3 front;		///< Front vector
 	glm::vec3 up;			///< Up vector

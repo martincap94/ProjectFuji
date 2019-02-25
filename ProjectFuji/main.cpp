@@ -42,6 +42,7 @@
 #include "STLPDiagram.h"
 #include "STLPSimulator.h"
 #include "ShaderManager.h"
+#include "Skybox.h"
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
@@ -130,7 +131,10 @@ enum eLBMType {
 	LBM3D
 };
 
-
+enum eProjectionMode {
+	ORTHOGRAPHIC,
+	PERSPECTIVE
+};
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///// GLOBAL VARIABLES
@@ -148,6 +152,9 @@ Camera2D *diagramCamera;
 Camera2D *overlayDiagramCamera;
 
 struct nk_context *ctx;
+
+int projectionMode = ORTHOGRAPHIC;
+int drawSkybox = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///// DEFAULT VALUES THAT ARE TO BE REWRITTEN FROM THE CONFIG FILE
@@ -213,6 +220,8 @@ bool mouseDown = false;
 STLPDiagram stlpDiagram;	///< SkewT/LogP diagram instance
 int mode = 0;				///< Mode: 0 - show SkewT/LogP diagram, 1 - show 3D simulator
 
+Skybox *skybox;
+
 
 ShaderProgram *singleColorShader;
 ShaderProgram *singleColorShaderVBO;
@@ -224,6 +233,7 @@ ShaderProgram *curveShader;
 ShaderProgram *pointSpriteTestShader;
 ShaderProgram *coloredParticleShader;
 ShaderProgram *diagramShader;
+ShaderProgram *skyboxShader;
 
 
 /// Main - runs the application and sets seed for the random number generator.
@@ -290,6 +300,7 @@ int runApp() {
 
 	ShaderManager::init();
 
+	skybox = new Skybox();
 
 
 	glViewport(0, 0, screenWidth, screenHeight);
@@ -412,6 +423,7 @@ int runApp() {
 
 	textShader = ShaderManager::getShaderPtr("text");
 	curveShader = ShaderManager::getShaderPtr("curve");
+	skyboxShader = ShaderManager::getShaderPtr("skybox");
 
 
 
@@ -598,6 +610,18 @@ int runApp() {
 		ShaderManager::updateViewMatrixUniforms(view);
 		dirLightOnlyShader->setVec3("vViewPos", camera->position);
 		
+		if (drawSkybox) {
+			projection = glm::perspective(glm::radians(90.0f), (float)screenWidth / screenHeight, nearPlane, farPlane);
+
+			if (mode == 2 || mode == 3) {
+				skyboxShader->use();
+				glm::mat4 tmpView = glm::mat4(glm::mat3(view));
+				skyboxShader->setMat4fv("u_View", tmpView);
+				skyboxShader->setMat4fv("u_Projection", projection);
+				skybox->draw(*skyboxShader);
+			}
+		}
+
 		refreshProjectionMatrix();
 
 
@@ -622,7 +646,7 @@ int runApp() {
 
 
 			//Show2DTexture(stlpDiagram.diagramTexture, 0, 0, 200, 200);
-
+		
 		} else if (mode == 2) {
 
 			if (!paused) {
@@ -717,7 +741,9 @@ int runApp() {
 	delete grid;
 	delete viewportCamera;
 	delete diagramCamera;
+	delete overlayDiagramCamera;
 
+	delete skybox;
 
 
 	size_t cudaMemFree = 0;
@@ -753,7 +779,11 @@ void refreshProjectionMatrix() {
 		projection = diagramProjection;
 		camera->movementSpeed = 4.0f;
 	} else {
-		projection = viewportProjection;
+		if (projectionMode == ORTHOGRAPHIC) {
+			projection = viewportProjection;
+		} else {
+			projection = glm::perspective(glm::radians(90.0f), (float)screenWidth / screenHeight, nearPlane, farPlane);
+		}
 		//mode = 2;
 		camera->movementSpeed = 40.0f;
 	}
@@ -1240,6 +1270,19 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, "Camera movement speed", NK_TEXT_LEFT);
 		nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 400.0f, 1.0f);
+
+
+		nk_layout_row_dynamic(ctx, 30, 2);
+		if (nk_option_label(ctx, "Orthographic", projectionMode == ORTHOGRAPHIC)) { 
+			projectionMode = ORTHOGRAPHIC; 
+		}
+		if (nk_option_label(ctx, "Perspective", projectionMode == PERSPECTIVE)) {
+			projectionMode = PERSPECTIVE;
+		}
+
+		nk_layout_row_dynamic(ctx, 30, 2);
+		nk_checkbox_label(ctx, "Skybox", &drawSkybox);
+
 
 
 	}
