@@ -329,6 +329,11 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 void STLPDiagram::resetToDefault() {
 	cout << "Resetting diagram to default sounding data values" << endl;
 
+	initAmbientTemperatureCurve();
+	initDewpointCurve();
+
+	recalculateParameters();
+
 }
 
 void STLPDiagram::initBuffers() {

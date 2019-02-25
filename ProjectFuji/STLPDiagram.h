@@ -83,7 +83,7 @@ public:
 
 	pair<Curve *, int> selectedPoint;
 
-	int numProfiles = 10;
+	int numProfiles = 100;
 	float convectiveTempRange = 1.0f;
 	float profileDelta;
 
