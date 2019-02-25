@@ -97,6 +97,22 @@ Taken from: http://paulbourke.net/geometry/pointlineplane/javascript.txt
 */
 glm::vec2 getIntersectionPoint(glm::vec2 afirst, glm::vec2 asecond, glm::vec2 bfirst, glm::vec2 bsecond);
 
+/// Returns an intersection of two lines. Assumes that the lines intersect!!!
+/**
+Returns an intersection point of two lines. Assumes that the lines intersect!!!
+Taken from: http://paulbourke.net/geometry/pointlineplane/javascript.txt
+
+\author Paul Bourke
+
+\param[in] afirst			first point of line segment A
+\param[in] asecond			second point of line segment A
+\param[in] bfirst			first point of line segment B
+\param[in] bsecond			second point of line segment B
+\param[in] intersection		out reference to intersection point
+\return						whether the two segments intersect
+*/
+bool getIntersectionPoint(glm::vec2 afirst, glm::vec2 asecond, glm::vec2 bfirst, glm::vec2 bsecond, glm::vec2 &intersection);
+
 
 // Trimming functions taken from: https://stackoverflow.com/questions/1798112/removing-leading-and-trailing-spaces-from-a-string
 // answer by user Galik

@@ -645,12 +645,10 @@ void STLPDiagram::initCurves() {
 		// Find EL 
 		///////////////////////////////////////////////////////////////////////////////////////////////
 
-		reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // temporary reverse for finding EL
-		ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve);
+		ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve, true);
 		cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
 		EL = getDenormalizedCoords(ELNormalized);
 		cout << "EL: T = " << EL.x << ", P = " << EL.y << endl;
-		reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // reverse back for the simulation
 
 		visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
 		visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
@@ -669,12 +667,8 @@ void STLPDiagram::initCurves() {
 		LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
 		LFC = getDenormalizedCoords(LFCNormalized);
 
-		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
-
-		OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+		OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve, true);
 		OrographicEL = getDenormalizedCoords(OrographicELNormalized);
-
-		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
 
 
 	}
@@ -684,12 +678,8 @@ void STLPDiagram::initCurves() {
 		moistAdiabatProfiles.push_back(Curve());
 		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabatProfiles[profileIndex]);
 
-		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
-
-		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve);
+		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve, true);
 		ELProfiles.push_back(getDenormalizedCoords(tmp));
-
-		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
 
 		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(ELProfiles.back()), -2.0f)); // point
 		float tint = (profileIndex + 1) * profileDelta;
@@ -847,19 +837,15 @@ void STLPDiagram::recalculateParameters() {
 	LCLNormalized = findIntersectionNaive(LCLDryAdiabatCurve, mixingCCL);
 	LCL = getDenormalizedCoords(LCLNormalized);
 
-	reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // temporary reverse for finding EL
-	ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve);
+	ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve, true);
 	EL = getDenormalizedCoords(ELNormalized);
-	reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // reverse back for the simulation
 
 
 	LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
 	LFC = getDenormalizedCoords(LFCNormalized);
 
-	reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end()); // temporary reverse for finding EL
-	OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+	OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve, true);
 	OrographicEL = getDenormalizedCoords(OrographicELNormalized);
-	reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end()); // reverse back for the simulation
 
 
 	/*for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {

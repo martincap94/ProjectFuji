@@ -58,7 +58,7 @@ glm::vec2 getIntersectionPoint(glm::vec2 P1, glm::vec2 P2, glm::vec2 P3, glm::ve
 	float denominator = ((P4.x - P3.x) * (P2.y - P1.y) - (P2.x - P1.x) * (P4.y - P3.y));
 
 	if (fabs(denominator) <= FLT_EPSILON) {
-		return glm::vec2(-1.0f);
+		return glm::vec2(-1.0f); // this can also mean that they intersect in infinite number of points (add some flag later)
 	}
 
 	//float t_a = ((P4.x - P3.x) * (P1.y - P3.y) - (P4.y - P3.y) * (P1.x - P3.x)) / denominator;
@@ -75,6 +75,29 @@ glm::vec2 getIntersectionPoint(glm::vec2 P1, glm::vec2 P2, glm::vec2 P3, glm::ve
 	float y = P1.y + t_a * (P2.y - P1.y);
 
 	return glm::vec2(x, y);
+}
+
+// Based on: http://paulbourke.net/geometry/pointlineplane
+bool getIntersectionPoint(glm::vec2 P1, glm::vec2 P2, glm::vec2 P3, glm::vec2 P4, glm::vec2 &intersection) {
+
+	float denominator = ((P4.x - P3.x) * (P2.y - P1.y) - (P2.x - P1.x) * (P4.y - P3.y));
+
+	if (fabs(denominator) <= FLT_EPSILON) {
+		return false; // this can also mean that they intersect in infinite number of points (add some flag later)
+	}
+
+	float t_a = ((P4.x - P3.x) * (P3.y - P1.y) - (P3.x - P1.x) * (P4.y - P3.y)) / denominator;
+	float t_b = ((P2.x - P1.x) * (P3.y - P1.y) - (P3.x - P1.x) * (P2.y - P1.y)) / denominator;
+
+
+	if (t_a < 0.0f || t_a > 1.0f || t_b < 0.0f || t_b > 1.0f) {
+		return false;
+	}
+	float x = P1.x + t_a * (P2.x - P1.x);
+	float y = P1.y + t_a * (P2.y - P1.y);
+
+	intersection = glm::vec2(x, y);
+	return true;
 }
 
 void normalizeFromRange(float &val, float min, float max) {
