@@ -50,6 +50,8 @@ public:
 	int numParticles = 0;					///< Current number of particles
 	float simulationSpeedMultiplier = 1.0f;
 
+	int maxNumParticles = MAX_PARTICLE_COUNT;
+
 	/// Initializes buffers (calls initBuffers).
 	STLPSimulator();
 

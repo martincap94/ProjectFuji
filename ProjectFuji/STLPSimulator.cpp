@@ -33,8 +33,15 @@ void STLPSimulator::initBuffers() {
 void STLPSimulator::doStep() {
 
 	if (!testing) {
-		while (numParticles < MAX_PARTICLE_COUNT) {
+
+		// quick testing
+		while (numParticles < maxNumParticles) {
 			generateParticle();
+		}
+		while (numParticles >= maxNumParticles) {
+			particles.pop_back();
+			particlePositions.pop_back();
+			numParticles--;
 		}
 
 		//if (numParticles < MAX_PARTICLE_COUNT) {
@@ -200,9 +207,6 @@ void STLPSimulator::doStep() {
 				float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
 				float dewpointTemp = stlpDiagram->getDenormalizedTemp(dewpointIntersection.x, normP);
 
-				stlpDiagram->setVisualizationPoint(glm::vec3(ambientTemp, particles[i].pressure, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 1, false);
-				stlpDiagram->setVisualizationPoint(glm::vec3(dewpointTemp, particles[i].pressure, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 2, false);
-
 
 				toKelvin(ambientTemp);
 				toKelvin(dewpointTemp);
@@ -223,10 +227,7 @@ void STLPSimulator::doStep() {
 				float deltaY = particles[i].velocity.y + 0.5f * a * delta_t * delta_t;
 
 				particles[i].position.y += deltaY;
-
 				particles[i].updatePressureVal();
-
-				stlpDiagram->setVisualizationPoint(glm::vec3(T, particles[i].pressure, 0.0f), glm::vec3(0.0f, 1.0f, 0.3f), 0, false);
 
 
 
@@ -262,11 +263,7 @@ void STLPSimulator::doStep() {
 				float deltaY = particles[i].velocity.y + 0.5f * a * delta_t * delta_t;
 
 				particles[i].position.y += deltaY;
-
-
 				particles[i].updatePressureVal();
-
-				//stlpDiagram->setVisualizationPoint(glm::vec3(getCelsius(particleTemp), particles[i].pressure, 0.0f), glm::vec3(0.0f, 1.0f, 0.3f), 0, false);
 
 
 			}

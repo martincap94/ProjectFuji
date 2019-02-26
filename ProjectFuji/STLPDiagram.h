@@ -84,7 +84,7 @@ public:
 	pair<Curve *, int> selectedPoint;
 
 	int numProfiles = 100;
-	float convectiveTempRange = 1.0f;
+	float convectiveTempRange = 2.0f;
 	float profileDelta;
 
 	vector<glm::vec2> TcProfiles;
@@ -165,7 +165,7 @@ public:
 	void initCurves();
 
 	void recalculateParameters();
-
+	void recalculateProfileDelta();
 
 	/// Initializes all buffers and therefore curves of the diagram.
 	/**

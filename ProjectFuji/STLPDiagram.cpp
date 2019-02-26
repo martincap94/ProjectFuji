@@ -8,7 +8,7 @@
 #include "Utils.h"
 
 STLPDiagram::STLPDiagram() {
-	profileDelta = convectiveTempRange / (float)numProfiles;
+	recalculateProfileDelta();
 }
 
 STLPDiagram::STLPDiagram(string filename) : STLPDiagram() {
@@ -482,7 +482,7 @@ void STLPDiagram::initCurves() {
 	yaxis.initBuffers();
 
 	groundIsobar.vertices.push_back(glm::vec2(xmin, y0));
-	groundIsobar.vertices.push_back(glm::vec2(xmax, y0));
+	groundIsobar.vertices.push_back(glm::vec2(xmax * 100.0f, y0)); // we want it to be long for Tc computation (intersection beyond xmax)
 
 	groundIsobar.initBuffers();
 
@@ -835,6 +835,7 @@ void STLPDiagram::initCurves() {
 void STLPDiagram::recalculateParameters() {
 
 	// TODO
+	recalculateProfileDelta();
 
 
 	generateMixingRatioLine();
@@ -967,6 +968,10 @@ void STLPDiagram::recalculateParameters() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mainParameterPoints.size(), &mainParameterPoints[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void STLPDiagram::recalculateProfileDelta() {
+	profileDelta = convectiveTempRange / (float)numProfiles;
 }
 
 
