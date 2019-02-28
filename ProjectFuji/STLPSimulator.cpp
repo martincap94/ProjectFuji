@@ -219,8 +219,6 @@ void STLPSimulator::doStep() {
 				//float a = 9.81f * (getKelvin(particles[i].convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
 
 
-
-
 				float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
 				particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
@@ -228,6 +226,10 @@ void STLPSimulator::doStep() {
 
 				particles[i].position.y += deltaY;
 				particles[i].updatePressureVal();
+
+				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y);
+				particles[i].position.x += windDeltas.x;
+				particles[i].position.z += windDeltas.y;
 
 
 
@@ -265,6 +267,10 @@ void STLPSimulator::doStep() {
 				particles[i].position.y += deltaY;
 				particles[i].updatePressureVal();
 
+				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y);
+				particles[i].position.x += windDeltas.x;
+				particles[i].position.z += windDeltas.y;
+
 
 			}
 
@@ -292,8 +298,8 @@ void STLPSimulator::resetSimulation() {
 
 void STLPSimulator::generateParticle(bool setTestParticle) {
 
-	float randx = (float)(rand() / (float)(RAND_MAX / ((float)GRID_WIDTH - 2.0f)));
-	float randz = (float)(rand() / (float)(RAND_MAX / ((float)GRID_DEPTH - 2.0f)));
+	float randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
+	float randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
 
 	// let's use small square 
 	//float randx = (float)(rand() / (float)(RAND_MAX / ((float)GRID_WIDTH / 10.0f - 2.0f)));
@@ -319,6 +325,10 @@ void STLPSimulator::generateParticle(bool setTestParticle) {
 
 	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
 
+	rangeToRange(y, 0.0f, GRID_HEIGHT, 0.0f, 15000.0f); // 10 km
+	//cout << y << endl;
+
+	//y = 1500.0f;
 
 	Particle p;
 	p.position = glm::vec3(randx, y, randz);
@@ -340,7 +350,8 @@ void STLPSimulator::generateParticle(bool setTestParticle) {
 	//tmpz = getAltitudeFromPressure(tmpP);
 	//cout << "Altitude at pressure " << tmpP << " is " << tmpz << endl;
 
-	p.position.y = getAltitudeFromPressure(stlpDiagram->soundingData[0].data[PRES]);
+	//p.position.y = getAltitudeFromPressure(stlpDiagram->soundingData[0].data[PRES]);
+
 	p.updatePressureVal();
 
 	particles.push_back(p);

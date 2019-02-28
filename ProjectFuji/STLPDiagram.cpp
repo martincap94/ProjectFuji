@@ -65,6 +65,15 @@ void STLPDiagram::loadSoundingData(string filename) {
 		infile >> tmp.data[THTV];
 		soundingData.push_back(tmp);
 		//soundingData.back().print();
+
+		WindDataItem wdi;
+		wdi.delta_x = tmp.data[SKNT] * cos(tmp.data[DRCT]);
+		wdi.delta_z = tmp.data[SKNT] * sin(tmp.data[DRCT]);
+		//wdi.y = tmp.data[HGHT];
+		wdi.y = getAltitudeFromPressure(tmp.data[PRES]);
+
+		windData.push_back(wdi);
+
 	}
 
 	minT = MIN_TEMP;

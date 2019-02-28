@@ -1336,7 +1336,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
 
-		nk_property_float(ctx, "delta t", 0.0001f, &stlpSim->delta_t, 1000.0f, 0.1f, 1.0f);
+		nk_property_float(ctx, "delta t", 0.00001f, &stlpSim->delta_t, 1000.0f, 0.00001f, 1.0f);
 
 
 		nk_property_int(ctx, "number of profiles", 2, &stlpDiagram.numProfiles, 100, 1, 1.0f); // somewhere bug when only one profile -> FIX!
