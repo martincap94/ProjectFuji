@@ -773,8 +773,8 @@ int runApp() {
 			reportGLErrors("3");
 
 			
+			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
-
 			glDepthFunc(GL_LEQUAL);
 
 			glDisable(GL_CULL_FACE);
@@ -782,6 +782,12 @@ int runApp() {
 			stlpSim->heightMap->draw(evsm.firstPassShader);
 			evsm.postFirstPass();
 
+			glViewport(0, 0, screenWidth, screenHeight);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
+
+
+			
 			evsm.preSecondPass(screenWidth, screenHeight);
 			stlpSim->heightMap->draw(evsm.secondPassShader);
 			evsm.postSecondPass();
@@ -797,6 +803,9 @@ int runApp() {
 
 
 			//stlpDiagram.drawOverlayDiagram(diagramShader);
+			
+
+			
 
 		}
 		reportGLErrors("E");

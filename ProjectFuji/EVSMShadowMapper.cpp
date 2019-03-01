@@ -42,9 +42,25 @@ void EVSMShadowMapper::init() {
 	glTextureParameterfv(depthMapTexture, GL_TEXTURE_BORDER_COLOR, borderColor);
 	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
 
+
+
+	glGenTextures(1, &zBufferTexture);
+	glBindTexture(GL_TEXTURE_2D, zBufferTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, resolution, resolution, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	// comparison mode of the shadow map (for sampler2DShadow)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFramebuffer);
 	glNamedFramebufferTexture(depthMapFramebuffer, GL_COLOR_ATTACHMENT0, depthMapTexture, 0);
-
+	glNamedFramebufferTexture(depthMapFramebuffer, GL_DEPTH_ATTACHMENT, zBufferTexture, 0);
 
 	/////////////////////////////////////////////////////////////////////////////
 	// First pass blur texture and framebuffer
@@ -104,6 +120,15 @@ void EVSMShadowMapper::init() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	GLenum error = glGetError();
+	GLenum status = glCheckNamedFramebufferStatus(depthMapFramebuffer, GL_FRAMEBUFFER);
+	status |= glCheckNamedFramebufferStatus(firstPassBlurFramebuffer, GL_FRAMEBUFFER);
+	status |= glCheckNamedFramebufferStatus(secondPassBlurFramebuffer, GL_FRAMEBUFFER);
+
+	if (!((status == GL_FRAMEBUFFER_COMPLETE) && (error == GL_NO_ERROR))) {
+		printf("Creation of framebuffers failed, glCheckFramebufferStatus() = 0x%x, glGetError() = 0x%x\n", status, error);
+	}
+
 
 	blurShader = ShaderManager::getShaderPtr("gaussianBlur");
 
@@ -113,8 +138,8 @@ void EVSMShadowMapper::init() {
 	//secondPassShader = ShaderManager::getShaderPtr("dirLightOnly_evsm");
 
 
-	firstPassShader = ShaderManager::getShaderPtr("vsm_1st_pass");
-	secondPassShader = ShaderManager::getShaderPtr("vsm_2nd_pass");
+	/*firstPassShader = ShaderManager::getShaderPtr("vsm_1st_pass");
+	secondPassShader = ShaderManager::getShaderPtr("vsm_2nd_pass");*/
 
 
 /*
@@ -132,7 +157,8 @@ void EVSMShadowMapper::preFirstPass() {
 	glViewport(0, 0, resolution, resolution);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFramebuffer);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	GLuint pid = firstPassShader->id;
 	firstPassShader->use();

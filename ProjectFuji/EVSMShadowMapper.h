@@ -43,6 +43,7 @@ public:
 
 	// initial depth map generation
 	GLuint depthMapTexture;
+	GLuint zBufferTexture;
 	GLuint depthMapFramebuffer;
 
 	GLuint firstPassBlurTexture;
