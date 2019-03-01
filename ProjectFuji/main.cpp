@@ -789,6 +789,11 @@ int runApp() {
 
 			
 			evsm.preSecondPass(screenWidth, screenHeight);
+			evsm.secondPassShader->setVec3("dirLight.direction", dirLight.direction);
+			evsm.secondPassShader->setVec3("dirLight.ambient", dirLight.ambient);
+			evsm.secondPassShader->setVec3("dirLight.diffuse", dirLight.diffuse);
+			evsm.secondPassShader->setVec3("dirLight.specular", dirLight.specular);
+			evsm.secondPassShader->setVec3("v_ViewPos", camera->position);
 			stlpSim->heightMap->draw(evsm.secondPassShader);
 			evsm.postSecondPass();
 			

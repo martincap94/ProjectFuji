@@ -23,7 +23,7 @@ uniform sampler2D u_DepthMapTexture;
 uniform float u_VarianceMinLimit;
 uniform float u_LightBleedReduction;
 uniform vec2 u_Exponents = vec2(40.0, 40.0);
-uniform int u_EVSMMode = 1;
+uniform int u_EVSMMode = 0;
 uniform float u_ShadowBias;
 
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -39,18 +39,16 @@ void main() {
 	vec3 norm = normalize(v_Normal);
 	vec3 viewDir = normalize(v_ViewPos - v_FragPos.xyz);
 	
-	vec3 result = vec3(1.0);
 
 	vec3 color = calcDirLight(dirLight, norm, viewDir);
 
-	float shadow;
+	float shadow = calcShadow(v_LightSpacePos);
+
+	vec3 result;
 	
-	//shadow = calcShadow(v_LightSpacePos);
-	shadow = calcShadowBasic(v_LightSpacePos);
-
-	//result = color;
-	result = result * vec3(shadow);
-
+	
+	//result = color *  vec3(shadow);
+	result = color * shadow;
 
 
 	//vec3 projCoords = v_LightSpacePos.xyz / v_LightSpacePos.w;

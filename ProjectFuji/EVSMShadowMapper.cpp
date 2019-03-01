@@ -134,8 +134,8 @@ void EVSMShadowMapper::init() {
 
 
 	firstPassShader = ShaderManager::getShaderPtr("evsm_1st_pass");
-	secondPassShader = ShaderManager::getShaderPtr("evsm_2nd_pass");
-	//secondPassShader = ShaderManager::getShaderPtr("dirLightOnly_evsm");
+	//secondPassShader = ShaderManager::getShaderPtr("evsm_2nd_pass");
+	secondPassShader = ShaderManager::getShaderPtr("dirLightOnly_evsm");
 
 
 	/*firstPassShader = ShaderManager::getShaderPtr("vsm_1st_pass");
@@ -245,6 +245,9 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 	glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightProjectionMatrix"), 1, GL_FALSE, &lightProjectionMatrix[0][0]);
 
 	glUniform1i(glGetUniformLocation(pid, "u_DepthMapTexture"), 0);
+
+	//secondPassShader->setVec3("v_ViewPos", di);
+
 
 
 
