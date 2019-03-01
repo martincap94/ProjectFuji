@@ -2,6 +2,8 @@
 
 #include "DataStructures.h"
 
+#include <glad\glad.h>
+
 // Line intersection based on: https://martin-thoma.com/how-to-check-if-two-line-segments-intersect/
 bool doBoundingBoxesIntersect(const glm::vec2 &amin, const glm::vec2 &amax, const glm::vec2 &bmin, const glm::vec2 &bmax) {
 	return amin.x <= bmax.x &&
@@ -110,6 +112,18 @@ void rangeToRange(float &val, float origMin, float origMax, float newMin, float 
 	val += newMin;
 }
 
+void rangeToRange(glm::vec3 & val, float origMin, float origMax, float newMin, float newMax) {
+	rangeToRange(val.x, origMin, origMax, newMin, newMax);
+	rangeToRange(val.y, origMin, origMax, newMin, newMax);
+	rangeToRange(val.z, origMin, origMax, newMin, newMax);
+}
+
+void rangeToRange(glm::vec3 & val, glm::vec3 origMin, glm::vec3 origMax, glm::vec3 newMin, glm::vec3 newMax) {
+	rangeToRange(val.x, origMin.x, origMax.x, newMin.x, newMax.x);
+	rangeToRange(val.y, origMin.y, origMax.y, newMin.y, newMax.y);
+	rangeToRange(val.z, origMin.z, origMax.z, newMin.z, newMax.z);
+}
+
 void normalizeFromRange(glm::vec3 &val, float min, float max) {
 	val.x = (val.x - min) / (max - min);
 	val.y = (val.y - min) / (max - min);
@@ -119,6 +133,28 @@ void normalizeFromRange(glm::vec3 &val, float min, float max) {
 glm::vec3 getNormalizedFromRange(glm::vec3 val, float min, float max) {
 	normalizeFromRange(val, min, max);
 	return val;
+}
+
+std::string getGLErrorString(unsigned int err) {
+
+	switch (err) {
+		case GL_NO_ERROR:          return "No error";
+		case GL_INVALID_ENUM:      return "Invalid enum";
+		case GL_INVALID_VALUE:     return "Invalid value";
+		case GL_INVALID_OPERATION: return "Invalid operation";
+		case GL_STACK_OVERFLOW:    return "Stack overflow";
+		case GL_STACK_UNDERFLOW:   return "Stack underflow";
+		case GL_OUT_OF_MEMORY:     return "Out of memory";
+		default:                   return "Unknown error";
+	}
+	
+}
+
+void reportGLErrors(std::string message) {
+	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR) {
+		std::cerr << message << ": " << getGLErrorString(err) << "(" << err << ")" << std::endl;
+	}
 }
 
 

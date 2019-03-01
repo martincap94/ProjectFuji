@@ -127,7 +127,6 @@ void Grid3D::draw(ShaderProgram &shader) {
 	glDrawArrays(GL_POINTS, 0, GRID_WIDTH * GRID_HEIGHT * GRID_DEPTH);
 	*/
 
-	glLineWidth(4.0f);
 	shader.setVec3("uColor", glm::vec3(0.9f, 0.9f, 0.2f));
 
 	glBindVertexArray(boxVAO);

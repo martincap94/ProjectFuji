@@ -26,6 +26,7 @@ public:
 
 	glm::vec3 position;
 	glm::vec3 direction;	///< Direction of the light
+	glm::vec3 up;
 
 	glm::vec3 ambient;		///< Ambient value
 	glm::vec3 diffuse;		///< Diffuse value

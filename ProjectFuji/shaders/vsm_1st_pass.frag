@@ -15,7 +15,8 @@ void main(void) {
 	//float firstMoment = depth; // redundant
 	float secondMoment = depth * depth + 0.25 * (dx * dx + dy * dy);
 
-	FragColor = vec4(depth, secondMoment, 0.0, 1.0);
+	//FragColor = vec4(depth, secondMoment, depth, 1.0);
+	FragColor = vec4(vec3(depth), 1.0);
 	//FragColor = vec4(depth * 10.0); // testing
 	//FragColor = vec4(10.0f * vec3(depth), 1.0);
 

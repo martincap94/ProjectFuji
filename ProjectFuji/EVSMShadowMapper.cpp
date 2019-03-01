@@ -40,7 +40,7 @@ void EVSMShadowMapper::init() {
 	glTextureParameteri(depthMapTexture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
 	glTextureParameterfv(depthMapTexture, GL_TEXTURE_BORDER_COLOR, borderColor);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFramebuffer);
 	glNamedFramebufferTexture(depthMapFramebuffer, GL_COLOR_ATTACHMENT0, depthMapTexture, 0);
@@ -58,7 +58,7 @@ void EVSMShadowMapper::init() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
 
 	glTextureParameterfv(depthMapTexture, GL_TEXTURE_BORDER_COLOR, borderColor);
 
@@ -80,7 +80,7 @@ void EVSMShadowMapper::init() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
 
 	glTextureParameterfv(depthMapTexture, GL_TEXTURE_BORDER_COLOR, borderColor);
 
@@ -128,7 +128,6 @@ void EVSMShadowMapper::preFirstPass() {
 		return;
 	}
 
-	glCullFace(GL_BACK);
 	//glCullFace(GL_FRONT);
 	glViewport(0, 0, resolution, resolution);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFramebuffer);
@@ -194,7 +193,7 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 		return;
 	}
 
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 	glViewport(0, 0, screenWidth, screenHeight);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

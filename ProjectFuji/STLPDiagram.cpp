@@ -67,8 +67,8 @@ void STLPDiagram::loadSoundingData(string filename) {
 		//soundingData.back().print();
 
 		WindDataItem wdi;
-		wdi.delta_x = tmp.data[SKNT] * cos(tmp.data[DRCT]);
-		wdi.delta_z = tmp.data[SKNT] * sin(tmp.data[DRCT]);
+		wdi.delta_x = 0.514444f * tmp.data[SKNT] * cos(tmp.data[DRCT]); // do not forget to convert from knots to meters per second
+		wdi.delta_z = 0.514444f * tmp.data[SKNT] * sin(tmp.data[DRCT]); // do not forget to convert from knots to meters per second
 		//wdi.y = tmp.data[HGHT];
 		wdi.y = getAltitudeFromPressure(tmp.data[PRES]);
 
@@ -292,7 +292,7 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, f
 		edgeCounter->push_back(vertexCounter);
 		//dryAdiabatEdgeCount.push_back(vertexCounter);
 	}
-	
+
 
 }
 
@@ -323,7 +323,7 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 		edgeCounter->push_back(vertexCounter);
 	}
 
-	
+
 
 
 
@@ -487,7 +487,7 @@ void STLPDiagram::initCurves() {
 	yaxis.initBuffers();
 
 	groundIsobar.vertices.push_back(glm::vec2(xmin, y0));
-	groundIsobar.vertices.push_back(glm::vec2(xmax * 100.0f, y0)); // we want it to be long for Tc computation (intersection beyond xmax)
+	groundIsobar.vertices.push_back(glm::vec2(xmax * 10.0f, y0)); // we want it to be long for Tc computation (intersection beyond xmax)
 
 	groundIsobar.initBuffers();
 
@@ -542,7 +542,7 @@ void STLPDiagram::initCurves() {
 	///////////////////////////////////////////////////////////////////////////////////////
 
 	generateMixingRatioLine();
-	
+
 	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
 
@@ -703,11 +703,11 @@ void STLPDiagram::initCurves() {
 	}
 
 
-	
+
 	//numMoistAdiabats++;
 	glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-	
+
 
 
 
@@ -848,7 +848,7 @@ void STLPDiagram::recalculateParameters() {
 	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
 
-	
+
 	float P0 = soundingData[0].data[PRES];
 	vector<glm::vec2> vertices;
 
@@ -901,7 +901,7 @@ void STLPDiagram::recalculateParameters() {
 	for (int i = 0; i < numDryAdiabats - numProfiles - 2; i++) {
 		sum += dryAdiabatEdgeCount[i];
 	}
-	
+
 	glNamedBufferData(dryAdiabatsVBO, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 
@@ -1032,6 +1032,7 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 	int counter;
 	glLineWidth(1.0f);
 
+	reportGLErrors("STLP 1");
 
 	glUseProgram(shader.id);
 
@@ -1040,11 +1041,15 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 		glBindVertexArray(isobarsVAO);
 		glDrawArrays(GL_LINES, 0, numIsobars * 2);
 	}
+	reportGLErrors("STLP 2");
+
 
 	glPointSize(8.0f);
 	shader.setVec3("color", glm::vec3(0.5f, 0.7f, 0.0f));
 	glBindVertexArray(temperaturePointsVAO);
 	glDrawArrays(GL_POINTS, 0, temperaturePointsCount);
+
+	reportGLErrors("STLP 3");
 
 	if (showIsotherms) {
 		glPointSize(8.0f);
@@ -1052,24 +1057,32 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 		glBindVertexArray(isothermsVAO);
 		glDrawArrays(GL_LINES, 0, isothermsCount * 2);
 	}
+	reportGLErrors("STLP 4");
+
 
 	if (showAmbientTemperatureCurve) {
 		shader.setVec3("color", glm::vec3(0.7f, 0.1f, 0.15f));
 		glBindVertexArray(ambientTemperatureVAO);
 		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
 	}
+	reportGLErrors("STLP 5");
+
 
 	if (showDewpointCurve) {
 		shader.setVec3("color", glm::vec3(0.1f, 0.7f, 0.15f));
 		glBindVertexArray(dewTemperatureVAO);
 		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
 	}
+	reportGLErrors("STLP 6");
+
 
 	if (showIsohumes) {
 		shader.setVec3("color", glm::vec3(0.1f, 0.15f, 0.7f));
 		glBindVertexArray(isohumesVAO);
 		glDrawArrays(GL_LINES, 0, soundingData.size() * 2);
 	}
+	reportGLErrors("STLP 7");
+
 
 	if (showDryAdiabats) {
 		shader.setVec3("color", glm::vec3(0.6f, 0.6f, 0.6f));
@@ -1085,6 +1098,8 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 			counter += dryAdiabatEdgeCount[i];
 		}
 	}
+	reportGLErrors("STLP 8");
+
 
 	if (showMoistAdiabats) {
 		glPointSize(2.0f);
@@ -1104,6 +1119,8 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 			counter += moistAdiabatEdgeCount[i];
 		}
 	}
+	reportGLErrors("STLP 9");
+
 
 	//glPointSize(9.0f);
 	//shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
@@ -1119,15 +1136,21 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 	xaxis.draw(shader);
 	yaxis.draw(shader);
 	groundIsobar.draw(shader);
+	reportGLErrors("STLP 10");
+
 
 	glPointSize(3.0f);
 	glUseProgram(altShader.id);
 	glBindVertexArray(visPointsVAO);
 	glDrawArrays(GL_POINTS, 0, visualizationPoints.size() / 2);
+	reportGLErrors("STLP 11");
+
 
 	glPointSize(6.0f);
 	glBindVertexArray(mainParameterPointsVAO);
 	glDrawArrays(GL_POINTS, 0, mainParameterPoints.size() / 2);
+	reportGLErrors("STLP 12");
+
 
 }
 
@@ -1291,10 +1314,29 @@ void STLPDiagram::moveSelectedPoint(glm::vec2 mouseCoords) {
 	setVisualizationPoint(glm::vec3(curvePtr->vertices[pointIndex], 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 3, true);
 
 
-		
+
 }
 
 
+
+glm::vec2 STLPDiagram::getWindDeltasFromAltitude(float altitude) {
+	// naive solution -> linearly find the correct altitude pair
+
+	for (int i = 0; i < windData.size() - 1; i++) {
+		if (altitude >= windData[i].y && altitude < windData[i + 1].y) {
+			if (altitude == windData[i].y) {
+				return glm::vec2(windData[i].delta_x, windData[i].delta_z);
+			}
+			float t = (altitude - windData[i + 1].y) / (windData[i].y - windData[i + 1].y);
+			glm::vec2 res;
+			res.x = t * windData[i].delta_x + (1.0f - t) * windData[i + 1].delta_x;
+			res.y = t * windData[i].delta_z + (1.0f - t) * windData[i + 1].delta_z;
+			return res / 100.0f;
+		}
+	}
+
+	return glm::vec2(0.0f);
+}
 
 
 

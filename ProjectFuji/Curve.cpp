@@ -31,7 +31,6 @@ void Curve::draw(ShaderProgram & shader) {
 
 	glUseProgram(shader.id);
 
-	glLineWidth(4.0f);
 	shader.setVec3("color", glm::vec3(0.1f, 0.1f, 0.1f));
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_LINES, 0, vertices.size() * 2);

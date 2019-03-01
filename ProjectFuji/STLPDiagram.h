@@ -185,24 +185,7 @@ public:
 	*/
 	void initBuffersOld();
 
-	glm::vec2 getWindDeltasFromAltitude(float altitude) {
-		// naive solution -> linearly find the correct altitude pair
-		/*
-		for (int i = 0; i < windData.size() - 1; i++) {
-			if (altitude >= windData[i].y && altitude < windData[i + 1].y) {
-				if (altitude == windData[i].y) {
-					return glm::vec2(windData[i].delta_x, windData[i].delta_z);
-				}
-				float t = (altitude - windData[i + 1].y) / (windData[i].y - windData[i + 1].y);
-				glm::vec2 res;
-				res.x = t * windData[i].delta_x + (1.0f - t) * windData[i + 1].delta_x;
-				res.y = t * windData[i].delta_z + (1.0f - t) * windData[i + 1].delta_z;
-				return res / 100.0f;
-			}
-		}
-		*/
-		return glm::vec2(0.0f);
-	}
+	glm::vec2 getWindDeltasFromAltitude(float altitude);
 
 
 	///////////////////////////////////////////////////////////////////////////

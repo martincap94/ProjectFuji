@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include "Utils.h"
 #include "LBM.h"
 
 ParticleSystem::ParticleSystem() {
@@ -12,7 +13,7 @@ ParticleSystem::ParticleSystem() {
 ParticleSystem::ParticleSystem(int numParticles, bool drawStreamlines) : numParticles(numParticles), drawStreamlines(drawStreamlines) {
 	particleVertices = new glm::vec3[numParticles]();
 
-
+	reportGLErrors();
 
 	cudaMalloc((void**)&d_numParticles, sizeof(int));
 
@@ -28,6 +29,7 @@ ParticleSystem::ParticleSystem(int numParticles, bool drawStreamlines) : numPart
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+
 
 	glGenBuffers(1, &colorsVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, colorsVBO);
@@ -58,7 +60,6 @@ ParticleSystem::ParticleSystem(int numParticles, bool drawStreamlines) : numPart
 
 
 	spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
-
 
 }
 

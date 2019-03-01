@@ -322,6 +322,7 @@ int runApp() {
 
 	ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
 
+
 	{
 		struct nk_font_atlas *atlas;
 		nk_glfw3_font_stash_begin(&atlas);
@@ -331,13 +332,16 @@ int runApp() {
 		nk_style_set_font(ctx, &roboto->handle);
 	}
 
+
 #ifdef INCLUDE_STYLE
 	set_style(ctx, THEME_MARTIN);
 #endif
 
+
 	struct nk_colorf particlesColor;
 
-	particleSystem = new ParticleSystem(numParticles, drawStreamlines);
+
+	particleSystem = new ParticleSystem(numParticles, drawStreamlines); // invalid enum here
 
 	particlesColor.r = particleSystem->particlesColor.r;
 	particlesColor.g = particleSystem->particlesColor.g;
@@ -347,6 +351,7 @@ int runApp() {
 	glm::ivec3 latticeDim(latticeWidth, latticeHeight, latticeDepth);
 
 	float ratio = (float)screenWidth / (float)screenHeight;
+
 
 	// Create and configure the simulator, select from 2D and 3D options and set parameters accordingly
 	switch (lbmType) {
@@ -404,14 +409,17 @@ int runApp() {
 
 			break;
 	}
+
 	viewportCamera = camera;
 	diagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
 	overlayDiagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
+
 
 	viewportProjection = projection;
 
 	camera->setLatticeDimensions(latticeWidth, latticeHeight, latticeDepth);
 	camera->movementSpeed = cameraSpeed;
+
 
 	particleSystem->lbm = lbm;
 
@@ -449,6 +457,7 @@ int runApp() {
 	dirLight.diffuse = glm::vec3(0.8f, 0.4f, 0.4f);
 	dirLight.specular = glm::vec3(0.6f, 0.2f, 0.2f);
 
+
 	glUseProgram(dirLightOnlyShader->id);
 
 	dirLightOnlyShader->setVec3("dirLight.direction", dirLight.direction);
@@ -459,9 +468,12 @@ int runApp() {
 
 	evsm.dirLight = &dirLight;
 
+
 	refreshProjectionMatrix();
 
+
 	GeneralGrid gGrid(100, 5, (lbmType == LBM3D));
+
 
 	int frameCounter = 0;
 	glfwSwapInterval(vsync); // VSync Settings (0 is off, 1 is 60FPS, 2 is 30FPS and so on)
@@ -474,19 +486,23 @@ int runApp() {
 
 	stlpDiagram.init(soundingFile);
 
+
+
 	stlpSim = new STLPSimulator();
 	if (lbmType == LBM3D) {
 		stlpSim->heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
 	}
 
 	stlpSim->stlpDiagram = &stlpDiagram;
-	stlpSim->initParticles();
 
+	stlpSim->initParticles();
 
 	// Set these callbacks after nuklear initialization, otherwise they won't work!
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetWindowSizeCallback(window, window_size_callback);
+
+
 
 	stringstream ss;
 	ss << (useCUDA ? "GPU" : "CPU") << "_";
@@ -502,17 +518,19 @@ int runApp() {
 	}
 	double accumulatedTime = 0.0;
 
+	glActiveTexture(GL_TEXTURE0);
+
 	while (!glfwWindowShouldClose(window) && appRunning) {
 		// enable flags each frame because nuklear disables them when it is rendered	
 		//glEnable(GL_DEPTH_TEST);
-		glEnable(GL_LIGHTING);
-		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_TEXTURE_1D);
-		glEnable(GL_TEXTURE_3D);
 
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glEnable(GL_CULL_FACE);
+
+		reportGLErrors("->>> LOOP START <<<-");
+
 
 		double currentFrameTime = glfwGetTime();
 		deltaTime = currentFrameTime - lastFrameTime;
@@ -572,31 +590,45 @@ int runApp() {
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		view = overlayDiagramCamera->getViewMatrix();
 		ShaderManager::updatePVMatrixUniforms(overlayDiagramProjection, view);
+		reportGLErrors("B1");
+
 
 		GLint res = stlpDiagram.textureResolution;
 		glViewport(0, 0, res, res);
 		glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
 		glClear(GL_COLOR_BUFFER_BIT);
 		//glBindTextureUnit(0, stlpDiagram.diagramTexture);
+		reportGLErrors("B2");
 
 		stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
+		reportGLErrors("B3");
+
 		stlpDiagram.drawText(*textShader);
+		reportGLErrors("B4");
+
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stlpDiagram.diagramFramebuffer);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
 
-		glDrawBuffer(GL_BACK);
+		reportGLErrors("B5");
+
+		//glDrawBuffer(GL_BACK);
+		reportGLErrors("B6");
+
 
 		glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		reportGLErrors("B7");
 
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		reportGLErrors("B8");
 
 
 		glViewport(0, 0, screenWidth, screenHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
+		reportGLErrors("B");
 
 
 
@@ -617,12 +649,21 @@ int runApp() {
 		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		reportGLErrors("C");
+
 		// UPDATE SHADER VIEW MATRICES
 		view = camera->getViewMatrix();
 
+		reportGLErrors("D0");
+
 		ShaderManager::updateViewMatrixUniforms(view);
+		reportGLErrors("D1");
+
+		dirLightOnlyShader->use();
 		dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
 		
+		reportGLErrors("D2");
+
 		if (drawSkybox) {
 			projection = glm::perspective(glm::radians(90.0f), (float)screenWidth / screenHeight, nearPlane, farPlane);
 
@@ -636,6 +677,9 @@ int runApp() {
 		}
 
 		refreshProjectionMatrix();
+
+		reportGLErrors("D");
+
 
 
 		if (mode == 0 || mode == 1) {
@@ -717,34 +761,45 @@ int runApp() {
 
 			stlpSim->doStep();
 
+			reportGLErrors("1");
+
+
 			grid->draw(*singleColorShader);
+
+			reportGLErrors("2");
 
 			gGrid.draw(*unlitColorShader);
 
+			reportGLErrors("3");
 
-			/*
+			
 			glEnable(GL_DEPTH_TEST);
+
 			glDepthFunc(GL_LEQUAL);
 
+			glDisable(GL_CULL_FACE);
 			evsm.preFirstPass();
 			stlpSim->heightMap->draw(evsm.firstPassShader);
 			evsm.postFirstPass();
 
-
 			evsm.preSecondPass(screenWidth, screenHeight);
 			stlpSim->heightMap->draw(evsm.secondPassShader);
 			evsm.postSecondPass();
-			*/
+			
 
-			stlpSim->heightMap->draw();
+
+			//glCullFace(GL_FRONT);
+			//stlpSim->heightMap->draw();
 
 			stlpSim->draw(*singleColorShader);
 
 			stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
 
+
 			//stlpDiagram.drawOverlayDiagram(diagramShader);
 
 		}
+		reportGLErrors("E");
 
 
 		// DRAW SCENE
@@ -767,6 +822,7 @@ int runApp() {
 
 		glfwSwapBuffers(window);
 
+		reportGLErrors("->>> LOOP END <<<-");
 
 	}
 

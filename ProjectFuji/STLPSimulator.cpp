@@ -227,7 +227,11 @@ void STLPSimulator::doStep() {
 				particles[i].position.y += deltaY;
 				particles[i].updatePressureVal();
 
-				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y);
+				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
+																										// we need to map it to our system
+				windDeltas /= GRID_WIDTH; // just testing
+				//rangeToRange(windDeltas.x, )
+
 				particles[i].position.x += windDeltas.x;
 				particles[i].position.z += windDeltas.y;
 
@@ -267,7 +271,10 @@ void STLPSimulator::doStep() {
 				particles[i].position.y += deltaY;
 				particles[i].updatePressureVal();
 
-				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y);
+				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
+				// we need to map it to our system
+				windDeltas /= GRID_WIDTH; // just testing
+
 				particles[i].position.x += windDeltas.x;
 				particles[i].position.z += windDeltas.y;
 
@@ -277,6 +284,8 @@ void STLPSimulator::doStep() {
 			// hack
 			glm::vec3 tmpPos = particles[i].position;
 			rangeToRange(tmpPos.y, 0.0f, 15000.0f, 0.0f, GRID_HEIGHT); // 10 km
+			//rangeToRange()
+
 
 			particlePositions[i] = tmpPos;
 
