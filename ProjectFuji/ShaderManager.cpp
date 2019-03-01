@@ -6,70 +6,72 @@
 
 using namespace std;
 
-namespace {
-	
-	bool initFlag = false;
-	map<string, ShaderProgram *> shadersStr;
-	map<GLuint, ShaderProgram *> shaders;
-	map<GLuint, string> shaderIdName;
-
-	void addShader(string sName, string vertShader, string fragShader) {
-		ShaderProgram *sPtr = new ShaderProgram(vertShader.c_str(), fragShader.c_str());
-		addShader(sPtr, sName, sPtr->id);
-	}
-
-	void addShader(ShaderProgram *sPtr, string sName, GLuint sId) {
-		shadersStr.insert(make_pair(sName, sPtr));
-		shaders.insert(make_pair(sId, sPtr));
-		shaderIdName.insert(make_pair(sId, sName));
-	}
-
-
-	void loadShaders() {
-		cout << "Loading shaders" << endl;
-
-		//singleColorShader = ShaderManager::getShaderPtr("singleColor");
-		//singleColorShaderAlpha = new ShaderProgram("singleColor.vert", "singleColor_alpha.frag");
-		//singleColorShaderVBO = new ShaderProgram("singleColor_VBO.vert", "singleColor_VBO.frag");
-
-		//unlitColorShader = new ShaderProgram("unlitColor.vert", "unlitColor.frag");
-		//dirLightOnlyShader = new ShaderProgram("dirLightOnly.vert", "dirLightOnly.frag");
-		//pointSpriteTestShader = new ShaderProgram("pointSpriteTest.vert", "pointSpriteTest.frag");
-		//coloredParticleShader = new ShaderProgram("coloredParticle.vert", "coloredParticle.frag");
-		//diagramShader = new ShaderProgram("diagram.vert", "diagram.frag");
-
-		//textShader = new ShaderProgram("text.vert", "text.frag");
-		//curveShader = new ShaderProgram("curve.vert", "curve.frag");
-
-		addShader("singleColor", "singleColor.vert", "singleColor.frag");
-		addShader("singleColorAlpha", "singleColor.vert", "singleColor_alpha.frag");
-		addShader("singleColor_VBO", "singleColor_VBO.vert", "singleColor_VBO.frag");
-		addShader("unlitColor", "unlitColor.vert", "unlitColor.frag");
-		addShader("dirLightOnly", "dirLightOnly.vert", "dirLightOnly.frag");
-		addShader("pointSpriteTest", "pointSpriteTest.vert", "pointSpriteTest.frag");
-		addShader("coloredParticle", "coloredParticle.vert", "coloredParticle.frag");
-		addShader("diagram", "diagram.vert", "diagram.frag");
-		addShader("text", "text.vert", "text.frag");
-		addShader("curve", "curve.vert", "curve.frag");
-		addShader("skybox", "skybox.vert", "skybox.frag");
-		addShader("gaussianBlur", "basic_blur.vert", "gblur_9x9_separated.frag");
-		addShader("evsm_1st_pass", "evsm_1st_pass.vert", "evsm_1st_pass.frag");
-		addShader("evsm_2nd_pass", "evsm_2nd_pass.vert", "evsm_2nd_pass.frag");
-
-		addShader("dirLightOnly_evsm", "dirLightOnly_evsm.vert", "dirLightOnly_evsm.frag");
-
-		addShader("vsm_1st_pass", "vsm_1st_pass.vert", "vsm_1st_pass.frag");
-		addShader("vsm_2nd_pass", "vsm_2nd_pass.vert", "vsm_2nd_pass.frag");
-
-		addShader("shadow_mapping_1st_pass", "shadow_mapping_1st_pass.vert", "shadow_mapping_1st_pass.frag");
-		addShader("shadow_mapping_2nd_pass", "shadow_mapping_2nd_pass.vert", "shadow_mapping_2nd_pass.frag");
-
-	}
-
-}
-
 
 namespace ShaderManager {
+
+
+
+	namespace {
+
+		bool initFlag = false;
+		map<string, ShaderProgram *> shadersStr;
+		map<GLuint, ShaderProgram *> shaders;
+		map<GLuint, string> shaderIdName;
+
+		void addShader(string sName, string vertShader, string fragShader) {
+			ShaderProgram *sPtr = new ShaderProgram(vertShader.c_str(), fragShader.c_str());
+			addShader(sPtr, sName, sPtr->id);
+		}
+
+		void addShader(ShaderProgram *sPtr, string sName, GLuint sId) {
+			shadersStr.insert(make_pair(sName, sPtr));
+			shaders.insert(make_pair(sId, sPtr));
+			shaderIdName.insert(make_pair(sId, sName));
+		}
+
+
+		void loadShaders() {
+			cout << "Loading shaders" << endl;
+
+			//singleColorShader = ShaderManager::getShaderPtr("singleColor");
+			//singleColorShaderAlpha = new ShaderProgram("singleColor.vert", "singleColor_alpha.frag");
+			//singleColorShaderVBO = new ShaderProgram("singleColor_VBO.vert", "singleColor_VBO.frag");
+
+			//unlitColorShader = new ShaderProgram("unlitColor.vert", "unlitColor.frag");
+			//dirLightOnlyShader = new ShaderProgram("dirLightOnly.vert", "dirLightOnly.frag");
+			//pointSpriteTestShader = new ShaderProgram("pointSpriteTest.vert", "pointSpriteTest.frag");
+			//coloredParticleShader = new ShaderProgram("coloredParticle.vert", "coloredParticle.frag");
+			//diagramShader = new ShaderProgram("diagram.vert", "diagram.frag");
+
+			//textShader = new ShaderProgram("text.vert", "text.frag");
+			//curveShader = new ShaderProgram("curve.vert", "curve.frag");
+
+			addShader("singleColor", "singleColor.vert", "singleColor.frag");
+			addShader("singleColorAlpha", "singleColor.vert", "singleColor_alpha.frag");
+			addShader("singleColor_VBO", "singleColor_VBO.vert", "singleColor_VBO.frag");
+			addShader("unlitColor", "unlitColor.vert", "unlitColor.frag");
+			addShader("dirLightOnly", "dirLightOnly.vert", "dirLightOnly.frag");
+			addShader("pointSpriteTest", "pointSpriteTest.vert", "pointSpriteTest.frag");
+			addShader("coloredParticle", "coloredParticle.vert", "coloredParticle.frag");
+			addShader("diagram", "diagram.vert", "diagram.frag");
+			addShader("text", "text.vert", "text.frag");
+			addShader("curve", "curve.vert", "curve.frag");
+			addShader("skybox", "skybox.vert", "skybox.frag");
+			addShader("gaussianBlur", "basic_blur.vert", "gblur_9x9_separated.frag");
+			addShader("evsm_1st_pass", "evsm_1st_pass.vert", "evsm_1st_pass.frag");
+			addShader("evsm_2nd_pass", "evsm_2nd_pass.vert", "evsm_2nd_pass.frag");
+
+			addShader("dirLightOnly_evsm", "dirLightOnly_evsm.vert", "dirLightOnly_evsm.frag");
+
+			addShader("vsm_1st_pass", "vsm_1st_pass.vert", "vsm_1st_pass.frag");
+			addShader("vsm_2nd_pass", "vsm_2nd_pass.vert", "vsm_2nd_pass.frag");
+
+			addShader("shadow_mapping_1st_pass", "shadow_mapping_1st_pass.vert", "shadow_mapping_1st_pass.frag");
+			addShader("shadow_mapping_2nd_pass", "shadow_mapping_2nd_pass.vert", "shadow_mapping_2nd_pass.frag");
+
+		}
+	}
+
 
 	bool init() {
 		if (initFlag) {

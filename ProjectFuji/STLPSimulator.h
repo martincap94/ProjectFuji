@@ -43,6 +43,8 @@ public:
 	Particle testParticle; // test particle for initial implementation of convection process
 	bool testing = false;
 
+	bool simulateWind = false;
+
 	HeightMap *heightMap;	///< Pointer to the heightmap
 
 	vector<Particle> particles;

@@ -36,7 +36,6 @@
     <CudaCompile Include="CUDAUtils.cuh">
       <Filter>Header Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -134,6 +133,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EVSMShadowMapper.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="VariableManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -219,6 +220,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EVSMShadowMapper.h" />
+    <ClInclude Include="VariableManager.h" />
+    <ClInclude Include="CommonEnums.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

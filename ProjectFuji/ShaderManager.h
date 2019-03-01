@@ -6,14 +6,13 @@
 
 class ShaderProgram;
 
-namespace {
-	void addShader(std::string sName, std::string vertShader, std::string fragShader);
-	void addShader(ShaderProgram *sPtr, std::string sName, GLuint sId);
-}
-
 namespace ShaderManager {
 
 
+	namespace {
+		void addShader(std::string sName, std::string vertShader, std::string fragShader);
+		void addShader(ShaderProgram *sPtr, std::string sName, GLuint sId);
+	}
 
 
 	bool init();
