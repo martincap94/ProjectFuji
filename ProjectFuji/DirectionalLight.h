@@ -24,8 +24,21 @@ public:
 	glm::mat4 projectionMatrix;
 	//glm::mat4 viewMatrix;
 
+	float pLeft = -100.0f;
+	float pRight = 100.0f;
+	float pBottom = -100.0f;
+	float pTop = 100.0f;
+	float pNear = 1.0f;
+	float pFar = 1000.0f;
+
+	// for circular motion -> overwrites position and direction (focus point is the center of the circular motion)
+	float theta = 0.0f;
+	float radius = 250.0f;
+	float circularMotionSpeed = 20.0f;
+
 	glm::vec3 position;
 	glm::vec3 direction;	///< Direction of the light
+	glm::vec3 focusPoint = glm::vec3(0.0f);
 	glm::vec3 up;
 
 	glm::vec3 ambient;		///< Ambient value
@@ -37,6 +50,12 @@ public:
 
 	glm::mat4 getViewMatrix();
 	glm::mat4 getProjectionMatrix();
+
+	void setProjectionMatrix(float left, float right, float bottom, float top);
+	void setProjectionMatrix(float left, float right, float bottom, float top, float near, float far);
+
+
+	void circularMotionStep(float deltaTime = 1.0f);
 
 
 };

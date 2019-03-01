@@ -57,6 +57,8 @@ public:
 	int avgFrameCount = 1000;	///< Number of frames for which we take time measurement average
 	bool exitAfterFirstAvg = false;		///< Whether the application quits after the first average time measurement has finished
 
+	bool simulateSun = true;
+
 	
 	string soundingFile;		///< Name of the sounding file to be loaded
 

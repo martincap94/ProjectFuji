@@ -97,27 +97,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 /// Window size changed callback.
 void window_size_callback(GLFWwindow* window, int width, int height);
 
-/// Load configuration file and parse all correct parameters.
-//void loadConfigFile();
-
-/// Prints simple help message for command line usage.
-void printHelpMessage(string errorMsg = "");
-
-/// Parses input arguments of the application and saves them to global variables.
-/**
-	Parses input arguments of the application and saves them to global variables. Overwrites settings from config.ini if defined!
-	It is important to note that boolean options such as useCUDA ("-c") must be defined using true or false argument value since
-	we want to be able to rewrite the configuration values. This means that the approach of: if "-c" then use CUDA, if no argument
-	"-c" then do not is not possible. This approach would mean that if "-c" is defined, then we overwrite configuration parameter
-	and tell the simulator that we want to use CUDA, but if were to omit "-c" it would not set use CUDA to false, but it would use
-	the config.ini value which could be both true or false.
-
-*/
-//void parseArguments(int argc, char **argv);
-
-/// Parses parameter and its value from the configuration file. Assumes correct format for each parameter.
-//void saveConfigParam(string param, string val);
-
 /// Constructs the user interface for the given context. Must be called in each frame!
 void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor);
 
@@ -148,7 +127,7 @@ STLPSimulator *stlpSim;
 
 EVSMShadowMapper evsm;
 DirectionalLight dirLight;
-int uiMode = 0;
+int uiMode = 1;
 
 
 
@@ -734,6 +713,9 @@ int runApp() {
 
 			reportGLErrors("3");
 
+			if (vars.simulateSun) {
+				dirLight.circularMotionStep(deltaTime);
+			}
 			
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
@@ -1000,31 +982,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 
-void printHelpMessage(string errorMsg) {
-
-	if (errorMsg == "") {
-		cout << "Lattice Boltzmann command line argument options:" << endl;
-	} else {
-		cout << "Incorrect usage of parameter: " << errorMsg << ". Please refer to the options below." << endl;
-	}
-	cout << " -h, -help, --help:" << endl << "  show this help message" << endl;
-	cout << " -t:" << endl << "  LBM type: 2D (or 2) and 3D (or 3)" << endl;
-	cout << " -s" << endl << "  scene filename: *.ppm" << endl;
-	cout << " -c:" << endl << "   use CUDA: 'true' or 'false'" << endl;
-	cout << " -lh: " << endl << "   lattice height (int value)" << endl;
-	cout << " -m: " << endl << "   measure times (true or false)" << endl;
-	cout << " -p: " << endl << "   number of particles (int value)" << endl;
-	cout << " -mavg: " << endl << "   number of measurements for average time" << endl;
-	cout << " -mexit: " << endl << "   exit after first average measurement finished (true or false)" << endl;
-	cout << " -autoplay, -auto, -a: " << endl << "   start simulation right away (true or false)" << endl;
-	cout << " -tau:" << endl << "   value of tau (float between 0.51 and 10.0)" << endl;
-	cout << " -sf:" << endl << "  Sounding filename (with extension)" << endl;
-
-}
-
-
-
-
 void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	nk_glfw3_new_frame();
 
@@ -1050,6 +1007,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 		if (uiMode == 0) {
+			nk_layout_row_dynamic(ctx, 30, 1);
+			nk_label(ctx, "LBM Controls", NK_TEXT_CENTERED);
+
 			nk_layout_row_static(ctx, 30, 80, 3);
 			if (nk_button_label(ctx, "Reset")) {
 				//fprintf(stdout, "button pressed\n");
@@ -1164,13 +1124,40 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_layout_row_dynamic(ctx, 30, 2);
 			nk_checkbox_label(ctx, "Skybox", &drawSkybox);
+
+
+
+
+
 		} else if (uiMode == 1) {
 
-			nk_layout_row_dynamic(ctx, 15, 3);
-			nk_property_float(ctx, "x1:", -1000.0f, &dirLight.position.x, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "y2:", -1000.0f, &dirLight.position.y, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "z3:", -1000.0f, &dirLight.position.z, 1000.0f, 1.0f, 1.0f);
 
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+
+			nk_label(ctx, "Shadow/Light Controls", NK_TEXT_CENTERED);
+
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_property_float(ctx, "x:", -1000.0f, &dirLight.position.x, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "y:", -1000.0f, &dirLight.position.y, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "z:", -1000.0f, &dirLight.position.z, 1000.0f, 1.0f, 1.0f);
+
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_property_float(ctx, "focus x:", -1000.0f, &dirLight.focusPoint.x, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "focus y:", -1000.0f, &dirLight.focusPoint.y, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "focus z:", -1000.0f, &dirLight.focusPoint.z, 1000.0f, 1.0f, 1.0f);
+
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_property_float(ctx, "left:", -1000.0f, &dirLight.pLeft, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "right:", -1000.0f, &dirLight.pRight, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "bottom:", -1000.0f, &dirLight.pBottom, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "top:", -1000.0f, &dirLight.pTop, 1000.0f, 1.0f, 1.0f);
+
+			nk_checkbox_label(ctx, "Simulate sun", (int*)&vars.simulateSun);
+			nk_property_float(ctx, "Sun speed", 0.1f, &dirLight.circularMotionSpeed, 1000.0f, 0.1f, 0.1f);
 
 		}
 

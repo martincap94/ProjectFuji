@@ -207,55 +207,55 @@ void VariableManager::saveConfigParam(string param, string val) {
 
 	if (param == "LBM_type" || param == "-t") {
 		if (val == "2D" || val == "2") {
-			VariableManager::lbmType = LBM2D;
+			lbmType = LBM2D;
 		} else if (val == "3D" || val == "3") {
-			VariableManager::lbmType = LBM3D;
+			lbmType = LBM3D;
 		}
 	} else if (param == "VSync") {
-		VariableManager::vsync = stoi(val);
+		vsync = stoi(val);
 	} else if (param == "num_particles" || param == "-p") {
-		VariableManager::numParticles = stoi(val);
+		numParticles = stoi(val);
 	} else if (param == "scene_filename" || param == "-s") {
-		VariableManager::sceneFilename = val;
+		sceneFilename = val;
 	} else if (param == "window_width") {
-		VariableManager::windowWidth = stoi(val);
+		windowWidth = stoi(val);
 	} else if (param == "window_height") {
-		VariableManager::windowHeight = stoi(val);
+		windowHeight = stoi(val);
 	} else if (param == "lattice_width") {
-		VariableManager::latticeWidth = stoi(val);
+		latticeWidth = stoi(val);
 	} else if (param == "lattice_height" || param == "-lh") {
-		VariableManager::latticeHeight = stoi(val);
+		latticeHeight = stoi(val);
 	} else if (param == "lattice_depth") {
-		VariableManager::latticeDepth = stoi(val);
+		latticeDepth = stoi(val);
 	} else if (param == "use_CUDA" || param == "-c") {
-		VariableManager::useCUDA = (val == "true") ? true : false;
-		VariableManager::useCUDACheckbox = (int)VariableManager::useCUDA;
+		useCUDA = (val == "true") ? true : false;
+		useCUDACheckbox = (int)VariableManager::useCUDA;
 	} else if (param == "tau" || param == "-tau") {
-		VariableManager::tau = stof(val);
+		tau = stof(val);
 	} else if (param == "draw_streamlines") {
-		VariableManager::drawStreamlines = (val == "true") ? true : false;
+		drawStreamlines = (val == "true") ? true : false;
 	} else if (param == "autoplay") {
-		VariableManager::paused = (val == "true") ? 0 : 1;
+		paused = (val == "true") ? 0 : 1;
 	} else if (param == "camera_speed") {
-		VariableManager::cameraSpeed = stof(val);
+		cameraSpeed = stof(val);
 	} else if (param == "block_dim_2D") {
-		VariableManager::blockDim_2D = stoi(val);
+		blockDim_2D = stoi(val);
 	} else if (param == "block_dim_3D_x") {
-		VariableManager::blockDim_3D_x = stoi(val);
+		blockDim_3D_x = stoi(val);
 	} else if (param == "block_dim_3D_y") {
-		VariableManager::blockDim_3D_y = stoi(val);
+		blockDim_3D_y = stoi(val);
 	} else if (param == "measure_time" || param == "-m") {
-		VariableManager::measureTime = (val == "true") ? true : false;
+		measureTime = (val == "true") ? true : false;
 	} else if (param == "avg_frame_count" || param == "-mavg") {
 		//avgFrameCount = stoi(val);
-		VariableManager::timer.numMeasurementsForAvg = stoi(val);
+		timer.numMeasurementsForAvg = stoi(val);
 	} else if (param == "log_measurements_to_file") {
-		VariableManager::timer.logToFile = (val == "true") ? true : false;
+		timer.logToFile = (val == "true") ? true : false;
 	} else if (param == "print_measurements_to_console") {
-		VariableManager::timer.printToConsole = (val == "true") ? true : false;
+		timer.printToConsole = (val == "true") ? true : false;
 	} else if (param == "exit_after_first_avg" || param == "-mexit") {
-		VariableManager::exitAfterFirstAvg = (val == "true") ? true : false;
+		exitAfterFirstAvg = (val == "true") ? true : false;
 	} else if (param == "sounding_file" || param == "-sf") {
-		VariableManager::soundingFile = val;
+		soundingFile = val;
 	}
 }
