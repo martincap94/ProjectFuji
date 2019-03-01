@@ -2,8 +2,8 @@
 
 out vec4 fragColor;
 
-in vec3 vFragPos;
-in vec3 vNormal;
+in vec3 v_FragPos;
+in vec3 v_Normal;
 
 struct DirLight {
 	vec3 direction;
@@ -15,7 +15,7 @@ struct DirLight {
 
 uniform DirLight dirLight;
 
-uniform vec3 vViewPos;
+uniform vec3 v_ViewPos;
 
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
@@ -23,8 +23,8 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
 void main() {
 
-	vec3 norm = normalize(vNormal);
-	vec3 viewDir = normalize(vViewPos - vFragPos);
+	vec3 norm = normalize(v_Normal);
+	vec3 viewDir = normalize(v_ViewPos - v_FragPos);
 	
 	vec3 result = calcDirLight(dirLight, norm, viewDir);
 

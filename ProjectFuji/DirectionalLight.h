@@ -21,6 +21,10 @@
 class DirectionalLight {
 public:
 
+	glm::mat4 projectionMatrix;
+	//glm::mat4 viewMatrix;
+
+	glm::vec3 position;
 	glm::vec3 direction;	///< Direction of the light
 
 	glm::vec3 ambient;		///< Ambient value
@@ -29,6 +33,10 @@ public:
 	
 	DirectionalLight();		///< Default constructor.
 	~DirectionalLight();	///< Default destructor.
+
+	glm::mat4 getViewMatrix();
+	glm::mat4 getProjectionMatrix();
+
 
 };
 

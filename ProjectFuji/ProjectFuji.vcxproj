@@ -92,6 +92,7 @@
     <ClCompile Include="Camera2D.cpp" />
     <ClCompile Include="Curve.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
+    <ClCompile Include="EVSMShadowMapper.cpp" />
     <ClCompile Include="GeneralGrid.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Grid3D.cpp" />
@@ -140,10 +141,10 @@
     <CudaCompile Include="LBM3D_1D_indices.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
-    <CudaCompile Include="main.cpp">
+    <ClCompile Include="main.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </CudaCompile>
+    </ClCompile>
     <ClCompile Include="OrbitCamera.cpp" />
     <CudaCompile Include="ParticleSystem.cu" />
     <ClCompile Include="ShaderProgram.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="Cubemap.h" />
     <ClInclude Include="Curve.h" />
     <ClInclude Include="DirectionalLight.h" />
+    <ClInclude Include="EVSMShadowMapper.h" />
     <ClInclude Include="GeneralGrid.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Grid3D.h" />
@@ -192,14 +194,30 @@
     <Text Include="config.ini" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\basic_blur.vert" />
     <None Include="shaders\coloredParticle.frag" />
     <None Include="shaders\coloredParticle.vert" />
     <None Include="shaders\curve.frag" />
     <None Include="shaders\curve.vert" />
+    <None Include="shaders\dirLightOnly_evsm.frag" />
+    <None Include="shaders\dirLightOnly_evsm.vert" />
     <None Include="shaders\dirLightOnly.frag" />
     <None Include="shaders\dirLightOnly.vert" />
+    <None Include="shaders\evsm_1st_pass.frag" />
+    <None Include="shaders\evsm_1st_pass.vert" />
+    <None Include="shaders\evsm_2nd_pass.frag" />
+    <None Include="shaders\evsm_2nd_pass.vert" />
+    <None Include="shaders\gblur_3x3.frag" />
+    <None Include="shaders\gblur_5x5.frag" />
+    <None Include="shaders\gblur_5x5_separated.frag" />
+    <None Include="shaders\gblur_7x7_separated.frag" />
+    <None Include="shaders\gblur_9x9_separated.frag" />
     <None Include="shaders\pointSpriteTest.frag" />
     <None Include="shaders\pointSpriteTest.vert" />
+    <None Include="shaders\shadow_mapping_1st_pass.frag" />
+    <None Include="shaders\shadow_mapping_1st_pass.vert" />
+    <None Include="shaders\shadow_mapping_2nd_pass.frag" />
+    <None Include="shaders\shadow_mapping_2nd_pass.vert" />
     <None Include="shaders\singleColor.frag" />
     <None Include="shaders\singleColor.vert" />
     <None Include="shaders\singleColor_alpha.frag" />
@@ -213,6 +231,10 @@
     <None Include="shaders\text.vert" />
     <None Include="shaders\unlitColor.frag" />
     <None Include="shaders\unlitColor.vert" />
+    <None Include="shaders\vsm_1st_pass.frag" />
+    <None Include="shaders\vsm_1st_pass.vert" />
+    <None Include="shaders\vsm_2nd_pass.frag" />
+    <None Include="shaders\vsm_2nd_pass.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

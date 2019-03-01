@@ -43,6 +43,7 @@
 #include "STLPSimulator.h"
 #include "ShaderManager.h"
 #include "Skybox.h"
+#include "EVSMShadowMapper.h"
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
@@ -152,6 +153,10 @@ Camera2D *diagramCamera;
 Camera2D *overlayDiagramCamera;
 
 STLPSimulator *stlpSim;
+
+EVSMShadowMapper evsm;
+DirectionalLight dirLight;
+
 
 struct nk_context *ctx;
 
@@ -301,6 +306,7 @@ int runApp() {
 
 
 	ShaderManager::init();
+	evsm.init();
 
 	skybox = new Skybox();
 
@@ -418,7 +424,10 @@ int runApp() {
 	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
 
 	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
+	
 	dirLightOnlyShader = ShaderManager::getShaderPtr("dirLightOnly");
+	//dirLightOnlyShader = ShaderManager::getShaderPtr("dirLightOnly_evsm");
+
 	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
 	coloredParticleShader = ShaderManager::getShaderPtr("coloredParticle");
 	diagramShader = ShaderManager::getShaderPtr("diagram");
@@ -433,9 +442,10 @@ int runApp() {
 		((LBM3D_1D_indices*)lbm)->heightMap->shader = dirLightOnlyShader;
 	}
 
-	DirectionalLight dirLight;
-	dirLight.direction = glm::vec3(41.0f, 45.0f, 1.0f);
-	dirLight.ambient = glm::vec3(0.1f);
+	//dirLight.direction = glm::vec3(0.2f, 0.4f, 0.5f);
+	dirLight.position = glm::vec3(100.0f, 60.0f, 60.0f);
+	dirLight.direction = dirLight.position - glm::vec3(0.0f);
+	dirLight.ambient = glm::vec3(0.0f, 0.0f, 0.0f);
 	dirLight.diffuse = glm::vec3(0.8f, 0.4f, 0.4f);
 	dirLight.specular = glm::vec3(0.6f, 0.2f, 0.2f);
 
@@ -445,8 +455,9 @@ int runApp() {
 	dirLightOnlyShader->setVec3("dirLight.ambient", dirLight.ambient);
 	dirLightOnlyShader->setVec3("dirLight.diffuse", dirLight.diffuse);
 	dirLightOnlyShader->setVec3("dirLight.specular", dirLight.specular);
-	dirLightOnlyShader->setVec3("vViewPos", camera->position);
+	dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
 
+	evsm.dirLight = &dirLight;
 
 	refreshProjectionMatrix();
 
@@ -521,7 +532,7 @@ int runApp() {
 		processInput(window);
 		constructUserInterface(ctx, particlesColor);
 
-
+		dirLight.direction = dirLight.position - glm::vec3(0.0f);
 
 		if (measureTime) {
 			timer.clockAvgStart();
@@ -610,7 +621,7 @@ int runApp() {
 		view = camera->getViewMatrix();
 
 		ShaderManager::updateViewMatrixUniforms(view);
-		dirLightOnlyShader->setVec3("vViewPos", camera->position);
+		dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
 		
 		if (drawSkybox) {
 			projection = glm::perspective(glm::radians(90.0f), (float)screenWidth / screenHeight, nearPlane, farPlane);
@@ -671,6 +682,8 @@ int runApp() {
 
 			// DRAW SCENE
 			grid->draw(*singleColorShader);
+
+			
 			lbm->draw(*singleColorShader);
 
 			if (usePointSprites) {
@@ -707,9 +720,29 @@ int runApp() {
 			grid->draw(*singleColorShader);
 
 			gGrid.draw(*unlitColorShader);
+
+
+			/*
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LEQUAL);
+
+			evsm.preFirstPass();
+			stlpSim->heightMap->draw(evsm.firstPassShader);
+			evsm.postFirstPass();
+
+
+			evsm.preSecondPass(screenWidth, screenHeight);
+			stlpSim->heightMap->draw(evsm.secondPassShader);
+			evsm.postSecondPass();
+			*/
+
+			stlpSim->heightMap->draw();
+
 			stlpSim->draw(*singleColorShader);
 
-			stlpDiagram.drawOverlayDiagram(diagramShader);
+			stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
+
+			//stlpDiagram.drawOverlayDiagram(diagramShader);
 
 		}
 
@@ -1167,7 +1200,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 	/* GUI */
-	if (nk_begin(ctx, "Control Panel", nk_rect(50, 50, 275, 400),
+	if (nk_begin(ctx, "Control Panel", nk_rect(50, 50, 275, 500),
 				 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 				 NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) {
 		enum { EASY, HARD };
@@ -1287,6 +1320,12 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_layout_row_dynamic(ctx, 30, 2);
 		nk_checkbox_label(ctx, "Skybox", &drawSkybox);
+
+
+		nk_layout_row_dynamic(ctx, 15, 3);
+		nk_property_float(ctx, "x1:", -1000.0f, &dirLight.position.x, 1000.0f, 1.0f, 1.0f);
+		nk_property_float(ctx, "y2:", -1000.0f, &dirLight.position.y, 1000.0f, 1.0f, 1.0f);
+		nk_property_float(ctx, "z3:", -1000.0f, &dirLight.position.z, 1000.0f, 1.0f, 1.0f);
 
 
 

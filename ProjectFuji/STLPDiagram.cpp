@@ -238,8 +238,6 @@ void STLPDiagram::generateMixingRatioLine() {
 		float fracPart = log((W * P) / (C * (W + eps)));
 		float computedT = (B * fracPart) / (A - fracPart);
 
-		cout << " -> Computed T = " << computedT << endl;
-
 		y = getNormalizedPres(P);
 		x = getNormalizedTemp(T, y);
 
@@ -255,8 +253,6 @@ void STLPDiagram::generateMixingRatioLine() {
 		float offsetP = P - deltaP; // produces continuous line
 		fracPart = log((W * offsetP) / (C * (W + eps)));
 		computedT = (B * fracPart) / (A - fracPart);
-		cout << " -> Second computed T = " << computedT << endl;
-
 
 		y = getNormalizedPres(offsetP);
 		x = getNormalizedTemp(T, y);
@@ -1164,7 +1160,7 @@ void STLPDiagram::drawText(ShaderProgram &shader) {
 
 }
 
-void STLPDiagram::drawOverlayDiagram(ShaderProgram *shader) {
+void STLPDiagram::drawOverlayDiagram(ShaderProgram *shader, GLuint textureId) {
 	//GLint current_program_id = 0;
 	//glGetIntegerv(GL_CURRENT_PROGRAM, &current_program_id);
 	GLboolean depth_test_enabled = glIsEnabled(GL_DEPTH_TEST);
@@ -1172,7 +1168,12 @@ void STLPDiagram::drawOverlayDiagram(ShaderProgram *shader) {
 	glDisable(GL_DEPTH_TEST);
 	shader->use();
 	glActiveTexture(GL_TEXTURE0);
-	glBindTextureUnit(0, diagramTexture);
+
+	if (textureId == -1) {
+		glBindTextureUnit(0, diagramTexture);
+	} else {
+		glBindTextureUnit(0, textureId);
+	}
 	glUniform1i(glGetUniformLocation(shader->id, "u_Texture"), 0);
 
 	glBindVertexArray(overlayDiagramVAO);

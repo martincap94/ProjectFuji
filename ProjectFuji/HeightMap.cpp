@@ -81,7 +81,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 			glm::vec3 n1 = glm::normalize(glm::cross(p1 - p2, p3 - p2));
 			glm::vec3 n2 = glm::normalize(glm::cross(p3 - p4, p1 - p4)); // flat shading normals
 
-
+			/*
 			glm::vec3 normalP1 = computeNormal(x, z);
 			glm::vec3 normalP2 = computeNormal(x + 1, z);
 			glm::vec3 normalP3 = computeNormal(x + 1, z - 1);
@@ -102,6 +102,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 			areaPoints.push_back(normalP4);
 			areaPoints.push_back(p1);
 			areaPoints.push_back(normalP1);
+			*/
 
 
 			/*
@@ -116,7 +117,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 
 
 
-			/*
+			
 			// FLAT SHADING APPROACH
 
 			areaPoints.push_back(p1);
@@ -133,7 +134,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 			areaPoints.push_back(n2);
 			areaPoints.push_back(p1);
 			areaPoints.push_back(n2);
-			*/
+			
 
 			//areaPoints.push_back(glm::vec3(x, data[x][z], z));
 			//areaPoints.push_back(glm::vec3(x + 1, data[x + 1][z], z));
@@ -188,13 +189,13 @@ HeightMap::~HeightMap() {
 void HeightMap::draw() {
 	glUseProgram(shader->id);
 	glBindVertexArray(VAO);
-
-	//glPointSize(5.0f);
-	//shader.setVec3("uColor", glm::vec3(1.0f, 1.0f, 0.4f));
-
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);
+}
 
-
+void HeightMap::draw(ShaderProgram *shader) {
+	glUseProgram(shader->id);
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, numPoints);
 }
 
 // Based on: https://stackoverflow.com/questions/13983189/opengl-how-to-calculate-normals-in-a-terrain-height-grid

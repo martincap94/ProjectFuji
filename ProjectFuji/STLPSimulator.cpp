@@ -375,7 +375,7 @@ void STLPSimulator::generateParticle(bool setTestParticle) {
 }
 
 void STLPSimulator::draw(ShaderProgram &particlesShader) {
-	heightMap->draw();
+	//heightMap->draw();
 
 	glUseProgram(particlesShader.id);
 

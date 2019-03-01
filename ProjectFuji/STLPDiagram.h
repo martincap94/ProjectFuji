@@ -231,7 +231,7 @@ public:
 	void drawText(ShaderProgram &shader);
 
 
-	void drawOverlayDiagram(ShaderProgram *shader);
+	void drawOverlayDiagram(ShaderProgram *shader, GLuint textureId = -1);
 	void refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight, GLuint viewport_x = 0, GLuint viewport_y = 0);
 
 

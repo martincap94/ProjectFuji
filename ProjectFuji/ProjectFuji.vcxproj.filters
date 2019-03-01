@@ -133,6 +133,7 @@
     <ClCompile Include="Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EVSMShadowMapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -217,6 +218,7 @@
     <ClInclude Include="Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EVSMShadowMapper.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -285,6 +287,66 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\skybox.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\basic_blur.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\evsm_1st_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\evsm_1st_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\evsm_2nd_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\evsm_2nd_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\gblur_3x3.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\gblur_5x5.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\gblur_5x5_separated.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\gblur_7x7_separated.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\gblur_9x9_separated.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\dirLightOnly_evsm.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\dirLightOnly_evsm.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\shadow_mapping_1st_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\shadow_mapping_1st_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\shadow_mapping_2nd_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\shadow_mapping_2nd_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\vsm_1st_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\vsm_1st_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\vsm_2nd_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\vsm_2nd_pass.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

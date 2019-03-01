@@ -54,6 +54,7 @@ public:
 
 	/// Draws the height map.
 	void draw();
+	void draw(ShaderProgram *shader);
 
 private:
 

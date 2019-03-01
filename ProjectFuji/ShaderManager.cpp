@@ -52,6 +52,17 @@ namespace {
 		addShader("text", "text.vert", "text.frag");
 		addShader("curve", "curve.vert", "curve.frag");
 		addShader("skybox", "skybox.vert", "skybox.frag");
+		addShader("gaussianBlur", "basic_blur.vert", "gblur_9x9_separated.frag");
+		addShader("evsm_1st_pass", "evsm_1st_pass.vert", "evsm_1st_pass.frag");
+		addShader("evsm_2nd_pass", "evsm_2nd_pass.vert", "evsm_2nd_pass.frag");
+
+		addShader("dirLightOnly_evsm", "dirLightOnly_evsm.vert", "dirLightOnly_evsm.frag");
+
+		addShader("vsm_1st_pass", "vsm_1st_pass.vert", "vsm_1st_pass.frag");
+		addShader("vsm_2nd_pass", "vsm_2nd_pass.vert", "vsm_2nd_pass.frag");
+
+		addShader("shadow_mapping_1st_pass", "shadow_mapping_1st_pass.vert", "shadow_mapping_1st_pass.frag");
+		addShader("shadow_mapping_2nd_pass", "shadow_mapping_2nd_pass.vert", "shadow_mapping_2nd_pass.frag");
 
 	}
 
