@@ -47,7 +47,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 		for (int x = 0; x < width; x++) {
 			int sum = 0;
 
-			inFile >> dummy; // take red channel only
+			inFile >> dummy;
 			sum += dummy;
 			inFile >> dummy;
 			sum += dummy;

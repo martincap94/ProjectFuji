@@ -129,6 +129,8 @@ EVSMShadowMapper evsm;
 DirectionalLight dirLight;
 int uiMode = 1;
 
+float fov = 90.0f;
+
 
 
 struct nk_context *ctx;
@@ -606,7 +608,7 @@ int runApp() {
 		reportGLErrors("D2");
 
 		if (drawSkybox) {
-			projection = glm::perspective(glm::radians(90.0f), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
+			projection = glm::perspective(glm::radians(fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
 
 			if (mode == 2 || mode == 3) {
 				skyboxShader->use();
@@ -833,7 +835,7 @@ void refreshProjectionMatrix() {
 		if (projectionMode == ORTHOGRAPHIC) {
 			projection = viewportProjection;
 		} else {
-			projection = glm::perspective(glm::radians(90.0f), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
+			projection = glm::perspective(glm::radians(fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
 		}
 		//mode = 2;
 		camera->movementSpeed = 40.0f;
@@ -990,7 +992,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 	/* GUI */
-	if (nk_begin(ctx, "Control Panel", nk_rect(50, 50, 275, 500),
+	if (nk_begin(ctx, "Control Panel", nk_rect(50, 50, 275, 700),
 				 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 				 NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) {
 		enum { EASY, HARD };
@@ -1121,6 +1123,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			if (nk_option_label(ctx, "Perspective", projectionMode == PERSPECTIVE)) {
 				projectionMode = PERSPECTIVE;
 			}
+			if (projectionMode == PERSPECTIVE) {
+				nk_slider_float(ctx, 30.0f, &fov, 120.0f, 1.0f);
+			}
 
 			nk_layout_row_dynamic(ctx, 30, 2);
 			nk_checkbox_label(ctx, "Skybox", &drawSkybox);
@@ -1165,6 +1170,14 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				dirLight.rotationAxis = DirectionalLight::Z_AXIS;
 			}
 			nk_property_float(ctx, "rotation radius:", 0.0f, &dirLight.radius, 10000.0f, 1.0f, 1.0f);
+
+			nk_label(ctx, "EVSM", NK_TEXT_CENTERED);
+
+			nk_checkbox_label(ctx, "use blur pass:", (int *)&evsm.useBlurPass);
+			nk_property_float(ctx, "shadowBias:", 0.0f, &evsm.shadowBias, 1.0f, 0.0001f, 0.0001f);
+			nk_property_float(ctx, "light bleed reduction:", 0.0f, &evsm.lightBleedReduction, 1.0f, 0.0001f, 0.0001f);
+			//nk_property_float(ctx, "variance min limit:", 0.0f, &evsm.varianceMinLimit, 1.0f, 0.0001f, 0.0001f);
+			nk_property_float(ctx, "exponent:", 1.0f, &evsm.exponent, 42.0f, 0.1f, 0.1f);
 
 
 		}

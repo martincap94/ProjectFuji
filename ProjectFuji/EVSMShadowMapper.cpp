@@ -168,7 +168,7 @@ void EVSMShadowMapper::preFirstPass() {
 
 	glUniform1i(glGetUniformLocation(pid, "u_PCFMode"), 2);
 
-	glUniform2f(glGetUniformLocation(pid, "u_Exponents"), 40.0f, 40.0f);
+	glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
 	glUniformMatrix4fv(glGetUniformLocation(pid, "u_ProjectionMatrix"), 1, GL_FALSE, &lightProjectionMatrix[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(pid, "u_ModelViewMatrix"), 1, GL_FALSE, &lightViewMatrix[0][0]);
 
@@ -177,39 +177,39 @@ void EVSMShadowMapper::preFirstPass() {
 }
 
 void EVSMShadowMapper::postFirstPass() {
-	if (!isReady() || !useBlurPass) {
+	if (!isReady()) {
 		return;
 	}
 
-	
-	GLuint pid = blurShader->id;
-	blurShader->use();
+	if (useBlurPass) {
+		GLuint pid = blurShader->id;
+		blurShader->use();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, firstPassBlurFramebuffer);
-	glClear(GL_COLOR_BUFFER_BIT);
+		glBindFramebuffer(GL_FRAMEBUFFER, firstPassBlurFramebuffer);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-	glUniform2f(glGetUniformLocation(pid, "u_TexelSize"), 1.0f / resolution, 0.0f);
-	glBindTextureUnit(0, depthMapTexture);
+		glUniform2f(glGetUniformLocation(pid, "u_TexelSize"), 1.0f / resolution, 0.0f);
+		glBindTextureUnit(0, depthMapTexture);
 
-	glUniform1i(glGetUniformLocation(pid, "u_InputTexture"), 0);
+		glUniform1i(glGetUniformLocation(pid, "u_InputTexture"), 0);
 
-	glBindVertexArray(quadVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(quadVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, secondPassBlurFramebuffer);
-	glClear(GL_COLOR_BUFFER_BIT);
 
-	glUniform2f(glGetUniformLocation(pid, "u_TexelSize"), 0.0f, 1.0f / resolution);
-	glBindTextureUnit(0, firstPassBlurTexture);
+		glBindFramebuffer(GL_FRAMEBUFFER, secondPassBlurFramebuffer);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-	glUniform1i(glGetUniformLocation(pid, "u_InputTexture"), 0);
+		glUniform2f(glGetUniformLocation(pid, "u_TexelSize"), 0.0f, 1.0f / resolution);
+		glBindTextureUnit(0, firstPassBlurTexture);
 
-	glBindVertexArray(quadVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+		glUniform1i(glGetUniformLocation(pid, "u_InputTexture"), 0);
 
-	glBindVertexArray(0);
-	
+		glBindVertexArray(quadVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glBindVertexArray(0);
+	}
 
 
 }
@@ -226,16 +226,21 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	glBindTextureUnit(0, secondPassBlurTexture);
-	//glBindTextureUnit(0, depthMapTexture);
+	if (useBlurPass) {
+		glBindTextureUnit(0, secondPassBlurTexture);
+	} else {
+		glBindTextureUnit(0, depthMapTexture);
+	}
+
 
 	secondPassShader->use();
 
 	GLuint pid = secondPassShader->id;
 
-	glUniform2f(glGetUniformLocation(pid, "u_Exponents"), 40.0f, 40.0f);
-
-	glUniform1i(glGetUniformLocation(pid, "u_PCFMode"), 2);
+	glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
+	secondPassShader->setFloat("u_ShadowBias", shadowBias);
+	secondPassShader->setFloat("u_LightBleedReduction", lightBleedReduction);
+	//secondPassShader->setFloat("u_VarianceMinLimit", varianceMinLimit);
 
 
 	glm::mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
