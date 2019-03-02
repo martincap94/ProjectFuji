@@ -21,6 +21,11 @@
 class DirectionalLight {
 public:
 
+	enum eRotationAxis {
+		Y_AXIS,
+		Z_AXIS
+	};
+
 	glm::mat4 projectionMatrix;
 	//glm::mat4 viewMatrix;
 
@@ -35,6 +40,7 @@ public:
 	float theta = 0.0f;
 	float radius = 250.0f;
 	float circularMotionSpeed = 20.0f;
+	eRotationAxis rotationAxis = Z_AXIS;
 
 	glm::vec3 position;
 	glm::vec3 direction;	///< Direction of the light

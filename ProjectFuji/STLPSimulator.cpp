@@ -338,7 +338,7 @@ void STLPSimulator::generateParticle(bool setTestParticle) {
 
 	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
 
-	rangeToRange(y, 0.0f, GRID_HEIGHT, 0.0f, 15000.0f); // 10 km
+	rangeToRange(y, 0.0f, GRID_HEIGHT, 0.0f, 15000.0f);
 	//cout << y << endl;
 
 	//y = 1500.0f;

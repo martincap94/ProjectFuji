@@ -1158,6 +1158,14 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_checkbox_label(ctx, "Simulate sun", (int*)&vars.simulateSun);
 			nk_property_float(ctx, "Sun speed", 0.1f, &dirLight.circularMotionSpeed, 1000.0f, 0.1f, 0.1f);
+			if (nk_option_label(ctx, "y axis", dirLight.rotationAxis == DirectionalLight::Y_AXIS)) {
+				dirLight.rotationAxis = DirectionalLight::Y_AXIS;
+			}
+			if (nk_option_label(ctx, "z axis", dirLight.rotationAxis == DirectionalLight::Z_AXIS)) {
+				dirLight.rotationAxis = DirectionalLight::Z_AXIS;
+			}
+			nk_property_float(ctx, "rotation radius:", 0.0f, &dirLight.radius, 10000.0f, 1.0f, 1.0f);
+
 
 		}
 

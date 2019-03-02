@@ -37,7 +37,7 @@ float linstep(float minVal, float maxVal, float val);
 void main() {
 
 	vec3 norm = normalize(v_Normal);
-	vec3 viewDir = normalize(v_ViewPos - v_FragPos.xyz);
+	vec3 viewDir = normalize(v_FragPos.xyz - v_ViewPos);
 	
 
 	vec3 color = calcDirLight(dirLight, norm, viewDir);

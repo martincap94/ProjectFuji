@@ -48,10 +48,20 @@ void DirectionalLight::setProjectionMatrix(float left, float right, float bottom
 
 void DirectionalLight::circularMotionStep(float deltaTime) {
 
-	position.z = radius * cos(glm::radians(theta)); // rotate around z
+	float rot = radius * cos(glm::radians(theta));
+
+	if (rotationAxis == Y_AXIS) {
+		position.x = rot;
+		position.z = 0.0f;
+	} else if (rotationAxis = Z_AXIS) {
+		position.z = rot;
+		position.x = 0.0f;
+	}
+
+	//position.z = radius * cos(glm::radians(theta)); // rotate around z
 	position.y = radius * sin(glm::radians(theta));
 	//position.z = focusPoint.z;
-	position.x = 0.0f;
+	//position.x = 0.0f;
 	position += focusPoint; // offset by circle center (focus point)
 
 	theta += circularMotionSpeed * deltaTime;

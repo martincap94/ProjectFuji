@@ -24,7 +24,7 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 void main() {
 
 	vec3 norm = normalize(v_Normal);
-	vec3 viewDir = normalize(v_ViewPos - v_FragPos);
+	vec3 viewDir = normalize(v_FragPos - v_ViewPos);
 	
 	vec3 result = calcDirLight(dirLight, norm, viewDir);
 

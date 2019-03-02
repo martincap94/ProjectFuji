@@ -333,9 +333,9 @@ void STLPDiagram::generateMixingRatioLine() {
 		y = getNormalizedPres(P);
 		x = getNormalizedTemp(computedT, y);
 
-		if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
-			break;
-		}
+		//if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
+		//	break;
+		//}
 
 		vertices.push_back(glm::vec2(x, y));
 
