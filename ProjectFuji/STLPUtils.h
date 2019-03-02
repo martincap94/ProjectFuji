@@ -26,9 +26,10 @@
 #define c_pv 1875.0f;
 //////////////////////////////////////////////////////////////////////////////
 
-
+// T is in degC, pressure is in Pa
 float getSaturationVaporPressure(float T);
 
+// T is in degC, pressure is in Pa (?)
 float getMixingRatioOfWaterVapor(float T, float P);
 
 float computeRho(float T, float P);

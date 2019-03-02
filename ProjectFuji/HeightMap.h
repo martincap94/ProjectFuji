@@ -35,6 +35,8 @@ public:
 	
 	float **data;		///< The height map data array		
 
+
+
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)
 
 	/// Default constructor.

@@ -145,7 +145,9 @@ public:
 	void generateIsotherms();
 	void initDewpointCurve();
 	void initAmbientTemperatureCurve();
+	void generateMixingRatioLineOld();
 	void generateMixingRatioLine();
+
 
 
 	/*

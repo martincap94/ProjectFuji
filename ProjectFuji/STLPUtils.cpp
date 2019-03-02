@@ -14,6 +14,7 @@ float getSaturationVaporPressure(float T) {
 	return 610.94f * exp((17.625f * T) / (T + 243.04f));
 }
 
+
 float getMixingRatioOfWaterVapor(float T, float P) {
 	float satVP = getSaturationVaporPressure(T);
 	return (EPS * satVP) / (P - satVP);
