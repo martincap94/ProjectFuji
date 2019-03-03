@@ -126,6 +126,8 @@ public:
 	float P0;
 	float groundAltitude;
 
+	int cropBounds = 1;
+
 
 	/// Constructs the diagram instance without loading any sounding data.
 	STLPDiagram();

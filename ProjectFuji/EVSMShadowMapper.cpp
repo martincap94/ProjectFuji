@@ -236,6 +236,7 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 	secondPassShader->use();
 
 	GLuint pid = secondPassShader->id;
+	secondPassShader->setBool("u_ShadowOnly", (bool)shadowOnly);
 
 	glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
 	secondPassShader->setFloat("u_ShadowBias", shadowBias);

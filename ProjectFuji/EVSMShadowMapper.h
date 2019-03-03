@@ -20,6 +20,8 @@ public:
 	glm::mat4 lightProjectionMatrix;
 	glm::mat4 lightViewMatrix;
 
+	int shadowOnly = 0;
+
 	DirectionalLight *dirLight = nullptr;
 
 

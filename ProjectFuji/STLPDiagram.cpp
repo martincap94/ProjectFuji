@@ -1147,6 +1147,8 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 
 	glUseProgram(shader.id);
 
+	shader.setBool("u_CropBounds", (bool)cropBounds);
+
 	if (showIsobars) {
 		shader.setVec3("color", glm::vec3(0.8f, 0.8f, 0.8f));
 		glBindVertexArray(isobarsVAO);

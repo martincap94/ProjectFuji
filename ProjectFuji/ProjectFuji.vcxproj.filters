@@ -125,17 +125,28 @@
     <ClCompile Include="TextRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="STLPSimulator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EVSMShadowMapper.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="VariableManager.cpp" />
-    <ClCompile Include="ppmImage.cpp" />
+    <ClCompile Include="EVSMShadowMapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ppmImage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VariableManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="STLPSimulatorCUDA.cu">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -210,7 +221,6 @@
     <ClInclude Include="TextRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="STLPSimulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -220,12 +230,24 @@
     <ClInclude Include="Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EVSMShadowMapper.h" />
-    <ClInclude Include="VariableManager.h" />
     <ClInclude Include="CommonEnums.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ppmImage.h" />
+    <ClInclude Include="EVSMShadowMapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ppmImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="STLPSimulatorCUDA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VariableManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

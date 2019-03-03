@@ -59,6 +59,8 @@ public:
 
 	bool simulateSun = true;
 
+	int stlpUseCUDA = 0;
+
 	
 	string soundingFile;		///< Name of the sounding file to be loaded
 

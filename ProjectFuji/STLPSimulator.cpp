@@ -90,280 +90,142 @@ void STLPSimulator::initBuffers() {
 
 void STLPSimulator::doStep() {
 
-	if (!testing) {
 
-		// quick testing
+	// quick testing
 		
-		while (numParticles < maxNumParticles) {
-			stlpDiagram->particlePoints.push_back(glm::vec2(0.0f));
+	while (numParticles < maxNumParticles) {
+		stlpDiagram->particlePoints.push_back(glm::vec2(0.0f));
 
-			generateParticle();
-		}
-		while (numParticles > maxNumParticles) {
-			particles.pop_back();
-			particlePositions.pop_back();
-			stlpDiagram->particlePoints.pop_back();
-			numParticles--;
-		}
-
-		//if (numParticles < MAX_PARTICLE_COUNT) {
-		//	generateParticle();
-		//}
+		generateParticle();
 	}
-	
-	if (testing) {
-		// TESTING PARTICLE MOTION
-		if (testParticle.pressure > stlpDiagram->CCL.y) { // if P_i > P_{CCL_i}
+	while (numParticles > maxNumParticles) {
+		particles.pop_back();
+		particlePositions.pop_back();
+		stlpDiagram->particlePoints.pop_back();
+		numParticles--;
+	}
 
-			cout << "===== DRY LIFT STEP =======================================================================================" << endl;
+	//if (numParticles < MAX_PARTICLE_COUNT) {
+	//	generateParticle();
+	//}
+	
+
+
+	for (int i = 0; i < numParticles; i++) {
+		if (particles[i].pressure > stlpDiagram->CCLProfiles[particles[i].profileIndex].y) { // if P_i > P_{CCL_i}
+
+			//cout << "===== DRY LIFT STEP =======================================================================================" << endl;
 
 
 			// l <- isobar line
 
 			// equation 3.14 - theta = T_{c_i}
-			float T = (testParticle.convectiveTemperature + 273.15f) * pow((testParticle.pressure / stlpDiagram->soundingData[0].data[PRES]), 0.286f); // do not forget to use Kelvin
+			float T = (stlpDiagram->TcProfiles[particles[i].profileIndex].x + 273.15f) * pow((particles[i].pressure / stlpDiagram->soundingData[0].data[PRES]), 0.286f); // do not forget to use Kelvin
 			T -= 273.15f; // convert back to Celsius
 
 			// find intersection of isobar at P_i with C_a and C_d (ambient and dewpoint sounding curves)
-			float normP = stlpDiagram->getNormalizedPres(testParticle.pressure);
+			float normP = stlpDiagram->getNormalizedPres(particles[i].pressure);
 			glm::vec2 ambientIntersection = stlpDiagram->ambientCurve.getIntersectionWithIsobar(normP);
 			glm::vec2 dewpointIntersection = stlpDiagram->dewpointCurve.getIntersectionWithIsobar(normP);
 
 			float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
 			float dewpointTemp = stlpDiagram->getDenormalizedTemp(dewpointIntersection.x, normP);
 
-			stlpDiagram->setVisualizationPoint(glm::vec3(ambientTemp, testParticle.pressure, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 1, false);
-			stlpDiagram->setVisualizationPoint(glm::vec3(dewpointTemp, testParticle.pressure, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 2, false);
 
 			toKelvin(ambientTemp);
 			toKelvin(dewpointTemp);
 
-			cout << "ambient temp [K] = " << ambientTemp << endl;
-			cout << "dewpoint temp [K] = " << dewpointTemp << endl;
-
-
-			float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, testParticle.pressure);
-			float dewpointTheta = computeThetaFromAbsoluteK(dewpointTemp, testParticle.pressure);
-			float particleTheta = computeThetaFromAbsoluteK(getKelvin(T), testParticle.pressure);
-
-			cout << "convective temp [K] = " << getKelvin(testParticle.convectiveTemperature) << endl;
-			cout << "ambient theta [K] = " << ambientTheta << ", dewpoint theta [K] = " << dewpointTheta << endl;
+			float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
+			float dewpointTheta = computeThetaFromAbsoluteK(dewpointTemp, particles[i].pressure);
+			float particleTheta = computeThetaFromAbsoluteK(getKelvin(T), particles[i].pressure);
 
 			//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
-			//float a = 9.81f * (getKelvin(testParticle.convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
+			//float a = 9.81f * (getKelvin(particles[i].convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
 
-			cout << "Particle theta [K] = " << particleTheta << endl;
-
-			//toCelsius(ambientTheta);
-			//toCelsius(particleTheta);
 
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
-			cout << "ACCELERATION a = " << a << endl;
+			if (!usePrevVelocity) {
+				particles[i].velocity.y = 0.0f;
+			}
+			particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
+			float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
 
-			testParticle.velocity.y = testParticle.velocity.y + a * delta_t;
-			float deltaY = testParticle.velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
+			particles[i].position.y += deltaY;
+			particles[i].updatePressureVal();
 
-			testParticle.position.y += deltaY;
+			stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(T, particles[i].pressure);
 
-			printf("Particle velocity = (%f, %f, %f)\n", testParticle.velocity.x, testParticle.velocity.y, testParticle.velocity.z);
-			cout << "Particle height = " << testParticle.position.y << endl;
+			if (simulateWind) {
 
-			testParticle.updatePressureVal();
+				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
+																										// we need to map it to our system
+				windDeltas /= GRID_WIDTH; // just testing
+				//rangeToRange(windDeltas.x, )
 
-			stlpDiagram->setVisualizationPoint(glm::vec3(T, testParticle.pressure, 0.0f), glm::vec3(0.0f, 1.0f, 0.3f), 0, false);
+				particles[i].position.x += windDeltas.x;
+				particles[i].position.z += windDeltas.y;
+			}
 
 
 
 		} else {
 
-			cout << "===== MOIST LIFT STEP ============================================================================" << endl;
+			// l <- isobar line
 
-
-			float normP = stlpDiagram->getNormalizedPres(testParticle.pressure);
+			// find intersection of isobar at P_i with C_a and C_d (ambient and dewpoint sounding curves)
+			float normP = stlpDiagram->getNormalizedPres(particles[i].pressure);
 			glm::vec2 ambientIntersection = stlpDiagram->ambientCurve.getIntersectionWithIsobar(normP);
-			glm::vec2 moistAdiabatIntersection = stlpDiagram->moistAdiabat_CCL_EL.getIntersectionWithIsobar(normP);
+			glm::vec2 moistAdiabatIntersection = stlpDiagram->moistAdiabatProfiles[particles[i].profileIndex].getIntersectionWithIsobar(normP);
 
 			float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
 			float particleTemp = stlpDiagram->getDenormalizedTemp(moistAdiabatIntersection.x, normP);
 
-			stlpDiagram->setVisualizationPoint(glm::vec3(ambientTemp, testParticle.pressure, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 1, false);
-			stlpDiagram->setVisualizationPoint(glm::vec3(particleTemp, testParticle.pressure, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), 2, false);
-
-
-			cout << "ambient temp = " << ambientTemp << endl;
-			cout << "particle temp = " << particleTemp << endl;
 
 			toKelvin(ambientTemp);
 			toKelvin(particleTemp);
 
-			float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, testParticle.pressure);
-			float particleTheta = computeThetaFromAbsoluteK(particleTemp, testParticle.pressure);
+			float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
+			float particleTheta = computeThetaFromAbsoluteK(particleTemp, particles[i].pressure);
 
-			cout << "convective temp [K] = " << getKelvin(testParticle.convectiveTemperature) << endl;
-			cout << "ambient theta [K] = " << ambientTheta << ", particle theta [K] = " << particleTheta << endl;
-
-			//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
-			//float a = 9.81f * (getKelvin(testParticle.convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
-
-			cout << "Particle theta [K] = " << particleTheta << endl;
-
-
-			//toCelsius(ambientTheta);
-			//toCelsius(particleTheta);
 
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
-			cout << "ACCELERATION a = " << a << endl;
+			if (!usePrevVelocity) {
+				particles[i].velocity.y = 0.0f;
+			}
+			particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
+			float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
 
-			testParticle.velocity.y = testParticle.velocity.y + a * delta_t;
-			float deltaY = testParticle.velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
+			particles[i].position.y += deltaY;
+			particles[i].updatePressureVal();
 
-			testParticle.position.y += deltaY;
-
-			printf("Particle velocity = (%f, %f, %f)\n", testParticle.velocity.x, testParticle.velocity.y, testParticle.velocity.z);
-			cout << "Particle height = " << testParticle.position.y << endl;
+			stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(getCelsius(particleTemp), particles[i].pressure);
 
 
-			testParticle.updatePressureVal();
+			if (simulateWind) {
+				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
+				// we need to map it to our system
+				windDeltas /= GRID_WIDTH; // just testing
 
-			stlpDiagram->setVisualizationPoint(glm::vec3(getCelsius(particleTemp), testParticle.pressure, 0.0f), glm::vec3(0.0f, 1.0f, 0.3f), 0, false);
-
+				particles[i].position.x += windDeltas.x;
+				particles[i].position.z += windDeltas.y;
+			}
 
 		}
 
 		// hack
+		glm::vec3 tmpPos = particles[i].position;
+		//rangeToRange(tmpPos.y, 0.0f, 15000.0f, 0.0f, GRID_HEIGHT);
 
-		glm::vec3 tmpPos = testParticle.position;
-		rangeToRange(tmpPos.y, 0.0f, 15000.0f, 0.0f, GRID_HEIGHT); // 10 km
+		mapToSimulationBox(tmpPos.y);
+		//rangeToRange()
 
-		particlePositions[0] = tmpPos;
+
+		particlePositions[i] = tmpPos;
+
 	}
 
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// NEW --- multiple particles -----
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	if (!testing) {
-		for (int i = 0; i < numParticles; i++) {
-			if (particles[i].pressure > stlpDiagram->CCLProfiles[particles[i].profileIndex].y) { // if P_i > P_{CCL_i}
-
-				//cout << "===== DRY LIFT STEP =======================================================================================" << endl;
-
-
-				// l <- isobar line
-
-				// equation 3.14 - theta = T_{c_i}
-				float T = (particles[i].convectiveTemperature + 273.15f) * pow((particles[i].pressure / stlpDiagram->soundingData[0].data[PRES]), 0.286f); // do not forget to use Kelvin
-				T -= 273.15f; // convert back to Celsius
-
-				// find intersection of isobar at P_i with C_a and C_d (ambient and dewpoint sounding curves)
-				float normP = stlpDiagram->getNormalizedPres(particles[i].pressure);
-				glm::vec2 ambientIntersection = stlpDiagram->ambientCurve.getIntersectionWithIsobar(normP);
-				glm::vec2 dewpointIntersection = stlpDiagram->dewpointCurve.getIntersectionWithIsobar(normP);
-
-				float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
-				float dewpointTemp = stlpDiagram->getDenormalizedTemp(dewpointIntersection.x, normP);
-
-
-				toKelvin(ambientTemp);
-				toKelvin(dewpointTemp);
-
-				float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
-				float dewpointTheta = computeThetaFromAbsoluteK(dewpointTemp, particles[i].pressure);
-				float particleTheta = computeThetaFromAbsoluteK(getKelvin(T), particles[i].pressure);
-
-				//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
-				//float a = 9.81f * (getKelvin(particles[i].convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
-
-
-				float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
-
-				if (!usePrevVelocity) {
-					particles[i].velocity.y = 0.0f;
-				}
-				particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
-				float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
-
-				particles[i].position.y += deltaY;
-				particles[i].updatePressureVal();
-
-				stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(T, particles[i].pressure);
-
-				if (simulateWind) {
-
-					glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
-																											// we need to map it to our system
-					windDeltas /= GRID_WIDTH; // just testing
-					//rangeToRange(windDeltas.x, )
-
-					particles[i].position.x += windDeltas.x;
-					particles[i].position.z += windDeltas.y;
-				}
-
-
-
-			} else {
-
-				// l <- isobar line
-
-				// find intersection of isobar at P_i with C_a and C_d (ambient and dewpoint sounding curves)
-				float normP = stlpDiagram->getNormalizedPres(particles[i].pressure);
-				glm::vec2 ambientIntersection = stlpDiagram->ambientCurve.getIntersectionWithIsobar(normP);
-				glm::vec2 moistAdiabatIntersection = stlpDiagram->moistAdiabatProfiles[particles[i].profileIndex].getIntersectionWithIsobar(normP);
-
-				float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
-				float particleTemp = stlpDiagram->getDenormalizedTemp(moistAdiabatIntersection.x, normP);
-
-
-				toKelvin(ambientTemp);
-				toKelvin(particleTemp);
-
-				float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
-				float particleTheta = computeThetaFromAbsoluteK(particleTemp, particles[i].pressure);
-
-
-				float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
-
-				if (!usePrevVelocity) {
-					particles[i].velocity.y = 0.0f;
-				}
-				particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
-				float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
-
-				particles[i].position.y += deltaY;
-				particles[i].updatePressureVal();
-
-				stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(getCelsius(particleTemp), particles[i].pressure);
-
-
-				if (simulateWind) {
-					glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
-					// we need to map it to our system
-					windDeltas /= GRID_WIDTH; // just testing
-
-					particles[i].position.x += windDeltas.x;
-					particles[i].position.z += windDeltas.y;
-				}
-
-			}
-
-			// hack
-			glm::vec3 tmpPos = particles[i].position;
-			//rangeToRange(tmpPos.y, 0.0f, 15000.0f, 0.0f, GRID_HEIGHT);
-
-			mapToSimulationBox(tmpPos.y);
-			//rangeToRange()
-
-
-			particlePositions[i] = tmpPos;
-
-		}
-	}
 
 }
 
@@ -378,7 +240,7 @@ void STLPSimulator::resetSimulation() {
 
 }
 
-void STLPSimulator::generateParticle(bool setTestParticle) {
+void STLPSimulator::generateParticle() {
 
 	float randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
 	float randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
@@ -419,7 +281,7 @@ void STLPSimulator::generateParticle(bool setTestParticle) {
 	//p.updatePressureVal();
 	//p.convectiveTemperature = stlpDiagram->Tc.x;
 	p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
-	p.convectiveTemperature = stlpDiagram->TcProfiles[p.profileIndex].x;
+	//p.convectiveTemperature = stlpDiagram->TcProfiles[p.profileIndex].x;
 
 	//cout << "Pressure at " << y << " is " << p.pressure << endl;
 
@@ -441,12 +303,6 @@ void STLPSimulator::generateParticle(bool setTestParticle) {
 	particlePositions.push_back(glm::vec3(randx, y, randz));
 	numParticles++;
 
-	if (setTestParticle) {
-		p.convectiveTemperature = stlpDiagram->Tc.x;
-		p.updatePressureVal();
-		testParticle = p;
-		stlpDiagram->setVisualizationPoint(glm::vec3(testParticle.convectiveTemperature, testParticle.pressure, 0.0f), glm::vec3(0.0f, 1.0f, 0.3f), 0, false);
-	}
 
 	/*int randx = rand() % (GRID_WIDTH - 1);
 	int randz = rand() % (GRID_DEPTH - 1);
@@ -505,7 +361,6 @@ void STLPSimulator::draw(ShaderProgram &particlesShader) {
 }
 
 void STLPSimulator::initParticles() {
-	generateParticle(true); // testing particle for dry and moist lift
 }
 
 void STLPSimulator::mapToSimulationBox(float & val) {

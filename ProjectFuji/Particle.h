@@ -8,7 +8,7 @@ public:
 
 	glm::vec3 position;
 	glm::vec3 velocity;
-	float convectiveTemperature = 0.0f;
+	//float convectiveTemperature = 0.0f;
 	float pressure; // pressure at its current height (can be computed from position.z)
 	int profileIndex;
 

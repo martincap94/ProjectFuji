@@ -131,6 +131,9 @@
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="STLPDiagram.cpp" />
     <ClCompile Include="STLPSimulator.cpp" />
+    <CudaCompile Include="STLPSimulatorCUDA.cu">
+      <FileType>CppCode</FileType>
+    </CudaCompile>
     <ClCompile Include="STLPUtils.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -173,6 +176,7 @@
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="STLPSimulator.h" />
     <ClInclude Include="STLPDiagram.h" />
+    <ClInclude Include="STLPSimulatorCUDA.h" />
     <ClInclude Include="STLPUtils.h" />
     <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="Timer.h" />

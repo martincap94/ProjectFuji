@@ -41,6 +41,7 @@
 #include "Timer.h"
 #include "STLPDiagram.h"
 #include "STLPSimulator.h"
+#include "STLPSimulatorCUDA.h"
 #include "ShaderManager.h"
 #include "Skybox.h"
 #include "EVSMShadowMapper.h"
@@ -124,6 +125,7 @@ Camera2D *diagramCamera;
 Camera2D *overlayDiagramCamera;
 
 STLPSimulator *stlpSim;
+STLPSimulatorCUDA *stlpSimCUDA;
 
 EVSMShadowMapper evsm;
 DirectionalLight dirLight;
@@ -432,11 +434,14 @@ int runApp() {
 
 
 	stlpSim = new STLPSimulator(&vars, &stlpDiagram);
+	stlpSimCUDA = new STLPSimulatorCUDA(&vars, &stlpDiagram);
 	if (vars.lbmType == LBM3D) {
 		stlpSim->heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
+		stlpSimCUDA->heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
 	}
 
 	stlpSim->initParticles();
+	stlpSimCUDA->initParticles();
 
 	// Set these callbacks after nuklear initialization, otherwise they won't work!
 	glfwSetScrollCallback(window, scroll_callback);
@@ -700,7 +705,11 @@ int runApp() {
 
 		} else if (mode == 3) {
 
-			stlpSim->doStep();
+			if (vars.stlpUseCUDA) {
+				stlpSimCUDA->doStep();
+			} else {
+				stlpSim->doStep();
+			}
 
 			reportGLErrors("1");
 
@@ -747,7 +756,12 @@ int runApp() {
 			//glCullFace(GL_FRONT);
 			//stlpSim->heightMap->draw();
 
-			stlpSim->draw(*singleColorShader);
+			if (vars.stlpUseCUDA) {
+				stlpSimCUDA->draw(*singleColorShader);
+			} else {
+				stlpSim->draw(*singleColorShader);
+			}
+
 
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
 
@@ -1178,6 +1192,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			//nk_property_float(ctx, "variance min limit:", 0.0f, &evsm.varianceMinLimit, 1.0f, 0.0001f, 0.0001f);
 			nk_property_float(ctx, "exponent:", 1.0f, &evsm.exponent, 42.0f, 0.1f, 0.1f);
 
+			nk_checkbox_label(ctx, "shadow only", &evsm.shadowOnly);
 
 		}
 
@@ -1208,6 +1223,8 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_checkbox_label(ctx, "Show moist adiabats", &stlpDiagram.showMoistAdiabats);
 		nk_checkbox_label(ctx, "Show dewpoint curve", &stlpDiagram.showDewpointCurve);
 		nk_checkbox_label(ctx, "Show ambient temp. curve", &stlpDiagram.showAmbientTemperatureCurve);
+		nk_checkbox_label(ctx, "Crop Bounds", &stlpDiagram.cropBounds);
+
 
 
 		int tmp = stlpDiagram.overlayDiagramWidth;
@@ -1243,6 +1260,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_checkbox_label(ctx, "Show CCL Level", &stlpSim->showCCLLevelLayer);
 		nk_checkbox_label(ctx, "Show EL Level", &stlpSim->showELLevelLayer);
+
+
+		nk_checkbox_label(ctx, "Use CUDA", &vars.stlpUseCUDA);
 
 	}
 	nk_end(ctx);

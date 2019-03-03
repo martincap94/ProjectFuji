@@ -41,7 +41,6 @@ public:
 	float delta_t = 60.0f;
 	//float delta_t = 0.00001f;
 
-	Particle testParticle; // test particle for initial implementation of convection process
 	bool testing = false;
 
 	int simulateWind = 0;
@@ -83,7 +82,7 @@ public:
 
 
 	/// Generates single particle on the terrain.
-	void generateParticle(bool setTestParticle = false);
+	void generateParticle();
 
 	/// Draws the heightmap and particles.
 	void draw(ShaderProgram &particlesShader);

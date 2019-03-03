@@ -26,6 +26,8 @@ uniform vec2 u_Exponents = vec2(40.0, 40.0);
 uniform int u_EVSMMode = 0;
 uniform float u_ShadowBias;
 
+uniform bool u_ShadowOnly;
+
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 
 float calcShadowBasic(vec4 fragLightSpacePos);
@@ -40,26 +42,16 @@ void main() {
 	vec3 viewDir = normalize(v_FragPos.xyz - v_ViewPos);
 	
 
-	vec3 color = calcDirLight(dirLight, norm, viewDir);
-
 	float shadow = calcShadow(v_LightSpacePos);
 
 	vec3 result;
-	
-	
-	//result = color *  vec3(shadow);
-	result = color * shadow;
 
-
-	//vec3 projCoords = v_LightSpacePos.xyz / v_LightSpacePos.w;
-	//projCoords = projCoords * 0.5 + vec3(0.5);
-	//vec4 moments = texture(u_DepthMapTexture, projCoords.xy); // pos, pos^2, neg, neg^2
-
-	//result = vec3(moments.xy, 0.0);
-
-
-
-
+	if (u_ShadowOnly) {
+		result = vec3(shadow);
+	} else {
+		vec3 color = calcDirLight(dirLight, norm, viewDir);
+		result = color * shadow;
+	}
 	fragColor = vec4(result, 1.0);
 }
 
