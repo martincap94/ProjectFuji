@@ -135,6 +135,7 @@
     <ClCompile Include="EVSMShadowMapper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="VariableManager.cpp" />
+    <ClCompile Include="ppmImage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -224,6 +225,7 @@
     <ClInclude Include="CommonEnums.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ppmImage.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

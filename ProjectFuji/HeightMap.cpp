@@ -4,65 +4,39 @@
 #include <fstream>
 #include <glm\glm.hpp>
 #include <vector>
+#include "ppmImage.h"
 
 HeightMap::HeightMap() {}
 
 HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) : shader(shader) {
 
+	ppmImage helper(SCENES_DIR + filename);
 
-	if (filename.find(".ppm") == string::npos) {
-		cerr << "HeightMap only accepts .ppm files!" << endl;
-		exit(-1);
-		//return;
-	}
-	ifstream inFile(SCENES_DIR + filename);
-	string line;
+	width = helper.width;
+	height = helper.height;
+	maxIntensity = helper.maxIntensity;
+	int maxSum = maxIntensity * 3;
 
-	getline(inFile, line);
-	if (line != "P3") {
-		cerr << "We require .ppm files in P3 format (ASCII)." << endl;
-		return;
-	}
-
-	getline(inFile, line);
-	/*while (line.rfind("#", 0) != 0) {
-	getline(inFile, line);
-	}*/
-
-	inFile >> width;
-	inFile >> height;
-	inFile >> maxIntensity;
-	cout << "Width = " << width << ", height = " << height << ", max intesity = " << maxIntensity << endl;
 
 	data = new float*[width]();
 	for (int i = 0; i < width; i++) {
 		data[i] = new float[height]();
 	}
-
-	int maxSum = maxIntensity * 3;
-
-	int dummy;
 	vector<glm::vec3> areaPoints;
+
 	for (int z = height - 1; z >= 0; z--) {
 		for (int x = 0; x < width; x++) {
 			int sum = 0;
 
-			inFile >> dummy;
-			sum += dummy;
-			inFile >> dummy;
-			sum += dummy;
-			inFile >> dummy;
-			sum += dummy;
-
+			sum += helper.data[x][z].x;
+			sum += helper.data[x][z].y;
+			sum += helper.data[x][z].z;
 
 			data[x][z] = ((float)sum / (float)maxSum) * (float)(latticeHeight - 1);
-
-			//printf("x = %d, z = %d, data[x][z] = %f\n", x, z, data[x][z]);
-
-			//areaPoints.push_back(glm::vec3(x, data[x][z], z));
-
 		}
 	}
+
+
 
 	/*
 	vector<glm::vec3> triangles;

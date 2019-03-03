@@ -474,21 +474,31 @@ void STLPSimulator::draw(ShaderProgram &particlesShader) {
 	//glDrawArrays(GL_POINTS, 0, numParticles);
 	glDrawArrays(GL_POINTS, 0, numParticles);
 
-	GLboolean cullFaceEnabled;
-	glGetBooleanv(GL_CULL_FACE, &cullFaceEnabled);
-	glDisable(GL_CULL_FACE);
+	if (showCCLLevelLayer || showELLevelLayer) {
+		GLboolean cullFaceEnabled;
+		glGetBooleanv(GL_CULL_FACE, &cullFaceEnabled);
+		glDisable(GL_CULL_FACE);
 
-	layerVisShader->use();
-	layerVisShader->setVec4("u_Color", glm::vec4(1.0f, 0.0f, 0.0f, 0.2f));
+		layerVisShader->use();
 
-	glBindVertexArray(CCLLevelVAO);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		if (showCCLLevelLayer) {
+			layerVisShader->setVec4("u_Color", glm::vec4(1.0f, 0.0f, 0.0f, 0.2f));
 
-	glBindVertexArray(ELLevelVAO);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+			glBindVertexArray(CCLLevelVAO);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		}
 
-	if (cullFaceEnabled) {
-		glEnable(GL_CULL_FACE);
+		if (showELLevelLayer) {
+			layerVisShader->setVec4("u_Color", glm::vec4(0.0f, 1.0f, 0.0f, 0.2f));
+
+
+			glBindVertexArray(ELLevelVAO);
+			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		}
+
+		if (cullFaceEnabled) {
+			glEnable(GL_CULL_FACE);
+		}
 	}
 
 

@@ -1241,6 +1241,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_checkbox_label(ctx, "use prev velocity", &stlpSim->usePrevVelocity);
 
+		nk_checkbox_label(ctx, "Show CCL Level", &stlpSim->showCCLLevelLayer);
+		nk_checkbox_label(ctx, "Show EL Level", &stlpSim->showELLevelLayer);
+
 	}
 	nk_end(ctx);
 
