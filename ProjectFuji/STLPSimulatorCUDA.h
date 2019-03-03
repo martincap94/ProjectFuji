@@ -2,6 +2,7 @@
 
 #include "STLPDiagram.h"
 #include "VariableManager.h"
+#include "Particle.h"
 
 class HeightMap;
 
@@ -20,7 +21,8 @@ public:
 
 	HeightMap *heightMap;
 
-	int maxNumParticles = MAX_PARTICLE_COUNT;
+	//int maxNumParticles = MAX_PARTICLE_COUNT;
+	int maxNumParticles = 10000;
 
 	float groundHeight = 0.0f;
 	float simulationBoxHeight = 20000.0f;
@@ -28,9 +30,22 @@ public:
 
 	ShaderProgram *layerVisShader;
 
+	vector<Particle> particles;
+	vector<glm::vec3> particlePositions;
+	int numParticles = 0;
+
+
 
 	float *d_verticalVelocities;
 	int *d_profileIndices;
+	float *d_particlePressures;
+
+	// for now, let us have curves here (that are copied from the CPU precomputation)
+	glm::vec2 *d_ambientTempCurve;
+	vector<glm::vec2 *> d_dryAdiabatProfiles;
+	vector<glm::vec2 *> d_moistAdiabatProfiles;
+	vector<glm::vec2 *> d_CCLProfiles;
+	vector<glm::vec2 *> d_TcProfiles;
 
 
 
@@ -42,6 +57,8 @@ public:
 
 	/// Initializes buffers for the particles.
 	void initBuffers();
+
+	void initCUDA();
 
 	/// Does single step of the simulation.
 	void doStep();

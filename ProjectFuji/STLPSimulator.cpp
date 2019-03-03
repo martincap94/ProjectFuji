@@ -126,22 +126,22 @@ void STLPSimulator::doStep() {
 			// find intersection of isobar at P_i with C_a and C_d (ambient and dewpoint sounding curves)
 			float normP = stlpDiagram->getNormalizedPres(particles[i].pressure);
 			glm::vec2 ambientIntersection = stlpDiagram->ambientCurve.getIntersectionWithIsobar(normP);
-			glm::vec2 dewpointIntersection = stlpDiagram->dewpointCurve.getIntersectionWithIsobar(normP);
+			glm::vec2 dryAdiabatIntersection = stlpDiagram->dryAdiabatProfiles[particles[i].profileIndex].getIntersectionWithIsobar(normP);
+
+
 
 			float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
-			float dewpointTemp = stlpDiagram->getDenormalizedTemp(dewpointIntersection.x, normP);
+			float particleTemp = stlpDiagram->getDenormalizedTemp(dryAdiabatIntersection.x, normP);
+
+			stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(particleTemp, particles[i].pressure);
 
 
 			toKelvin(ambientTemp);
-			toKelvin(dewpointTemp);
+			toKelvin(particleTemp);
 
 			float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
-			float dewpointTheta = computeThetaFromAbsoluteK(dewpointTemp, particles[i].pressure);
-			float particleTheta = computeThetaFromAbsoluteK(getKelvin(T), particles[i].pressure);
-
-			//float a = -9.81f * (dewpointTheta - ambientTheta) / ambientTheta; // is this correct? -> is this a mistake in Duarte's thesis? BEWARE: C_d is dry adiabat, not dewpoint!!! -> misleading notation in Duarte's thesis
-			//float a = 9.81f * (getKelvin(particles[i].convectiveTemperature) - ambientTheta) / ambientTheta; -> this is incorrect (?)
-
+			//float particleTheta = computeThetaFromAbsoluteK(getKelvin(T), particles[i].pressure);
+			float particleTheta = computeThetaFromAbsoluteK(particleTemp, particles[i].pressure);
 
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
@@ -151,10 +151,10 @@ void STLPSimulator::doStep() {
 			particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
 			float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
 
+
 			particles[i].position.y += deltaY;
 			particles[i].updatePressureVal();
 
-			stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(T, particles[i].pressure);
 
 			if (simulateWind) {
 
@@ -181,6 +181,8 @@ void STLPSimulator::doStep() {
 			float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
 			float particleTemp = stlpDiagram->getDenormalizedTemp(moistAdiabatIntersection.x, normP);
 
+			stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(particleTemp, particles[i].pressure);
+
 
 			toKelvin(ambientTemp);
 			toKelvin(particleTemp);
@@ -200,7 +202,6 @@ void STLPSimulator::doStep() {
 			particles[i].position.y += deltaY;
 			particles[i].updatePressureVal();
 
-			stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(getCelsius(particleTemp), particles[i].pressure);
 
 
 			if (simulateWind) {
