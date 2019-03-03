@@ -116,18 +116,18 @@ void Grid3D::draw(ShaderProgram &shader) {
 	glUseProgram(shader.id);
 
 	//glLineWidth(1.0f);
-	//shader.setVec3("uColor", glm::vec3(0.1f, 0.1f, 0.1f));
+	//shader.setVec3("u_Color", glm::vec3(0.1f, 0.1f, 0.1f));
 	//glBindVertexArray(VAO);
 	//glDrawArrays(GL_LINES, 0, gridVertices.size());
 
 	//glPointSize(1.0f);
-	//shader.setVec3("uColor", glm::vec3(0.4f, 0.4f, 0.1f));
+	//shader.setVec3("u_Color", glm::vec3(0.4f, 0.4f, 0.1f));
 
 	/*glBindVertexArray(pointsVAO);
 	glDrawArrays(GL_POINTS, 0, GRID_WIDTH * GRID_HEIGHT * GRID_DEPTH);
 	*/
 
-	shader.setVec3("uColor", glm::vec3(0.9f, 0.9f, 0.2f));
+	shader.setVec3("u_Color", glm::vec3(0.9f, 0.9f, 0.2f));
 
 	glBindVertexArray(boxVAO);
 	glDrawArrays(GL_LINES, 0, 24);

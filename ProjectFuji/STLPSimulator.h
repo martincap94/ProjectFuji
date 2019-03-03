@@ -20,7 +20,7 @@
 #include "HeightMap.h"
 #include "Particle.h"
 #include "STLPDiagram.h"
-
+#include "VariableManager.h"
 
 
 /// Simulator to be used for orographic cloud simulation.
@@ -39,11 +39,13 @@ public:
 	//glm::vec2 EL;
 
 	float delta_t = 60.0f;
+	//float delta_t = 0.00001f;
 
 	Particle testParticle; // test particle for initial implementation of convection process
 	bool testing = false;
 
-	bool simulateWind = false;
+	int simulateWind = 0;
+	int usePrevVelocity = 1;
 
 	HeightMap *heightMap;	///< Pointer to the heightmap
 
@@ -54,8 +56,16 @@ public:
 
 	int maxNumParticles = MAX_PARTICLE_COUNT;
 
+	float groundHeight = 0.0f;
+	float simulationBoxHeight = 20000.0f; // 20km
+	float boxTopHeight;
+
+	VariableManager *vars;
+
+	ShaderProgram *layerVisShader;
+
 	/// Initializes buffers (calls initBuffers).
-	STLPSimulator();
+	STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram);
 
 	/// Default destructor.
 	~STLPSimulator();
@@ -78,11 +88,19 @@ public:
 
 	void initParticles();
 
+	void mapToSimulationBox(float &val);
+	void mapFromSimulationBox(float &val);
 
 private:
 
 	GLuint particlesVAO;
 	GLuint particlesVBO;
+
+	GLuint CCLLevelVAO;
+	GLuint CCLLevelVBO;
+
+	GLuint ELLevelVAO;
+	GLuint ELLevelVBO;
 
 };
 

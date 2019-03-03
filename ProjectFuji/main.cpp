@@ -431,12 +431,10 @@ int runApp() {
 
 
 
-	stlpSim = new STLPSimulator();
+	stlpSim = new STLPSimulator(&vars, &stlpDiagram);
 	if (vars.lbmType == LBM3D) {
 		stlpSim->heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
 	}
-
-	stlpSim->stlpDiagram = &stlpDiagram;
 
 	stlpSim->initParticles();
 
@@ -721,7 +719,7 @@ int runApp() {
 			
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
-			glDepthFunc(GL_LEQUAL);
+			//glDepthFunc(GL_LEQUAL);
 
 			glDisable(GL_CULL_FACE);
 			evsm.preFirstPass();
@@ -731,6 +729,7 @@ int runApp() {
 			glViewport(0, 0, vars.screenWidth, vars.screenHeight);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
+			glEnable(GL_BLEND);
 
 
 			
@@ -1238,7 +1237,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_property_int(ctx, "max particles", 1, &stlpSim->maxNumParticles, 100000, 1, 10.0f);
 
-		nk_checkbox_label(ctx, "Simulate wind", (int *)&stlpSim->simulateWind);
+		nk_checkbox_label(ctx, "Simulate wind", &stlpSim->simulateWind);
+
+		nk_checkbox_label(ctx, "use prev velocity", &stlpSim->usePrevVelocity);
 
 	}
 	nk_end(ctx);

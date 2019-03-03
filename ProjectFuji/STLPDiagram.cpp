@@ -80,7 +80,11 @@ void STLPDiagram::loadSoundingData(string filename) {
 	maxT = MAX_TEMP;
 	minP = MIN_P;
 	maxP = soundingData[0].data[PRES];
+	P0 = maxP;
 
+	groundAltitude = getAltitudeFromPressure(P0);
+	cout << "ground altitude (computed) = " << groundAltitude << endl;
+	cout << "ground altitude (sounding) = " << soundingData[0].data[HGHT] << endl;
 
 
 }
@@ -543,6 +547,21 @@ void STLPDiagram::initBuffers() {
 	glBindVertexArray(moistAdiabatsVAO);
 	glGenBuffers(1, &moistAdiabatsVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// PARTICLES
+	///////////////////////////////////////////////////////////////////////////////////////
+	glGenVertexArrays(1, &particlesVAO);
+	glBindVertexArray(particlesVAO);
+	glGenBuffers(1, &particlesVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
@@ -1214,6 +1233,19 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 	reportGLErrors("STLP 9");
 
 
+	if (particlePoints.size() > 0) {
+		//cout << "?" << endl;
+		glPointSize(2.0f);
+		shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glBindVertexArray(particlesVAO);
+		//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+		glNamedBufferData(particlesVBO, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+		glDrawArrays(GL_POINTS, 0, particlePoints.size());
+	}
+
+
 	//glPointSize(9.0f);
 	//shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
 	//glBindVertexArray(CCLVAO);
@@ -1242,6 +1274,8 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 	glBindVertexArray(mainParameterPointsVAO);
 	glDrawArrays(GL_POINTS, 0, mainParameterPoints.size() / 2);
 	reportGLErrors("STLP 12");
+
+
 
 
 }

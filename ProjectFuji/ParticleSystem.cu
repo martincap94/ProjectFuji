@@ -81,7 +81,7 @@ void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
 	glBindTexture(GL_TEXTURE_2D, spriteTexture.id);
 
 	glPointSize(pointSize);
-	shader.setVec3("uColor", particlesColor);
+	shader.setVec3("u_Color", particlesColor);
 
 	glBindVertexArray(vao);
 
@@ -100,7 +100,7 @@ void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
 	if (drawStreamlines) {
 
 		glPointSize(1.0f);
-		shader.setVec4("uColor", glm::vec4(0.0f, 0.4f, 1.0f, 1.0f));
+		shader.setVec4("u_Color", glm::vec4(0.0f, 0.4f, 1.0f, 1.0f));
 
 		glBindVertexArray(streamLinesVAO);
 

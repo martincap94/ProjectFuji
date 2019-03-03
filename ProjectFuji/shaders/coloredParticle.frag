@@ -1,7 +1,7 @@
 #version 330 core
 
 
-uniform vec3 uColor;
+uniform vec3 u_Color;
 
 in vec3 vColor;
 

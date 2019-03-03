@@ -35,7 +35,7 @@ Grid2D::~Grid2D() {}
 
 void Grid2D::draw(ShaderProgram &shader) {
 	glUseProgram(shader.id);
-	shader.setVec3("uColor", glm::vec3(0.1f, 0.1f, 0.1f));
+	shader.setVec3("u_Color", glm::vec3(0.1f, 0.1f, 0.1f));
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_LINES, 0, gridVertices.size());
 

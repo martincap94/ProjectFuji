@@ -103,6 +103,9 @@ public:
 	vector<Curve> dryAdiabatProfiles;
 	vector<Curve> moistAdiabatProfiles;
 
+	vector<glm::vec2> particlePoints;
+
+
 
 	GLuint diagramTexture;
 	GLuint diagramFramebuffer;
@@ -119,6 +122,9 @@ public:
 
 	float dryAdiabatDeltaT = 10.0f;
 	float moistAdiabatDeltaT = 5.0f;
+
+	float P0;
+	float groundAltitude;
 
 
 	/// Constructs the diagram instance without loading any sounding data.
@@ -237,6 +243,9 @@ private:
 	GLuint mainParameterPointsVAO;
 	GLuint mainParameterPointsVBO;
 
+
+	GLuint particlesVAO;
+	GLuint particlesVBO;
 
 	vector<glm::vec2> temperaturePoints;
 

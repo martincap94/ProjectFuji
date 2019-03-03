@@ -82,7 +82,7 @@ void LatticeCollider::draw(ShaderProgram & shader) {
 	glBindVertexArray(VAO);
 
 	glPointSize(2.0f);
-	shader.setVec3("uColor", glm::vec3(1.0f, 1.0f, 0.4f));
+	shader.setVec3("u_Color", glm::vec3(1.0f, 1.0f, 0.4f));
 
 	glDrawArrays(GL_POINTS, 0, numPoints);
 

@@ -1210,7 +1210,7 @@ void LBM3D_1D_indices::initScene() {
 void LBM3D_1D_indices::draw(ShaderProgram & shader) {
 
 #ifdef DRAW_VELOCITY_ARROWS
-	shader.setVec3("uColor", glm::vec3(0.2f, 0.3f, 1.0f));
+	shader.setVec3("u_Color", glm::vec3(0.2f, 0.3f, 1.0f));
 	glBindVertexArray(velocityVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, velocityVBO);
 
@@ -1220,7 +1220,7 @@ void LBM3D_1D_indices::draw(ShaderProgram & shader) {
 
 
 #ifdef DRAW_PARTICLE_VELOCITY_ARROWS
-	shader.setVec3("uColor", glm::vec3(0.8f, 1.0f, 0.6f));
+	shader.setVec3("u_Color", glm::vec3(0.8f, 1.0f, 0.6f));
 
 	glBindVertexArray(particleArrowsVAO);
 
