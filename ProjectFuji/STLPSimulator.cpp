@@ -116,6 +116,7 @@ void STLPSimulator::doStep() {
 
 			//cout << "===== DRY LIFT STEP =======================================================================================" << endl;
 
+			//printf("pressure = %0.2f\n", particles[i].pressure);
 
 			// l <- isobar line
 
@@ -135,6 +136,8 @@ void STLPSimulator::doStep() {
 
 			stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(particleTemp, particles[i].pressure);
 
+			/*printf("ambientTemp [deg C] = %0.2f\n", ambientTemp);
+			printf("particleTemp [deg C] = %0.2f\n", particleTemp);*/
 
 			toKelvin(ambientTemp);
 			toKelvin(particleTemp);
@@ -145,11 +148,17 @@ void STLPSimulator::doStep() {
 
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
+			//printf("a = %0.2f\n", a);
+
+
 			if (!usePrevVelocity) {
 				particles[i].velocity.y = 0.0f;
 			}
 			particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
 			float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
+
+			//printf("delta y = %0.2f\n", deltaY);
+
 
 
 			particles[i].position.y += deltaY;
@@ -221,6 +230,7 @@ void STLPSimulator::doStep() {
 
 		mapToSimulationBox(tmpPos.y);
 		//rangeToRange()
+		//printf("height = %0.2f\n", tmpPos.y);
 
 
 		particlePositions[i] = tmpPos;
@@ -273,7 +283,9 @@ void STLPSimulator::generateParticle() {
 	particlePositions.push_back(glm::vec3(randx, y, randz));
 
 	//rangeToRange(y, 0.0f, GRID_HEIGHT, 0.0f, 15000.0f);
+	cout << "height (sim box) = " << y << endl;
 	mapFromSimulationBox(y);
+	cout << "height (real)    = " << y << endl;
 	//cout << y << endl;
 
 	//y = 1500.0f;

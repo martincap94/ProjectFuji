@@ -15,7 +15,7 @@ public:
 	VariableManager *vars;
 	STLPDiagram *stlpDiagram;
 
-	float delta_t = 60.0f;
+	float delta_t = 1.0f;
 
 	int simulateWind = 0;
 	int usePrevVelocity = 1;
@@ -25,7 +25,7 @@ public:
 	HeightMap *heightMap;
 
 	//int maxNumParticles = MAX_PARTICLE_COUNT;
-	int maxNumParticles = 10000;
+	int maxNumParticles = 1;
 
 	float groundHeight = 0.0f;
 	float simulationBoxHeight = 20000.0f;
@@ -54,9 +54,11 @@ public:
 	
 	// use flattened arrays (with offsets)
 	glm::vec2 *d_dryAdiabatProfiles;
-	int *d_dryAdiabatOffsets;
+	//int *d_dryAdiabatOffsets;
+	glm::ivec2 *d_dryAdiabatOffsetsAndLengths;
 	glm::vec2 *d_moistAdiabatProfiles;
-	int *d_moistAdiabatOffsets;
+	//int *d_moistAdiabatOffsets;
+	glm::ivec2 *d_moistAdiabatOffsetsAndLengths;
 	glm::vec2 *d_CCLProfiles;
 	glm::vec2 *d_TcProfiles;
 

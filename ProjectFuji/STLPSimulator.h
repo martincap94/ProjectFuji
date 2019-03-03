@@ -38,8 +38,8 @@ public:
 	//glm::vec2 CCL;
 	//glm::vec2 EL;
 
-	float delta_t = 60.0f;
-	//float delta_t = 0.00001f;
+	float delta_t = 1.0f;
+	//float delta_t = 0.01f;
 
 	bool testing = false;
 
@@ -55,7 +55,8 @@ public:
 	int numParticles = 0;					///< Current number of particles
 	float simulationSpeedMultiplier = 1.0f;
 
-	int maxNumParticles = MAX_PARTICLE_COUNT;
+	//int maxNumParticles = MAX_PARTICLE_COUNT;
+	int maxNumParticles = 1;
 
 	float groundHeight = 0.0f;
 	float simulationBoxHeight = 20000.0f; // 20km

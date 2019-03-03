@@ -12,7 +12,13 @@
 
 
 
-__constant__ int d_numProfiles;
+__constant__ int d_const_numProfiles;
+__constant__ float d_const_maxP;
+__constant__ float d_const_delta_t;
+
+__constant__ float d_const_groundHeight;
+__constant__ float d_const_boxTopHeight;
+__constant__ float d_const_latticeHeight;
 
 //__constant__ glm::vec2 *d_const_ambientTempCurve;
 //
@@ -25,15 +31,200 @@ __constant__ int d_numProfiles;
 //__constant__ glm::vec2 *d_const_CCLProfiles;
 //__constant__ glm::vec2 *d_const_TcProfiles;
 
-__global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float *verticalVelocities, int *profileIndices, float *particlePressures, glm::vec2 *ambientTempCurve, glm::vec2 *dryAdiabatProfiles, int *dryAdiabatOffsets, glm::vec2 *moistAdiabatProfiles, int *moistAdiabatOffsets, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles) {
+
+
+
+__device__ float getNormalizedTemp(float T, float y) {
+	return (T - MIN_TEMP) / (MAX_TEMP - MIN_TEMP) + (1.0f - y);
+}
+
+__device__ float getNormalizedPres(float P) {
+	return ((log10f(P) - log10f(MIN_P)) / (log10f(d_const_maxP) - log10f(MIN_P)));
+}
+
+__device__ float getDenormalizedTemp(float x, float y) {
+	return (x + y - 1.0f) * (MAX_TEMP - MIN_TEMP) + MIN_TEMP;
+}
+
+__device__ float getDenormalizedPres(float y) {
+	return powf(10.0f, y * (log10f(d_const_maxP) - log10f(MIN_P)) + log10f(MIN_P));
+}
+
+__device__ glm::vec2 getNormalizedCoords(glm::vec2 coords) {
+	glm::vec2 res;
+	res.y = getNormalizedPres(coords.y);
+	res.x = getNormalizedTemp(coords.x, res.y);
+	return res;
+}
+
+__device__ glm::vec2 getDenormalizedCoords(glm::vec2 coords) {
+	glm::vec2 res;
+	res.x = getDenormalizedTemp(coords.x, coords.y);
+	res.y = getDenormalizedPres(coords.y);
+	return res;
+}
+
+__device__ glm::vec2 getNormalizedCoords(float T, float P) {
+	return getNormalizedCoords(glm::vec2(T, P));
+}
+
+__device__ glm::vec2 getDenormalizedCoords(float x, float y) {
+	return getDenormalizedCoords(glm::vec2(x, y));
+}
+
+__device__ float computeThetaFromAbsoluteK_dev(float T, float P, float P0 = 1000.0f) {
+	float tmp = (P == P0) ? 1.0f : pow(P0 / P, k_ratio);
+	return T * tmp;
+}
+
+__device__ float getKelvin_dev(float T) {
+	return T + 273.15f;
+}
+
+__device__ float getCelsius_dev(float T) {
+	return T - 273.15f;
+}
+
+__device__ void toKelvin_dev(float &T) {
+	T += 273.15f;
+}
+
+__device__ void toCelsius_dev(float &T) {
+	T -= 273.15f;
+}
+
+__device__ float getPressureVal_dev(float height) {
+	// based on CRC Handbook of Chemistry and Physics
+	return pow(((44331.514f - height) / 11880.516f), 1 / 0.1902632f);
+}
+
+__device__ void normalizeFromRange_dev(float &val, float min, float max) {
+	val = (val - min) / (max - min);
+}
+
+__device__ void rangeToRange_dev(float &val, float origMin, float origMax, float newMin, float newMax) {
+	normalizeFromRange_dev(val, origMin, origMax);
+	val *= (newMax - newMin);
+	val += newMin;
+}
+
+__device__ void mapToSimulationBox_dev(float & val) {
+	rangeToRange_dev(val, d_const_groundHeight, d_const_boxTopHeight, 0.0f, d_const_latticeHeight);
+}
+
+__device__ void mapFromSimulationBox_dev(float & val) {
+	rangeToRange_dev(val, 0.0f, d_const_latticeHeight, d_const_groundHeight, d_const_boxTopHeight);
+}
+
+
+
+__device__ float getNormalizedValFromRange_dev(float val, float min, float max) {
+	return (val - min) / (max - min);
+}
+
+__device__ float getRangeToRangeMappedVal_dev(float val, float origMin, float origMax, float newMin, float newMax) {
+	val = getNormalizedValFromRange_dev(val, origMin, origMax);
+	val *= (newMax - newMin);
+	val += newMin;
+	return val;
+}
+
+__device__ float getRealWorldCoords_dev(float val) {
+	return getRangeToRangeMappedVal_dev(val, d_const_groundHeight, d_const_boxTopHeight, 0.0f, d_const_latticeHeight);
+}
+
+__device__ float getSimulationBoxCoords_dev(float val) {
+	return getRangeToRangeMappedVal_dev(val, 0.0f, d_const_latticeHeight, d_const_groundHeight, d_const_boxTopHeight);
+}
+
+
+
+
+__device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int numCurveVertices, float normP) {
+	// naively search for correct interval - better solutions are: binary search and direct indexation using (non-normalized) pressure - needs better design
+	for (int i = 0; i < numCurveVertices - 1; i += 1) {
+		if (curveVertices[i + 1].y > normP) {
+			continue;
+		}
+		if (curveVertices[i + 1].y <= normP) {
+			float t = (normP - curveVertices[i + 1].y) / (curveVertices[i].y - curveVertices[i + 1].y);
+			float normalizedTemperature = t * curveVertices[i].x + (1.0f - t) * curveVertices[i + 1].x;
+			return glm::vec2(normalizedTemperature, normP);
+		}
+	}
+	return glm::vec2();
+}
+
+
+
+__global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float *verticalVelocities, int *profileIndices, float *particlePressures, glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles) {
 
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 
 	if (idx < numParticles) {
 
+		if (particlePressures[idx] > CCLProfiles[profileIndices[idx]].y) {
+
+			printf("| pressure = %0.2f\n", particlePressures[idx]);
+			//particleVertices[idx].y += 0.1f;
+			float normP = getNormalizedPres(particlePressures[idx]);
+			glm::vec2 ambientIntersection = getIntersectionWithIsobar(ambientTempCurve, numAmbientTempCurveVertices, normP);
+			glm::vec2 dryAdiabatIntersection = getIntersectionWithIsobar(&dryAdiabatProfiles[dryAdiabatOffsetsAndLengths[profileIndices[idx]].x], dryAdiabatOffsetsAndLengths[profileIndices[idx]].y, normP);
+
+			float ambientTemp = getDenormalizedTemp(ambientIntersection.x, normP);
+			float particleTemp = getDenormalizedTemp(dryAdiabatIntersection.x, normP);
+
+			printf("| ambientTemp [deg C] = %0.2f\n", ambientTemp);
+			printf("| particleTemp [deg C] = %0.2f\n", particleTemp);
 
 
-		particleVertices[idx].y += 0.01f;
+			toKelvin_dev(ambientTemp);
+			toKelvin_dev(particleTemp);
+
+			float ambientTheta = computeThetaFromAbsoluteK_dev(ambientTemp, particlePressures[idx]);
+			float particleTheta = computeThetaFromAbsoluteK_dev(particleTemp, particlePressures[idx]);
+
+			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
+
+			printf("| a = %0.2f\n", a);
+
+			verticalVelocities[idx] = verticalVelocities[idx] + a * d_const_delta_t;
+			float deltaY = verticalVelocities[idx] * d_const_delta_t + 0.5f * a * d_const_delta_t * d_const_delta_t;
+
+			printf("| delta y = %0.2f\n", deltaY);
+
+			printf("| height (before unmap) = %0.2f\n", particleVertices[idx].y);
+
+
+			mapFromSimulationBox_dev(particleVertices[idx].y);
+			//float tmpY = getRealWorldCoords_dev(particleVertices[idx].y);
+
+			printf("| height (after unmap) = %0.2f\n", particleVertices[idx].y);
+			particleVertices[idx].y += deltaY;
+
+			//printf("| height (after unmap) = %0.2f\n", tmpY);
+
+			//tmpY += deltaY;
+
+			printf("| height (after unmap + delta y) = %0.2f\n", particleVertices[idx].y);
+			particlePressures[idx] = getPressureVal_dev(particleVertices[idx].y);
+
+			//printf("| height (after unmap + delta y) = %0.2f\n", tmpY);
+
+			//particlePressures[idx] = getPressureVal_dev(tmpY);
+
+			//particleVertices[idx].y = getSimulationBoxCoords_dev(tmpY);
+
+			mapToSimulationBox_dev(particleVertices[idx].y);
+
+			printf("| height (final) = %0.2f\n", particleVertices[idx].y);
+
+
+		}
+
+
+
+
 
 	}
 }
@@ -143,46 +334,80 @@ void STLPSimulatorCUDA::initCUDA() {
 	cudaMalloc((void**)&d_particlePressures, sizeof(float) * maxNumParticles);
 	
 	cudaMemset(d_verticalVelocities, 0, sizeof(float) * maxNumParticles);
-	cudaMemset(d_profileIndices, 0, sizeof(int) * maxNumParticles);
-	cudaMemset(d_particlePressures, 0, sizeof(float) * maxNumParticles);
+	//cudaMemset(d_profileIndices, 0, sizeof(int) * maxNumParticles);
+	//cudaMemset(d_particlePressures, 0, sizeof(float) * maxNumParticles);
+
+	vector<int> itmp;
+	vector<float> ftmp;
+
+	for (int i = 0; i < numParticles; i++) {
+		itmp.push_back(particles[i].profileIndex);
+		ftmp.push_back(particles[i].pressure);
+	}
+	cudaMemcpy(d_profileIndices, &itmp[0], sizeof(int) * itmp.size(), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_particlePressures, &ftmp[0], sizeof(float) * ftmp.size(), cudaMemcpyHostToDevice);
+
+	
+
 
 	cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size());
 
 	cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice);
 
-	cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particlesVBO, cudaGraphicsRegisterFlagsNone);
+	cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard);
 
-	CHECK_ERROR(cudaMemcpyToSymbol(d_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_maxP, &stlpDiagram->maxP, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
 
-	vector<int> itmp;
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_boxTopHeight, &boxTopHeight, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_groundHeight, &groundHeight, sizeof(float)));
+
+	float latticeH = (float)vars->latticeHeight;
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_latticeHeight, &latticeH, sizeof(float)));
+
+
+	itmp.clear();
 	vector<glm::vec2> tmp;
+	vector<glm::ivec2> ivectmp;
 	tmp.reserve(stlpDiagram->numProfiles * stlpDiagram->dryAdiabatProfiles[0].vertices.size()); // probably the largest possible collection
 
 	// DRY ADIABAT OFFSETS
+	tmp.clear();
+	ivectmp.clear();
 	int sum = 0;
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
+		float prevSum = sum;
 		sum += stlpDiagram->dryAdiabatProfiles[i].vertices.size();
+		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 		//cout << stlpDiagram->dryAdiabatProfiles[i].vertices.size() << endl;
 	}
 	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_dryAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size()));
-	cudaMalloc((void**)&d_dryAdiabatOffsets, sizeof(int) * itmp.size());
-	CHECK_ERROR(cudaMemcpy(d_dryAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size(), cudaMemcpyHostToDevice));
+	//cudaMalloc((void**)&d_dryAdiabatOffsets, sizeof(int) * itmp.size());
+	//CHECK_ERROR(cudaMemcpy(d_dryAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size(), cudaMemcpyHostToDevice));
+	cudaMalloc((void**)&d_dryAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * ivectmp.size());
+	CHECK_ERROR(cudaMemcpy(d_dryAdiabatOffsetsAndLengths, &ivectmp[0], sizeof(glm::ivec2) * ivectmp.size(), cudaMemcpyHostToDevice));
 
 
 
 	// MOIST ADIABAT OFFSETS
 	itmp.clear();
+	tmp.clear();
+	ivectmp.clear();
 	sum = 0;
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
+		float prevSum = sum;
 		sum += stlpDiagram->moistAdiabatProfiles[i].vertices.size();
+		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 		//cout << stlpDiagram->moistAdiabatProfiles[i].vertices.size() << endl;
 	}
 	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_moistAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size()));
-	cudaMalloc((void**)&d_moistAdiabatOffsets, sizeof(int) * itmp.size());
-	CHECK_ERROR(cudaMemcpy(d_moistAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size(), cudaMemcpyHostToDevice));
-
+	//cudaMalloc((void**)&d_moistAdiabatOffsets, sizeof(int) * itmp.size());
+	//CHECK_ERROR(cudaMemcpy(d_moistAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size(), cudaMemcpyHostToDevice));
+	cudaMalloc((void**)&d_moistAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * ivectmp.size());
+	CHECK_ERROR(cudaMemcpy(d_moistAdiabatOffsetsAndLengths, &ivectmp[0], sizeof(glm::ivec2) * ivectmp.size(), cudaMemcpyHostToDevice));
 
 
 	// DRY ADIABATS
@@ -239,8 +464,10 @@ void STLPSimulatorCUDA::doStep() {
 	cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes, cudaParticleVerticesVBO);
 	//printf("CUDA mapped VBO: May access %ld bytes\n", num_bytes);
 
-	simulationStepKernel << <gridDim.x, blockDim.x >> > (dptr, numParticles, d_verticalVelocities, d_profileIndices, d_particlePressures, d_ambientTempCurve, d_dryAdiabatProfiles, d_dryAdiabatOffsets, d_moistAdiabatProfiles, d_moistAdiabatOffsets, d_CCLProfiles, d_TcProfiles);
+	CHECK_ERROR(cudaPeekAtLastError());
+	simulationStepKernel << <gridDim.x, blockDim.x >> > (dptr, numParticles, d_verticalVelocities, d_profileIndices, d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
 
+	CHECK_ERROR(cudaPeekAtLastError());
 
 
 	cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0);
@@ -278,6 +505,8 @@ void STLPSimulatorCUDA::generateParticle() {
 
 	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
 
+	//y = 5.0f; //////////////////////////////////////////////////////// FORCE Y to dry adiabat
+
 	particlePositions.push_back(glm::vec3(randx, y, randz));
 
 
@@ -298,7 +527,7 @@ void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader) {
 	
 	glUseProgram(particlesShader.id);
 
-	glPointSize(1.0f);
+	glPointSize(10.0f);
 	particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));
 
 	glBindVertexArray(particlesVAO);
