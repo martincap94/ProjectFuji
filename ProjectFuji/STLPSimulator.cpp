@@ -270,6 +270,8 @@ void STLPSimulator::generateParticle() {
 
 	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
 
+	particlePositions.push_back(glm::vec3(randx, y, randz));
+
 	//rangeToRange(y, 0.0f, GRID_HEIGHT, 0.0f, 15000.0f);
 	mapFromSimulationBox(y);
 	//cout << y << endl;
@@ -301,7 +303,6 @@ void STLPSimulator::generateParticle() {
 	p.updatePressureVal();
 
 	particles.push_back(p);
-	particlePositions.push_back(glm::vec3(randx, y, randz));
 	numParticles++;
 
 

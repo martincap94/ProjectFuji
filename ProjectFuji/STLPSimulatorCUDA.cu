@@ -35,6 +35,9 @@ void STLPSimulatorCUDA::initBuffers() {
 	glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
 
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+	glBindVertexArray(0);
+
 
 
 
@@ -101,6 +104,123 @@ void STLPSimulatorCUDA::initCUDA() {
 }
 
 void STLPSimulatorCUDA::doStep() {
+
+
+	//for (int i = 0; i < numParticles; i++) {
+	//	if (particles[i].pressure > stlpDiagram->CCLProfiles[particles[i].profileIndex].y) { // if P_i > P_{CCL_i}
+
+	//																						 //cout << "===== DRY LIFT STEP =======================================================================================" << endl;
+
+
+	//																						 // l <- isobar line
+
+	//																						 // equation 3.14 - theta = T_{c_i}
+	//		float T = (stlpDiagram->TcProfiles[particles[i].profileIndex].x + 273.15f) * pow((particles[i].pressure / stlpDiagram->soundingData[0].data[PRES]), 0.286f); // do not forget to use Kelvin
+	//		T -= 273.15f; // convert back to Celsius
+
+	//					  // find intersection of isobar at P_i with C_a and C_d (ambient and dewpoint sounding curves)
+	//		float normP = stlpDiagram->getNormalizedPres(particles[i].pressure);
+	//		glm::vec2 ambientIntersection = stlpDiagram->ambientCurve.getIntersectionWithIsobar(normP);
+	//		glm::vec2 dryAdiabatIntersection = stlpDiagram->dryAdiabatProfiles[particles[i].profileIndex].getIntersectionWithIsobar(normP);
+
+
+
+	//		float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
+	//		float particleTemp = stlpDiagram->getDenormalizedTemp(dryAdiabatIntersection.x, normP);
+
+	//		stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(particleTemp, particles[i].pressure);
+
+
+	//		toKelvin(ambientTemp);
+	//		toKelvin(particleTemp);
+
+	//		float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
+	//		//float particleTheta = computeThetaFromAbsoluteK(getKelvin(T), particles[i].pressure);
+	//		float particleTheta = computeThetaFromAbsoluteK(particleTemp, particles[i].pressure);
+
+	//		float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
+
+	//		if (!usePrevVelocity) {
+	//			particles[i].velocity.y = 0.0f;
+	//		}
+	//		particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
+	//		float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
+
+
+	//		particles[i].position.y += deltaY;
+	//		particles[i].updatePressureVal();
+
+
+	//		if (simulateWind) {
+
+	//			glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
+	//																									// we need to map it to our system
+	//			windDeltas /= GRID_WIDTH; // just testing
+	//									  //rangeToRange(windDeltas.x, )
+
+	//			particles[i].position.x += windDeltas.x;
+	//			particles[i].position.z += windDeltas.y;
+	//		}
+
+
+
+	//	} else {
+
+	//		// l <- isobar line
+
+	//		// find intersection of isobar at P_i with C_a and C_d (ambient and dewpoint sounding curves)
+	//		float normP = stlpDiagram->getNormalizedPres(particles[i].pressure);
+	//		glm::vec2 ambientIntersection = stlpDiagram->ambientCurve.getIntersectionWithIsobar(normP);
+	//		glm::vec2 moistAdiabatIntersection = stlpDiagram->moistAdiabatProfiles[particles[i].profileIndex].getIntersectionWithIsobar(normP);
+
+	//		float ambientTemp = stlpDiagram->getDenormalizedTemp(ambientIntersection.x, normP);
+	//		float particleTemp = stlpDiagram->getDenormalizedTemp(moistAdiabatIntersection.x, normP);
+
+	//		stlpDiagram->particlePoints[i] = stlpDiagram->getNormalizedCoords(particleTemp, particles[i].pressure);
+
+
+	//		toKelvin(ambientTemp);
+	//		toKelvin(particleTemp);
+
+	//		float ambientTheta = computeThetaFromAbsoluteK(ambientTemp, particles[i].pressure);
+	//		float particleTheta = computeThetaFromAbsoluteK(particleTemp, particles[i].pressure);
+
+
+	//		float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
+
+	//		if (!usePrevVelocity) {
+	//			particles[i].velocity.y = 0.0f;
+	//		}
+	//		particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
+	//		float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
+
+	//		particles[i].position.y += deltaY;
+	//		particles[i].updatePressureVal();
+
+
+
+	//		if (simulateWind) {
+	//			glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
+	//																									// we need to map it to our system
+	//			windDeltas /= GRID_WIDTH; // just testing
+
+	//			particles[i].position.x += windDeltas.x;
+	//			particles[i].position.z += windDeltas.y;
+	//		}
+
+	//	}
+
+	//	// hack
+	//	glm::vec3 tmpPos = particles[i].position;
+	//	//rangeToRange(tmpPos.y, 0.0f, 15000.0f, 0.0f, GRID_HEIGHT);
+
+	//	mapToSimulationBox(tmpPos.y);
+	//	//rangeToRange()
+
+
+	//	particlePositions[i] = tmpPos;
+
+	//}
 }
 
 void STLPSimulatorCUDA::resetSimulation() {
@@ -111,9 +231,6 @@ void STLPSimulatorCUDA::generateParticle() {
 	float randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
 	float randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
 
-	// let's use small square 
-	//float randx = (float)(rand() / (float)(RAND_MAX / ((float)GRID_WIDTH / 10.0f - 2.0f)));
-	//float randz = (float)(rand() / (float)(RAND_MAX / ((float)GRID_DEPTH / 10.0f - 2.0f)));
 
 	// interpolate
 	int leftx = (int)randx;
@@ -135,65 +252,37 @@ void STLPSimulatorCUDA::generateParticle() {
 
 	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
 
-	//rangeToRange(y, 0.0f, GRID_HEIGHT, 0.0f, 15000.0f);
-	mapFromSimulationBox(y);
-	//cout << y << endl;
+	particlePositions.push_back(glm::vec3(randx, y, randz));
 
-	//y = 1500.0f;
+
+	mapFromSimulationBox(y);
 
 	Particle p;
 	p.position = glm::vec3(randx, y, randz);
 	p.velocity = glm::vec3(0.0f);
-	//p.updatePressureVal();
-	//p.convectiveTemperature = stlpDiagram->Tc.x;
 	p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
-	//p.convectiveTemperature = stlpDiagram->TcProfiles[p.profileIndex].x;
-
-	//cout << "Pressure at " << y << " is " << p.pressure << endl;
-
-	//float tmpP = 943.0f;
-	//float tmpz = getAltitudeFromPressure(tmpP);
-	//cout << "Altitude at pressure " << tmpP << " is " << tmpz << endl;
-	//tmpP = getPressureFromAltitude(tmpz);
-	//cout << "Pressure at altitude " << tmpz << " is " << tmpP << endl;
-
-	//tmpP = 100.0f;
-	//tmpz = getAltitudeFromPressure(tmpP);
-	//cout << "Altitude at pressure " << tmpP << " is " << tmpz << endl;
-
-	//p.position.y = getAltitudeFromPressure(stlpDiagram->soundingData[0].data[PRES]);
-
 	p.updatePressureVal();
 
 	particles.push_back(p);
-	particlePositions.push_back(glm::vec3(randx, y, randz));
 	numParticles++;
 
-
-	/*int randx = rand() % (GRID_WIDTH - 1);
-	int randz = rand() % (GRID_DEPTH - 1);
-
-	float y = heightMap->data[randx][randz];
-
-	particlePositions.push_back(glm::vec3(randx, y, randz));
-	numParticles++;*/
 }
 
 void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader) {
 	
-	//glUseProgram(particlesShader.id);
+	glUseProgram(particlesShader.id);
 
-	//glPointSize(1.0f);
-	//particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));
+	glPointSize(4.0f);
+	particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));
 
-	//glBindVertexArray(particlesVAO);
+	glBindVertexArray(particlesVAO);
 
-	//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
-	////glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3), &testParticle.position[0], GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
 
-	////glDrawArrays(GL_POINTS, 0, numParticles);
-	//glDrawArrays(GL_POINTS, 0, numParticles);
+	glDrawArrays(GL_POINTS, 0, numParticles);
+
+
 
 	if (showCCLLevelLayer || showELLevelLayer) {
 		GLboolean cullFaceEnabled;
@@ -224,6 +313,13 @@ void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader) {
 }
 
 void STLPSimulatorCUDA::initParticles() {
+	for (int i = 0; i < maxNumParticles; i++) {
+		generateParticle();
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_STATIC_DRAW);
+	cout << "Particles initialized: num particles = " << numParticles << endl;
+	//glNamedBufferData(particlesVBO, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
 }
 
 void STLPSimulatorCUDA::mapToSimulationBox(float & val) {

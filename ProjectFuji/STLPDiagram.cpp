@@ -1235,19 +1235,6 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 	reportGLErrors("STLP 9");
 
 
-	if (particlePoints.size() > 0) {
-		//cout << "?" << endl;
-		glPointSize(2.0f);
-		shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
-
-		glBindVertexArray(particlesVAO);
-		//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
-		glNamedBufferData(particlesVBO, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
-		glDrawArrays(GL_POINTS, 0, particlePoints.size());
-	}
-
-
 	//glPointSize(9.0f);
 	//shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
 	//glBindVertexArray(CCLVAO);
@@ -1278,6 +1265,27 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 	reportGLErrors("STLP 12");
 
 
+
+
+	// draw particles on top of everything
+	shader.use();
+	GLboolean depthTestEnabled;
+	glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
+	glDisable(GL_DEPTH_TEST);
+	if (particlePoints.size() > 0) {
+		//cout << "?" << endl;
+		glPointSize(2.0f);
+		shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glBindVertexArray(particlesVAO);
+		//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+		glNamedBufferData(particlesVBO, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+		glDrawArrays(GL_POINTS, 0, particlePoints.size());
+	}
+	if (depthTestEnabled) {
+		glEnable(GL_DEPTH_TEST);
+	}
 
 
 }
