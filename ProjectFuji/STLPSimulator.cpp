@@ -250,7 +250,7 @@ void STLPSimulator::doStep() {
 
 	if (!testing) {
 		for (int i = 0; i < numParticles; i++) {
-			if (particles[i].pressure > stlpDiagram->CCL.y) { // if P_i > P_{CCL_i}
+			if (particles[i].pressure > stlpDiagram->CCLProfiles[particles[i].profileIndex].y) { // if P_i > P_{CCL_i}
 
 				//cout << "===== DRY LIFT STEP =======================================================================================" << endl;
 
