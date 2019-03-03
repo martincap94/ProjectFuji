@@ -4,6 +4,9 @@
 #include "VariableManager.h"
 #include "Particle.h"
 
+#include <cuda_gl_interop.h>
+
+
 class HeightMap;
 
 class STLPSimulatorCUDA {
@@ -34,6 +37,7 @@ public:
 	vector<glm::vec3> particlePositions;
 	int numParticles = 0;
 
+	struct cudaGraphicsResource *cudaParticleVerticesVBO;
 
 
 	float *d_verticalVelocities;
@@ -42,12 +46,22 @@ public:
 
 	// for now, let us have curves here (that are copied from the CPU precomputation)
 	glm::vec2 *d_ambientTempCurve;
-	vector<glm::vec2 *> d_dryAdiabatProfiles;
-	vector<glm::vec2 *> d_moistAdiabatProfiles;
-	vector<glm::vec2 *> d_CCLProfiles;
-	vector<glm::vec2 *> d_TcProfiles;
+	
+	//vector<glm::vec2 *> d_dryAdiabatProfiles;
+	//vector<glm::vec2 *> d_moistAdiabatProfiles;
+	//vector<glm::vec2 *> d_CCLProfiles;
+	//vector<glm::vec2 *> d_TcProfiles;
+	
+	// use flattened arrays (with offsets)
+	glm::vec2 *d_dryAdiabatProfiles;
+	int *d_dryAdiabatOffsets;
+	glm::vec2 *d_moistAdiabatProfiles;
+	int *d_moistAdiabatOffsets;
+	glm::vec2 *d_CCLProfiles;
+	glm::vec2 *d_TcProfiles;
 
-
+	dim3 gridDim;
+	dim3 blockDim;
 
 
 	STLPSimulatorCUDA(VariableManager *vars, STLPDiagram *stlpDiagram);

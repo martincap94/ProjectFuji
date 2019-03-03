@@ -442,6 +442,7 @@ int runApp() {
 
 	stlpSim->initParticles();
 	stlpSimCUDA->initParticles();
+	stlpSimCUDA->initCUDA();
 
 	// Set these callbacks after nuklear initialization, otherwise they won't work!
 	glfwSetScrollCallback(window, scroll_callback);
