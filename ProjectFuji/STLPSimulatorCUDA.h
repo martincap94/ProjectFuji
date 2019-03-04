@@ -18,7 +18,7 @@ public:
 	GLuint particlesVBO;
 
 
-	float delta_t = 60.0f;
+	float delta_t = 10.0f;
 
 	int simulateWind = 0;
 	int usePrevVelocity = 1;
@@ -82,6 +82,8 @@ public:
 	/// Does single step of the simulation.
 	void doStep();
 
+	void updateGPU_delta_t();
+
 	void resetSimulation();
 
 
@@ -95,6 +97,7 @@ public:
 
 	void mapToSimulationBox(float &val);
 	void mapFromSimulationBox(float &val);
+
 
 private:
 

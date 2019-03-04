@@ -53,7 +53,7 @@ public:
 	~OrbitCamera();
 
 
-	virtual glm::mat4 getViewMatrix();
+	//virtual glm::mat4 getViewMatrix();
 	virtual void processKeyboardMovement(eCameraMovementDirection direction, double deltaTime);
 	virtual void setView(eCameraView camView);
 	virtual void processMouseScroll(double yoffset);

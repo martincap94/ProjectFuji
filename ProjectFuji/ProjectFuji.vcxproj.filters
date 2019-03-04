@@ -36,6 +36,7 @@
     <CudaCompile Include="CUDAUtils.cuh">
       <Filter>Header Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="STLPSimulatorCUDA.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -144,9 +145,8 @@
     <ClCompile Include="VariableManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="STLPSimulatorCUDA.cu">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="ParticleEmitter.cpp" />
+    <ClCompile Include="FreeFormCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -248,6 +248,8 @@
     <ClInclude Include="VariableManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleEmitter.h" />
+    <ClInclude Include="FreeFormCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

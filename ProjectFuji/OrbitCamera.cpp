@@ -16,10 +16,6 @@ OrbitCamera::OrbitCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitc
 OrbitCamera::~OrbitCamera() {
 }
 
-glm::mat4 OrbitCamera::getViewMatrix() {
-	return glm::lookAt(position, position + front, up);
-}
-
 
 void OrbitCamera::processKeyboardMovement(eCameraMovementDirection direction, double deltaTime) {
 	float velocity = (float)((double)movementSpeed * deltaTime);

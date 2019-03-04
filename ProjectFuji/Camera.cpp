@@ -15,6 +15,10 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 
 Camera::~Camera() {}
 
+glm::mat4 Camera::getViewMatrix() {
+	return glm::lookAt(position, position + front, up);
+}
+
 void Camera::setView(eCameraView camView) {}
 
 void Camera::printInfo() {

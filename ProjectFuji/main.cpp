@@ -711,12 +711,17 @@ int runApp() {
 
 
 			if (vars.stlpUseCUDA) {
-				stlpSimCUDA->doStep();
+				if (vars.applyLBM) {
+					lbm->doStepCUDA();
+				}
+				if (vars.applySTLP) {
+					stlpSimCUDA->doStep();
+				}
 			} else {
 				stlpSim->doStep();
 			}
 
-			lbm->doStepCUDA();
+			//lbm->doStepCUDA();
 
 
 			reportGLErrors("1");
@@ -974,7 +979,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		1) nk_item_is_any_active (suggested by Vurtun)
 		2) nk_window_is_any_hovered
 	*/
-	if (nk_window_is_any_hovered(ctx)) {
+	if (nk_window_is_any_hovered(ctx) || mode >= 2) {
 		//cout << "Mouse callback not valid, hovering over Nuklear window/widget." << endl;
 		return;
 	}
@@ -1182,7 +1187,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_property_float(ctx, "bottom:", -1000.0f, &dirLight.pBottom, 1000.0f, 1.0f, 1.0f);
 			nk_property_float(ctx, "top:", -1000.0f, &dirLight.pTop, 1000.0f, 1.0f, 1.0f);
 
-			nk_checkbox_label(ctx, "Simulate sun", (int*)&vars.simulateSun);
+			nk_checkbox_label(ctx, "Simulate sun", &vars.simulateSun);
 			nk_property_float(ctx, "Sun speed", 0.1f, &dirLight.circularMotionSpeed, 1000.0f, 0.1f, 0.1f);
 			if (nk_option_label(ctx, "y axis", dirLight.rotationAxis == DirectionalLight::Y_AXIS)) {
 				dirLight.rotationAxis = DirectionalLight::Y_AXIS;
@@ -1253,8 +1258,12 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
 
+		float delta_t_prev = stlpSim->delta_t;
 		nk_property_float(ctx, "delta t", 0.00001f, &stlpSim->delta_t, 1000.0f, 0.00001f, 1.0f);
-
+		if (stlpSim->delta_t != delta_t_prev) {
+			stlpSimCUDA->delta_t = stlpSim->delta_t;
+			stlpSimCUDA->updateGPU_delta_t();
+		}
 
 		nk_property_int(ctx, "number of profiles", 2, &stlpDiagram.numProfiles, 100, 1, 1.0f); // somewhere bug when only one profile -> FIX!
 
@@ -1272,6 +1281,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_checkbox_label(ctx, "Use CUDA", &vars.stlpUseCUDA);
 
+		nk_checkbox_label(ctx, "Apply LBM", &vars.applyLBM);
+
+		nk_checkbox_label(ctx, "Apply STLP", &vars.applySTLP);
 	}
 	nk_end(ctx);
 
@@ -1279,7 +1291,8 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 	ctx->style.window.padding = nk_vec2(0, 0);
 
-	if (nk_begin(ctx, "test", nk_rect(0, 0, vars.screenWidth, 32), NK_WINDOW_NO_SCROLLBAR)) {
+	static int toolbarHeight = 32;
+	if (nk_begin(ctx, "test", nk_rect(0, 0, vars.screenWidth, toolbarHeight), NK_WINDOW_NO_SCROLLBAR)) {
 
 		int numToolbarItems = 3;
 
@@ -1294,9 +1307,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_menubar_begin(ctx);
 
 		/* menu #1 */
-		nk_layout_row_begin(ctx, NK_DYNAMIC, 25, 5);
-		nk_layout_row_push(ctx, 0.45f);
-		if (nk_menu_begin_label(ctx, "MENU", NK_TEXT_LEFT, nk_vec2(120, 200))) {
+		nk_layout_row_begin(ctx, NK_STATIC, toolbarHeight, 5);
+		nk_layout_row_push(ctx, 120);
+		if (nk_menu_begin_label(ctx, "File", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
 			static size_t prog = 40;
 			static int slider = 10;
 			static int check = nk_true;
@@ -1308,6 +1321,66 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_checkbox_label(ctx, "check", &check);
 			nk_menu_end(ctx);
 		}
+		nk_layout_row_push(ctx, 120);
+		//nk_label(ctx, "View", NK_TEXT_CENTERED);
+		if (nk_menu_begin_label(ctx, "View", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
+			nk_layout_row_dynamic(ctx, 25, 1);
+			//nk_button_label(ctx, "Debug Window");
+			if (nk_menu_item_label(ctx, "Debug Window", NK_TEXT_CENTERED)) {
+				cout << "opening debug window" << endl;
+			}
+			nk_label(ctx, "Camera Settings", NK_TEXT_CENTERED);
+			if (nk_menu_item_label(ctx, "Front View (I)", NK_TEXT_CENTERED)) {
+				camera->setView(Camera::VIEW_FRONT);
+			}
+			if (nk_menu_item_label(ctx, "Side View (O)", NK_TEXT_CENTERED)) {
+				camera->setView(Camera::VIEW_SIDE);
+			}
+			if (nk_menu_item_label(ctx, "Top View (P)", NK_TEXT_CENTERED)) {
+				camera->setView(Camera::VIEW_TOP);
+			}
+			if (drawSkybox) {
+				if (nk_menu_item_label(ctx, "Hide Skybox", NK_TEXT_CENTERED)) {
+					drawSkybox = false;
+				}
+			} else {
+				if (nk_menu_item_label(ctx, "Show Skybox", NK_TEXT_CENTERED)) {
+					drawSkybox = true;
+				}
+			}
+			nk_menu_end(ctx);
+
+		}
+		nk_layout_row_push(ctx, 120);
+		if (nk_menu_begin_label(ctx, "About", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
+			nk_layout_row_dynamic(ctx, 25, 1);
+			if (nk_menu_item_label(ctx, "Show About", NK_TEXT_CENTERED)) {
+				vars.aboutWindowOpened = true;
+			}
+			nk_menu_end(ctx);
+		}
+
+		//nk_label(ctx, "About", NK_TEXT_CENTERED);
+
+		//nk_layout_row_push(ctx, 120);
+		//nk_label(ctx, "View", NK_TEXT_CENTERED);
+
+		//nk_layout_row_push(ctx, 120);
+		//nk_label(ctx, "View", NK_TEXT_CENTERED);
+
+
+		if (vars.aboutWindowOpened) {
+			if (nk_begin(ctx, "About Window", nk_rect(vars.screenWidth / 2.0f - 250.0f, vars.screenHeight / 2.0f - 250.0f, 500.0f, 500.0f), 0)) {
+				nk_layout_row_dynamic(ctx, 20.0f, 1);
+
+				nk_label(ctx, "Orographic Cloud Simulator", NK_TEXT_CENTERED);
+				nk_label(ctx, "Author: Martin Cap", NK_TEXT_CENTERED);
+				nk_label(ctx, "Email: martincap94@gmail.com", NK_TEXT_CENTERED);
+
+			}
+
+		}
+
 
 	}
 	nk_end(ctx);

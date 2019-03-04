@@ -70,7 +70,7 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 		if (particleVertices[idx].x < 0.0f || particleVertices[idx].x > d_latticeWidth - 1 ||
 			particleVertices[idx].y < 0.0f || particleVertices[idx].y > d_latticeHeight - 1 ||
 			particleVertices[idx].z < 0.0f || particleVertices[idx].z > d_latticeDepth - 1) {
-			return;
+			//return;
 
 			particleVertices[idx].x = 0.0f;
 			//particleVertices[idx].y = y;
@@ -126,25 +126,25 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 		particleColors[idx] = mapToViridis3D(glm::length2(finalVelocity) * 4.0f);
 
 
-		if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
-			particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
-			particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
+		//if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
+		//	particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
+		//	particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
 
-			if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1) {
-				particleVertices[idx].x = 0.0f;
-			}
-			if (particleVertices[idx].y <= 0.0f) {
-				particleVertices[idx].y = d_latticeHeight - 1;
-			} else if (particleVertices[idx].y >= d_latticeHeight - 1) {
-				particleVertices[idx].y = 0.0f;
-			}
-			if (particleVertices[idx].z <= 0.0f) {
-				particleVertices[idx].z = d_latticeDepth - 1;
-			} else if (particleVertices[idx].z >= d_latticeDepth - 1) {
-				particleVertices[idx].z = 0.0f;
-			}
-
-		}
+		//	if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1) {
+		//		particleVertices[idx].x = 0.0f;
+		//	}
+		//	if (particleVertices[idx].y <= 0.0f) {
+		//		particleVertices[idx].y = d_latticeHeight - 1;
+		//	} else if (particleVertices[idx].y >= d_latticeHeight - 1) {
+		//		particleVertices[idx].y = 0.0f;
+		//	}
+		//	if (particleVertices[idx].z <= 0.0f) {
+		//		particleVertices[idx].z = d_latticeDepth - 1;
+		//	} else if (particleVertices[idx].z >= d_latticeDepth - 1) {
+		//		particleVertices[idx].z = 0.0f;
+		//	}
+		//	return;
+		//}
 
 
 		
@@ -154,9 +154,9 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 			
 			particleVertices[idx].x = 0.0f;
 			//particleVertices[idx].y = y;
-			particleVertices[idx].y = rand(idx, y) * (d_latticeHeight - 1);
+			//particleVertices[idx].y = rand(idx, y) * (d_latticeHeight - 1);
 			//particleVertices[idx].z = z;
-			particleVertices[idx].z = rand(idx, z) * (d_latticeDepth - 1);
+			particleVertices[idx].z = rand(idx, z) * (d_latticeDepth - 1); // comment this out if you want to respawn at same z
 			//particleVertices[idx].y = d_respawnY;
 			//particleVertices[idx].z = d_respawnZ++;
 

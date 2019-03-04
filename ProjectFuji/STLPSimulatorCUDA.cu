@@ -511,6 +511,10 @@ void STLPSimulatorCUDA::doStep() {
 
 }
 
+void STLPSimulatorCUDA::updateGPU_delta_t() {
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
+}
+
 void STLPSimulatorCUDA::resetSimulation() {
 }
 

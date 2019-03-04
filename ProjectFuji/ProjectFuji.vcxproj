@@ -93,6 +93,7 @@
     <ClCompile Include="Curve.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="EVSMShadowMapper.cpp" />
+    <ClCompile Include="FreeFormCamera.cpp" />
     <ClCompile Include="GeneralGrid.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Grid3D.cpp" />
@@ -126,6 +127,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Particle.cpp" />
+    <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="ppmImage.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Skybox.cpp" />
@@ -163,6 +165,7 @@
     <ClInclude Include="Curve.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="EVSMShadowMapper.h" />
+    <ClInclude Include="FreeFormCamera.h" />
     <ClInclude Include="GeneralGrid.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Grid3D.h" />
@@ -171,6 +174,7 @@
     <ClCompile Include="Config.h" />
     <ClInclude Include="Grid2D.h" />
     <ClInclude Include="Particle.h" />
+    <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ppmImage.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Skybox.h" />

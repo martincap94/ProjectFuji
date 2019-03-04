@@ -12,6 +12,8 @@
 #pragma once
 
 #include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
+
 #include "Config.h"
 
 const glm::vec3 WORLD_UP = glm::vec3(0.0f, 1.0f, 0.0f); ///< 
@@ -78,7 +80,7 @@ public:
 	~Camera();
 
 	/// Returns the view matrix that was computed for the current camera orientation and position
-	virtual glm::mat4 getViewMatrix() = 0;
+	virtual glm::mat4 getViewMatrix();
 
 	/// Processes keyboard input and moves the camera accordingly.
 	/**

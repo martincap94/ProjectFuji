@@ -15,10 +15,6 @@ Camera2D::Camera2D(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : C
 Camera2D::~Camera2D() {
 }
 
-glm::mat4 Camera2D::getViewMatrix() {
-	return glm::lookAt(position, position + front, up);
-}
-
 
 void Camera2D::processKeyboardMovement(eCameraMovementDirection direction, double deltaTime) {
 	float velocity = (float)((double)movementSpeed * deltaTime);
