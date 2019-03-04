@@ -19,10 +19,15 @@ STLPSimulator::STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram) : 
 	stlpDiagram->particlePoints.reserve(maxNumParticles);
 	stlpDiagram->particlePoints.push_back(glm::vec2(0.0f));
 
+	profileMap = new ppmImage("profileMaps/120x80_pm.ppm");
+
 }
 
 
 STLPSimulator::~STLPSimulator() {
+	if (profileMap) {
+		delete(profileMap);
+	}
 }
 
 void STLPSimulator::initBuffers() {
@@ -295,7 +300,32 @@ void STLPSimulator::generateParticle() {
 	p.velocity = glm::vec3(0.0f);
 	//p.updatePressureVal();
 	//p.convectiveTemperature = stlpDiagram->Tc.x;
-	p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
+
+
+	if (profileMap && profileMap->height >= heightMap->height && profileMap->width >= heightMap->width) {
+
+		glm::vec2 p1 = profileMap->data[leftx][leftz];
+		glm::vec2 p2 = profileMap->data[leftx][rightz];
+		glm::vec2 p3 = profileMap->data[rightx][leftz];
+		glm::vec2 p4 = profileMap->data[rightx][rightz];
+
+		glm::vec2 pi1 = zRatio * p2 + (1.0f - zRatio) * p1;
+		glm::vec2 pi2 = zRatio * p4 + (1.0f - zRatio) * p3;
+		
+		glm::vec2 pif = xRatio * pi2 + (1.0f - xRatio) * pi1;
+		glm::ivec2 pii = (glm::ivec2)pif;
+
+		if (pii.y != pii.x) {
+			p.profileIndex = (rand() % (pii.y - pii.x) + pii.x) % (stlpDiagram->numProfiles - 1);
+		} else {
+			p.profileIndex = pii.x % (stlpDiagram->numProfiles - 1);
+		}
+
+	} else {
+		p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
+	}
+
+
 	//p.convectiveTemperature = stlpDiagram->TcProfiles[p.profileIndex].x;
 
 	//cout << "Pressure at " << y << " is " << p.pressure << endl;

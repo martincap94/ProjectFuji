@@ -21,6 +21,8 @@
 #include "Particle.h"
 #include "STLPDiagram.h"
 #include "VariableManager.h"
+#include "ppmImage.h"
+
 
 
 /// Simulator to be used for orographic cloud simulation.
@@ -49,6 +51,7 @@ public:
 	int showELLevelLayer = 1;
 
 	HeightMap *heightMap;	///< Pointer to the heightmap
+	ppmImage *profileMap; // needs to have the same parameters as the height map (width, height), or at least larger
 
 	vector<Particle> particles;
 	vector<glm::vec3> particlePositions;	///< Particle positions
