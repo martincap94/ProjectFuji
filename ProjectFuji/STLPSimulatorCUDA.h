@@ -15,7 +15,10 @@ public:
 	VariableManager *vars;
 	STLPDiagram *stlpDiagram;
 
-	float delta_t = 1.0f;
+	GLuint particlesVBO;
+
+
+	float delta_t = 60.0f;
 
 	int simulateWind = 0;
 	int usePrevVelocity = 1;
@@ -25,7 +28,7 @@ public:
 	HeightMap *heightMap;
 
 	//int maxNumParticles = MAX_PARTICLE_COUNT;
-	int maxNumParticles = 100000;
+	int maxNumParticles = 1000000;
 
 	float groundHeight = 0.0f;
 	float simulationBoxHeight = 20000.0f;
@@ -96,7 +99,6 @@ public:
 private:
 
 	GLuint particlesVAO;
-	GLuint particlesVBO;
 
 	GLuint CCLLevelVAO;
 	GLuint CCLLevelVBO;

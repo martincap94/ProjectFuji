@@ -444,6 +444,9 @@ int runApp() {
 	stlpSimCUDA->initParticles();
 	stlpSimCUDA->initCUDA();
 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	((LBM3D_1D_indices*)lbm)->mapVBOTEST(stlpSimCUDA->particlesVBO, stlpSimCUDA->cudaParticleVerticesVBO);
+
 	// Set these callbacks after nuklear initialization, otherwise they won't work!
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -706,11 +709,15 @@ int runApp() {
 
 		} else if (mode == 3) {
 
+
 			if (vars.stlpUseCUDA) {
 				stlpSimCUDA->doStep();
 			} else {
 				stlpSim->doStep();
 			}
+
+			lbm->doStepCUDA();
+
 
 			reportGLErrors("1");
 

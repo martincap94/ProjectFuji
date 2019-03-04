@@ -7,8 +7,6 @@
 #include "Utils.h"
 #include "ShaderManager.h"
 
-constexpr double pi = 3.14159265358979323846;
-
 using namespace std;
 
 STLPSimulator::STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram) : vars(vars), stlpDiagram(stlpDiagram) {
@@ -266,7 +264,7 @@ void STLPSimulator::generateParticle() {
 	float randx;
 	float randz;
 
-	bool incircle = true;
+	bool incircle = false;
 	if (incircle) {
 
 		float R = 10.0f;
@@ -274,7 +272,7 @@ void STLPSimulator::generateParticle() {
 		static std::mt19937 mt(rd());
 		static std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
-		float a = dist(mt) * 2.0f * (float)pi;
+		float a = dist(mt) * 2.0f * (float)PI;
 		float r = R * sqrtf(dist(mt));
 
 		randx = r * cos(a);

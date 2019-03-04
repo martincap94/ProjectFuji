@@ -148,6 +148,8 @@ public:
 
 	virtual void switchToCPU();
 
+	void mapVBOTEST(GLuint VBO, struct cudaGraphicsResource *res);
+
 protected:
 
 	virtual void swapLattices();

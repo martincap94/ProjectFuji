@@ -65,6 +65,23 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 
 	while (idx < *numParticles) {
 
+
+		// SOLVES CRASHES WITH STLP
+		if (particleVertices[idx].x < 0.0f || particleVertices[idx].x > d_latticeWidth - 1 ||
+			particleVertices[idx].y < 0.0f || particleVertices[idx].y > d_latticeHeight - 1 ||
+			particleVertices[idx].z < 0.0f || particleVertices[idx].z > d_latticeDepth - 1) {
+			return;
+
+			particleVertices[idx].x = 0.0f;
+			//particleVertices[idx].y = y;
+			particleVertices[idx].y = rand(idx, particleVertices[idx].y) * (d_latticeHeight - 1);
+			//particleVertices[idx].z = z;
+			particleVertices[idx].z = rand(idx, particleVertices[idx].z) * (d_latticeDepth - 1);
+			//particleVertices[idx].y = d_respawnY;
+			//particleVertices[idx].z = d_respawnZ++;
+		}
+
+
 		float x = particleVertices[idx].x;
 		float y = particleVertices[idx].y;
 		float z = particleVertices[idx].z;
@@ -107,6 +124,27 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 
 
 		particleColors[idx] = mapToViridis3D(glm::length2(finalVelocity) * 4.0f);
+
+
+		if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
+			particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
+			particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
+
+			if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1) {
+				particleVertices[idx].x = 0.0f;
+			}
+			if (particleVertices[idx].y <= 0.0f) {
+				particleVertices[idx].y = d_latticeHeight - 1;
+			} else if (particleVertices[idx].y >= d_latticeHeight - 1) {
+				particleVertices[idx].y = 0.0f;
+			}
+			if (particleVertices[idx].z <= 0.0f) {
+				particleVertices[idx].z = d_latticeDepth - 1;
+			} else if (particleVertices[idx].z >= d_latticeDepth - 1) {
+				particleVertices[idx].z = 0.0f;
+			}
+
+		}
 
 
 		
@@ -1114,7 +1152,7 @@ LBM3D_1D_indices::LBM3D_1D_indices(glm::ivec3 dim, string sceneFilename, float t
 	cudaMalloc((void**)&d_velocities, sizeof(glm::vec3) * latticeSize);
 
 
-	cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleSystem->vbo, cudaGraphicsMapFlagsWriteDiscard);
+	//cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleSystem->vbo, cudaGraphicsMapFlagsWriteDiscard);
 	cudaGraphicsGLRegisterBuffer(&cudaParticleColorsVBO, particleSystem->colorsVBO, cudaGraphicsMapFlagsWriteDiscard);
 
 
@@ -1282,12 +1320,12 @@ void LBM3D_1D_indices::doStepCUDA() {
 	// ============================================= move particles CUDA - different respawn from CPU !!!
 
 	glm::vec3 *d_particleVerticesVBO;
-	cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0);
+	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
 	//CHECK_ERROR(cudaPeekAtLastError());
 
 	size_t num_bytes;
-	cudaGraphicsResourceGetMappedPointer((void **)&d_particleVerticesVBO, &num_bytes, cudaParticleVerticesVBO);
-	//printf("CUDA mapped VBO: May access %ld bytes\n", num_bytes);
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_particleVerticesVBO, &num_bytes, cudaParticleVerticesVBO));
+	//printf("CUDA-LBM mapped VBO: May access %ld bytes\n", num_bytes);
 
 	glm::vec3 *d_particleColorsVBO;
 	cudaGraphicsMapResources(1, &cudaParticleColorsVBO, 0);
@@ -1295,7 +1333,7 @@ void LBM3D_1D_indices::doStepCUDA() {
 
 	moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, d_numParticles, d_particleColorsVBO);
 	//CHECK_ERROR(cudaPeekAtLastError());
-
+	
 	cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0);
 	cudaGraphicsUnmapResources(1, &cudaParticleColorsVBO, 0);
 
@@ -1972,6 +2010,16 @@ void LBM3D_1D_indices::updateControlProperty(eLBMControlProperty controlProperty
 
 
 void LBM3D_1D_indices::switchToCPU() {
+}
+
+void LBM3D_1D_indices::mapVBOTEST(GLuint VBO, struct cudaGraphicsResource *res) {
+	CHECK_ERROR(cudaGetLastError());
+
+	//res = cudaParticleVerticesVBO;
+
+	cout << "CUDA mapping VBO" << endl;
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, VBO, cudaGraphicsMapFlagsWriteDiscard)); // returns out of memory error (even though it shouldn't according to documentation
+
 }
 
 void LBM3D_1D_indices::initBuffers() {

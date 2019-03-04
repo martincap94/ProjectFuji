@@ -50,6 +50,9 @@ public:
 	int showCCLLevelLayer = 1;
 	int showELLevelLayer = 1;
 
+	GLuint particlesVBO;
+
+
 	HeightMap *heightMap;	///< Pointer to the heightmap
 	ppmImage *profileMap; // needs to have the same parameters as the height map (width, height), or at least larger
 
@@ -59,7 +62,7 @@ public:
 	float simulationSpeedMultiplier = 1.0f;
 
 	//int maxNumParticles = MAX_PARTICLE_COUNT;
-	int maxNumParticles = 100000;
+	int maxNumParticles = 10000;
 
 	float groundHeight = 0.0f;
 	float simulationBoxHeight = 20000.0f; // 20km
@@ -99,7 +102,7 @@ public:
 private:
 
 	GLuint particlesVAO;
-	GLuint particlesVBO;
+	//GLuint particlesVBO;
 
 	GLuint CCLLevelVAO;
 	GLuint CCLLevelVBO;

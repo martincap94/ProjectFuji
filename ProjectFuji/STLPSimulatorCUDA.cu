@@ -6,6 +6,8 @@
 #include "HeightMap.h"
 #include "CUDAUtils.cuh"
 
+#include <random>
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
@@ -387,7 +389,7 @@ void STLPSimulatorCUDA::initCUDA() {
 
 	cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice);
 
-	cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard);
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_maxP, &stlpDiagram->maxP, sizeof(float)));
@@ -492,12 +494,12 @@ void STLPSimulatorCUDA::initCUDA() {
 void STLPSimulatorCUDA::doStep() {
 
 	glm::vec3 *dptr;
-	cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0);
+	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
 	size_t num_bytes;
-	cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes, cudaParticleVerticesVBO);
-	//printf("CUDA mapped VBO: May access %ld bytes\n", num_bytes);
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes, cudaParticleVerticesVBO));
+	//printf("CUDA-STLP mapped VBO: May access %ld bytes\n", num_bytes);
 
-	CHECK_ERROR(cudaPeekAtLastError());
+	//CHECK_ERROR(cudaPeekAtLastError());
 	simulationStepKernel << <gridDim.x, blockDim.x >> > (dptr, numParticles, d_verticalVelocities, d_profileIndices, d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
 
 	CHECK_ERROR(cudaPeekAtLastError());
@@ -514,9 +516,32 @@ void STLPSimulatorCUDA::resetSimulation() {
 
 void STLPSimulatorCUDA::generateParticle() {
 
-	float randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
-	float randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
 
+	// testing generation in circle
+	float randx;
+	float randz;
+
+	bool incircle = false;
+	if (incircle) {
+
+		float R = 10.0f;
+		static std::random_device rd;
+		static std::mt19937 mt(rd());
+		static std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+
+		float a = dist(mt) * 2.0f * (float)PI;
+		float r = R * sqrtf(dist(mt));
+
+		randx = r * cos(a);
+		randz = r * sin(a);
+
+		randx += heightMap->width / 2;
+		randz += heightMap->height / 2;
+
+	} else {
+		randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
+		randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
+	}
 
 	// interpolate
 	int leftx = (int)randx;

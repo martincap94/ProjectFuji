@@ -4,6 +4,9 @@
 #include <string>
 //#include <glad\glad.h>
 
+constexpr double PI = 3.14159265358979323846;
+
+
 
 /*
 Line intersection taken from: https://martin-thoma.com/how-to-check-if-two-line-segments-intersect/
