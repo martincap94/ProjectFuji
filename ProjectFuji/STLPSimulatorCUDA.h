@@ -25,7 +25,7 @@ public:
 	HeightMap *heightMap;
 
 	//int maxNumParticles = MAX_PARTICLE_COUNT;
-	int maxNumParticles = 1;
+	int maxNumParticles = 100000;
 
 	float groundHeight = 0.0f;
 	float simulationBoxHeight = 20000.0f;

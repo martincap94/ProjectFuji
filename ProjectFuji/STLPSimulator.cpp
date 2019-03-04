@@ -283,9 +283,9 @@ void STLPSimulator::generateParticle() {
 	particlePositions.push_back(glm::vec3(randx, y, randz));
 
 	//rangeToRange(y, 0.0f, GRID_HEIGHT, 0.0f, 15000.0f);
-	cout << "height (sim box) = " << y << endl;
+	//cout << "height (sim box) = " << y << endl;
 	mapFromSimulationBox(y);
-	cout << "height (real)    = " << y << endl;
+	//cout << "height (real)    = " << y << endl;
 	//cout << y << endl;
 
 	//y = 1500.0f;

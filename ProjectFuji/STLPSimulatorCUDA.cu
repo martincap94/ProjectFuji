@@ -560,7 +560,7 @@ void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader) {
 	
 	glUseProgram(particlesShader.id);
 
-	glPointSize(10.0f);
+	glPointSize(1.0f);
 	particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));
 
 	glBindVertexArray(particlesVAO);
