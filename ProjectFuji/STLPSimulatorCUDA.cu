@@ -118,28 +118,6 @@ __device__ void mapFromSimulationBox_dev(float & val) {
 
 
 
-__device__ float getNormalizedValFromRange_dev(float val, float min, float max) {
-	return (val - min) / (max - min);
-}
-
-__device__ float getRangeToRangeMappedVal_dev(float val, float origMin, float origMax, float newMin, float newMax) {
-	val = getNormalizedValFromRange_dev(val, origMin, origMax);
-	val *= (newMax - newMin);
-	val += newMin;
-	return val;
-}
-
-__device__ float getRealWorldCoords_dev(float val) {
-	return getRangeToRangeMappedVal_dev(val, d_const_groundHeight, d_const_boxTopHeight, 0.0f, d_const_latticeHeight);
-}
-
-__device__ float getSimulationBoxCoords_dev(float val) {
-	return getRangeToRangeMappedVal_dev(val, 0.0f, d_const_latticeHeight, d_const_groundHeight, d_const_boxTopHeight);
-}
-
-
-
-
 __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int numCurveVertices, float normP) {
 	// naively search for correct interval - better solutions are: binary search and direct indexation using (non-normalized) pressure - needs better design
 	for (int i = 0; i < numCurveVertices - 1; i += 1) {
@@ -165,7 +143,7 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 		if (particlePressures[idx] > CCLProfiles[profileIndices[idx]].y) {
 
-			printf("| pressure = %0.2f\n", particlePressures[idx]);
+			//printf("| pressure = %0.2f\n", particlePressures[idx]);
 			//particleVertices[idx].y += 0.1f;
 			float normP = getNormalizedPres(particlePressures[idx]);
 			glm::vec2 ambientIntersection = getIntersectionWithIsobar(ambientTempCurve, numAmbientTempCurveVertices, normP);
@@ -174,8 +152,8 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 			float ambientTemp = getDenormalizedTemp(ambientIntersection.x, normP);
 			float particleTemp = getDenormalizedTemp(dryAdiabatIntersection.x, normP);
 
-			printf("| ambientTemp [deg C] = %0.2f\n", ambientTemp);
-			printf("| particleTemp [deg C] = %0.2f\n", particleTemp);
+			//printf("| ambientTemp [deg C] = %0.2f\n", ambientTemp);
+			//printf("| particleTemp [deg C] = %0.2f\n", particleTemp);
 
 
 			toKelvin_dev(ambientTemp);
@@ -186,27 +164,27 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
-			printf("| a = %0.2f\n", a);
+			//printf("| a = %0.2f\n", a);
 
 			verticalVelocities[idx] = verticalVelocities[idx] + a * d_const_delta_t;
 			float deltaY = verticalVelocities[idx] * d_const_delta_t + 0.5f * a * d_const_delta_t * d_const_delta_t;
 
-			printf("| delta y = %0.2f\n", deltaY);
+			//printf("| delta y = %0.2f\n", deltaY);
 
-			printf("| height (before unmap) = %0.2f\n", particleVertices[idx].y);
+			//printf("| height (before unmap) = %0.2f\n", particleVertices[idx].y);
 
 
 			mapFromSimulationBox_dev(particleVertices[idx].y);
 			//float tmpY = getRealWorldCoords_dev(particleVertices[idx].y);
 
-			printf("| height (after unmap) = %0.2f\n", particleVertices[idx].y);
+			//printf("| height (after unmap) = %0.2f\n", particleVertices[idx].y);
 			particleVertices[idx].y += deltaY;
 
 			//printf("| height (after unmap) = %0.2f\n", tmpY);
 
 			//tmpY += deltaY;
 
-			printf("| height (after unmap + delta y) = %0.2f\n", particleVertices[idx].y);
+			//printf("| height (after unmap + delta y) = %0.2f\n", particleVertices[idx].y);
 			particlePressures[idx] = getPressureVal_dev(particleVertices[idx].y);
 
 			//printf("| height (after unmap + delta y) = %0.2f\n", tmpY);
@@ -217,7 +195,62 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 			mapToSimulationBox_dev(particleVertices[idx].y);
 
-			printf("| height (final) = %0.2f\n", particleVertices[idx].y);
+			//printf("| height (final) = %0.2f\n", particleVertices[idx].y);
+
+
+		} else {
+			float normP = getNormalizedPres(particlePressures[idx]);
+			glm::vec2 ambientIntersection = getIntersectionWithIsobar(ambientTempCurve, numAmbientTempCurveVertices, normP);
+			glm::vec2 moistAdiabatIntersection = getIntersectionWithIsobar(&moistAdiabatProfiles[moistAdiabatOffsetsAndLengths[profileIndices[idx]].x], moistAdiabatOffsetsAndLengths[profileIndices[idx]].y, normP);
+
+			float ambientTemp = getDenormalizedTemp(ambientIntersection.x, normP);
+			float particleTemp = getDenormalizedTemp(moistAdiabatIntersection.x, normP);
+
+			//printf("| ambientTemp [deg C] = %0.2f\n", ambientTemp);
+			//printf("| particleTemp [deg C] = %0.2f\n", particleTemp);
+
+
+			toKelvin_dev(ambientTemp);
+			toKelvin_dev(particleTemp);
+
+			float ambientTheta = computeThetaFromAbsoluteK_dev(ambientTemp, particlePressures[idx]);
+			float particleTheta = computeThetaFromAbsoluteK_dev(particleTemp, particlePressures[idx]);
+
+			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
+
+			//printf("| a = %0.2f\n", a);
+
+			verticalVelocities[idx] = verticalVelocities[idx] + a * d_const_delta_t;
+			float deltaY = verticalVelocities[idx] * d_const_delta_t + 0.5f * a * d_const_delta_t * d_const_delta_t;
+
+			//printf("| delta y = %0.2f\n", deltaY);
+
+			//printf("| height (before unmap) = %0.2f\n", particleVertices[idx].y);
+
+
+			mapFromSimulationBox_dev(particleVertices[idx].y);
+			//float tmpY = getRealWorldCoords_dev(particleVertices[idx].y);
+
+			//printf("| height (after unmap) = %0.2f\n", particleVertices[idx].y);
+			particleVertices[idx].y += deltaY;
+
+			//printf("| height (after unmap) = %0.2f\n", tmpY);
+
+			//tmpY += deltaY;
+
+			//printf("| height (after unmap + delta y) = %0.2f\n", particleVertices[idx].y);
+			particlePressures[idx] = getPressureVal_dev(particleVertices[idx].y);
+
+			//printf("| height (after unmap + delta y) = %0.2f\n", tmpY);
+
+			//particlePressures[idx] = getPressureVal_dev(tmpY);
+
+			//particleVertices[idx].y = getSimulationBoxCoords_dev(tmpY);
+
+			mapToSimulationBox_dev(particleVertices[idx].y);
+
+			//printf("| height (final) = %0.2f\n", particleVertices[idx].y);
+
 
 
 		}
