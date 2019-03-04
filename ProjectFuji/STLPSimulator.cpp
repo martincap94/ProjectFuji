@@ -160,6 +160,10 @@ void STLPSimulator::doStep() {
 			if (!usePrevVelocity) {
 				particles[i].velocity.y = 0.0f;
 			}
+			if (vars->dividePrevVelocity) {
+				particles[i].velocity.y /= (vars->prevVelocityDivisor / 100.0f);
+			}
+
 			particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
 			float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
 
@@ -211,6 +215,10 @@ void STLPSimulator::doStep() {
 			if (!usePrevVelocity) {
 				particles[i].velocity.y = 0.0f;
 			}
+			if (vars->dividePrevVelocity) {
+				particles[i].velocity.y /= (vars->prevVelocityDivisor / 100.0f);
+			}
+
 			particles[i].velocity.y = particles[i].velocity.y + a * delta_t;
 			float deltaY = particles[i].velocity.y * delta_t + 0.5f * a * delta_t * delta_t;
 

@@ -1275,6 +1275,11 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_checkbox_label(ctx, "use prev velocity", &stlpSim->usePrevVelocity);
 
+		nk_checkbox_label(ctx, "Divide Previous Velocity", &vars.dividePrevVelocity);
+		if (vars.dividePrevVelocity) {
+			nk_property_float(ctx, "Divisor (x100)", 100.0f, &vars.prevVelocityDivisor, 1000.0f, 0.1f, 0.1f); // [1.0, 10.0]
+		}
+
 		nk_checkbox_label(ctx, "Show CCL Level", &stlpSim->showCCLLevelLayer);
 		nk_checkbox_label(ctx, "Show EL Level", &stlpSim->showELLevelLayer);
 

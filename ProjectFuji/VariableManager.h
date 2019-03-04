@@ -66,6 +66,8 @@ public:
 	string soundingFile;		///< Name of the sounding file to be loaded
 
 
+	int dividePrevVelocity = 0;
+	float prevVelocityDivisor = 100.1f;
 
 
 	////////////////////////////////////////////////////////////////
