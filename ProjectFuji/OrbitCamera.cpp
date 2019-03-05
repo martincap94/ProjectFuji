@@ -20,6 +20,8 @@ OrbitCamera::~OrbitCamera() {
 void OrbitCamera::processKeyboardMovement(eCameraMovementDirection direction, double deltaTime) {
 	float velocity = (float)((double)movementSpeed * deltaTime);
 
+
+
 	if (direction == FORWARD) {
 		position += front * velocity;
 		focusPoint += front * velocity;
@@ -60,9 +62,57 @@ void OrbitCamera::processKeyboardMovement(eCameraMovementDirection direction, do
 	}
 }
 
+void OrbitCamera::processKeyboardMovement(int glfwKey, double deltaTime) {
+	float velocity = (float)((double)movementSpeed * deltaTime);
+
+
+
+	//if (glfwKey == ) {
+	//	position += front * velocity;
+	//	focusPoint += front * velocity;
+
+	//}
+	//if (direction == BACKWARD) {
+	//	position -= front * velocity;
+	//	focusPoint -= front * velocity;
+
+	//}
+	if (glfwKey == GLFW_KEY_A) {
+		position -= right * velocity;
+		focusPoint -= right * velocity;
+
+	}
+	if (glfwKey == GLFW_KEY_D) {
+		position += right * velocity;
+		focusPoint += right * velocity;
+
+	}
+	if (glfwKey == GLFW_KEY_W) {
+		position += up * velocity;
+		focusPoint += up * velocity;
+
+	}
+	if (glfwKey == GLFW_KEY_S) {
+		position -= up * velocity;
+		focusPoint -= up * velocity;
+
+	}
+	if (glfwKey == GLFW_KEY_E) {
+		yaw -= velocity;
+		updateCameraVectors();
+	}
+	if (glfwKey == GLFW_KEY_Q) {
+		yaw += velocity;
+		updateCameraVectors();
+	}
+}
+
 void OrbitCamera::processMouseScroll(double yoffset) {
 	//this->radius += yoffset;
 	//updateCameraVectors();
+}
+
+void OrbitCamera::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
 }
 
 

@@ -55,6 +55,25 @@ void Camera2D::processKeyboardMovement(eCameraMovementDirection direction, doubl
 	}*/
 }
 
+void Camera2D::processKeyboardMovement(int glfwKey, double deltaTime) {
+	
+	float velocity = (float)((double)movementSpeed * deltaTime);
+
+	if (glfwKey == GLFW_KEY_S) {
+		position += up * velocity;
+	}
+	if (glfwKey == GLFW_KEY_W) {
+		position -= up * velocity;
+	}
+	if (glfwKey == GLFW_KEY_A) {
+		position -= right * velocity;
+	}
+	if (glfwKey == GLFW_KEY_D) {
+		position += right * velocity;
+	}
+
+}
+
 
 void Camera2D::processMouseScroll(double yoffset) {
 	/*if (Zoom >= 1.0f && Zoom <= 45.0f) {
@@ -66,6 +85,9 @@ void Camera2D::processMouseScroll(double yoffset) {
 	if (Zoom >= 45.0f) {
 		Zoom = 45.0f;
 	}*/
+}
+
+void Camera2D::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
 }
 
 void Camera2D::printInfo() {

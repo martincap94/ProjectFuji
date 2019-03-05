@@ -34,6 +34,7 @@
 #include "Camera.h"
 #include "Camera2D.h"
 #include "OrbitCamera.h"
+#include "FreeRoamCamera.h"
 #include "ParticleSystem.h"
 #include "DirectionalLight.h"
 #include "Grid.h"
@@ -95,6 +96,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 /// Mouse button callback for the window.
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+
+
 /// Window size changed callback.
 void window_size_callback(GLFWwindow* window, int width, int height);
 
@@ -121,6 +125,8 @@ Camera *camera;			///< Pointer to the current camera
 ParticleSystem *particleSystem;		///< Pointer to the particle system that is to be used throughout the whole application
 //Timer timer;
 Camera *viewportCamera;
+Camera *freeRoamCamera;
+Camera *orbitCamera;
 Camera2D *diagramCamera;
 Camera2D *overlayDiagramCamera;
 
@@ -132,6 +138,9 @@ DirectionalLight dirLight;
 int uiMode = 1;
 
 float fov = 90.0f;
+
+float lastMouseX;
+float lastMouseY;
 
 
 
@@ -165,6 +174,10 @@ int pauseKey = GLFW_KEY_T;				///< Pause key
 
 int prevResetKeyState = GLFW_RELEASE;	///< Reset key state from previous frame
 int resetKey = GLFW_KEY_R;				///< Reset key
+
+int prevMouseCursorKeyState = GLFW_RELEASE;
+int mouseCursorKey = GLFW_KEY_C;
+
 
 //string soundingFile;		///< Name of the sounding file to be loaded
 
@@ -230,6 +243,7 @@ int runApp() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
+
 	glfwWindowHint(GLFW_SAMPLES, 12); // enable MSAA with 4 samples
 
 	GLFWwindow *window = glfwCreateWindow(vars.windowWidth, vars.windowHeight, "Project Fuji", nullptr, nullptr);
@@ -241,6 +255,7 @@ int runApp() {
 	}
 
 	glfwGetFramebufferSize(window, &vars.screenWidth, &vars.screenHeight);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glfwMakeContextCurrent(window);
 
@@ -350,14 +365,17 @@ int runApp() {
 			projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
 			grid = new Grid3D(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth, 6, 6, 6);
 			float cameraRadius = sqrtf((float)(vars.latticeWidth * vars.latticeWidth + vars.latticeDepth * vars.latticeDepth)) + 10.0f;
-			camera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
-
+			//camera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
+			orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
 			break;
 	}
 
-	viewportCamera = camera;
+	
+	viewportCamera = orbitCamera;
+	camera = viewportCamera;
 	diagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
 	overlayDiagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
+	freeRoamCamera = new FreeRoamCamera(glm::vec3(0.0f, 100.0f, 30.0f), WORLD_UP, -45.0f, -45.0f);
 
 
 	viewportProjection = projection;
@@ -451,6 +469,9 @@ int runApp() {
 	glfwSetScrollCallback(window, scroll_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetWindowSizeCallback(window, window_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+
+	//glfwSetMouseCa
 
 
 
@@ -592,7 +613,7 @@ int runApp() {
 		} else {
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glfwSwapInterval(0);
-			camera = viewportCamera;
+			camera = vars.useFreeRoamCamera ? freeRoamCamera : viewportCamera;
 			glEnable(GL_DEPTH_TEST);
 
 
@@ -602,6 +623,7 @@ int runApp() {
 		reportGLErrors("C");
 
 		// UPDATE SHADER VIEW MATRICES
+
 		view = camera->getViewMatrix();
 
 		reportGLErrors("D0");
@@ -816,9 +838,11 @@ int runApp() {
 	delete particleSystem;
 	delete lbm;
 	delete grid;
-	delete viewportCamera;
+	//delete viewportCamera;
+	delete freeRoamCamera;
 	delete diagramCamera;
 	delete overlayDiagramCamera;
+	delete orbitCamera;
 
 	delete skybox;
 
@@ -877,23 +901,36 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
+
+
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		camera->processKeyboardMovement(Camera::UP, deltaTime);
+		//camera->processKeyboardMovement(Camera::UP, deltaTime);
+		camera->processKeyboardMovement(GLFW_KEY_W, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		camera->processKeyboardMovement(Camera::DOWN, deltaTime);
+		//camera->processKeyboardMovement(Camera::DOWN, deltaTime);
+		camera->processKeyboardMovement(GLFW_KEY_S, deltaTime);
+
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera->processKeyboardMovement(Camera::LEFT, deltaTime);
+		//camera->processKeyboardMovement(Camera::LEFT, deltaTime);
+		camera->processKeyboardMovement(GLFW_KEY_A, deltaTime);
+
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera->processKeyboardMovement(Camera::RIGHT, deltaTime);
+		//camera->processKeyboardMovement(Camera::RIGHT, deltaTime);
+		camera->processKeyboardMovement(GLFW_KEY_D, deltaTime);
+
 	}
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-		camera->processKeyboardMovement(Camera::ROTATE_LEFT, deltaTime);
+		//camera->processKeyboardMovement(Camera::ROTATE_LEFT, deltaTime);
+		camera->processKeyboardMovement(GLFW_KEY_E, deltaTime);
+
 	}
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-		camera->processKeyboardMovement(Camera::ROTATE_RIGHT, deltaTime);
+		//camera->processKeyboardMovement(Camera::ROTATE_RIGHT, deltaTime);
+		camera->processKeyboardMovement(GLFW_KEY_Q, deltaTime);
+
 	}
 	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
 		camera->setView(Camera::VIEW_FRONT);
@@ -941,6 +978,21 @@ void processInput(GLFWwindow* window) {
 		glEnable(GL_DEPTH_TEST);
 		refreshProjectionMatrix();
 		
+	}
+	if (glfwGetKey(window, mouseCursorKey) == GLFW_PRESS) {
+		if (prevMouseCursorKeyState == GLFW_RELEASE) {
+			//vars.paused = !vars.paused;
+			// do action
+			vars.consumeMouseCursor = !vars.consumeMouseCursor;
+			if (vars.consumeMouseCursor) {
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			} else {
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			}
+		}
+		prevMouseCursorKeyState = GLFW_PRESS;
+	} else {
+		prevMouseCursorKeyState = GLFW_RELEASE;
 	}
 
 
@@ -1008,6 +1060,42 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 	}
 }
+
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+	//if (nk_window_is_any_hovered(ctx) || mode < 2) {
+	//	return;
+	//}
+
+	if (mode < 2) {
+		return;
+	}
+
+	static bool firstFrame = true;
+	if (firstFrame) {
+		lastMouseX = xpos;
+		lastMouseY = ypos;
+		firstFrame = false;
+	}
+
+
+	float xOffset = xpos - lastMouseX;
+	float yOffset = lastMouseY - ypos;
+
+	//cout << xOffset << ", " << yOffset << endl;
+
+	lastMouseX = xpos;
+	lastMouseY = ypos;
+
+	//if (camera == freeRoamCamera) {
+	//	cout << "free roam camera???" << endl;
+	//	freeRoamCamera->processMouseMovement(xOffset, yOffset);
+	//}
+
+	camera->processMouseMovement(xOffset, yOffset, false);
+
+}
+
 
 
 void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
@@ -1156,6 +1244,16 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_layout_row_dynamic(ctx, 30, 2);
 			nk_checkbox_label(ctx, "Skybox", &drawSkybox);
 
+			//int useFreeRoamCameraPrev = vars.useFreeRoamCamera;
+			nk_checkbox_label(ctx, "Use freeroam camera", &vars.useFreeRoamCamera);
+			//if (useFreeRoamCameraPrev != vars.useFreeRoamCamera) {
+			//	if (mode >= 2) {
+			//		camera = (vars.useFreeRoamCamera) ? freeRoamCamera : viewportCamera;
+			//		if (vars.useFreeRoamCamera) {
+			//			cout << "using freeRoamCamera from now on" << endl;
+			//		}
+			//	}
+			//}
 
 
 

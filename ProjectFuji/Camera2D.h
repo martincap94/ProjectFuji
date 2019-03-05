@@ -45,7 +45,10 @@ public:
 
 	//virtual glm::mat4 getViewMatrix();
 	virtual void processKeyboardMovement(eCameraMovementDirection direction, double deltaTime);
+	virtual void processKeyboardMovement(int glfwKey, double deltaTime);
+
 	virtual void processMouseScroll(double yoffset);
+	virtual void processMouseMovement(float xoffset, float yoffset, bool constrainPitch = false);
 	virtual void printInfo();
 
 private:

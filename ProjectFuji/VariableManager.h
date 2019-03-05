@@ -49,6 +49,8 @@ public:
 	bool appRunning = true;		///< Helper boolean to stop the application with the exit button in the user interface
 	float cameraSpeed = DEFAULT_CAMERA_SPEED;	///< Movement speed of the main camera
 
+	int useFreeRoamCamera = 0;
+
 	int blockDim_2D = 256;		///< Block dimension for 2D LBM
 	int blockDim_3D_x = 32;		///< Block x dimension for 3D LBM
 	int blockDim_3D_y = 2;		///< Block y dimension for 3D LBM
@@ -62,6 +64,8 @@ public:
 	int stlpUseCUDA = 0;
 	int applyLBM = 0;
 	int applySTLP = 1;
+
+	bool consumeMouseCursor = false;
 	
 	string soundingFile;		///< Name of the sounding file to be loaded
 

@@ -19,6 +19,13 @@ glm::mat4 Camera::getViewMatrix() {
 	return glm::lookAt(position, position + front, up);
 }
 
+//void Camera::processMouseScroll(double yoffset) {
+//}
+//
+//void Camera::processMouseMovement(float xoffset, float yoffset, bool constainPitch) {
+//	cout << "Process mouse movement in Camera" << endl;
+//}
+
 void Camera::setView(eCameraView camView) {}
 
 void Camera::printInfo() {

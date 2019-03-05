@@ -93,7 +93,7 @@
     <ClCompile Include="Curve.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="EVSMShadowMapper.cpp" />
-    <ClCompile Include="FreeFormCamera.cpp" />
+    <ClCompile Include="FreeRoamCamera.cpp" />
     <ClCompile Include="GeneralGrid.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Grid3D.cpp" />
@@ -165,7 +165,7 @@
     <ClInclude Include="Curve.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="EVSMShadowMapper.h" />
-    <ClInclude Include="FreeFormCamera.h" />
+    <ClInclude Include="FreeRoamCamera.h" />
     <ClInclude Include="GeneralGrid.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Grid3D.h" />

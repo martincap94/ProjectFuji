@@ -14,6 +14,8 @@
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 
+#include <GLFW\glfw3.h>
+
 #include "Config.h"
 
 const glm::vec3 WORLD_UP = glm::vec3(0.0f, 1.0f, 0.0f); ///< 
@@ -89,9 +91,12 @@ public:
 		\param[in] deltaTime		Delta time of the rendered frame for frame dependent movement (and possible smoothing).
 	*/
 	virtual void processKeyboardMovement(eCameraMovementDirection direction, double deltaTime) = 0;
+	virtual void processKeyboardMovement(int glfwKey, double deltaTime) = 0;
 
 	/// Process mouse scroll - unused at the moment!
 	virtual void processMouseScroll(double yoffset) = 0;
+
+	virtual void processMouseMovement(float xoffset, float yoffset, bool constainPitch = true) = 0;
 
 	/// Sets the view of the camera (based on the eCameraView enum).
 	/**

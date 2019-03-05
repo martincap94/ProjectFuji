@@ -146,7 +146,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ParticleEmitter.cpp" />
-    <ClCompile Include="FreeFormCamera.cpp" />
+    <ClCompile Include="FreeRoamCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -249,7 +249,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ParticleEmitter.h" />
-    <ClInclude Include="FreeFormCamera.h" />
+    <ClInclude Include="FreeRoamCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

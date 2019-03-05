@@ -18,7 +18,7 @@ public:
 	GLuint particlesVBO;
 
 
-	float delta_t = 10.0f;
+	float delta_t = 1.0f;
 
 	int simulateWind = 0;
 	int usePrevVelocity = 1;
