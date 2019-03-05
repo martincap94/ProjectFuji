@@ -1092,8 +1092,10 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	//	freeRoamCamera->processMouseMovement(xOffset, yOffset);
 	//}
 
-	camera->processMouseMovement(xOffset, yOffset, false);
-
+	// for easier controls
+	if (vars.consumeMouseCursor) {
+		camera->processMouseMovement(xOffset, yOffset, false);
+	}
 }
 
 
@@ -1460,6 +1462,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			if (nk_menu_item_label(ctx, "Show About", NK_TEXT_CENTERED)) {
 				vars.aboutWindowOpened = true;
 			}
+
 			nk_menu_end(ctx);
 		}
 
@@ -1470,23 +1473,44 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		//nk_layout_row_push(ctx, 120);
 		//nk_label(ctx, "View", NK_TEXT_CENTERED);
+	}
+	nk_end(ctx);
 
 
-		if (vars.aboutWindowOpened) {
-			if (nk_begin(ctx, "About Window", nk_rect(vars.screenWidth / 2.0f - 250.0f, vars.screenHeight / 2.0f - 250.0f, 500.0f, 500.0f), 0)) {
-				nk_layout_row_dynamic(ctx, 20.0f, 1);
-
-				nk_label(ctx, "Orographic Cloud Simulator", NK_TEXT_CENTERED);
-				nk_label(ctx, "Author: Martin Cap", NK_TEXT_CENTERED);
-				nk_label(ctx, "Email: martincap94@gmail.com", NK_TEXT_CENTERED);
-
+	/*
+	
+			static int show_group =  1;
+		if (show_group) {
+			nk_layout_row_dynamic(ctx, 100, 1);
+			int res = nk_group_begin(ctx, "Node", NK_WINDOW_CLOSABLE|NK_WINDOW_BORDER);
+			show_group = res != NK_WINDOW_CLOSED;
+			if (res && show_group) {
+				 ...
+			nk_group_end(ctx);
 			}
-
 		}
+	*/
+
+	if (vars.aboutWindowOpened) {
+
+
+		if (nk_begin(ctx, "About Window", nk_rect(vars.screenWidth / 2 - 250, vars.screenHeight / 2 - 250, 500, 500), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE)) {
+			nk_layout_row_dynamic(ctx, 20.0f, 1);
+
+			nk_label(ctx, "Orographic Cloud Simulator", NK_TEXT_CENTERED);
+			nk_label(ctx, "Author: Martin Cap", NK_TEXT_CENTERED);
+			nk_label(ctx, "Email: martincap94@gmail.com", NK_TEXT_CENTERED);
+
+
+		} else {
+			vars.aboutWindowOpened = false;
+		}
+		nk_end(ctx);
 
 
 	}
-	nk_end(ctx);
+
+	//nk_end(ctx);
 
 
 
