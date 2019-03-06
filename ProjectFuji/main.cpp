@@ -147,7 +147,7 @@ float lastMouseY;
 
 struct nk_context *ctx;
 
-int projectionMode = ORTHOGRAPHIC;
+int projectionMode = PERSPECTIVE;
 int drawSkybox = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,9 +410,9 @@ int runApp() {
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 
 
-	StaticMesh characterMeshTest("models/housewife.obj", ShaderManager::getShaderPtr("dirLightOnly_evsm"), nullptr);
+	StaticMesh testMesh("models/House_3.obj", ShaderManager::getShaderPtr("dirLightOnly"), nullptr);
 
-	characterMeshTest.transform.position = glm::vec3(0.0f);
+	testMesh.transform.position = glm::vec3(0.0f);
 
 	if (vars.lbmType == LBM3D) {
 		((LBM3D_1D_indices*)lbm)->heightMap->shader = dirLightOnlyShader;
@@ -420,7 +420,6 @@ int runApp() {
 
 	//dirLight.direction = glm::vec3(0.2f, 0.4f, 0.5f);
 	dirLight.position = glm::vec3(100.0f, 60.0f, 60.0f);
-	dirLight.direction = dirLight.position - glm::vec3(0.0f);
 	dirLight.ambient = glm::vec3(0.0f, 0.0f, 0.0f);
 	dirLight.diffuse = glm::vec3(0.8f, 0.4f, 0.4f);
 	dirLight.specular = glm::vec3(0.6f, 0.2f, 0.2f);
@@ -428,7 +427,7 @@ int runApp() {
 
 	glUseProgram(dirLightOnlyShader->id);
 
-	dirLightOnlyShader->setVec3("dirLight.direction", dirLight.direction);
+	dirLightOnlyShader->setVec3("dirLight.direction", dirLight.getDirection());
 	dirLightOnlyShader->setVec3("dirLight.ambient", dirLight.ambient);
 	dirLightOnlyShader->setVec3("dirLight.diffuse", dirLight.diffuse);
 	dirLightOnlyShader->setVec3("dirLight.specular", dirLight.specular);
@@ -526,7 +525,6 @@ int runApp() {
 		processInput(window);
 		constructUserInterface(ctx, particlesColor);
 
-		dirLight.direction = dirLight.position - glm::vec3(0.0f);
 
 		if (vars.measureTime) {
 			vars.timer.clockAvgStart();
@@ -774,6 +772,8 @@ int runApp() {
 			glDisable(GL_CULL_FACE);
 			evsm.preFirstPass();
 			stlpSim->heightMap->draw(evsm.firstPassShader);
+			//testMesh.draw(evsm.firstPassShader);
+
 			evsm.postFirstPass();
 
 			glViewport(0, 0, vars.screenWidth, vars.screenHeight);
@@ -782,15 +782,23 @@ int runApp() {
 			glEnable(GL_BLEND);
 
 
-			
+			//glEnable(GL_CULL_FACE);
+			//glCullFace(GL_FRONT);
 			evsm.preSecondPass(vars.screenWidth, vars.screenHeight);
-			evsm.secondPassShader->setVec3("dirLight.direction", dirLight.direction);
+			evsm.secondPassShader->setVec3("dirLight.direction", dirLight.getDirection());
 			evsm.secondPassShader->setVec3("dirLight.ambient", dirLight.ambient);
 			evsm.secondPassShader->setVec3("dirLight.diffuse", dirLight.diffuse);
 			evsm.secondPassShader->setVec3("dirLight.specular", dirLight.specular);
 			evsm.secondPassShader->setVec3("v_ViewPos", camera->position);
+
 			stlpSim->heightMap->draw(evsm.secondPassShader);
-			characterMeshTest.draw();
+			//testMesh.draw(evsm.secondPassShader);
+
+
+			dirLightOnlyShader->use();
+			dirLightOnlyShader->setVec3("dirLight.direction", dirLight.getDirection());
+			dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
+			testMesh.draw(dirLightOnlyShader);
 
 			evsm.postSecondPass();
 			

@@ -49,7 +49,7 @@ public:
 	bool appRunning = true;		///< Helper boolean to stop the application with the exit button in the user interface
 	float cameraSpeed = DEFAULT_CAMERA_SPEED;	///< Movement speed of the main camera
 
-	int useFreeRoamCamera = 0;
+	int useFreeRoamCamera = 1;
 
 	int blockDim_2D = 256;		///< Block dimension for 2D LBM
 	int blockDim_3D_x = 32;		///< Block x dimension for 3D LBM

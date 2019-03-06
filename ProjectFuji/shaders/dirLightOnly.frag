@@ -2,7 +2,7 @@
 
 out vec4 fragColor;
 
-in vec3 v_FragPos;
+in vec4 v_FragPos;
 in vec3 v_Normal;
 
 struct DirLight {
@@ -24,7 +24,7 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 void main() {
 
 	vec3 norm = normalize(v_Normal);
-	vec3 viewDir = normalize(v_FragPos - v_ViewPos);
+	vec3 viewDir = normalize(v_ViewPos - v_FragPos.xyz);
 	
 	vec3 result = calcDirLight(dirLight, norm, viewDir);
 
@@ -46,8 +46,8 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
 
     // combine results
     vec3 ambient  = light.ambient  * matColor;
-    vec3 diffuse  = light.diffuse  * diff * matColor;
-    vec3 specular = light.specular * spec * matColor;
+    vec3 diffuse  = light.diffuse  * diff;
+    vec3 specular = light.specular * spec;
 
     
     return (ambient + diffuse + specular);

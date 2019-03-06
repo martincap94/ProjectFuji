@@ -53,8 +53,11 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 			glm::vec3 p3(x + 1, data[x + 1][z - 1], z - 1);
 			glm::vec3 p4(x, data[x][z - 1], z - 1);
 
-			glm::vec3 n1 = glm::normalize(glm::cross(p1 - p2, p3 - p2));
-			glm::vec3 n2 = glm::normalize(glm::cross(p3 - p4, p1 - p4)); // flat shading normals
+			//glm::vec3 n1 = glm::normalize(glm::cross(p1 - p2, p3 - p2));
+			//glm::vec3 n2 = glm::normalize(glm::cross(p3 - p4, p1 - p4)); // flat shading normals
+
+			glm::vec3 n1 = glm::normalize(glm::cross(p2 - p3, p2 - p1));
+			glm::vec3 n2 = glm::normalize(glm::cross(p4 - p1, p4 - p3)); // flat shading normals
 
 			if (!flatShading) {
 				glm::vec3 normalP1 = computeNormal(x, z);
@@ -213,11 +216,11 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 	float hTop = data[x][zTop];
 
 	glm::vec3 normal;
-	normal.x = hRight - hLeft;
+	normal.x = hLeft - hRight;
 	//normal.y = hBottom - hTop;
 	//normal.z = -2.0f;
-	normal.y = -2.0f;
-	normal.z = hBottom - hTop;
+	normal.y = 2.0f;
+	normal.z = hTop - hBottom;
 
 	return glm::normalize(normal);
 }

@@ -72,5 +72,111 @@ public:
 
 	void setModelMatrix(glm::mat4 modelMatrix, string uniformName = "u_Model");
 
+
+	// FROM PGR2 FRAMEWORK BY AMBROZ
+	/*
+	GLuint CreateShaderFromSource(GLenum shader_type, const char* source) {
+		if (source == NULL)
+			return 0;
+
+		switch (shader_type) {
+			case GL_VERTEX_SHADER: fprintf(stderr, "vertex shader creation ... "); break;
+			case GL_FRAGMENT_SHADER: fprintf(stderr, "fragment shader creation ... "); break;
+			case GL_GEOMETRY_SHADER: fprintf(stderr, "geometry shader creation ... "); break;
+			case GL_TESS_CONTROL_SHADER: fprintf(stderr, "tesselation control shader creation ... "); break;
+			case GL_TESS_EVALUATION_SHADER: fprintf(stderr, "tesselation evaluation shader creation ... "); break;
+			default: return 0;
+		}
+
+		GLuint shader_id = glCreateShader(shader_type);
+		if (shader_id == 0)
+			return 0;
+
+		glShaderSource(shader_id, 1, &source, NULL);
+		glCompileShader(shader_id);
+		if (CheckShaderCompileStatus(shader_id) != GL_TRUE) {
+			fprintf(stderr, "failed.\n");
+			CheckShaderInfoLog(shader_id);
+			glDeleteShader(shader_id);
+			return 0;
+		} else {
+			fprintf(stderr, "successfull.\n");
+			return shader_id;
+		}
+	}
+
+
+	//-----------------------------------------------------------------------------
+	// Name: CreateShaderFromFile()
+	// Desc: 
+	//-----------------------------------------------------------------------------
+	GLuint CreateShaderFromFile(GLenum shader_type, const char* file_name, const char* preprocessor = NULL) {
+		char* buffer = Tools::ReadFile(file_name);
+		if (buffer == NULL) {
+			fprintf(stderr, "Shader creation failed, input file is empty or missing!\n");
+			return 0;
+		}
+
+		GLuint shader_id = 0;
+		if (preprocessor) {
+			std::string temp = buffer;
+			std::size_t insertIdx = temp.find("\n", temp.find("#version"));
+			temp.insert((insertIdx != std::string::npos) ? insertIdx : 0, std::string("\n") + preprocessor + "\n\n");
+			shader_id = CreateShaderFromSource(shader_type, temp.c_str());
+		} else
+			shader_id = CreateShaderFromSource(shader_type, buffer);
+
+		delete[] buffer;
+		return shader_id;
+	}
+
+	bool CreateShaderProgramFromFile(GLuint& programId, const char* vs, const char* tc,
+									 const char* te, const char* gs, const char* fs, const char* preprocessor = NULL, const char *shaderDir = NULL) {
+		GLenum shader_types[5] = {
+			vs ? GL_VERTEX_SHADER : GL_NONE,
+			tc ? GL_TESS_CONTROL_SHADER : GL_NONE,
+			te ? GL_TESS_EVALUATION_SHADER : GL_NONE,
+			gs ? GL_GEOMETRY_SHADER : GL_NONE,
+			fs ? GL_FRAGMENT_SHADER : GL_NONE,
+		};
+		const char* source_file_names[5] = {
+			vs, tc, te, gs, fs
+		};
+
+		// Create shader program object
+		GLuint pr_id = glCreateProgram();
+		for (int i = 0; i < 5; i++) {
+			if (source_file_names[i]) {
+
+				std::string tmpFilename = std::string(source_file_names[i]);
+				if (shaderDir) {
+					tmpFilename = std::string(shaderDir) + "/" + std::string(source_file_names[i]);
+				}
+				const char *shaderFile = tmpFilename.c_str();
+				GLuint shader_id = CreateShaderFromFile(shader_types[i], shaderFile, preprocessor);
+				if (shader_id == 0) {
+					glDeleteProgram(pr_id);
+					return false;
+				}
+				glAttachShader(pr_id, shader_id);
+				glDeleteShader(shader_id);
+			}
+		}
+		glLinkProgram(pr_id);
+		if (!CheckProgramLinkStatus(pr_id)) {
+			CheckProgramInfoLog(pr_id);
+			fprintf(stderr, "Program linking failed!\n");
+			glDeleteProgram(pr_id);
+			return false;
+		}
+
+		// Remove program from OpenGL and update internal list
+		glDeleteProgram(programId);
+		_updateProgramList(programId, pr_id);
+		programId = pr_id;
+
+		return true;
+	}
+	*/
 };
 

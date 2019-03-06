@@ -48,7 +48,7 @@ public:
 	eRotationAxis rotationAxis = Z_AXIS;
 
 	glm::vec3 position;
-	glm::vec3 direction;	///< Direction of the light
+	//glm::vec3 direction;	///< Direction of the light
 	glm::vec3 focusPoint = glm::vec3(0.0f);
 	glm::vec3 up;
 
@@ -65,6 +65,7 @@ public:
 	void setProjectionMatrix(float left, float right, float bottom, float top);
 	void setProjectionMatrix(float left, float right, float bottom, float top, float nearPlane, float farPlane);
 
+	glm::vec3 getDirection();
 
 	void circularMotionStep(float deltaTime = 1.0f);
 

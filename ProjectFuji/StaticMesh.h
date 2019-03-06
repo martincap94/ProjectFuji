@@ -27,6 +27,7 @@ public:
 	~StaticMesh();
 
 	virtual void draw();
+	virtual void draw(ShaderProgram *shader);
 	virtual void draw(const glm::mat4 &ownerGlobalTransformMatrix);
 	virtual void drawSimple(const glm::mat4 &globalTransformMatrix);
 	virtual void drawShadow(const glm::mat4 &globalTransformMatrix, ShaderProgram &shader);

@@ -30,6 +30,13 @@ void StaticMesh::draw() {
 	glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 }
 
+void StaticMesh::draw(ShaderProgram *shader) {
+	shader->use();
+	shader->setModelMatrix(transform.getModelMatrix());
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+}
+
 void StaticMesh::draw(const glm::mat4 &ownerGlobalTransformMatrix) {
 	shader->use();
 	shader->setModelMatrix(ownerGlobalTransformMatrix * transform.getModelMatrix());

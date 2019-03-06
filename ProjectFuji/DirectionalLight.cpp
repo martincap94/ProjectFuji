@@ -52,6 +52,10 @@ void DirectionalLight::setProjectionMatrix(float left, float right, float bottom
 
 }
 
+glm::vec3 DirectionalLight::getDirection() {
+	return glm::normalize(focusPoint - position);
+}
+
 void DirectionalLight::circularMotionStep(float deltaTime) {
 
 	float rot = radius * cos(glm::radians(theta));
