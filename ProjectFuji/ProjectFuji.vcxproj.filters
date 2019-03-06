@@ -147,6 +147,18 @@
     </ClCompile>
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="FreeRoamCamera.cpp" />
+    <ClCompile Include="obj_loader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -250,6 +262,18 @@
     </ClInclude>
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="FreeRoamCamera.h" />
+    <ClInclude Include="obj_loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -378,6 +402,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\vsm_2nd_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\singleColorModel.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

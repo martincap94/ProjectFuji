@@ -48,6 +48,7 @@
 #include "EVSMShadowMapper.h"
 #include "CommonEnums.h"
 #include "VariableManager.h"
+#include "StaticMesh.h"
 
 
 //#include <omp.h>	// OpenMP for CPU parallelization
@@ -267,6 +268,7 @@ int runApp() {
 
 	ShaderManager::init();
 	evsm.init();
+	dirLight.init();
 
 	skybox = new Skybox();
 
@@ -408,6 +410,9 @@ int runApp() {
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 
 
+	StaticMesh characterMeshTest("models/housewife.obj", ShaderManager::getShaderPtr("dirLightOnly_evsm"), nullptr);
+
+	characterMeshTest.transform.position = glm::vec3(0.0f);
 
 	if (vars.lbmType == LBM3D) {
 		((LBM3D_1D_indices*)lbm)->heightMap->shader = dirLightOnlyShader;
@@ -760,6 +765,7 @@ int runApp() {
 			if (vars.simulateSun) {
 				dirLight.circularMotionStep(deltaTime);
 			}
+
 			
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
@@ -784,6 +790,8 @@ int runApp() {
 			evsm.secondPassShader->setVec3("dirLight.specular", dirLight.specular);
 			evsm.secondPassShader->setVec3("v_ViewPos", camera->position);
 			stlpSim->heightMap->draw(evsm.secondPassShader);
+			characterMeshTest.draw();
+
 			evsm.postSecondPass();
 			
 
@@ -796,6 +804,7 @@ int runApp() {
 			} else {
 				stlpSim->draw(*singleColorShader);
 			}
+			dirLight.draw();
 
 
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);

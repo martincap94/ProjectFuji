@@ -85,7 +85,7 @@ inline void Show2DTexture(GLuint tex_id, GLint x, GLint y, GLsizei width, GLsize
 	}
 
 	static const GLenum SHADER_TYPES[] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER };
-	// Vertex shader
+	// MeshVertex shader
 	static const char* vertex_shader =
 		"#version 330 core\n\
                 layout (location = 0) in vec4 a_Vertex;\n\

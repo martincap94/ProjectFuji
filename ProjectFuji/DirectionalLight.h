@@ -12,6 +12,9 @@
 #pragma once
 
 #include <glm\glm.hpp>
+#include <glad\glad.h>
+
+#include "ShaderProgram.h"
 
 /// Direction light for simple scene lighting.
 /**
@@ -25,6 +28,8 @@ public:
 		Y_AXIS,
 		Z_AXIS
 	};
+
+	ShaderProgram *shader;
 
 	glm::mat4 projectionMatrix;
 	//glm::mat4 viewMatrix;
@@ -58,10 +63,23 @@ public:
 	glm::mat4 getProjectionMatrix();
 
 	void setProjectionMatrix(float left, float right, float bottom, float top);
-	void setProjectionMatrix(float left, float right, float bottom, float top, float near, float far);
+	void setProjectionMatrix(float left, float right, float bottom, float top, float nearPlane, float farPlane);
 
 
 	void circularMotionStep(float deltaTime = 1.0f);
+
+
+	void draw();
+	void init();
+	void initBuffers();
+
+private:
+
+	GLuint VAO;
+	GLuint VBO;
+
+	GLuint projVAO;
+	GLuint projVBO;
 
 
 };

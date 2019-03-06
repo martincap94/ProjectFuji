@@ -14,7 +14,6 @@
 #pragma once
 
 #include <glad\glad.h>
-#include <GLFW\glfw3.h>
 
 #include <string>
 #include "Config.h"
@@ -39,7 +38,7 @@ public:
 	/// Creates and link vertex and fragment shaders.
 	/**
 		Creates and links vertex and fragment shaders into a shader program.
-		Vertex and fragment shaders are read from files.
+		MeshVertex and fragment shaders are read from files.
 		\param[in] vsPath	Path to the vertex shader.
 		\param[in] fsPath	Path to the fragment shader.
 	*/

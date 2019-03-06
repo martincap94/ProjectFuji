@@ -47,6 +47,8 @@ namespace ShaderManager {
 			//curveShader = new ShaderProgram("curve.vert", "curve.frag");
 
 			addShader("singleColor", "singleColor.vert", "singleColor.frag");
+			addShader("singleColorModel", "singleColorModel.vert", "singleColor.frag");
+
 			addShader("singleColorAlpha", "singleColor.vert", "singleColor_alpha.frag");
 			addShader("singleColor_VBO", "singleColor_VBO.vert", "singleColor_VBO.frag");
 			addShader("unlitColor", "unlitColor.vert", "unlitColor.frag");
