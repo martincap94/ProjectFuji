@@ -42,6 +42,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 	vector<glm::vec3> triangles;
 	vector<glm::vec3> normals;
 	*/
+	bool flatShading = false;
 
 	// it would be useful to create a DCEL for the terrain so it would be much easier to modify later on
 	for (int z = height - 1; z >= 1; z--) {
@@ -55,28 +56,50 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 			glm::vec3 n1 = glm::normalize(glm::cross(p1 - p2, p3 - p2));
 			glm::vec3 n2 = glm::normalize(glm::cross(p3 - p4, p1 - p4)); // flat shading normals
 
-			/*
-			glm::vec3 normalP1 = computeNormal(x, z);
-			glm::vec3 normalP2 = computeNormal(x + 1, z);
-			glm::vec3 normalP3 = computeNormal(x + 1, z - 1);
-			glm::vec3 normalP4 = computeNormal(x, z - 1);
+			if (!flatShading) {
+				glm::vec3 normalP1 = computeNormal(x, z);
+				glm::vec3 normalP2 = computeNormal(x + 1, z);
+				glm::vec3 normalP3 = computeNormal(x + 1, z - 1);
+				glm::vec3 normalP4 = computeNormal(x, z - 1);
 
 
-			areaPoints.push_back(p1);
-			areaPoints.push_back(normalP1);
-			areaPoints.push_back(p2);
-			areaPoints.push_back(normalP2);
-			areaPoints.push_back(p3);
-			areaPoints.push_back(normalP3);
+				areaPoints.push_back(p1);
+				areaPoints.push_back(normalP1);
+				areaPoints.push_back(p2);
+				areaPoints.push_back(normalP2);
+				areaPoints.push_back(p3);
+				areaPoints.push_back(normalP3);
 
 
-			areaPoints.push_back(p3);
-			areaPoints.push_back(normalP3);
-			areaPoints.push_back(p4);
-			areaPoints.push_back(normalP4);
-			areaPoints.push_back(p1);
-			areaPoints.push_back(normalP1);
-			*/
+				areaPoints.push_back(p3);
+				areaPoints.push_back(normalP3);
+				areaPoints.push_back(p4);
+				areaPoints.push_back(normalP4);
+				areaPoints.push_back(p1);
+				areaPoints.push_back(normalP1);
+			} else {
+
+
+
+				// FLAT SHADING APPROACH
+
+
+				areaPoints.push_back(p1);
+				areaPoints.push_back(n1);
+				areaPoints.push_back(p2);
+				areaPoints.push_back(n1);
+				areaPoints.push_back(p3);
+				areaPoints.push_back(n1);
+
+
+				areaPoints.push_back(p3);
+				areaPoints.push_back(n2);
+				areaPoints.push_back(p4);
+				areaPoints.push_back(n2);
+				areaPoints.push_back(p1);
+				areaPoints.push_back(n2);
+
+			}
 
 
 			/*
@@ -89,26 +112,6 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 			triangles.push_back(p1);
 			*/
 
-
-
-			
-			// FLAT SHADING APPROACH
-
-			areaPoints.push_back(p1);
-			areaPoints.push_back(n1);
-			areaPoints.push_back(p2);
-			areaPoints.push_back(n1);
-			areaPoints.push_back(p3);
-			areaPoints.push_back(n1);
-
-
-			areaPoints.push_back(p3);
-			areaPoints.push_back(n2);
-			areaPoints.push_back(p4);
-			areaPoints.push_back(n2);
-			areaPoints.push_back(p1);
-			areaPoints.push_back(n2);
-			
 
 			//areaPoints.push_back(glm::vec3(x, data[x][z], z));
 			//areaPoints.push_back(glm::vec3(x + 1, data[x + 1][z], z));
@@ -161,21 +164,31 @@ HeightMap::~HeightMap() {
 }
 
 void HeightMap::draw() {
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	glUseProgram(shader->id);
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);
+	
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 }
 
 void HeightMap::draw(ShaderProgram *shader) {
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	glUseProgram(shader->id);
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 }
 
-// Based on: https://stackoverflow.com/questions/13983189/opengl-how-to-calculate-normals-in-a-terrain-height-grid
+// Based on: https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap
 glm::vec3 HeightMap::computeNormal(int x, int z) {
 
-	int offset = 2;
+	int offset = 1;
 
 	int xLeft = x - offset;
 	int xRight = x + offset;
@@ -200,9 +213,11 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 	float hTop = data[x][zTop];
 
 	glm::vec3 normal;
-	normal.x = hLeft - hRight;
-	normal.y = hBottom - hTop;
-	normal.z = 2.0f;
+	normal.x = hRight - hLeft;
+	//normal.y = hBottom - hTop;
+	//normal.z = -2.0f;
+	normal.y = -2.0f;
+	normal.z = hBottom - hTop;
 
 	return glm::normalize(normal);
 }

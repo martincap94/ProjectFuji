@@ -12,7 +12,7 @@ public:
 	bool useBlurPass = true;
 	GLint resolution = 1024;
 
-	float shadowBias = 0.0f;
+	float shadowBias = 0.001f;
 	float lightBleedReduction = 0.01f;
 	float varianceMinLimit = 0.0001f;
 	float exponent = 40.0f;
