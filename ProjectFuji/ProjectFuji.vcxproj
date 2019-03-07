@@ -132,6 +132,9 @@
     <ClCompile Include="obj_loader.cpp" />
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
+    <CudaCompile Include="ParticleSystem.cu">
+      <FileType>CppCode</FileType>
+    </CudaCompile>
     <ClCompile Include="ppmImage.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Skybox.cpp" />
@@ -159,7 +162,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="OrbitCamera.cpp" />
-    <CudaCompile Include="ParticleSystem.cu" />
+    <CudaCompile Include="ParticleSystemLBM.cu" />
     <ClCompile Include="ShaderProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -185,6 +188,7 @@
     <ClInclude Include="obj_loader.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleEmitter.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="ppmImage.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Skybox.h" />
@@ -210,7 +214,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="OrbitCamera.h" />
-    <ClInclude Include="ParticleSystem.h" />
+    <ClInclude Include="ParticleSystemLBM.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="Texture.h" />
     <CudaCompile Include="CUDAUtils.cuh" />

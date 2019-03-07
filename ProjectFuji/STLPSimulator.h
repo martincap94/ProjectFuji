@@ -22,7 +22,7 @@
 #include "STLPDiagram.h"
 #include "VariableManager.h"
 #include "ppmImage.h"
-
+#include "Texture.h"
 
 
 /// Simulator to be used for orographic cloud simulation.
@@ -50,8 +50,11 @@ public:
 	int showCCLLevelLayer = 1;
 	int showELLevelLayer = 1;
 
+	float pointSize = 1.0f;
+
 	GLuint particlesVBO;
 
+	Texture spriteTexture;
 
 	HeightMap *heightMap;	///< Pointer to the heightmap
 	ppmImage *profileMap; // needs to have the same parameters as the height map (width, height), or at least larger
@@ -67,6 +70,8 @@ public:
 	float groundHeight = 0.0f;
 	float simulationBoxHeight = 20000.0f; // 20km
 	float boxTopHeight;
+
+	glm::vec3 currCameraPos;
 
 	VariableManager *vars;
 
@@ -92,12 +97,14 @@ public:
 	void generateParticle();
 
 	/// Draws the heightmap and particles.
-	void draw(ShaderProgram &particlesShader);
+	void draw(ShaderProgram &particlesShader, glm::vec3 cameraPos = glm::vec3(0.0f));
 
 	void initParticles();
 
 	void mapToSimulationBox(float &val);
 	void mapFromSimulationBox(float &val);
+
+	bool sortByCameraDistance(const glm::vec3 &lhs, const glm::vec3 rhs);
 
 private:
 

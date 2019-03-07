@@ -3,6 +3,7 @@
 #include "STLPDiagram.h"
 #include "VariableManager.h"
 #include "Particle.h"
+#include "Texture.h"
 
 #include <cuda_gl_interop.h>
 
@@ -16,6 +17,10 @@ public:
 	STLPDiagram *stlpDiagram;
 
 	GLuint particlesVBO;
+
+	Texture spriteTexture;
+
+	float pointSize = 1.0f;
 
 
 	float delta_t = 1.0f;
@@ -91,7 +96,7 @@ public:
 	void generateParticle();
 
 	/// Draws the heightmap and particles.
-	void draw(ShaderProgram &particlesShader);
+	void draw(ShaderProgram &particlesShader, glm::vec3 cameraPos);
 
 	void initParticles();
 

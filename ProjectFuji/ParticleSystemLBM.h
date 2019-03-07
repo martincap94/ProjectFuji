@@ -24,9 +24,15 @@
 
 #include "Texture.h"
 
-class LBM;
-
-class ParticleSystem {
+class LBM; // forward declaration
+/// Particle system that is used in both 2D and 3D simulations.
+/**
+	Particle system that is used in both 2D and 3D simulations.
+	Provides functionality to create particles, set their positions and to draw them.
+	Drawing particles supports basic points, point sprites and also visualizing their
+	colors through second VBO.
+*/
+class ParticleSystemLBM {
 public:
 
 	LBM *lbm; ///< Owner LBM
@@ -34,6 +40,7 @@ public:
 	int numParticles;				///< Number of particles in the simulation
 	int *d_numParticles;			///< Device pointer to the number of particles
 
+	bool drawStreamlines = false;	///< Whether the streamline visualization should be used (2D CPU only) - smallest priority (configuration file overwrites this setting as well as setting in the main function
 
 	float pointSize = 1.0f;			///< Point size of the particles
 
@@ -44,25 +51,25 @@ public:
 	glm::vec3 *particleVertices = nullptr;		///< Particle vertex positions array
 	glm::vec3 *streamLines = nullptr;			///< Array of all streamline points
 
-												/// Default constructor.
-	ParticleSystem();
+	/// Default constructor.
+	ParticleSystemLBM();
 
 	/// Constructs particle system with the given number of particles and sets whether we should draw streamlines.
 	/**
-	Constructs particle system with the given number of particles and sets whether we should draw streamlines.
-	\param[in] numParticles		Number of particles of the system.
-	\param[in] drawStreamlines	Whether streamlines should be drawn (2D CPU only).
+		Constructs particle system with the given number of particles and sets whether we should draw streamlines.
+		\param[in] numParticles		Number of particles of the system.
+		\param[in] drawStreamlines	Whether streamlines should be drawn (2D CPU only).
 	*/
-	ParticleSystem(int numParticles, bool drawStreamlines = false);
+	ParticleSystemLBM(int numParticles, bool drawStreamlines = false);
 
 	/// Deletes particleVertices, streamLines and frees d_numParticles on the device (GPU)
-	~ParticleSystem();
+	~ParticleSystemLBM();
 
 	/// Draws the particle system.
 	/**
-	Draws the particle system.
-	If we do not use CUDA, we need to copy their positions to the buffer object in each frame.
-	Based on the provided shader we draw either simple points or point sprites.
+		Draws the particle system.
+		If we do not use CUDA, we need to copy their positions to the buffer object in each frame.
+		Based on the provided shader we draw either simple points or point sprites.
 	*/
 	void draw(const ShaderProgram &shader, bool useCUDA);
 

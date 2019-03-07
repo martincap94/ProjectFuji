@@ -13,7 +13,7 @@
 #pragma once
 
 #include "ShaderProgram.h"
-#include "ParticleSystem.h"
+#include "ParticleSystemLBM.h"
 
 
 /// The superclass of LBM simulators for this application.
@@ -30,7 +30,7 @@ public:
 		MIRROR_SIDES_PROP
 	};
 
-	ParticleSystem *particleSystem;		///< Pointer to the particle system
+	ParticleSystemLBM *particleSystem;		///< Pointer to the particle system
 	glm::vec3 *particleVertices;		///< Pointer to the particle vertices array (on CPU)
 	int *d_numParticles;	///< Number of particles on the device; managed in memory by Particle System class (its destructor)
 
@@ -66,7 +66,7 @@ public:
 		\param[in] tau				Initial value of tau.
 		\param[in] particleSystem	Particle system that will be used.
 	*/
-	LBM(glm::ivec3 dimensions, string sceneFilename, float tau, ParticleSystem *particleSystem);
+	LBM(glm::ivec3 dimensions, string sceneFilename, float tau, ParticleSystemLBM *particleSystem);
 
 	/// Default virtual destructor.
 	virtual ~LBM();
@@ -144,6 +144,8 @@ public:
 
 	/// Switches the simulation to CPU. (EXPERIMENTAL)
 	virtual void switchToCPU() = 0;
+
+	virtual void synchronize() = 0;
 
 protected:
 

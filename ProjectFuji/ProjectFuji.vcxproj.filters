@@ -30,13 +30,13 @@
     <CudaCompile Include="LBM.h">
       <Filter>Header Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="ParticleSystem.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
     <CudaCompile Include="CUDAUtils.cuh">
       <Filter>Header Files</Filter>
     </CudaCompile>
     <CudaCompile Include="STLPSimulatorCUDA.cu" />
+    <CudaCompile Include="ParticleSystemLBM.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -161,6 +161,7 @@
     </ClCompile>
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ParticleSystem.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -191,9 +192,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HeightMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ParticleSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DirectionalLight.h">
@@ -278,6 +276,10 @@
     </ClInclude>
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="ParticleSystemLBM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

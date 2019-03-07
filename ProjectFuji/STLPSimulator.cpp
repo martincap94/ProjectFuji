@@ -9,6 +9,12 @@
 
 using namespace std;
 
+//bool sortByCameraDistance(const glm::vec3 &lhs, const glm::vec3 rhs) {
+//
+//	return (glm::distance(lhs, currCameraPos) < glm::distance(rhs, currCameraPos));
+//}
+
+
 STLPSimulator::STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram) : vars(vars), stlpDiagram(stlpDiagram) {
 	groundHeight = stlpDiagram->P0;
 	boxTopHeight = groundHeight + simulationBoxHeight;
@@ -21,6 +27,10 @@ STLPSimulator::STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram) : 
 	stlpDiagram->particlePoints.push_back(glm::vec2(0.0f));
 
 	profileMap = new ppmImage("profileMaps/120x80_pm_03.ppm");
+
+	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
+	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
+
 
 }
 
@@ -390,17 +400,32 @@ void STLPSimulator::generateParticle() {
 	numParticles++;*/
 }
 
-void STLPSimulator::draw(ShaderProgram &particlesShader) {
+void STLPSimulator::draw(ShaderProgram &particlesShader, glm::vec3 cameraPos) {
 	//heightMap->draw();
+
+	currCameraPos = cameraPos;
 
 	glUseProgram(particlesShader.id);
 
-	glPointSize(1.0f);
+	glActiveTexture(GL_TEXTURE0 + 0);
+	glBindTexture(GL_TEXTURE_2D, spriteTexture.id);
+
+	glPointSize(pointSize);
 	particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));
+	particlesShader.setVec3("u_CameraPos", cameraPos);
+	particlesShader.setFloat("u_PointSizeModifier", pointSize);
+	particlesShader.setFloat("u_OpacityMultiplier", vars->opacityMultiplier);
 
 	glBindVertexArray(particlesVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
+
+	auto sortByCameraDistance = [&](glm::vec3 lhs, glm::vec3 rhs)-> bool {
+		return glm::distance(lhs, cameraPos) >= glm::distance(rhs, cameraPos);
+	};
+
+	sort(particlePositions.begin(), particlePositions.end(), sortByCameraDistance);
+
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3), &testParticle.position[0], GL_DYNAMIC_DRAW);
 

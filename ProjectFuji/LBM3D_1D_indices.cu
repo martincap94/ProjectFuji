@@ -430,13 +430,13 @@ __global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, g
 		backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] = bottomLeftEq;
 
 
-		for (int i = 0; i < 19; i++) {
+		/*for (int i = 0; i < 19; i++) {
 			if (backLattice[idx].adj[i] < 0.0f) {
 				backLattice[idx].adj[i] = 0.0f;
 			} else if (backLattice[idx].adj[i] > 1.0f) {
 				backLattice[idx].adj[i] = 1.0f;
 			}
-		}
+		}*/
 	}
 }
 
@@ -621,13 +621,13 @@ __global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities) 
 		backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
 
 
-		for (int i = 0; i < 19; i++) {
+		/*for (int i = 0; i < 19; i++) {
 			if (backLattice[idx].adj[i] < 0.0f) {
 				backLattice[idx].adj[i] = 0.0f;
 			} else if (backLattice[idx].adj[i] > 1.0f) {
 				backLattice[idx].adj[i] = 1.0f;
 			}
-		}
+		}*/
 	}
 
 
@@ -818,13 +818,13 @@ __global__ void collisionStepKernelShared(Node3D *backLattice, glm::vec3 *veloci
 		cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
 
 
-		for (int i = 0; i < 19; i++) {
+		/*for (int i = 0; i < 19; i++) {
 			if (cache[cacheIdx].adj[i] < 0.0f) {
 				cache[cacheIdx].adj[i] = 0.0f;
 			} else if (cache[cacheIdx].adj[i] > 1.0f) {
 				cache[cacheIdx].adj[i] = 1.0f;
 			}
-		}
+		}*/
 
 		backLattice[idx] = cache[cacheIdx];
 
@@ -960,13 +960,13 @@ __global__ void collisionStepKernelStreamlinedShared(Node3D *backLattice, glm::v
 		cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
 
 
-		for (int i = 0; i < 19; i++) {
-			if (cache[cacheIdx].adj[i] < 0.0f) {
-				cache[cacheIdx].adj[i] = 0.0f;
-			} else if (cache[cacheIdx].adj[i] > 1.0f) {
-				cache[cacheIdx].adj[i] = 1.0f;
-			}
-		}
+		//for (int i = 0; i < 19; i++) {
+		//	if (cache[cacheIdx].adj[i] < 0.0f) {
+		//		cache[cacheIdx].adj[i] = 0.0f;
+		//	} else if (cache[cacheIdx].adj[i] > 1.0f) {
+		//		cache[cacheIdx].adj[i] = 1.0f;
+		//	}
+		//}
 
 		backLattice[idx] = cache[cacheIdx];
 
@@ -1137,7 +1137,7 @@ LBM3D_1D_indices::LBM3D_1D_indices() {
 
 
 
-LBM3D_1D_indices::LBM3D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystem *particleSystem, dim3 blockDim)
+LBM3D_1D_indices::LBM3D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim)
 	: LBM(dim, sceneFilename, tau, particleSystem), blockDim(blockDim) {
 
 	initScene();
@@ -2010,6 +2010,10 @@ void LBM3D_1D_indices::updateControlProperty(eLBMControlProperty controlProperty
 
 
 void LBM3D_1D_indices::switchToCPU() {
+}
+
+void LBM3D_1D_indices::synchronize() {
+	cudaDeviceSynchronize();
 }
 
 void LBM3D_1D_indices::mapVBOTEST(GLuint VBO, struct cudaGraphicsResource *res) {

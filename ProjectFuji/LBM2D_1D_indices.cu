@@ -499,7 +499,7 @@ __global__ void collisionStepKernel(Node *backLattice, glm::vec2 *velocities) {
 LBM2D_1D_indices::LBM2D_1D_indices() {
 }
 
-LBM2D_1D_indices::LBM2D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystem *particleSystem, int numThreads) : LBM(dim, sceneFilename, tau, particleSystem), numThreads(numThreads) {
+LBM2D_1D_indices::LBM2D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, int numThreads) : LBM(dim, sceneFilename, tau, particleSystem), numThreads(numThreads) {
 	
 
 	initScene();
@@ -572,6 +572,10 @@ void LBM2D_1D_indices::switchToCPU() {
 	cudaMemcpy(velocities, d_velocities, sizeof(glm::vec2) * latticeSize, cudaMemcpyDeviceToHost);
 
 	particleSystem->copyDataFromVBOtoCPU();
+}
+
+void LBM2D_1D_indices::synchronize() {
+	cudaDeviceSynchronize();
 }
 
 

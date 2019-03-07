@@ -35,7 +35,7 @@
 #include "Camera2D.h"
 #include "OrbitCamera.h"
 #include "FreeRoamCamera.h"
-#include "ParticleSystem.h"
+#include "ParticleSystemLBM.h"
 #include "DirectionalLight.h"
 #include "Grid.h"
 #include "Utils.h"
@@ -124,7 +124,7 @@ VariableManager vars;
 LBM *lbm;				///< Pointer to the current LBM
 Grid *grid;				///< Pointer to the current grid
 Camera *camera;			///< Pointer to the current camera
-ParticleSystem *particleSystem;		///< Pointer to the particle system that is to be used throughout the whole application
+ParticleSystemLBM *particleSystem;		///< Pointer to the particle system that is to be used throughout the whole application
 //Timer timer;
 Camera *viewportCamera;
 Camera *freeRoamCamera;
@@ -304,7 +304,7 @@ int runApp() {
 	struct nk_colorf particlesColor;
 
 
-	particleSystem = new ParticleSystem(vars.numParticles, vars.drawStreamlines); // invalid enum here
+	particleSystem = new ParticleSystemLBM(vars.numParticles, vars.drawStreamlines); // invalid enum here
 
 	particlesColor.r = particleSystem->particlesColor.r;
 	particlesColor.g = particleSystem->particlesColor.g;
@@ -412,7 +412,7 @@ int runApp() {
 
 
 	StaticMesh testMesh("models/House_3.obj", ShaderManager::getShaderPtr("dirLightOnly"), nullptr);
-	Model testModel("models/Fireplace_New.fbx");
+	Model testModel("models/House_3.obj");
 
 
 	testMesh.transform.position = glm::vec3(0.0f);
@@ -505,6 +505,7 @@ int runApp() {
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_PROGRAM_POINT_SIZE);
 		//glEnable(GL_CULL_FACE);
 
 		reportGLErrors("->>> LOOP START <<<-");
@@ -694,7 +695,8 @@ int runApp() {
 
 			if (vars.measureTime) {
 				if (vars.useCUDA) {
-					cudaDeviceSynchronize();
+					lbm->synchronize();
+					//cudaDeviceSynchronize();
 				}
 				if (vars.timer.clockAvgEnd() && vars.exitAfterFirstAvg) {
 					cout << "Exiting main loop..." << endl;
@@ -782,8 +784,8 @@ int runApp() {
 			glViewport(0, 0, vars.screenWidth, vars.screenHeight);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
-			glEnable(GL_BLEND);
 
+			//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
 			//glEnable(GL_CULL_FACE);
 			//glCullFace(GL_FRONT);
@@ -801,7 +803,7 @@ int runApp() {
 			dirLightOnlyShader->use();
 			dirLightOnlyShader->setVec3("dirLight.direction", dirLight.getDirection());
 			dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
-			testMesh.draw(dirLightOnlyShader);
+			//testMesh.draw(dirLightOnlyShader);
 			testModel.draw(*dirLightOnlyShader);
 
 			evsm.postSecondPass();
@@ -810,14 +812,26 @@ int runApp() {
 
 			//glCullFace(GL_FRONT);
 			//stlpSim->heightMap->draw();
-
-			if (vars.stlpUseCUDA) {
-				stlpSimCUDA->draw(*singleColorShader);
-			} else {
-				stlpSim->draw(*singleColorShader);
-			}
 			dirLight.draw();
 
+
+			glEnable(GL_BLEND);
+			glDepthMask(GL_FALSE);
+
+			if (vars.stlpUseCUDA) {
+				if (vars.usePointSprites) {
+					stlpSimCUDA->draw(*pointSpriteTestShader, camera->position);
+				} else {
+					stlpSimCUDA->draw(*singleColorShader, camera->position);
+				}
+			} else {
+				if (vars.usePointSprites) {
+					stlpSim->draw(*pointSpriteTestShader, camera->position);
+				} else {
+					stlpSim->draw(*singleColorShader, camera->position);
+				}
+			}
+			glDepthMask(GL_TRUE);
 
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
 
@@ -870,10 +884,10 @@ int runApp() {
 	delete stlpSim;
 
 
-	size_t cudaMemFree = 0;
-	size_t cudaMemTotal = 0;
+	//size_t cudaMemFree = 0;
+	//size_t cudaMemTotal = 0;
 
-	cudaMemGetInfo(&cudaMemFree, &cudaMemTotal);
+	//cudaMemGetInfo(&cudaMemFree, &cudaMemTotal);
 
 	/*
 	cout << " FREE CUDA MEMORY  = " << cudaMemFree << endl;
@@ -1402,7 +1416,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		}
 
 		nk_checkbox_label(ctx, "Show CCL Level", &stlpSim->showCCLLevelLayer);
+		stlpSimCUDA->showCCLLevelLayer = stlpSim->showCCLLevelLayer;
 		nk_checkbox_label(ctx, "Show EL Level", &stlpSim->showELLevelLayer);
+		stlpSimCUDA->showELLevelLayer = stlpSim->showELLevelLayer;
 
 
 		nk_checkbox_label(ctx, "Use CUDA", &vars.stlpUseCUDA);
@@ -1410,6 +1426,13 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_checkbox_label(ctx, "Apply LBM", &vars.applyLBM);
 
 		nk_checkbox_label(ctx, "Apply STLP", &vars.applySTLP);
+
+		nk_property_float(ctx, "Point size", 0.1f, &stlpSim->pointSize, 100.0f, 0.1f, 0.1f);
+		stlpSimCUDA->pointSize = stlpSim->pointSize;
+		//nk_property_float(ctx, "Point size (CUDA)", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
+
+		nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars.opacityMultiplier, 10.0f, 0.01f, 0.01f);
+
 	}
 	nk_end(ctx);
 

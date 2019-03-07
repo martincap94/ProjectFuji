@@ -13,7 +13,7 @@
 #pragma once
 
 #include "Config.h"
-#include "ParticleSystem.h"
+#include "ParticleSystemLBM.h"
 #include "DataStructures.h"
 #include "HeightMap.h"
 
@@ -118,7 +118,7 @@ public:
 		\param[in] particleSystem	Pointer to the particle system.
 		\param[in] blockDim			Dimensions of blocks to be used when launching CUDA kernels.
 	*/
-	LBM3D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystem *particleSystem, dim3 blockDim);
+	LBM3D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim);
 
 	/// Frees CPU and GPU memory and unmaps CUDA graphics resources (VBOs).
 	virtual ~LBM3D_1D_indices();
@@ -147,6 +147,8 @@ public:
 	virtual void updateControlProperty(eLBMControlProperty controlProperty);
 
 	virtual void switchToCPU();
+	virtual void synchronize();
+
 
 	void mapVBOTEST(GLuint VBO, struct cudaGraphicsResource *res);
 

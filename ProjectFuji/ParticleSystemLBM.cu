@@ -1,4 +1,4 @@
-#include "ParticleSystem.h"
+#include "ParticleSystemLBM.h"
 
 #include <cuda_runtime.h>
 
@@ -7,10 +7,10 @@
 #include "Utils.h"
 #include "LBM.h"
 
-ParticleSystem::ParticleSystem() {
+ParticleSystemLBM::ParticleSystemLBM() {
 }
 
-ParticleSystem::ParticleSystem(int numParticles, bool drawStreamlines) : numParticles(numParticles) {
+ParticleSystemLBM::ParticleSystemLBM(int numParticles, bool drawStreamlines) : numParticles(numParticles), drawStreamlines(drawStreamlines) {
 	particleVertices = new glm::vec3[numParticles]();
 
 	reportGLErrors();
@@ -64,7 +64,7 @@ ParticleSystem::ParticleSystem(int numParticles, bool drawStreamlines) : numPart
 }
 
 
-ParticleSystem::~ParticleSystem() {
+ParticleSystemLBM::~ParticleSystemLBM() {
 	delete[] particleVertices;
 
 	if (streamLines != nullptr) {
@@ -73,7 +73,7 @@ ParticleSystem::~ParticleSystem() {
 	cudaFree(d_numParticles);
 }
 
-void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
+void ParticleSystemLBM::draw(const ShaderProgram &shader, bool useCUDA) {
 
 	glUseProgram(shader.id);
 
@@ -97,9 +97,21 @@ void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
 
 	glDrawArrays(GL_POINTS, 0, numParticles);
 
+	if (drawStreamlines) {
+
+		glPointSize(1.0f);
+		shader.setVec4("u_Color", glm::vec4(0.0f, 0.4f, 1.0f, 1.0f));
+
+		glBindVertexArray(streamLinesVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, streamLinesVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles * MAX_STREAMLINE_LENGTH, &streamLines[0], GL_STREAM_DRAW);
+
+		glDrawArrays(GL_POINTS, 0, numParticles  * MAX_STREAMLINE_LENGTH);
+	}
 }
 
-void ParticleSystem::initParticlePositions(int width, int height, bool *collider) {
+void ParticleSystemLBM::initParticlePositions(int width, int height, bool *collider) {
 	cout << "Initializing particle positions." << endl;
 	int particleCount = 0;
 	float x = 0.0f;
@@ -138,7 +150,7 @@ void ParticleSystem::initParticlePositions(int width, int height, bool *collider
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particleVertices[0], GL_DYNAMIC_DRAW);
 }
 
-void ParticleSystem::initParticlePositions(int width, int height, int depth, const HeightMap *hm) {
+void ParticleSystemLBM::initParticlePositions(int width, int height, int depth, const HeightMap *hm) {
 
 
 	// generate in the left wall
@@ -191,7 +203,7 @@ void ParticleSystem::initParticlePositions(int width, int height, int depth, con
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particleVertices[0], GL_DYNAMIC_DRAW);
 }
 
-void ParticleSystem::copyDataFromVBOtoCPU() {
+void ParticleSystemLBM::copyDataFromVBOtoCPU() {
 
 	printf("Copying data from VBO to CPU in ParticleSystem\n");
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);

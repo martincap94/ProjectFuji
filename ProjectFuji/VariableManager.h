@@ -45,7 +45,7 @@ public:
 	bool drawStreamlines = false;	///< Whether to draw streamlines - DRAWING STREAMLINES CURRENTLY NOT VIABLE
 
 	int paused = 0;				///< Whether the simulation is paused
-	int usePointSprites = 0;	///< Whether to use point sprites for point visualization
+	int usePointSprites = 1;	///< Whether to use point sprites for point visualization
 	bool appRunning = true;		///< Helper boolean to stop the application with the exit button in the user interface
 	float cameraSpeed = DEFAULT_CAMERA_SPEED;	///< Movement speed of the main camera
 
@@ -64,6 +64,8 @@ public:
 	int stlpUseCUDA = 0;
 	int applyLBM = 0;
 	int applySTLP = 1;
+
+	float opacityMultiplier = 0.01f;
 
 	bool consumeMouseCursor = false;
 	

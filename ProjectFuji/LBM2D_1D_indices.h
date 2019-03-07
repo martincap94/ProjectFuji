@@ -15,7 +15,7 @@
 #include "Config.h"
 
 #include "ShaderProgram.h"
-#include "ParticleSystem.h"
+#include "ParticleSystemLBM.h"
 #include "LatticeCollider.h"
 
 #include <cuda_gl_interop.h>
@@ -120,7 +120,7 @@ public:
 		\param[in] particleSystem	Pointer to the particle system.
 		\param[in] numThreads		Number of threads per block to be used when launching CUDA kernels.
 	*/
-	LBM2D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystem *particleSystem, int numThreads);
+	LBM2D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, int numThreads);
 
 	/// Frees CPU and GPU memory and unmaps CUDA graphics resources (VBOs).
 	virtual ~LBM2D_1D_indices();
@@ -163,6 +163,7 @@ public:
 		This is useful when we want to switch from CUDA to CPU at runtime without changing the state of the simulation.
 	*/
 	virtual void switchToCPU();
+	virtual void synchronize();
 
 protected:
 
