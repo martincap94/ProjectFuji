@@ -49,6 +49,7 @@
 #include "CommonEnums.h"
 #include "VariableManager.h"
 #include "StaticMesh.h"
+#include "Model.h"
 
 
 //#include <omp.h>	// OpenMP for CPU parallelization
@@ -411,6 +412,8 @@ int runApp() {
 
 
 	StaticMesh testMesh("models/House_3.obj", ShaderManager::getShaderPtr("dirLightOnly"), nullptr);
+	Model testModel("models/Fireplace_New.fbx");
+
 
 	testMesh.transform.position = glm::vec3(0.0f);
 
@@ -799,6 +802,7 @@ int runApp() {
 			dirLightOnlyShader->setVec3("dirLight.direction", dirLight.getDirection());
 			dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
 			testMesh.draw(dirLightOnlyShader);
+			testModel.draw(*dirLightOnlyShader);
 
 			evsm.postSecondPass();
 			
