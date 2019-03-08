@@ -49,7 +49,7 @@ void Model::draw(ShaderProgram & shader) {
 
 void Model::loadModel(string path) {
 	Assimp::Importer import;
-	const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+	const aiScene *scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace);
 
 	if (!scene || scene->mFlags * AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		cerr << "ASSIMP ERROR: " << import.GetErrorString() << endl;
@@ -96,6 +96,8 @@ Mesh Model::processMesh(aiMesh * mesh, const aiScene * scene) {
 			ttmp.x = mesh->mTextureCoords[0][i].x;
 			ttmp.y = mesh->mTextureCoords[0][i].y;
 			vertex.texCoords = ttmp;
+		} else {
+			vertex.texCoords = glm::vec2(0.0f);
 		}
 		tmp.x = mesh->mTangents[i].x;
 		tmp.y = mesh->mTangents[i].y;

@@ -422,7 +422,7 @@ int runApp() {
 	Model testModel("models/housewife.obj", &testMat, ShaderManager::getShaderPtr("normals"));
 	StaticMesh testMesh("models/housewife.obj", ShaderManager::getShaderPtr("normals"), &testMat);
 
-	Texture adiffuse("textures/armoire/diffuse.png", 0);
+	Texture adiffuse("textures/armoire/albedo.png", 0);
 	Texture aspecular("textures/armoire/metallic.png", 1);
 	Texture anormal("textures/armoire/normal.png", 2);
 	Material aMat(adiffuse, aspecular, anormal, 32.0f);
@@ -432,7 +432,7 @@ int runApp() {
 
 	//Model testModel("models/housewife.obj", &testMat, dirLightOnlyShader);
 	//StaticMesh testMesh("models/housewife.obj", dirLightOnlyShader, &testMat);
-	testMesh.transform.position.x += 1.0f;
+	testModel.transform.position.x += 1.0f;
 
 	//testMesh.transform.position = glm::vec3(0.0f);
 
@@ -808,6 +808,7 @@ int runApp() {
 			stlpSim->heightMap->draw(evsm.secondPassShader);
 
 
+			//testModel.draw(*evsm.secondPassShader);
 			testModel.draw();
 			testMesh.draw();
 			armoireModel.draw();

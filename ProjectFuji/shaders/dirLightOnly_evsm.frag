@@ -45,6 +45,11 @@ float linstep(float minVal, float maxVal, float val);
 
 void main() {
 
+	/*
+	fragColor = vec4(v_Normal, 1.0);
+	return;
+	*/
+
 	vec3 norm = normalize(v_Normal);
 	vec3 viewDir = normalize(u_ViewPos - v_FragPos.xyz);
 	//vec3 viewDir = normalize(v_FragPos.xyz - u_ViewPos);

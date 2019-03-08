@@ -75,6 +75,18 @@ vec3 calcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main() {
 
+	/*
+	vec3 tmp;
+	tmp = v_Normal;
+	tmp = texture(u_Material.normalMap, v_TexCoords).rgb;
+	tmp = texture(u_Material.diffuse, v_TexCoords).rgb;
+	tmp = texture(u_Material.specular, v_TexCoords).rgb;
+	tmp = vec3(v_TexCoords, 0.0);
+
+	fragColor = vec4(tmp, 1.0);
+	return;
+	*/
+
 	vec3 norm = texture(u_Material.normalMap, v_TexCoords).rgb;
 	//fragColor = vec4(norm, 1.0);
 	//return;
