@@ -75,6 +75,9 @@ public:
 	int dividePrevVelocity = 0;
 	float prevVelocityDivisor = 100.1f;
 
+	int showCCLLevelLayer = 0;
+	int showELLevelLayer = 0;
+
 
 	////////////////////////////////////////////////////////////////
 	// UI helpers

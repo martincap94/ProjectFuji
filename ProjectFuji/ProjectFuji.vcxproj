@@ -147,6 +147,7 @@
     <ClCompile Include="STLPUtils.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Utils.cpp" />
@@ -198,6 +199,7 @@
     <ClInclude Include="STLPSimulatorCUDA.h" />
     <ClInclude Include="STLPUtils.h" />
     <ClInclude Include="TextRenderer.h" />
+    <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Utils.h" />
@@ -241,6 +243,8 @@
     <None Include="shaders\gblur_5x5_separated.frag" />
     <None Include="shaders\gblur_7x7_separated.frag" />
     <None Include="shaders\gblur_9x9_separated.frag" />
+    <None Include="shaders\normals.frag" />
+    <None Include="shaders\normals.vert" />
     <None Include="shaders\pointSpriteTest.frag" />
     <None Include="shaders\pointSpriteTest.vert" />
     <None Include="shaders\shadow_mapping_1st_pass.frag" />
@@ -257,6 +261,8 @@
     <None Include="shaders\diagram.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
+    <None Include="shaders\s_normals.frag" />
+    <None Include="shaders\s_normals.vert" />
     <None Include="shaders\text.frag" />
     <None Include="shaders\text.vert" />
     <None Include="shaders\unlitColor.frag" />

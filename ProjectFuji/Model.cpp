@@ -8,11 +8,40 @@ Model::Model(const char *path) {
 	loadModel(path);
 }
 
+Model::Model(const char * path, Material * material, ShaderProgram *shader) : material(material), shader(shader) {
+	loadModel(path);
+}
+
 
 Model::~Model() {
 }
 
+void Model::draw() {
+	if (!shader) {
+		cerr << "No shader attributed to the model" << endl;
+		return;
+	}
+	shader->use();
+	shader->setModelMatrix(transform.getModelMatrix());
+
+	material->diffuseTexture->use(0);
+	material->specularMap->use(1);
+	material->normalMap->use(2);
+
+	for (int i = 0; i < meshes.size(); i++) {
+		meshes[i].draw(*shader);
+	}
+}
+
 void Model::draw(ShaderProgram & shader) {
+
+	shader.use();
+	shader.setModelMatrix(transform.getModelMatrix());
+
+	material->diffuseTexture->useTexture();
+	material->specularMap->useTexture();
+	material->normalMap->useTexture();
+
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].draw(shader);
 	}

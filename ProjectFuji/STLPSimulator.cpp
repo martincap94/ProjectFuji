@@ -420,11 +420,11 @@ void STLPSimulator::draw(ShaderProgram &particlesShader, glm::vec3 cameraPos) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
 
-	auto sortByCameraDistance = [&](glm::vec3 lhs, glm::vec3 rhs)-> bool {
-		return glm::distance(lhs, cameraPos) >= glm::distance(rhs, cameraPos);
-	};
+	//auto sortByCameraDistance = [&](glm::vec3 lhs, glm::vec3 rhs)-> bool {
+	//	return glm::distance(lhs, cameraPos) >= glm::distance(rhs, cameraPos);
+	//};
 
-	sort(particlePositions.begin(), particlePositions.end(), sortByCameraDistance);
+	//sort(particlePositions.begin(), particlePositions.end(), sortByCameraDistance);
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3), &testParticle.position[0], GL_DYNAMIC_DRAW);
@@ -432,21 +432,21 @@ void STLPSimulator::draw(ShaderProgram &particlesShader, glm::vec3 cameraPos) {
 	//glDrawArrays(GL_POINTS, 0, numParticles);
 	glDrawArrays(GL_POINTS, 0, numParticles);
 
-	if (showCCLLevelLayer || showELLevelLayer) {
+	if (vars->showCCLLevelLayer || vars->showELLevelLayer) {
 		GLboolean cullFaceEnabled;
 		glGetBooleanv(GL_CULL_FACE, &cullFaceEnabled);
 		glDisable(GL_CULL_FACE);
 
 		layerVisShader->use();
 
-		if (showCCLLevelLayer) {
+		if (vars->showCCLLevelLayer) {
 			layerVisShader->setVec4("u_Color", glm::vec4(1.0f, 0.0f, 0.0f, 0.2f));
 
 			glBindVertexArray(CCLLevelVAO);
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		}
 
-		if (showELLevelLayer) {
+		if (vars->showELLevelLayer) {
 			layerVisShader->setVec4("u_Color", glm::vec4(0.0f, 1.0f, 0.0f, 0.2f));
 
 

@@ -4,14 +4,17 @@
 #include <glad\glad.h>
 #include <glm\glm.hpp>
 
-class ShaderProgram;
+#include "ShaderProgram.h"
 
 namespace ShaderManager {
 
 
 	namespace {
-		void addShader(std::string sName, std::string vertShader, std::string fragShader);
+		void addShader(std::string sName, std::string vertShader, std::string fragShader, ShaderProgram::eLightingType lightingType = ShaderProgram::eLightingType::UNLIT, ShaderProgram::eMaterialType matType = ShaderProgram::eMaterialType::NONE);
+
 		void addShader(ShaderProgram *sPtr, std::string sName, GLuint sId);
+
+		void initShaders();
 	}
 
 
@@ -29,6 +32,10 @@ namespace ShaderManager {
 	void updateProjectionMatrixUniforms(glm::mat4 projectionMatrix);
 	void updateViewMatrixUniforms(glm::mat4 viewMatrix);
 	void updateModelMatrixUniforms(glm::mat4 modelMatrix);
+
+	void updateDirectionalLightUniforms(DirectionalLight &dirLight);
+
+	void updateViewPositionUniforms(glm::vec3 viewPos);
 
 
 }

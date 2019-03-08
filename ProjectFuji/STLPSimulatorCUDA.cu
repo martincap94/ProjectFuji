@@ -612,21 +612,21 @@ void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader, glm::vec3 cameraPo
 
 
 
-	if (showCCLLevelLayer || showELLevelLayer) {
+	if (vars->showCCLLevelLayer || vars->showELLevelLayer) {
 		GLboolean cullFaceEnabled;
 		glGetBooleanv(GL_CULL_FACE, &cullFaceEnabled);
 		glDisable(GL_CULL_FACE);
 
 		layerVisShader->use();
 
-		if (showCCLLevelLayer) {
+		if (vars->showCCLLevelLayer) {
 			layerVisShader->setVec4("u_Color", glm::vec4(1.0f, 0.0f, 0.0f, 0.2f));
 
 			glBindVertexArray(CCLLevelVAO);
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		}
 
-		if (showELLevelLayer) {
+		if (vars->showELLevelLayer) {
 			layerVisShader->setVec4("u_Color", glm::vec4(0.0f, 1.0f, 0.0f, 0.2f));
 
 

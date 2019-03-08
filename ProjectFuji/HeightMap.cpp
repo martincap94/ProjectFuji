@@ -181,6 +181,9 @@ void HeightMap::draw(ShaderProgram *shader) {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glUseProgram(shader->id);
+
+
+
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);
 

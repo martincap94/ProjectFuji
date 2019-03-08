@@ -37,6 +37,8 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath) {
 	GLuint fs;
 	GLint result;
 
+	char infoLog[1024];
+
 
 	vs = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vs, 1, &vsArr, nullptr);
@@ -45,7 +47,10 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath) {
 	glGetShaderiv(vs, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE) {
 		cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED" << endl;
-		GLint logLen;
+		glGetShaderInfoLog(vs, 1024, NULL, infoLog);
+		cout << infoLog << endl;
+
+		/*GLint logLen;
 		glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &logLen);
 		if (logLen > 0) {
 			char *log = (char *)malloc(logLen);
@@ -53,7 +58,7 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath) {
 			glGetShaderInfoLog(vs, logLen, &written, log);
 			cerr << "Shader Log: " << endl << log << endl;
 			free(log);
-		}
+		}*/
 	}
 
 	fs = glCreateShader(GL_FRAGMENT_SHADER);
@@ -63,7 +68,9 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath) {
 	glGetShaderiv(fs, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE) {
 		cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED" << endl;
-		GLint logLen;
+		glGetShaderInfoLog(fs, 1024, NULL, infoLog);
+		cout << infoLog << endl;
+		/*GLint logLen;
 		glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &logLen);
 		if (logLen > 0) {
 			char *log = (char *)malloc(logLen);
@@ -71,7 +78,7 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath) {
 			glGetShaderInfoLog(vs, logLen, &written, log);
 			cerr << "Shader Log: " << endl << log << endl;
 			free(log);
-		}
+		}*/
 	}
 
 	id = glCreateProgram();
@@ -82,15 +89,18 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath) {
 	glGetProgramiv(id, GL_LINK_STATUS, &result);
 	if (result == GL_FALSE) {
 		cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED" << endl;
-		GLint logLen;
+		glGetProgramInfoLog(id, 1024, NULL, infoLog);
+		cout << infoLog << endl;
+		/*GLint logLen;
 		glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &logLen);
+		cout << "Log length = " << logLen << endl;
 		if (logLen > 0) {
 			char *log = (char *)malloc(logLen);
 			GLsizei written;
 			glGetProgramInfoLog(vs, logLen, &written, log);
 			cerr << "Shader Log: " << endl << log << endl;
 			free(log);
-		}
+		}*/
 	}
 
 	glDeleteShader(vs);
@@ -154,3 +164,58 @@ void ShaderProgram::setViewMatrix(glm::mat4 viewMatrix, string uniformName) {
 void ShaderProgram::setModelMatrix(glm::mat4 modelMatrix, string uniformName) {
 	setMat4fv(uniformName, modelMatrix);
 }
+
+void ShaderProgram::setupMaterialUniforms() {
+	if (matType == PHONG) {
+		use();
+		setInt("u_Material.diffuse", 0);
+		setInt("u_Material.specular", 1);
+		setInt("u_Material.normalMap", 2);
+		setFloat("u_Material.shininess", 4.0f);
+	}
+}
+
+
+//void ShaderProgram::setPointLightAttributes(int lightNum, PointLight &pointLight) {
+//	std::string pointLightName = "pointLights[" + std::to_string(lightNum) + "]";
+//
+//	//setVec3(pointLightName + ".position", pointLight.transform.position);
+//	//std::cout << "(" << pointLight.getWorldPosition().x << ", " << pointLight.getWorldPosition().y << ", " << pointLight.getWorldPosition().z << ")" << std::endl;
+//	setVec3(pointLightName + ".position", pointLight.getWorldPosition());
+//
+//	setVec3(pointLightName + ".ambient", pointLight.ambientColor);
+//	setVec3(pointLightName + ".diffuse", pointLight.diffuseColor);
+//	setVec3(pointLightName + ".specular", pointLight.specularColor);
+//	setFloat(pointLightName + ".constant", pointLight.attenuationConstant);
+//	setFloat(pointLightName + ".linear", pointLight.attenuationLinear);
+//	setFloat(pointLightName + ".quadratic", pointLight.attenuationQuadratic);
+//}
+
+
+void ShaderProgram::updateDirectionalLightUniforms(DirectionalLight &dirLight) {
+	if (lightingType == LIT) {
+		use();
+		setVec3("u_DirLight.direction", dirLight.getDirection());
+		setVec3("u_DirLight.color", dirLight.color);
+		setFloat("u_DirLight.intensity", dirLight.intensity);
+	}
+}
+
+//void ShaderProgram::setSpotlightAttributes(Spotlight &spotlight, Camera &camera, bool spotlightOn) {
+//	if (spotlightOn) {
+//		setVec3("spotLight.ambient", spotlight.ambientColor);
+//		setVec3("spotLight.diffuse", spotlight.diffuseColor);
+//		setVec3("spotLight.specular", spotlight.specularColor);
+//		setFloat("spotLight.constant", spotlight.attenuationConstant);
+//		setFloat("spotLight.linear", spotlight.attenuationLinear);
+//		setFloat("spotLight.quadratic", spotlight.attenuationQuadratic);
+//		setVec3("spotLight.position", camera.Position);
+//		setVec3("spotLight.direction", camera.Front);
+//		setFloat("spotLight.cutoff", glm::cos(glm::radians(spotlight.cutoff)));
+//		setFloat("spotLight.outerCutoff", glm::cos(glm::radians(spotlight.outerCutoff)));
+//	} else {
+//		setVec3("spotLight.ambient", glm::vec3(0.0f));
+//		setVec3("spotLight.diffuse", glm::vec3(0.0f));
+//		setVec3("spotLight.specular", glm::vec3(0.0f));
+//	}
+//}

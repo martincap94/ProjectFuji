@@ -98,53 +98,56 @@ void Texture::setWrapOptions(unsigned int wrapS, unsigned int wrapT) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
 }
 
-void display2DTexture(GLuint textureId, GLuint shaderId, GLint x, GLint y, GLsizei width, GLsizei height) {
-	if (glIsTexture(textureId) == GL_FALSE) {
-		return;
-	}
 
-	glm::vec4 vp;
-	glGetFloatv(GL_VIEWPORT, &vp.x);
-	//const GLfloat normalized_coords_with_tex_coords[] = {
-	//	(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 0.0f,
-	//	(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 0.0f,
-	//	(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 1.0f,
-	//	(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 1.0f,
-	//};
-	const GLfloat normalizedCoords[] = {
-		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f,
-		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f,
-		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f,
-		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f
-	};
-	const GLfloat texCoords[] = {
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
-		0.0f, 1.0f,
-	};
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureId);
 
-	GLint current_program_id = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &current_program_id);
-	GLboolean depth_test_enabled = glIsEnabled(GL_DEPTH_TEST);
 
-	glDisable(GL_DEPTH_TEST);
-	glUseProgram(shaderId);
-	glUniform1i(glGetUniformLocation(shaderId, "u_Texture"), 0);
-	//glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, normalized_coords_with_tex_coords);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, normalizedCoords);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, texCoords);
-	glEnableVertexAttribArray(1);
-
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-	glUseProgram(current_program_id);
-	if (depth_test_enabled) {
-		glEnable(GL_DEPTH_TEST);
-	}
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, tex_comp_mode);   // set original compare mode
-
-}
+//void display2DTexture(GLuint textureId, GLuint shaderId, GLint x, GLint y, GLsizei width, GLsizei height) {
+//	if (glIsTexture(textureId) == GL_FALSE) {
+//		return;
+//	}
+//
+//	glm::vec4 vp;
+//	glGetFloatv(GL_VIEWPORT, &vp.x);
+//	//const GLfloat normalized_coords_with_tex_coords[] = {
+//	//	(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 0.0f,
+//	//	(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 0.0f,
+//	//	(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 1.0f, 1.0f,
+//	//	(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f, 0.0f, 1.0f,
+//	//};
+//	const GLfloat normalizedCoords[] = {
+//		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f,
+//		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f,          (y - vp.y) / (vp.w - vp.y)*2.0f - 1.0f,
+//		(x + width - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f,
+//		(x - vp.x) / (vp.z - vp.x)*2.0f - 1.0f, (y + height - vp.y) / (vp.w - vp.y)*2.0f - 1.0f
+//	};
+//	const GLfloat texCoords[] = {
+//		0.0f, 0.0f,
+//		1.0f, 0.0f,
+//		1.0f, 1.0f,
+//		0.0f, 1.0f,
+//	};
+//	glActiveTexture(GL_TEXTURE0);
+//	glBindTexture(GL_TEXTURE_2D, textureId);
+//
+//	GLint current_program_id = 0;
+//	glGetIntegerv(GL_CURRENT_PROGRAM, &current_program_id);
+//	GLboolean depth_test_enabled = glIsEnabled(GL_DEPTH_TEST);
+//
+//	glDisable(GL_DEPTH_TEST);
+//	glUseProgram(shaderId);
+//	glUniform1i(glGetUniformLocation(shaderId, "u_Texture"), 0);
+//	//glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, normalized_coords_with_tex_coords);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, normalizedCoords);
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, texCoords);
+//	glEnableVertexAttribArray(1);
+//
+//	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+//
+//	glUseProgram(current_program_id);
+//	if (depth_test_enabled) {
+//		glEnable(GL_DEPTH_TEST);
+//	}
+//	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, tex_comp_mode);   // set original compare mode
+//
+//}

@@ -21,6 +21,8 @@
 #include <glm\glm.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
+#include "DirectionalLight.h"
+
 
 /// Simple shader program representation which supports basic operations.
 /**
@@ -30,7 +32,22 @@
 class ShaderProgram {
 public:
 
+	enum eMaterialType {
+		NONE,
+		COLOR,
+		PHONG,
+		PBR
+	};
+
+	enum eLightingType {
+		LIT,
+		UNLIT
+	};
+
 	GLuint id;	///< ID of the program
+
+	eMaterialType matType = NONE;
+	eLightingType lightingType = UNLIT;
 
 	/// Default constructor.
 	ShaderProgram();
@@ -71,6 +88,15 @@ public:
 	void setViewMatrix(glm::mat4 viewMatrix, string uniformName = "u_View");
 
 	void setModelMatrix(glm::mat4 modelMatrix, string uniformName = "u_Model");
+
+	void setupMaterialUniforms();
+
+
+	//void setPointLightAttributes(int lightNum, PointLight &pointLight);
+
+	void updateDirectionalLightUniforms(DirectionalLight &dirLight);
+
+	//void setSpotlightAttributes(Spotlight &spotlight, Camera &camera, bool spotlightOn);
 
 
 	// FROM PGR2 FRAMEWORK BY AMBROZ

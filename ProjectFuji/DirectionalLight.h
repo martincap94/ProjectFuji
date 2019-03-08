@@ -14,7 +14,7 @@
 #include <glm\glm.hpp>
 #include <glad\glad.h>
 
-#include "ShaderProgram.h"
+class ShaderProgram;
 
 /// Direction light for simple scene lighting.
 /**
@@ -52,9 +52,12 @@ public:
 	glm::vec3 focusPoint = glm::vec3(0.0f);
 	glm::vec3 up;
 
-	glm::vec3 ambient;		///< Ambient value
-	glm::vec3 diffuse;		///< Diffuse value
-	glm::vec3 specular;		///< Specular value
+	glm::vec3 color = glm::vec3(1.0f);
+	float intensity = 1.0f;
+
+	//glm::vec3 ambient;		///< Ambient value
+	//glm::vec3 diffuse;		///< Diffuse value
+	//glm::vec3 specular;		///< Specular value
 	
 	DirectionalLight();		///< Default constructor.
 	~DirectionalLight();	///< Default destructor.

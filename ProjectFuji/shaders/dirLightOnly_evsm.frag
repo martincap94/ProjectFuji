@@ -9,14 +9,21 @@ in vec4 v_LightSpacePos;
 struct DirLight {
 	vec3 direction;
 
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	vec3 color;
+	float intensity;
 };
 
-uniform DirLight dirLight;
+uniform DirLight u_DirLight;
 
-uniform vec3 v_ViewPos;
+
+struct Fog {
+	vec4 color;
+	float minDistance;
+};
+
+uniform Fog u_Fog;
+
+uniform vec3 u_ViewPos;
 
 uniform sampler2D u_DepthMapTexture;
 
@@ -39,8 +46,8 @@ float linstep(float minVal, float maxVal, float val);
 void main() {
 
 	vec3 norm = normalize(v_Normal);
-	vec3 viewDir = normalize(v_ViewPos - v_FragPos.xyz);
-	//vec3 viewDir = normalize(v_FragPos.xyz - v_ViewPos);
+	vec3 viewDir = normalize(u_ViewPos - v_FragPos.xyz);
+	//vec3 viewDir = normalize(v_FragPos.xyz - u_ViewPos);
 
 
 	float shadow = calcShadow(v_LightSpacePos);
@@ -50,10 +57,13 @@ void main() {
 	if (u_ShadowOnly) {
 		result = vec3(shadow);
 	} else {
-		vec3 color = calcDirLight(dirLight, norm, viewDir);
+		vec3 color = calcDirLight(u_DirLight, norm, viewDir);
 		result = color * shadow;
 	}
 	fragColor = vec4(result, 1.0);
+	float distance = length(v_FragPos.xyz - u_ViewPos);
+	fragColor = mix(u_Fog.color, fragColor, min(u_Fog.minDistance / distance, 1.0));
+
 }
 
 
@@ -67,15 +77,14 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
     
-	vec3 matColor = vec3(0.5, 0.4, 0.4);
+	vec3 matColor = vec3(0.5, 0.2, 0.2);
 
     // combine results
-    vec3 ambient  = light.ambient  * matColor;
-    vec3 diffuse  = light.diffuse  * diff /** matColor*/;
-    vec3 specular = light.specular * spec /** matColor */;
+    vec3 diffuse  = light.color  * diff * matColor;
+    vec3 specular = light.color * spec * matColor ;
 
     
-    return (ambient + diffuse + specular);
+    return (diffuse + specular);
 }
 
 

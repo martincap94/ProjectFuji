@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <map>
-#include "ShaderProgram.h"
 
 using namespace std;
 
@@ -18,8 +17,10 @@ namespace ShaderManager {
 		map<GLuint, ShaderProgram *> shaders;
 		map<GLuint, string> shaderIdName;
 
-		void addShader(string sName, string vertShader, string fragShader) {
+		void addShader(string sName, string vertShader, string fragShader, ShaderProgram::eLightingType lightingType, ShaderProgram::eMaterialType matType) {
 			ShaderProgram *sPtr = new ShaderProgram(vertShader.c_str(), fragShader.c_str());
+			sPtr->lightingType = lightingType;
+			sPtr->matType = matType;
 			addShader(sPtr, sName, sPtr->id);
 		}
 
@@ -27,6 +28,17 @@ namespace ShaderManager {
 			shadersStr.insert(make_pair(sName, sPtr));
 			shaders.insert(make_pair(sId, sPtr));
 			shaderIdName.insert(make_pair(sId, sName));
+		}
+
+		void initShaders() {
+			for (const auto& kv : shaders) {
+				kv.second->setupMaterialUniforms();
+
+				// fog testing
+				kv.second->use();
+				kv.second->setVec4("u_Fog.color", glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
+				kv.second->setFloat("u_Fog.minDistance", 20.0f);
+			}
 		}
 
 
@@ -52,7 +64,7 @@ namespace ShaderManager {
 			addShader("singleColorAlpha", "singleColor.vert", "singleColor_alpha.frag");
 			addShader("singleColor_VBO", "singleColor_VBO.vert", "singleColor_VBO.frag");
 			addShader("unlitColor", "unlitColor.vert", "unlitColor.frag");
-			addShader("dirLightOnly", "dirLightOnly.vert", "dirLightOnly.frag");
+			addShader("dirLightOnly", "dirLightOnly.vert", "dirLightOnly.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
 			addShader("pointSpriteTest", "pointSpriteTest.vert", "pointSpriteTest.frag");
 			addShader("coloredParticle", "coloredParticle.vert", "coloredParticle.frag");
 			addShader("diagram", "diagram.vert", "diagram.frag");
@@ -61,15 +73,17 @@ namespace ShaderManager {
 			addShader("skybox", "skybox.vert", "skybox.frag");
 			addShader("gaussianBlur", "basic_blur.vert", "gblur_9x9_separated.frag");
 			addShader("evsm_1st_pass", "evsm_1st_pass.vert", "evsm_1st_pass.frag");
-			addShader("evsm_2nd_pass", "evsm_2nd_pass.vert", "evsm_2nd_pass.frag");
+			addShader("evsm_2nd_pass", "evsm_2nd_pass.vert", "evsm_2nd_pass.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
 
-			addShader("dirLightOnly_evsm", "dirLightOnly_evsm.vert", "dirLightOnly_evsm.frag");
+			addShader("dirLightOnly_evsm", "dirLightOnly_evsm.vert", "dirLightOnly_evsm.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
 
 			addShader("vsm_1st_pass", "vsm_1st_pass.vert", "vsm_1st_pass.frag");
 			addShader("vsm_2nd_pass", "vsm_2nd_pass.vert", "vsm_2nd_pass.frag");
 
 			addShader("shadow_mapping_1st_pass", "shadow_mapping_1st_pass.vert", "shadow_mapping_1st_pass.frag");
 			addShader("shadow_mapping_2nd_pass", "shadow_mapping_2nd_pass.vert", "shadow_mapping_2nd_pass.frag");
+
+			addShader("normals", "normals.vert", "normals.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
 
 		}
 	}
@@ -82,7 +96,7 @@ namespace ShaderManager {
 		}
 		cout << "Initializing ShaderManager" << endl;
 		loadShaders();
-
+		initShaders();
 
 		initFlag = true;
 		return true;
@@ -162,6 +176,21 @@ namespace ShaderManager {
 			kv.second->setMat4fv("u_Model", modelMatrix);
 		}
 	}
+
+	void updateDirectionalLightUniforms(DirectionalLight &dirLight) {
+		for (const auto& kv : shaders) {
+			kv.second->updateDirectionalLightUniforms(dirLight);
+		}
+	}
+
+	void updateViewPositionUniforms(glm::vec3 viewPos) {
+		for (const auto& kv : shaders) {
+			kv.second->use();
+			kv.second->setVec3("u_ViewPos", viewPos);
+		}
+	}
+
+
 
 
 

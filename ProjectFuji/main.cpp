@@ -411,11 +411,30 @@ int runApp() {
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 
 
-	StaticMesh testMesh("models/House_3.obj", ShaderManager::getShaderPtr("dirLightOnly"), nullptr);
-	Model testModel("models/House_3.obj");
+	//StaticMesh testMesh("models/House_3.obj", ShaderManager::getShaderPtr("dirLightOnly"), nullptr);
+	//Model testModel("models/House_3.obj");
 
+	Texture diffuse("textures/body2.png", 0);
+	Texture specular("textures/body2_S.png", 1);
+	Texture normal("textures/body2_N.png", 2);
+	Material testMat(diffuse, specular, normal, 32.0f);
 
-	testMesh.transform.position = glm::vec3(0.0f);
+	Model testModel("models/housewife.obj", &testMat, ShaderManager::getShaderPtr("normals"));
+	StaticMesh testMesh("models/housewife.obj", ShaderManager::getShaderPtr("normals"), &testMat);
+
+	Texture adiffuse("textures/armoire/diffuse.png", 0);
+	Texture aspecular("textures/armoire/metallic.png", 1);
+	Texture anormal("textures/armoire/normal.png", 2);
+	Material aMat(adiffuse, aspecular, anormal, 32.0f);
+
+	Model armoireModel("models/armoire.fbx", &aMat, ShaderManager::getShaderPtr("normals"));
+	armoireModel.transform.position.x += 2.0f;
+
+	//Model testModel("models/housewife.obj", &testMat, dirLightOnlyShader);
+	//StaticMesh testMesh("models/housewife.obj", dirLightOnlyShader, &testMat);
+	testMesh.transform.position.x += 1.0f;
+
+	//testMesh.transform.position = glm::vec3(0.0f);
 
 	if (vars.lbmType == LBM3D) {
 		((LBM3D_1D_indices*)lbm)->heightMap->shader = dirLightOnlyShader;
@@ -423,18 +442,12 @@ int runApp() {
 
 	//dirLight.direction = glm::vec3(0.2f, 0.4f, 0.5f);
 	dirLight.position = glm::vec3(100.0f, 60.0f, 60.0f);
-	dirLight.ambient = glm::vec3(0.0f, 0.0f, 0.0f);
-	dirLight.diffuse = glm::vec3(0.8f, 0.4f, 0.4f);
-	dirLight.specular = glm::vec3(0.6f, 0.2f, 0.2f);
 
 
 	glUseProgram(dirLightOnlyShader->id);
 
-	dirLightOnlyShader->setVec3("dirLight.direction", dirLight.getDirection());
-	dirLightOnlyShader->setVec3("dirLight.ambient", dirLight.ambient);
-	dirLightOnlyShader->setVec3("dirLight.diffuse", dirLight.diffuse);
-	dirLightOnlyShader->setVec3("dirLight.specular", dirLight.specular);
-	dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
+
+	//dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
 
 	evsm.dirLight = &dirLight;
 
@@ -636,10 +649,12 @@ int runApp() {
 		reportGLErrors("D0");
 
 		ShaderManager::updateViewMatrixUniforms(view);
+		ShaderManager::updateDirectionalLightUniforms(dirLight);
+		ShaderManager::updateViewPositionUniforms(camera->position);
 		reportGLErrors("D1");
 
-		dirLightOnlyShader->use();
-		dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
+		//dirLightOnlyShader->use();
+		//dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
 		
 		reportGLErrors("D2");
 
@@ -787,24 +802,15 @@ int runApp() {
 
 			//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
-			//glEnable(GL_CULL_FACE);
-			//glCullFace(GL_FRONT);
+
 			evsm.preSecondPass(vars.screenWidth, vars.screenHeight);
-			evsm.secondPassShader->setVec3("dirLight.direction", dirLight.getDirection());
-			evsm.secondPassShader->setVec3("dirLight.ambient", dirLight.ambient);
-			evsm.secondPassShader->setVec3("dirLight.diffuse", dirLight.diffuse);
-			evsm.secondPassShader->setVec3("dirLight.specular", dirLight.specular);
-			evsm.secondPassShader->setVec3("v_ViewPos", camera->position);
 
 			stlpSim->heightMap->draw(evsm.secondPassShader);
-			//testMesh.draw(evsm.secondPassShader);
 
 
-			dirLightOnlyShader->use();
-			dirLightOnlyShader->setVec3("dirLight.direction", dirLight.getDirection());
-			dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
-			//testMesh.draw(dirLightOnlyShader);
-			testModel.draw(*dirLightOnlyShader);
+			testModel.draw();
+			testMesh.draw();
+			armoireModel.draw();
 
 			evsm.postSecondPass();
 			
@@ -1291,7 +1297,23 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			//		}
 			//	}
 			//}
+			//nk_colorf()
+			struct nk_colorf dirLightColor;
+			dirLightColor.r = dirLight.color.x;
+			dirLightColor.g = dirLight.color.y;
+			dirLightColor.b = dirLight.color.z;
 
+			if (nk_combo_begin_color(ctx, nk_rgb_cf(dirLightColor), nk_vec2(nk_widget_width(ctx), 400))) {
+				nk_layout_row_dynamic(ctx, 120, 1);
+				dirLightColor = nk_color_picker(ctx, dirLightColor, NK_RGBA);
+				nk_layout_row_dynamic(ctx, 25, 1);
+				dirLightColor.r = nk_propertyf(ctx, "#R:", 0, dirLightColor.r, 1.0f, 0.01f, 0.005f);
+				dirLightColor.g = nk_propertyf(ctx, "#G:", 0, dirLightColor.g, 1.0f, 0.01f, 0.005f);
+				dirLightColor.b = nk_propertyf(ctx, "#B:", 0, dirLightColor.b, 1.0f, 0.01f, 0.005f);
+				dirLightColor.a = nk_propertyf(ctx, "#A:", 0, dirLightColor.a, 1.0f, 0.01f, 0.005f);
+				dirLight.color = glm::vec3(dirLightColor.r, dirLightColor.g, dirLightColor.b);
+				nk_combo_end(ctx);
+			}
 
 
 
@@ -1355,7 +1377,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR /*| NK_WINDOW_MOVABLE*/ /*| NK_WINDOW_SCALABLE*/ /*|
 				 NK_WINDOW_MINIMIZABLE*/ /*| NK_WINDOW_TITLE*/)) {
 
-		nk_layout_row_static(ctx, 30, 200, 1);
+		nk_layout_row_static(ctx, 15, 200, 1);
 		if (nk_button_label(ctx, "Recalculate Params")) {
 			//lbm->resetSimulation();
 			stlpDiagram.recalculateParameters();
@@ -1415,10 +1437,8 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_property_float(ctx, "Divisor (x100)", 100.0f, &vars.prevVelocityDivisor, 1000.0f, 0.1f, 0.1f); // [1.0, 10.0]
 		}
 
-		nk_checkbox_label(ctx, "Show CCL Level", &stlpSim->showCCLLevelLayer);
-		stlpSimCUDA->showCCLLevelLayer = stlpSim->showCCLLevelLayer;
-		nk_checkbox_label(ctx, "Show EL Level", &stlpSim->showELLevelLayer);
-		stlpSimCUDA->showELLevelLayer = stlpSim->showELLevelLayer;
+		nk_checkbox_label(ctx, "Show CCL Level", &vars.showCCLLevelLayer);
+		nk_checkbox_label(ctx, "Show EL Level", &vars.showELLevelLayer);
 
 
 		nk_checkbox_label(ctx, "Use CUDA", &vars.stlpUseCUDA);

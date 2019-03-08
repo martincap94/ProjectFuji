@@ -47,8 +47,8 @@ public:
 
 	int simulateWind = 0;
 	int usePrevVelocity = 1;
-	int showCCLLevelLayer = 1;
-	int showELLevelLayer = 1;
+	//int showCCLLevelLayer = 1;
+	//int showELLevelLayer = 1;
 
 	float pointSize = 1.0f;
 
