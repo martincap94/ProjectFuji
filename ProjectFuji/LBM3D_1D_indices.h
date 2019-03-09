@@ -16,6 +16,7 @@
 #include "ParticleSystemLBM.h"
 #include "DataStructures.h"
 #include "HeightMap.h"
+#include "VariableManager.h"
 
 #include <cuda_gl_interop.h>
 
@@ -37,7 +38,7 @@ __constant__ float WEIGHT_NON_AXIAL;
 	The LBM is indexed as a 1D array in this implementation.
 	The simulator supports particle velocity visualization.
 */
-class LBM3D_1D_indices : public LBM {
+class LBM3D_1D_indices /*: public LBM*/ {
 
 
 	const glm::vec3 vMiddle = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -86,6 +87,38 @@ class LBM3D_1D_indices : public LBM {
 
 public:
 
+	VariableManager *vars;
+
+	/// Enumeration that should contain all controllable properties of the simulation (through UI).
+	enum eLBMControlProperty {
+		MIRROR_SIDES_PROP
+	};
+
+	ParticleSystemLBM *particleSystem;		///< Pointer to the particle system
+	glm::vec3 *particleVertices;		///< Pointer to the particle vertices array (on CPU)
+	int *d_numParticles;	///< Number of particles on the device; managed in memory by Particle System class (its destructor)
+
+
+	int latticeWidth;		///< Width of the lattice
+	int latticeHeight;		///< Height of the lattice
+	int latticeDepth;		///< Depth of the lattice
+
+	int latticeSize;		///< Number of lattice nodes = latticeWidth * latticeHeight * latticeDepth
+
+	float tau = 0.52f;		///< Tau parameter of the simulation, describes the viscosity of the simulated fluid
+	float itau;				///< Inverse value of tau = 1.0 / tau; it is used in the collision step, if tau is changed, this value must be recomputed
+	float nu;				///< Experimental value for subgrid model simulation
+
+	glm::vec3 inletVelocity = glm::vec3(1.0f, 0.0f, 0.0f);		///< Inlet velocity vector
+
+	int useSubgridModel = 0;	///< Whether the subgrid model should be used - EXPERIMENTAL - subgrid model not functional at the moment!
+	int mirrorSides = 1;		///< Whether the particles passing through sides of the scene bounding box should show up on the other side		
+	int visualizeVelocity = 0;  ///< Whether the velocity of the particles should be visualized, currently only in 2D
+	int respawnLinearly = 0;	///< NOT USED YET! Whether particles should respawn linearly or randomly in the inlet nodes
+
+	string sceneFilename;		///< Filename of the scene that is used for the simulation
+
+
 
 	Node3D *frontLattice;			///< Front lattice - the one currently drawn at end of each frame
 	Node3D *backLattice;			///< Back lattice - the one to which we prepare next frame to be drawn
@@ -118,7 +151,7 @@ public:
 		\param[in] particleSystem	Pointer to the particle system.
 		\param[in] blockDim			Dimensions of blocks to be used when launching CUDA kernels.
 	*/
-	LBM3D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim);
+	LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim);
 
 	/// Frees CPU and GPU memory and unmaps CUDA graphics resources (VBOs).
 	virtual ~LBM3D_1D_indices();
@@ -157,6 +190,18 @@ protected:
 	virtual void swapLattices();
 	virtual void initBuffers();
 	virtual void initLattice();
+
+
+	vector<glm::vec3> velocityArrows;	///< Array describing velocity arrows (starts in node, points in velocity direction) for visualization
+	vector<glm::vec3> particleArrows;	///< Array describing velocity arrows that visualize particle velocity (interpolated values)
+
+	GLuint velocityVBO;		///< VBO for node velocity visualization
+	GLuint velocityVAO;		///< VAO for node velocity visualization
+
+	GLuint particleArrowsVAO;	///< VAO for particle velocity (arrow) visualization
+	GLuint particleArrowsVBO;	///< VBO for particle velocity (arrow) visualization
+
+
 
 private:
 

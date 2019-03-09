@@ -2,6 +2,8 @@
 
 #include <string>
 #include "CommonEnums.h"
+#include "HeightMap.h"
+
 #include <glm\glm.hpp>
 
 #include "Timer.h"
@@ -22,7 +24,7 @@ public:
 
 	int vsync = 0;
 	eLBMType lbmType;
-
+	HeightMap *heightMap = nullptr;
 
 	int numParticles = 1000;	///< Number of particles
 	int maxNumParticles = 1000000;

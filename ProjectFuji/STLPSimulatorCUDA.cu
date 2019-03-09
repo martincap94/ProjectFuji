@@ -280,6 +280,7 @@ __global__ void simulationStepKernelAlt(glm::vec3 *particleVertices, int numPart
 
 
 STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpDiagram) : vars(vars), stlpDiagram(stlpDiagram) {
+	heightMap = vars->heightMap;
 	groundHeight = stlpDiagram->P0;
 	boxTopHeight = groundHeight + simulationBoxHeight;
 

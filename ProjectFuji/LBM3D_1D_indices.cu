@@ -1137,8 +1137,10 @@ LBM3D_1D_indices::LBM3D_1D_indices() {
 
 
 
-LBM3D_1D_indices::LBM3D_1D_indices(glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim)
-	: LBM(dim, sceneFilename, tau, particleSystem), blockDim(blockDim) {
+LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystem(particleSystem), blockDim(blockDim) {
+
+	itau = 1.0f / tau;
+	nu = (2.0f * tau - 1.0f) / 6.0f;
 
 	initScene();
 
@@ -1196,7 +1198,7 @@ LBM3D_1D_indices::~LBM3D_1D_indices() {
 	delete[] backLattice;
 	delete[] velocities;
 
-	delete heightMap;
+	//delete heightMap;
 
 	cudaFree(d_frontLattice);
 	cudaFree(d_backLattice);
@@ -1209,14 +1211,15 @@ LBM3D_1D_indices::~LBM3D_1D_indices() {
 }
 
 void LBM3D_1D_indices::recalculateVariables() {
-	LBM::recalculateVariables();
+	itau = 1.0f / tau;
+	nu = (2.0f * tau - 1.0f) / 6.0f;
 	cudaMemcpyToSymbol(d_tau, &tau, sizeof(float));
 	cudaMemcpyToSymbol(d_itau, &itau, sizeof(float));
 }
 
 void LBM3D_1D_indices::initScene() {
-	heightMap = new HeightMap(sceneFilename, latticeHeight, nullptr);
-
+	//heightMap = new HeightMap(sceneFilename, latticeHeight, nullptr);
+	heightMap = vars->heightMap;
 
 	latticeWidth = heightMap->width;
 	latticeDepth = heightMap->height;

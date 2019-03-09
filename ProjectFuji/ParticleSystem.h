@@ -41,6 +41,11 @@ public:
 	int numParticles;
 	int *d_numParticles;
 
+	float *d_verticalVelocities;
+	int *d_profileIndices;
+	float *d_particlePressures;
+
+
 
 	float pointSize = 1.0f;
 
@@ -59,8 +64,11 @@ public:
 
 	void draw(const ShaderProgram &shader, bool useCUDA);
 
-	/// Initializes particle positions for 2D simulation.
-	void initParticlePositions(int width, int height, bool *collider);
+	void initParticlePositionsWithZeros();
+	void initParticlePositionsOnTerrain();
+	void initParticlePositionsAboveTerrain();
+
+
 
 	/// Initializes particle positions for 3D simulation.
 	void initParticlePositions(int width, int height, int depth, const HeightMap *hm);
@@ -68,12 +76,12 @@ public:
 	/// Copies data from VBO to CPU when we want to switch from GPU to CPU implementation.
 	void copyDataFromVBOtoCPU();
 
-	GLuint VBO;			///< VBO of the particle vertices
+	GLuint particleVerticesVBO;			///< VBO of the particle vertices
 	GLuint colorsVBO;	///< VBO of the particle colors
 
 private:
 
-	GLuint VAO;			///< VAO of the particle vertices
+	GLuint particleVerticesVAO;			///< VAO of the particle vertices
 
 	GLuint streamLinesVAO;	///< Streamlines VAO
 	GLuint streamLinesVBO;	///< Streamlines VBO

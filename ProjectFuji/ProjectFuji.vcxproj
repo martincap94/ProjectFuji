@@ -102,7 +102,10 @@
     <ClCompile Include="LatticeCollider.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Grid2D.cpp" />
-    <ClCompile Include="LBM.cpp" />
+    <ClCompile Include="LBM.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -154,6 +157,8 @@
     <ClCompile Include="VariableManager.cpp" />
     <CudaCompile Include="LBM2D_1D_indices.cu">
       <FileType>CppCode</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </CudaCompile>
     <CudaCompile Include="LBM3D_1D_indices.cu">
       <FileType>CppCode</FileType>
@@ -204,8 +209,14 @@
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="VariableManager.h" />
-    <CudaCompile Include="LBM.h" />
-    <ClInclude Include="LBM2D_1D_indices.h" />
+    <CudaCompile Include="LBM.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </CudaCompile>
+    <ClInclude Include="LBM2D_1D_indices.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="LBM3D_1D_indices.h" />
     <ClInclude Include="nuklear_glfw_gl3.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

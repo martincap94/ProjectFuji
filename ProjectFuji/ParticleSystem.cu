@@ -26,10 +26,10 @@ ParticleSystem::~ParticleSystem() {
 
 void ParticleSystem::initBuffers() {
 
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glGenVertexArrays(1, &particleVerticesVAO);
+	glBindVertexArray(particleVerticesVAO);
+	glGenBuffers(1, &particleVerticesVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, particleVerticesVBO);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
@@ -55,7 +55,7 @@ void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
 	glPointSize(pointSize);
 	shader.setVec3("u_Color", particlesColor);
 
-	glBindVertexArray(VAO);
+	glBindVertexArray(particleVerticesVAO);
 
 	//if (!useCUDA) {
 	//	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -69,6 +69,22 @@ void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
 
 	glDrawArrays(GL_POINTS, 0, numParticles);
 
+}
+
+void ParticleSystem::initParticlePositionsWithZeros() {
+	vector<glm::vec3> particleVertices;
+
+	for (int i = 0; i < numParticles; i++) {
+		particleVertices.push_back(glm::vec3(0.0f));
+	}
+
+	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
+}
+
+void ParticleSystem::initParticlePositionsOnTerrain() {
+}
+
+void ParticleSystem::initParticlePositionsAboveTerrain() {
 }
 
 

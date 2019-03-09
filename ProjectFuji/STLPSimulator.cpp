@@ -16,6 +16,8 @@ using namespace std;
 
 
 STLPSimulator::STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram) : vars(vars), stlpDiagram(stlpDiagram) {
+	heightMap = vars->heightMap;
+
 	groundHeight = stlpDiagram->P0;
 	boxTopHeight = groundHeight + simulationBoxHeight;
 

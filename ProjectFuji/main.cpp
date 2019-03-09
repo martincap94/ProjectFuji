@@ -23,8 +23,8 @@
 #include <chrono>
 #include <sstream>
 
-#include "LBM.h"
-#include "LBM2D_1D_indices.h"
+//#include "LBM.h"
+//#include "LBM2D_1D_indices.h"
 #include "LBM3D_1D_indices.h"
 #include "HeightMap.h"
 #include "Grid2D.h"
@@ -127,6 +127,8 @@ Grid *grid;				///< Pointer to the current grid
 Camera *camera;			///< Pointer to the current camera
 ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system that is to be used throughout the whole application
 ParticleSystem *particleSystem;
+
+//HeightMap *heightMap;
 
 //Timer timer;
 Camera *viewportCamera;
@@ -303,6 +305,26 @@ int runApp() {
 	set_style(ctx, THEME_MARTIN);
 #endif
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	///// SHADERS
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	singleColorShader = ShaderManager::getShaderPtr("singleColor");
+	singleColorShaderAlpha = ShaderManager::getShaderPtr("singleColorAlpha");
+	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
+
+	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
+
+	dirLightOnlyShader = ShaderManager::getShaderPtr("dirLightOnly");
+	//dirLightOnlyShader = ShaderManager::getShaderPtr("dirLightOnly_evsm");
+
+	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
+	coloredParticleShader = ShaderManager::getShaderPtr("coloredParticle");
+	diagramShader = ShaderManager::getShaderPtr("diagram");
+
+	textShader = ShaderManager::getShaderPtr("text");
+	curveShader = ShaderManager::getShaderPtr("curve");
+	skyboxShader = ShaderManager::getShaderPtr("skybox");
+
 
 	struct nk_colorf particlesColor;
 
@@ -311,14 +333,16 @@ int runApp() {
 	particleSystem = new ParticleSystem(&vars);
 
 
-	particlesColor.r = particleSystemLBM->particlesColor.r;
-	particlesColor.g = particleSystemLBM->particlesColor.g;
-	particlesColor.b = particleSystemLBM->particlesColor.b;
+	//particlesColor.r = particleSystemLBM->particlesColor.r;
+	//particlesColor.g = particleSystemLBM->particlesColor.g;
+	//particlesColor.b = particleSystemLBM->particlesColor.b;
 
 
 	glm::ivec3 latticeDim(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
 
 	float ratio = (float)vars.screenWidth / (float)vars.screenHeight;
+
+	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight, dirLightOnlyShader);
 
 
 	// Create and configure the simulator, select from 2D and 3D options and set parameters accordingly
@@ -327,7 +351,7 @@ int runApp() {
 
 		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
 
-		lbm = new LBM3D_1D_indices(latticeDim, vars.sceneFilename, vars.tau, particleSystemLBM, blockDim);
+		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, particleSystemLBM, blockDim);
 
 		vars.latticeWidth = lbm->latticeWidth;
 		vars.latticeHeight = lbm->latticeHeight;
@@ -364,28 +388,10 @@ int runApp() {
 	camera->movementSpeed = vars.cameraSpeed;
 
 
-	particleSystemLBM->lbm = lbm;
+	//particleSystemLBM->lbm = lbm;
 
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	///// SHADERS
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	singleColorShader = ShaderManager::getShaderPtr("singleColor");
-	singleColorShaderAlpha = ShaderManager::getShaderPtr("singleColorAlpha");
-	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
 
-	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
-	
-	dirLightOnlyShader = ShaderManager::getShaderPtr("dirLightOnly");
-	//dirLightOnlyShader = ShaderManager::getShaderPtr("dirLightOnly_evsm");
-
-	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
-	coloredParticleShader = ShaderManager::getShaderPtr("coloredParticle");
-	diagramShader = ShaderManager::getShaderPtr("diagram");
-
-	textShader = ShaderManager::getShaderPtr("text");
-	curveShader = ShaderManager::getShaderPtr("curve");
-	skyboxShader = ShaderManager::getShaderPtr("skybox");
 
 
 	//StaticMesh testMesh("models/House_3.obj", ShaderManager::getShaderPtr("dirLightOnly"), nullptr);
@@ -413,9 +419,7 @@ int runApp() {
 
 	//testMesh.transform.position = glm::vec3(0.0f);
 
-	if (vars.lbmType == LBM3D) {
-		((LBM3D_1D_indices*)lbm)->heightMap->shader = dirLightOnlyShader;
-	}
+	lbm->heightMap->shader = dirLightOnlyShader;
 
 	//dirLight.direction = glm::vec3(0.2f, 0.4f, 0.5f);
 	dirLight.position = glm::vec3(100.0f, 60.0f, 60.0f);
@@ -451,9 +455,6 @@ int runApp() {
 	stlpSim = new STLPSimulator(&vars, &stlpDiagram);
 	stlpSimCUDA = new STLPSimulatorCUDA(&vars, &stlpDiagram);
 
-	stlpSim->heightMap = lbm->heightMap;
-	stlpSimCUDA->heightMap = lbm->heightMap;
-	
 
 	stlpSim->initParticles();
 	stlpSimCUDA->initParticles();
@@ -476,7 +477,7 @@ int runApp() {
 	ss << (vars.useCUDA ? "GPU" : "CPU") << "_";
 	ss << vars.sceneFilename;
 	ss << "_h=" << vars.latticeHeight;
-	ss << "_" << particleSystemLBM->numParticles;
+	//ss << "_" << particleSystemLBM->numParticles;
 	vars.timer.configString = ss.str();
 	if (vars.measureTime) {
 		vars.timer.start();
@@ -699,13 +700,13 @@ int runApp() {
 			
 			lbm->draw(*singleColorShader);
 
-			if (vars.usePointSprites) {
-				particleSystemLBM->draw(*pointSpriteTestShader, vars.useCUDA);
-			} else if (lbm->visualizeVelocity) {
-				particleSystemLBM->draw(*coloredParticleShader, vars.useCUDA);
-			} else {
-				particleSystemLBM->draw(*singleColorShader, vars.useCUDA);
-			}
+			//if (vars.usePointSprites) {
+			//	particleSystemLBM->draw(*pointSpriteTestShader, vars.useCUDA);
+			//} else if (lbm->visualizeVelocity) {
+			//	particleSystemLBM->draw(*coloredParticleShader, vars.useCUDA);
+			//} else {
+			//	particleSystemLBM->draw(*singleColorShader, vars.useCUDA);
+			//}
 			gGrid.draw(*unlitColorShader);
 
 			/*glDisable(GL_DEPTH_TEST);
@@ -851,7 +852,8 @@ int runApp() {
 	}
 
 
-	delete particleSystemLBM;
+	//delete particleSystemLBM;
+	delete particleSystem;
 	delete lbm;
 	delete grid;
 	//delete viewportCamera;
@@ -1179,7 +1181,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_checkbox_label(ctx, "Mirror sides", &lbm->mirrorSides);
 			if (mirrorSidesPrev != lbm->mirrorSides) {
 				cout << "Mirror sides value changed!" << endl;
-				lbm->updateControlProperty(LBM::MIRROR_SIDES_PROP);
+				lbm->updateControlProperty(LBM3D_1D_indices::MIRROR_SIDES_PROP);
 			}
 
 #ifdef LBM_EXPERIMENTAL
@@ -1222,7 +1224,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				nk_layout_row_dynamic(ctx, 15, 1);
 				nk_checkbox_label(ctx, "Respawn linearly", &lbm->respawnLinearly);
 			}
-
+/*
 			nk_layout_row_dynamic(ctx, 10, 1);
 			nk_labelf(ctx, NK_TEXT_LEFT, "Point size");
 			nk_slider_float(ctx, 1.0f, &particleSystemLBM->pointSize, 100.0f, 0.5f);
@@ -1242,7 +1244,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 					particleSystemLBM->particlesColor = glm::vec3(particlesColor.r, particlesColor.g, particlesColor.b);
 					nk_combo_end(ctx);
 				}
-			}
+			}*/
 			nk_layout_row_dynamic(ctx, 15, 1);
 			nk_label(ctx, "Camera movement speed", NK_TEXT_LEFT);
 			nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 400.0f, 1.0f);

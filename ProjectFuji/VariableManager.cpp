@@ -21,6 +21,9 @@ VariableManager::VariableManager() {
 }
 
 VariableManager::~VariableManager() {
+	if (heightMap) {
+		delete heightMap;
+	}
 }
 
 void VariableManager::init(int argc, char **argv) {

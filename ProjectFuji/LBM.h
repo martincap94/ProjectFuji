@@ -14,6 +14,7 @@
 
 #include "ShaderProgram.h"
 #include "ParticleSystemLBM.h"
+#include "VariableManager.h"
 
 
 /// The superclass of LBM simulators for this application.
@@ -24,6 +25,8 @@
 */
 class LBM {
 public:
+
+	VariableManager *vars;
 
 	/// Enumeration that should contain all controllable properties of the simulation (through UI).
 	enum eLBMControlProperty {
@@ -66,7 +69,7 @@ public:
 		\param[in] tau				Initial value of tau.
 		\param[in] particleSystem	Particle system that will be used.
 	*/
-	LBM(glm::ivec3 dimensions, string sceneFilename, float tau, ParticleSystemLBM *particleSystem);
+	LBM(VariableManager *vars, glm::ivec3 dimensions, string sceneFilename, float tau, ParticleSystemLBM *particleSystem);
 
 	/// Default virtual destructor.
 	virtual ~LBM();
