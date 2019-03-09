@@ -23,11 +23,18 @@
 #include <deque>
 
 #include "Texture.h"
+#include "Emitter.h"
+#include "VariableManager.h"
 
 class LBM;
 
 class ParticleSystem {
 public:
+
+	std::vector<Emitter *> emitters;
+
+	VariableManager *vars;
+
 
 	LBM *lbm;
 
@@ -41,12 +48,14 @@ public:
 
 	Texture spriteTexture;
 
-	glm::vec3 *particleVertices = nullptr;
+	//glm::vec3 *particleVertices = nullptr;
 
 
-	ParticleSystem();
-	ParticleSystem(int numParticles, bool drawStreamlines = false);
+	ParticleSystem(VariableManager *vars);
 	~ParticleSystem();
+
+	void initBuffers();
+	void initCUDA();
 
 	void draw(const ShaderProgram &shader, bool useCUDA);
 

@@ -65,7 +65,7 @@ public:
 	float simulationSpeedMultiplier = 1.0f;
 
 	//int maxNumParticles = MAX_PARTICLE_COUNT;
-	int maxNumParticles = 10000;
+	int maxNumParticles = 1000000;
 
 	float groundHeight = 0.0f;
 	float simulationBoxHeight = 20000.0f; // 20km

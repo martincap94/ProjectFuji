@@ -25,6 +25,8 @@ public:
 
 
 	int numParticles = 1000;	///< Number of particles
+	int maxNumParticles = 1000000;
+	
 	string sceneFilename;		///< Filename of the scene
 	bool useCUDA = true;		///< Whether to use CUDA or run the CPU version of the application
 	int useCUDACheckbox = 1;	///< Helper int value for the UI checkbox

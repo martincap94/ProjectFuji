@@ -651,7 +651,7 @@ void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader, glm::vec3 cameraPo
 	glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture.id);
 
 	glPointSize(pointSize);
-	particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));
+	//particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));
 	particlesShader.setVec3("u_CameraPos", cameraPos);
 	particlesShader.setFloat("u_PointSizeModifier", pointSize);
 	particlesShader.setFloat("u_OpacityMultiplier", vars->opacityMultiplier);

@@ -7,54 +7,43 @@
 #include "Utils.h"
 #include "LBM.h"
 
-ParticleSystem::ParticleSystem() {
-}
+ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
-ParticleSystem::ParticleSystem(int numParticles, bool drawStreamlines) : numParticles(numParticles) {
-	particleVertices = new glm::vec3[numParticles]();
-
-	reportGLErrors();
-
-	cudaMalloc((void**)&d_numParticles, sizeof(int));
-
-	cudaMemcpy(d_numParticles, &numParticles, sizeof(int), cudaMemcpyHostToDevice);
-
-
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particleVertices[0], GL_STREAM_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
-
-
-	glGenBuffers(1, &colorsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, colorsVBO);
-	//for (int i = 0; i < numParticles; i++) {
-	//	particleVertices[i].z = 1.0f;
-	//}
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particleVertices[0], GL_STREAM_DRAW);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
-
-	glBindVertexArray(0);
-
-
-
+	initBuffers();
+	initCUDA();
 	spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
 
 }
 
 
 ParticleSystem::~ParticleSystem() {
-	delete[] particleVertices;
+	//delete[] particleVertices;
 
 	cudaFree(d_numParticles);
 }
+
+
+
+void ParticleSystem::initBuffers() {
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+
+}
+
+
+void ParticleSystem::initCUDA() {
+
+	cudaMalloc((void**)&d_numParticles, sizeof(int));
+	cudaMemcpy(d_numParticles, &numParticles, sizeof(int), cudaMemcpyHostToDevice);
+
+}
+
 
 void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
 
@@ -68,10 +57,10 @@ void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
 
 	glBindVertexArray(VAO);
 
-	if (!useCUDA) {
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particleVertices[0], GL_STREAM_DRAW);
-	}
+	//if (!useCUDA) {
+	//	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particleVertices[0], GL_STREAM_DRAW);
+	//}
 	//if (lbm->visualizeVelocity) {
 	//	glEnableVertexAttribArray(1);
 	//} else {
@@ -81,6 +70,12 @@ void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
 	glDrawArrays(GL_POINTS, 0, numParticles);
 
 }
+
+
+
+
+
+/*
 
 void ParticleSystem::initParticlePositions(int width, int height, bool *collider) {
 	cout << "Initializing particle positions." << endl;
@@ -187,3 +182,5 @@ void ParticleSystem::copyDataFromVBOtoCPU() {
 
 
 }
+
+*/

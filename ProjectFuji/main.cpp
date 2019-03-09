@@ -36,6 +36,7 @@
 #include "OrbitCamera.h"
 #include "FreeRoamCamera.h"
 #include "ParticleSystemLBM.h"
+#include "ParticleSystem.h"
 #include "DirectionalLight.h"
 #include "Grid.h"
 #include "Utils.h"
@@ -121,10 +122,12 @@ VariableManager vars;
 
 //eLBMType lbmType;		///< The LBM type that is to be displayed
 
-LBM *lbm;				///< Pointer to the current LBM
+LBM3D_1D_indices *lbm;				///< Pointer to the current LBM
 Grid *grid;				///< Pointer to the current grid
 Camera *camera;			///< Pointer to the current camera
-ParticleSystemLBM *particleSystem;		///< Pointer to the particle system that is to be used throughout the whole application
+ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system that is to be used throughout the whole application
+ParticleSystem *particleSystem;
+
 //Timer timer;
 Camera *viewportCamera;
 Camera *freeRoamCamera;
@@ -304,11 +307,13 @@ int runApp() {
 	struct nk_colorf particlesColor;
 
 
-	particleSystem = new ParticleSystemLBM(vars.numParticles, vars.drawStreamlines); // invalid enum here
+	particleSystemLBM = new ParticleSystemLBM(vars.numParticles, vars.drawStreamlines);
+	particleSystem = new ParticleSystem(&vars);
 
-	particlesColor.r = particleSystem->particlesColor.r;
-	particlesColor.g = particleSystem->particlesColor.g;
-	particlesColor.b = particleSystem->particlesColor.b;
+
+	particlesColor.r = particleSystemLBM->particlesColor.r;
+	particlesColor.g = particleSystemLBM->particlesColor.g;
+	particlesColor.b = particleSystemLBM->particlesColor.b;
 
 
 	glm::ivec3 latticeDim(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
@@ -317,60 +322,32 @@ int runApp() {
 
 
 	// Create and configure the simulator, select from 2D and 3D options and set parameters accordingly
-	switch (vars.lbmType) {
-		case LBM2D:
-			printf("LBM2D SETUP...\n");
-			lbm = new LBM2D_1D_indices(latticeDim, vars.sceneFilename, vars.tau, particleSystem, vars.blockDim_2D);
+	{
+		printf("LBM3D SETUP...\n");
 
-			vars.latticeWidth = lbm->latticeWidth;
-			vars.latticeHeight = lbm->latticeHeight;
-			vars.latticeDepth = 1;
+		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
 
-			if (vars.latticeWidth >= vars.latticeHeight) {
-				projWidth = (float)vars.latticeWidth;
-				projHeight = projWidth / ratio;
-			} else {
-				projHeight = (float)vars.latticeHeight;
-				projWidth = projHeight * ratio;
-			}
+		lbm = new LBM3D_1D_indices(latticeDim, vars.sceneFilename, vars.tau, particleSystemLBM, blockDim);
 
-			//projWidth = (latticeWidth > latticeHeight) ? latticeWidth : latticeHeight;
-			projection = glm::ortho(-1.0f, projWidth, -1.0f, projHeight, nearPlane, farPlane);
-
-			//projection = glm::ortho(-1.0f, (float)latticeWidth, -1.0f, (float)latticeHeight, nearPlane, farPlane);
-			grid = new Grid2D(vars.latticeWidth, vars.latticeHeight, max(vars.latticeWidth / 100, 1), max(vars.latticeWidth / 100, 1));
-
-
-			camera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
-			break;
-		case LBM3D:
-		default:
-			printf("LBM3D SETUP...\n");
-
-			dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
-
-			lbm = new LBM3D_1D_indices(latticeDim, vars.sceneFilename, vars.tau, particleSystem, blockDim);
-
-			vars.latticeWidth = lbm->latticeWidth;
-			vars.latticeHeight = lbm->latticeHeight;
-			vars.latticeDepth = lbm->latticeDepth;
+		vars.latticeWidth = lbm->latticeWidth;
+		vars.latticeHeight = lbm->latticeHeight;
+		vars.latticeDepth = lbm->latticeDepth;
 
 
 
-			projectionRange = (float)((vars.latticeWidth > vars.latticeHeight) ? vars.latticeWidth : vars.latticeHeight);
-			projectionRange = (projectionRange > vars.latticeDepth) ? projectionRange : vars.latticeDepth;
-			projectionRange /= 2.0f;
+		projectionRange = (float)((vars.latticeWidth > vars.latticeHeight) ? vars.latticeWidth : vars.latticeHeight);
+		projectionRange = (projectionRange > vars.latticeDepth) ? projectionRange : vars.latticeDepth;
+		projectionRange /= 2.0f;
 
-			projHeight = projectionRange;
-			projWidth = projHeight * ratio;
+		projHeight = projectionRange;
+		projWidth = projHeight * ratio;
 
-			//projection = glm::ortho(-projectionRange, projectionRange, -projectionRange, projectionRange, nearPlane, farPlane);
-			projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
-			grid = new Grid3D(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth, 6, 6, 6);
-			float cameraRadius = sqrtf((float)(vars.latticeWidth * vars.latticeWidth + vars.latticeDepth * vars.latticeDepth)) + 10.0f;
-			//camera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
-			orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
-			break;
+		//projection = glm::ortho(-projectionRange, projectionRange, -projectionRange, projectionRange, nearPlane, farPlane);
+		projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
+		grid = new Grid3D(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth, 6, 6, 6);
+		float cameraRadius = sqrtf((float)(vars.latticeWidth * vars.latticeWidth + vars.latticeDepth * vars.latticeDepth)) + 10.0f;
+		//camera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
+		orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
 	}
 
 	
@@ -387,7 +364,7 @@ int runApp() {
 	camera->movementSpeed = vars.cameraSpeed;
 
 
-	particleSystem->lbm = lbm;
+	particleSystemLBM->lbm = lbm;
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -473,10 +450,10 @@ int runApp() {
 
 	stlpSim = new STLPSimulator(&vars, &stlpDiagram);
 	stlpSimCUDA = new STLPSimulatorCUDA(&vars, &stlpDiagram);
-	if (vars.lbmType == LBM3D) {
-		stlpSim->heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
-		stlpSimCUDA->heightMap = ((LBM3D_1D_indices*)lbm)->heightMap;
-	}
+
+	stlpSim->heightMap = lbm->heightMap;
+	stlpSimCUDA->heightMap = lbm->heightMap;
+	
 
 	stlpSim->initParticles();
 	stlpSimCUDA->initParticles();
@@ -497,12 +474,9 @@ int runApp() {
 
 	stringstream ss;
 	ss << (vars.useCUDA ? "GPU" : "CPU") << "_";
-	ss << ((vars.lbmType == LBM2D) ? "2D" : "3D") << "_";
 	ss << vars.sceneFilename;
-	if (vars.lbmType == LBM3D) {
-		ss << "_h=" << vars.latticeHeight;
-	}
-	ss << "_" << particleSystem->numParticles;
+	ss << "_h=" << vars.latticeHeight;
+	ss << "_" << particleSystemLBM->numParticles;
 	vars.timer.configString = ss.str();
 	if (vars.measureTime) {
 		vars.timer.start();
@@ -726,11 +700,11 @@ int runApp() {
 			lbm->draw(*singleColorShader);
 
 			if (vars.usePointSprites) {
-				particleSystem->draw(*pointSpriteTestShader, vars.useCUDA);
+				particleSystemLBM->draw(*pointSpriteTestShader, vars.useCUDA);
 			} else if (lbm->visualizeVelocity) {
-				particleSystem->draw(*coloredParticleShader, vars.useCUDA);
+				particleSystemLBM->draw(*coloredParticleShader, vars.useCUDA);
 			} else {
-				particleSystem->draw(*singleColorShader, vars.useCUDA);
+				particleSystemLBM->draw(*singleColorShader, vars.useCUDA);
 			}
 			gGrid.draw(*unlitColorShader);
 
@@ -877,7 +851,7 @@ int runApp() {
 	}
 
 
-	delete particleSystem;
+	delete particleSystemLBM;
 	delete lbm;
 	delete grid;
 	//delete viewportCamera;
@@ -1251,7 +1225,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_layout_row_dynamic(ctx, 10, 1);
 			nk_labelf(ctx, NK_TEXT_LEFT, "Point size");
-			nk_slider_float(ctx, 1.0f, &particleSystem->pointSize, 100.0f, 0.5f);
+			nk_slider_float(ctx, 1.0f, &particleSystemLBM->pointSize, 100.0f, 0.5f);
 
 			if (!vars.usePointSprites && !lbm->visualizeVelocity) {
 				nk_layout_row_dynamic(ctx, 20, 1);
@@ -1265,7 +1239,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 					particlesColor.g = nk_propertyf(ctx, "#G:", 0, particlesColor.g, 1.0f, 0.01f, 0.005f);
 					particlesColor.b = nk_propertyf(ctx, "#B:", 0, particlesColor.b, 1.0f, 0.01f, 0.005f);
 					particlesColor.a = nk_propertyf(ctx, "#A:", 0, particlesColor.a, 1.0f, 0.01f, 0.005f);
-					particleSystem->particlesColor = glm::vec3(particlesColor.r, particlesColor.g, particlesColor.b);
+					particleSystemLBM->particlesColor = glm::vec3(particlesColor.r, particlesColor.g, particlesColor.b);
 					nk_combo_end(ctx);
 				}
 			}

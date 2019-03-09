@@ -29,7 +29,7 @@ STLPSimulator::STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram) : 
 	profileMap = new ppmImage("profileMaps/120x80_pm_02.ppm");
 
 	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
-	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
+	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
 
 
 }
@@ -409,6 +409,9 @@ void STLPSimulator::draw(ShaderProgram &particlesShader, glm::vec3 cameraPos) {
 
 	glActiveTexture(GL_TEXTURE0 + 0);
 	glBindTexture(GL_TEXTURE_2D, spriteTexture.id);
+
+	particlesShader.setVec3("u_TintColor", vars->tintColor);
+
 
 	glPointSize(pointSize);
 	particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));
