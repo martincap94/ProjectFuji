@@ -4,6 +4,7 @@
 #include "VariableManager.h"
 #include "Particle.h"
 #include "Texture.h"
+#include "ppmImage.h"
 
 #include <cuda_gl_interop.h>
 
@@ -17,10 +18,11 @@ public:
 	STLPDiagram *stlpDiagram;
 
 	GLuint particlesVBO;
+	GLuint profileDataSSBO;
 
 	Texture spriteTexture;
 
-	float pointSize = 1.0f;
+	float pointSize = 10.0f;
 
 
 	float delta_t = 1.0f;
@@ -34,6 +36,8 @@ public:
 
 	//int maxNumParticles = MAX_PARTICLE_COUNT;
 	int maxNumParticles = 1000000;
+
+	ppmImage *profileMap; // needs to have the same parameters as the height map (width, height), or at least larger
 
 	float groundHeight = 0.0f;
 	float simulationBoxHeight = 20000.0f;
@@ -107,6 +111,8 @@ public:
 private:
 
 	GLuint particlesVAO;
+
+	GLuint particleProfilesVBO;
 
 	GLuint CCLLevelVAO;
 	GLuint CCLLevelVBO;

@@ -26,7 +26,7 @@ STLPSimulator::STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram) : 
 	stlpDiagram->particlePoints.reserve(maxNumParticles);
 	stlpDiagram->particlePoints.push_back(glm::vec2(0.0f));
 
-	profileMap = new ppmImage("profileMaps/120x80_pm_03.ppm");
+	profileMap = new ppmImage("profileMaps/120x80_pm_02.ppm");
 
 	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
 	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());

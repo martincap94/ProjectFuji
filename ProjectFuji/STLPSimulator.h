@@ -50,7 +50,7 @@ public:
 	//int showCCLLevelLayer = 1;
 	//int showELLevelLayer = 1;
 
-	float pointSize = 1.0f;
+	float pointSize = 10.0f;
 
 	GLuint particlesVBO;
 

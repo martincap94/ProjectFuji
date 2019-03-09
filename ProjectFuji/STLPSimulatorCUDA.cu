@@ -290,6 +290,8 @@ STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpD
 
 	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
 
+	profileMap = new ppmImage("profileMaps/120x80_pm_03.ppm");
+
 	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
 
 	
@@ -297,6 +299,10 @@ STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpD
 
 STLPSimulatorCUDA::~STLPSimulatorCUDA() {
 	cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0);
+
+	if (profileMap) {
+		delete(profileMap);
+	}
 
 }
 
@@ -310,7 +316,21 @@ void STLPSimulatorCUDA::initBuffers() {
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+
+	glGenBuffers(1, &particleProfilesVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, particleProfilesVBO);
+
+	glEnableVertexAttribArray(5);
+	glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void *)0);
+
 	glBindVertexArray(0);
+
+
+	//glGenBuffers(1, &profileDataSSBO);
+	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, profileDataSSBO);
+	//glNamedBufferStorage(profileDataSSBO, n * sizeof(PointLightData), NULL, GL_DYNAMIC_STORAGE_BIT);
+	//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, profileDataSSBO);
+
 
 
 
@@ -582,7 +602,32 @@ void STLPSimulatorCUDA::generateParticle() {
 	Particle p;
 	p.position = glm::vec3(randx, y, randz);
 	p.velocity = glm::vec3(0.0f);
-	p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
+
+
+	if (profileMap && profileMap->height >= heightMap->height && profileMap->width >= heightMap->width) {
+
+		glm::vec2 p1 = profileMap->data[leftx][leftz];
+		glm::vec2 p2 = profileMap->data[leftx][rightz];
+		glm::vec2 p3 = profileMap->data[rightx][leftz];
+		glm::vec2 p4 = profileMap->data[rightx][rightz];
+
+		glm::vec2 pi1 = zRatio * p2 + (1.0f - zRatio) * p1;
+		glm::vec2 pi2 = zRatio * p4 + (1.0f - zRatio) * p3;
+
+		glm::vec2 pif = xRatio * pi2 + (1.0f - xRatio) * pi1;
+		glm::ivec2 pii = (glm::ivec2)pif;
+
+		if (pii.y != pii.x) {
+			p.profileIndex = (rand() % (pii.y - pii.x) + pii.x) % (stlpDiagram->numProfiles - 1);
+		} else {
+			p.profileIndex = pii.x % (stlpDiagram->numProfiles - 1);
+		}
+
+	} else {
+		p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
+	}
+
+
 	p.updatePressureVal();
 
 	particles.push_back(p);
@@ -648,6 +693,26 @@ void STLPSimulatorCUDA::initParticles() {
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
 	glNamedBufferData(particlesVBO, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
 	cout << "Particles initialized: num particles = " << numParticles << endl;
+
+
+	vector<int> particleProfiles;
+	for (int i = 0; i < maxNumParticles; i++) {
+		particleProfiles.push_back(particles[i].profileIndex);
+	}
+	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
+
+
+	ShaderProgram *s = ShaderManager::getShaderPtr("pointSpriteTest");
+	s->use();
+	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
+		string fullName = "u_ProfileCCLs[" + to_string(i) + "]";
+		float P = stlpDiagram->CCLProfiles[i].y;
+		float y = getAltitudeFromPressure(P);
+		mapToSimulationBox(y);
+		s->setFloat(fullName, y);
+	}
+	s->setInt("u_NumProfiles", stlpDiagram->numProfiles);
+	
 
 }
 
