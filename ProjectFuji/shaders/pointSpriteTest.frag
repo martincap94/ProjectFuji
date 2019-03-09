@@ -5,9 +5,10 @@ in float v_ComputedOpacity;
 
 out vec4 fragColor;
 
-uniform vec3 u_Color;
+uniform vec3 u_TintColor;
 
 uniform sampler2D u_Tex;
+uniform sampler2D u_SecondTex;
 
 uniform float u_OpacityMultiplier;
 
@@ -24,7 +25,15 @@ void main() {
 
 	//fragColor = vec4(u_Color, 1.0);
 	//fragColor = vec4(gl_PointCoord, 0.0, 1.0);
-	fragColor = texture(u_Tex, gl_PointCoord);
+	//fragColor = texture(u_Tex, gl_PointCoord);
+	//fragColor = texture(u_SecondTex, gl_PointCoord);
+
+	// this is just noisy -> not interesting
+	//fragColor = mix(texture(u_Tex, gl_PointCoord), texture(u_SecondTex, gl_PointCoord), goldNoise(gl_FragCoord.xy, gl_FragCoord.z));
+
+	fragColor = mix(texture(u_Tex, gl_PointCoord), texture(u_SecondTex, gl_PointCoord), v_ComputedOpacity);
+	fragColor.xyz *= u_TintColor;
+
 	fragColor.a *= u_OpacityMultiplier * v_ComputedOpacity;
 
 	//fragColor.a *= v_ParticleOpacityMultiplier;

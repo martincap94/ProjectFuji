@@ -1454,6 +1454,22 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars.opacityMultiplier, 10.0f, 0.01f, 0.01f);
 
+		struct nk_colorf tintColor;
+		tintColor.r = vars.tintColor.x;
+		tintColor.g = vars.tintColor.y;
+		tintColor.b = vars.tintColor.z;
+
+		if (nk_combo_begin_color(ctx, nk_rgb_cf(tintColor), nk_vec2(nk_widget_width(ctx), 400))) {
+			nk_layout_row_dynamic(ctx, 120, 1);
+			tintColor = nk_color_picker(ctx, tintColor, NK_RGBA);
+			nk_layout_row_dynamic(ctx, 25, 1);
+			tintColor.r = nk_propertyf(ctx, "#R:", 0, tintColor.r, 1.0f, 0.01f, 0.005f);
+			tintColor.g = nk_propertyf(ctx, "#G:", 0, tintColor.g, 1.0f, 0.01f, 0.005f);
+			tintColor.b = nk_propertyf(ctx, "#B:", 0, tintColor.b, 1.0f, 0.01f, 0.005f);
+			tintColor.a = nk_propertyf(ctx, "#A:", 0, tintColor.a, 1.0f, 0.01f, 0.005f);
+			vars.tintColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
+			nk_combo_end(ctx);
+		}
 	}
 	nk_end(ctx);
 

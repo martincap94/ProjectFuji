@@ -21,6 +21,7 @@ public:
 	GLuint profileDataSSBO;
 
 	Texture spriteTexture;
+	Texture secondarySpriteTexture;
 
 	float pointSize = 10.0f;
 

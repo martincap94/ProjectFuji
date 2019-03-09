@@ -289,6 +289,7 @@ STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpD
 	//initCUDA();
 
 	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
+	secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
 
 	profileMap = new ppmImage("profileMaps/120x80_pm_03.ppm");
 
@@ -639,8 +640,15 @@ void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader, glm::vec3 cameraPo
 	
 	glUseProgram(particlesShader.id);
 
+	particlesShader.setInt("u_Tex", 0);
+	particlesShader.setInt("u_SecondTex", 1);
+	particlesShader.setVec3("u_TintColor", vars->tintColor);
+
 	glActiveTexture(GL_TEXTURE0 + 0);
 	glBindTexture(GL_TEXTURE_2D, spriteTexture.id);
+
+	glActiveTexture(GL_TEXTURE0 + 1);
+	glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture.id);
 
 	glPointSize(pointSize);
 	particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));

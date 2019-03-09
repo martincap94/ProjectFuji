@@ -29,41 +29,25 @@ class LBM;
 class ParticleSystem {
 public:
 
-	LBM *lbm; ///< Owner LBM
+	LBM *lbm;
 
-	int numParticles;				///< Number of particles in the simulation
-	int *d_numParticles;			///< Device pointer to the number of particles
+	int numParticles;
+	int *d_numParticles;
 
 
-	float pointSize = 1.0f;			///< Point size of the particles
+	float pointSize = 1.0f;
 
-	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);	///< Color of the particles (if they're not drawn as point sprites or their velocity isn't visualized)
+	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);
 
-	Texture spriteTexture;	///< Point sprite texture	
+	Texture spriteTexture;
 
-	glm::vec3 *particleVertices = nullptr;		///< Particle vertex positions array
-	glm::vec3 *streamLines = nullptr;			///< Array of all streamline points
+	glm::vec3 *particleVertices = nullptr;
 
-												/// Default constructor.
+
 	ParticleSystem();
-
-	/// Constructs particle system with the given number of particles and sets whether we should draw streamlines.
-	/**
-	Constructs particle system with the given number of particles and sets whether we should draw streamlines.
-	\param[in] numParticles		Number of particles of the system.
-	\param[in] drawStreamlines	Whether streamlines should be drawn (2D CPU only).
-	*/
 	ParticleSystem(int numParticles, bool drawStreamlines = false);
-
-	/// Deletes particleVertices, streamLines and frees d_numParticles on the device (GPU)
 	~ParticleSystem();
 
-	/// Draws the particle system.
-	/**
-	Draws the particle system.
-	If we do not use CUDA, we need to copy their positions to the buffer object in each frame.
-	Based on the provided shader we draw either simple points or point sprites.
-	*/
 	void draw(const ShaderProgram &shader, bool useCUDA);
 
 	/// Initializes particle positions for 2D simulation.
@@ -75,12 +59,12 @@ public:
 	/// Copies data from VBO to CPU when we want to switch from GPU to CPU implementation.
 	void copyDataFromVBOtoCPU();
 
-	GLuint vbo;			///< VBO of the particle vertices
+	GLuint VBO;			///< VBO of the particle vertices
 	GLuint colorsVBO;	///< VBO of the particle colors
 
 private:
 
-	GLuint vao;			///< VAO of the particle vertices
+	GLuint VAO;			///< VAO of the particle vertices
 
 	GLuint streamLinesVAO;	///< Streamlines VAO
 	GLuint streamLinesVBO;	///< Streamlines VBO

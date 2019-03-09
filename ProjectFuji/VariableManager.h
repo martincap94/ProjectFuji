@@ -2,6 +2,7 @@
 
 #include <string>
 #include "CommonEnums.h"
+#include <glm\glm.hpp>
 
 #include "Timer.h"
 
@@ -77,6 +78,8 @@ public:
 
 	int showCCLLevelLayer = 0;
 	int showELLevelLayer = 0;
+
+	glm::vec3 tintColor = glm::vec3(1.0f);
 
 
 	////////////////////////////////////////////////////////////////
