@@ -281,7 +281,7 @@ __global__ void simulationStepKernelAlt(glm::vec3 *particleVertices, int numPart
 
 STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpDiagram) : vars(vars), stlpDiagram(stlpDiagram) {
 	heightMap = vars->heightMap;
-	groundHeight = stlpDiagram->P0;
+	groundHeight = getAltitudeFromPressure(stlpDiagram->P0);
 	boxTopHeight = groundHeight + simulationBoxHeight;
 
 	layerVisShader = ShaderManager::getShaderPtr("singleColorAlpha");
@@ -371,6 +371,28 @@ void STLPSimulatorCUDA::initBuffers() {
 	glBindBuffer(GL_ARRAY_BUFFER, ELLevelVBO);
 
 	altitude = getAltitudeFromPressure(stlpDiagram->EL.y);
+	mapToSimulationBox(altitude);
+	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
+	vertices.push_back(glm::vec3(0.0f, altitude, vars->latticeDepth));
+	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, vars->latticeDepth));
+	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, 0.0f));
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, &vertices[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+
+	glBindVertexArray(0);
+
+
+	vertices.clear();
+
+	glGenVertexArrays(1, &groundLevelVAO);
+	glBindVertexArray(groundLevelVAO);
+	glGenBuffers(1, &groundLevelVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, groundLevelVBO);
+
+	altitude = getAltitudeFromPressure(stlpDiagram->P0);
 	mapToSimulationBox(altitude);
 	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
 	vertices.push_back(glm::vec3(0.0f, altitude, vars->latticeDepth));

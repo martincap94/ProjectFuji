@@ -115,6 +115,9 @@ private:
 
 	GLuint particleProfilesVBO;
 
+	GLuint groundLevelVAO;
+	GLuint groundLevelVBO;
+
 	GLuint CCLLevelVAO;
 	GLuint CCLLevelVBO;
 

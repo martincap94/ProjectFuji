@@ -45,13 +45,14 @@ public:
 	int *d_profileIndices;
 	float *d_particlePressures;
 
+	Texture spriteTexture;
+	Texture secondarySpriteTexture;
 
+	float pointSize = 10.0f;
 
-	float pointSize = 1.0f;
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);
 
-	Texture spriteTexture;
 
 	//glm::vec3 *particleVertices = nullptr;
 

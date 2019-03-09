@@ -18,7 +18,7 @@ using namespace std;
 STLPSimulator::STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram) : vars(vars), stlpDiagram(stlpDiagram) {
 	heightMap = vars->heightMap;
 
-	groundHeight = stlpDiagram->P0;
+	groundHeight = getAltitudeFromPressure(stlpDiagram->P0);
 	boxTopHeight = groundHeight + simulationBoxHeight;
 
 	layerVisShader = ShaderManager::getShaderPtr("singleColorAlpha");
