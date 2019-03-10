@@ -26,9 +26,8 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
 	secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
 
-	emitters.push_back(new CircleEmitter(this, this->heightMap, glm::vec3(10.0f, 0.0f, 10.0f), 2.0f, true));
-	emitters.push_back(new CircleEmitter(this, this->heightMap, glm::vec3(0.0f), 5.0f, true));
-
+	emitters.push_back(new CircleEmitter(this, glm::vec3(10.0f, 0.0f, 10.0f), 2.0f, true));
+	emitters.push_back(new CircleEmitter(this, glm::vec3(0.0f), 5.0f, true));
 
 }
 
@@ -45,6 +44,19 @@ ParticleSystem::~ParticleSystem() {
 
 	cudaFree(d_numParticles);
 
+}
+
+void ParticleSystem::doStep() {
+	update();
+
+	emitParticles();
+
+}
+
+void ParticleSystem::update() {
+	for (int i = 0; i < emitters.size(); i++) {
+		emitters[i]->update();
+	}
 }
 
 
@@ -88,14 +100,16 @@ void ParticleSystem::initCUDA() {
 void ParticleSystem::emitParticles() {
 
 	//// check if emitting particles is possible (maximum reached)
-	//if (numActiveParticles >= numParticles) {
-	//	return;
-	//}
+	// --> checking is also done in each emitter, this prevents further unnecessary work
+	if (numActiveParticles >= numParticles) {
+		return;
+	}
+
 	int prevNumActiveParticles = numActiveParticles;
 
 	// go through all emitters and emit particles (each pushes them to this system)
 	for (int i = 0; i < emitters.size(); i++) {
-		emitters[i]->emitParticle();
+		emitters[i]->emitParticles();
 	}
 
 
@@ -144,7 +158,7 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 
 	glBindVertexArray(particlesVAO);
 
-	glDrawArrays(GL_POINTS, 0, numParticles);
+	glDrawArrays(GL_POINTS, 0, numActiveParticles);
 
 	for (int i = 0; i < emitters.size(); i++) {
 		emitters[i]->draw();
@@ -314,6 +328,10 @@ void ParticleSystem::initParticlesOnTerrain() {
 
 void ParticleSystem::initParticlesAboveTerrain() {
 	cout << __FUNCTION__ << " not yet implemented!" << endl;
+}
+
+void ParticleSystem::activateAllParticles() {
+	numActiveParticles = numParticles;
 }
 
 

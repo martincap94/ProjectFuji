@@ -52,6 +52,8 @@
 #include "StaticMesh.h"
 #include "Model.h"
 
+#include "Emitter.h"
+#include "CircleEmitter.h"
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
@@ -710,6 +712,10 @@ int runApp() {
 				if (vars.applyLBM) {
 					lbm->doStepCUDA();
 				}
+
+				//particleSystem->update();
+				particleSystem->doStep();
+
 				if (vars.applySTLP) {
 					stlpSimCUDA->doStep();
 				}
@@ -1281,9 +1287,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_float(ctx, "x:", -1000.0f, &dirLight.position.x, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "y:", -1000.0f, &dirLight.position.y, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "z:", -1000.0f, &dirLight.position.z, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "#x:", -1000.0f, &dirLight.position.x, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "#y:", -1000.0f, &dirLight.position.y, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "#z:", -1000.0f, &dirLight.position.z, 1000.0f, 1.0f, 1.0f);
 
 
 			nk_layout_row_dynamic(ctx, 15, 1);
@@ -1350,6 +1356,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_checkbox_label(ctx, "Show dewpoint curve", &stlpDiagram.showDewpointCurve);
 			nk_checkbox_label(ctx, "Show ambient temp. curve", &stlpDiagram.showAmbientTemperatureCurve);
 			nk_checkbox_label(ctx, "Crop Bounds", &stlpDiagram.cropBounds);
+
+			nk_tree_pop(ctx);
+
 		}
 
 		nk_layout_row_static(ctx, 15, 200, 1);
@@ -1430,6 +1439,38 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_property_int(ctx, "Opacity Blend Mode", 0, &particleSystem->opacityBlendMode, 1, 1, 1);
 		nk_property_float(ctx, "Opacity Blend Range", 0.0f, &particleSystem->opacityBlendRange, 20.0f, 0.1f, 0.1f);
+
+		for (int i = 0; i < particleSystem->emitters.size(); i++) {
+			if (nk_tree_push(ctx, NK_TREE_TAB, ("Emitter " + to_string(i)).c_str(), NK_MAXIMIZED)) {
+				Emitter *e = particleSystem->emitters[i];
+
+				nk_layout_row_static(ctx, 15, 200, 1);
+				nk_checkbox_label(ctx, "#enabled", &e->enabled);
+				nk_checkbox_label(ctx, "#visible", &e->visible);
+
+				nk_property_float(ctx, "#x", -1000.0f, &e->position.x, 1000.0f, 1.0f, 1.0f);
+				nk_property_float(ctx, "#y", -1000.0f, &e->position.y, 1000.0f, 1.0f, 1.0f);
+				nk_property_float(ctx, "#z", -1000.0f, &e->position.z, 1000.0f, 1.0f, 1.0f);
+
+				//nk_property_variant_int()
+				nk_property_int(ctx, "#emit per step", 0, &e->numParticlesToEmitPerStep, 10000, 10, 10);
+
+				CircleEmitter *ce = dynamic_cast<CircleEmitter *>(e);
+				if (ce) {
+					nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
+				}
+
+
+				nk_tree_pop(ctx);
+				//particleSystem->emitters[i]
+			}
+		}
+		nk_layout_row_static(ctx, 15, 200, 1);
+		if (nk_button_label(ctx, "Activate All Particles")) {
+			particleSystem->activateAllParticles();
+		}
+		nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
+
 
 
 

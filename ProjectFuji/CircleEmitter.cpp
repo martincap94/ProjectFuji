@@ -8,7 +8,7 @@
 
 using namespace std;
 
-CircleEmitter::CircleEmitter(ParticleSystem * owner, HeightMap * heightMap, glm::vec3 position, float radius, bool projectOntoTerrain) : Emitter(owner, heightMap, position), radius(radius), projectOntoTerrain(projectOntoTerrain) {
+CircleEmitter::CircleEmitter(ParticleSystem * owner, glm::vec3 position, float radius, bool projectOntoTerrain) : Emitter(owner, position), radius(radius), projectOntoTerrain(projectOntoTerrain) {
 
 	if (projectOntoTerrain && !heightMap) {
 		cerr << "Project onto terrain is set to true but no heightMap was set! Project onto terrain will be turned off." << endl;
@@ -16,6 +16,7 @@ CircleEmitter::CircleEmitter(ParticleSystem * owner, HeightMap * heightMap, glm:
 	}
 
 	initBuffers();
+	prevRadius = radius;
 
 	shader = ShaderManager::getShaderPtr("singleColor");
 }
@@ -25,12 +26,15 @@ CircleEmitter::~CircleEmitter() {
 }
 
 void CircleEmitter::emitParticle() {
+	if (!enabled) {
+		return;
+	}
 	if (!owner) {
 		cerr << "Emitter has no owning ParticleSystem! No emission will be done!" << endl;
 		return;
 	}
 	if (owner->numActiveParticles >= owner->numParticles) {
-		cout << "Max active particles reached." << endl;
+		//cout << "Max active particles reached." << endl;
 		return;
 	}
 
@@ -130,13 +134,35 @@ void CircleEmitter::emitParticle() {
 
 }
 
-void CircleEmitter::emitParticles(int numParticles) {
-	for (int i = 0; i < numParticles; i++) {
-		emitParticle();
+//void CircleEmitter::emitParticles() {
+//}
+//
+//void CircleEmitter::emitParticles(int numParticles) {
+//	for (int i = 0; i < numParticles; i++) {
+//		emitParticle();
+//	}
+//}
+
+void CircleEmitter::update() {
+	//if (!enabled) {
+	//	return;
+	//}
+
+	if (prevPosition != position || prevRadius != radius) {
+		prevPosition = position;
+		prevRadius = radius;
+
+		if (visible) {
+			updateVBOPoints();
+		}
 	}
+
 }
 
 void CircleEmitter::draw() {
+	if (!visible) {
+		return;
+	}
 	if (!shader) {
 		return;
 	}
@@ -147,6 +173,9 @@ void CircleEmitter::draw() {
 }
 
 void CircleEmitter::draw(ShaderProgram * shader) {
+	if (!visible) {
+		return;
+	}
 	shader->use();
 	glPointSize(0.5f);
 	glBindVertexArray(VAO);
@@ -166,7 +195,15 @@ void CircleEmitter::initBuffers() {
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
 
+	glBindVertexArray(0);
 
+	updateVBOPoints();
+
+
+
+}
+
+void CircleEmitter::updateVBOPoints() {
 	vector<glm::vec3> vertices;
 
 	float deltaTheta = 360.0f / (float)numVisPoints;
@@ -204,13 +241,7 @@ void CircleEmitter::initBuffers() {
 		theta += deltaTheta;
 	}
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numVisPoints, vertices.data(), GL_STATIC_DRAW);
-
-
-
-	glBindVertexArray(0);
-
-
+	glNamedBufferData(VBO, sizeof(glm::vec3) * numVisPoints, vertices.data(), GL_STATIC_DRAW);
 
 }
 

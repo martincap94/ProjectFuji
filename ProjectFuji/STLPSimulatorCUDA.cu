@@ -565,13 +565,15 @@ void STLPSimulatorCUDA::initCUDA() {
 
 void STLPSimulatorCUDA::doStep() {
 
+	//particleSystem->update();
+
 	//particleSystem->numActiveParticles += 100;
 	//if (particleSystem->numActiveParticles >= particleSystem->numParticles) {
 	//	particleSystem->numActiveParticles = particleSystem->numParticles;
 	//}
-	for (int i = 0; i < 10; i++) {
-		particleSystem->emitParticles();
-	}
+	//for (int i = 0; i < 10; i++) {
+	//	particleSystem->emitParticles();
+	//}
 
 	size_t num_bytes;
 	glm::vec3 *d_mappedParticleVerticesVBO;

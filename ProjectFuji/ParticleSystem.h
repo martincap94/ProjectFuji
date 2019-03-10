@@ -89,6 +89,9 @@ public:
 	ParticleSystem(VariableManager *vars);
 	~ParticleSystem();
 
+	void doStep();
+	void update();
+
 	void initBuffers();
 	void initCUDA();
 
@@ -101,6 +104,8 @@ public:
 	void initParticlesAboveTerrain();
 
 
+	void activateAllParticles();
+	
 
 	///// Initializes particle positions for 3D simulation.
 	//void initParticlePositions(int width, int height, int depth, const HeightMap *hm);

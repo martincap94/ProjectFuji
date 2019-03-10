@@ -57,14 +57,14 @@ __device__ glm::vec3 mapToViridis3D(float val) {
 	\param[in] numParticles			Number of particles.
 	\param[in] particleColors		VBO of particle colors.
 */
-__global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec3 *velocities, int *numParticles, glm::vec3 *particleColors) {
+__global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
 	idx += blockDim.x * blockDim.y * blockIdx.x;
 
 	glm::vec3 adjVelocities[8];
 
-	while (idx < *numParticles) {
+	while (idx < numActiveParticles) {
 
 
 		// SOLVES CRASHES WITH STLP
@@ -1336,7 +1336,7 @@ void LBM3D_1D_indices::doStepCUDA() {
 	cudaGraphicsResourceGetMappedPointer((void **)&d_particleColorsVBO, &num_bytes, cudaParticleColorsVBO);
 	*/
 
-	moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, d_numParticles, nullptr);
+	moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr);
 	//CHECK_ERROR(cudaPeekAtLastError());
 	
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
