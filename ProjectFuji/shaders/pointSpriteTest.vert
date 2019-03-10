@@ -24,6 +24,9 @@ uniform mat4 u_Projection;
 uniform vec3 u_CameraPos;
 uniform float u_PointSizeModifier;
 
+uniform int u_OpacityBlendMode = 0;
+uniform float u_OpacityBlendRange = 10.0;
+
 
 out float v_ParticleOpacityMultiplier;
 out float v_ComputedOpacity;
@@ -42,14 +45,29 @@ void main() {
 	// check validity (may be omitted later when we are sure it won't be broken)
 	if (a_ProfileIndex < u_NumProfiles) {
 		float CCL = u_ProfileCCLs[a_ProfileIndex];
-		float range = 10.0;
-
+		
 		float diff = a_Pos.y - CCL;
-		if (abs(diff) <= range) {
-			v_ComputedOpacity = (diff / range) * 0.5 + 0.5;
+
+		if (u_OpacityBlendMode == 0) {
+			// This approach changes opacity only above CCL
+			if (diff <= 0.0) {
+				v_ComputedOpacity = 0.0;
+			} else {
+				v_ComputedOpacity = max(diff / u_OpacityBlendRange, 1.0);
+			}
 		} else {
-			v_ComputedOpacity = (diff < 0.0) ? 0.0 : 1.0;
+			// This approach changes opacity from (CCL - range) to (CCL + range)
+			if (abs(diff) <= u_OpacityBlendRange) {
+				v_ComputedOpacity = (diff / u_OpacityBlendRange) * 0.5 + 0.5;
+			} else {
+				v_ComputedOpacity = (diff < 0.0) ? 0.0 : 1.0;
+			}
 		}
+
+
+
+
+		
 	}
 
 

@@ -1427,8 +1427,17 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			vars.tintColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
 			nk_combo_end(ctx);
 		}
+
+		nk_property_int(ctx, "Opacity Blend Mode", 0, &particleSystem->opacityBlendMode, 1, 1, 1);
+		nk_property_float(ctx, "Opacity Blend Range", 0.0f, &particleSystem->opacityBlendRange, 20.0f, 0.1f, 0.1f);
+
+
+
+
 	}
 	nk_end(ctx);
+
+
 
 
 

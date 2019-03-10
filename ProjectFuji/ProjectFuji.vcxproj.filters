@@ -163,6 +163,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Emitter.cpp" />
+    <ClCompile Include="CircleEmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -282,6 +283,7 @@
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Emitter.h" />
+    <ClInclude Include="CircleEmitter.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

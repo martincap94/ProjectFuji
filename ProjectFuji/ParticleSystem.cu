@@ -9,18 +9,27 @@
 #include "LBM.h"
 #include "CUDAUtils.cuh"
 
+#include "Emitter.h"
+#include "CircleEmitter.h"
+
+
 ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
 	heightMap = vars->heightMap;
 	numParticles = vars->numParticles;
-	//numActiveParticles = 0;
-	numActiveParticles = numParticles;
+	numActiveParticles = 0;
+	//numActiveParticles = numParticles;
 
 	initBuffers();
 	initCUDA();
 
 	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
 	secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
+
+	emitters.push_back(new CircleEmitter(this, this->heightMap, glm::vec3(10.0f, 0.0f, 10.0f), 2.0f, true));
+	emitters.push_back(new CircleEmitter(this, this->heightMap, glm::vec3(0.0f), 5.0f, true));
+
+
 }
 
 
@@ -30,6 +39,9 @@ ParticleSystem::~ParticleSystem() {
 	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleVerticesVBO));
 	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleProfilesVBO));
 
+	for (int i = 0; i < emitters.size(); i++) {
+		delete emitters[i];
+	}
 
 	cudaFree(d_numParticles);
 
@@ -74,6 +86,35 @@ void ParticleSystem::initCUDA() {
 }
 
 void ParticleSystem::emitParticles() {
+
+	//// check if emitting particles is possible (maximum reached)
+	//if (numActiveParticles >= numParticles) {
+	//	return;
+	//}
+	int prevNumActiveParticles = numActiveParticles;
+
+	// go through all emitters and emit particles (each pushes them to this system)
+	for (int i = 0; i < emitters.size(); i++) {
+		emitters[i]->emitParticle();
+	}
+
+
+
+	// upload the data to VBOs and CUDA memory
+
+	glNamedBufferSubData(particleVerticesVBO, sizeof(glm::vec3) * prevNumActiveParticles, sizeof(glm::vec3) * particleVerticesToEmit.size()/*(numActiveParticles - prevNumActiveParticles)*/, particleVerticesToEmit.data());
+
+	glNamedBufferSubData(particleProfilesVBO, sizeof(int) * prevNumActiveParticles, sizeof(int) * particleProfilesToEmit.size(), particleProfilesToEmit.data());
+
+	cudaMemcpy(d_verticalVelocities + prevNumActiveParticles, verticalVelocitiesToEmit.data(), (numActiveParticles - prevNumActiveParticles) * sizeof(float), cudaMemcpyHostToDevice);
+
+
+	// clear the temporary emitted particle structures
+
+	particleVerticesToEmit.clear();
+	particleProfilesToEmit.clear();
+	verticalVelocitiesToEmit.clear();
+
 }
 
 
@@ -85,6 +126,10 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 	shader.setInt("u_Tex", 0);
 	shader.setInt("u_SecondTex", 1);
 	shader.setVec3("u_TintColor", vars->tintColor);
+
+	shader.setInt("u_OpacityBlendMode", opacityBlendMode);
+	shader.setFloat("u_OpacityBlendRange", opacityBlendRange);
+
 
 	glActiveTexture(GL_TEXTURE0 + 0);
 	glBindTexture(GL_TEXTURE_2D, spriteTexture.id);
@@ -100,6 +145,10 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 	glBindVertexArray(particlesVAO);
 
 	glDrawArrays(GL_POINTS, 0, numParticles);
+
+	for (int i = 0; i < emitters.size(); i++) {
+		emitters[i]->draw();
+	}
 
 
 }

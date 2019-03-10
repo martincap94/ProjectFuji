@@ -90,6 +90,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Camera2D.cpp" />
+    <ClCompile Include="CircleEmitter.cpp" />
     <ClCompile Include="Curve.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Emitter.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Camera2D.h" />
     <ClCompile Include="DataStructures.h" />
+    <ClInclude Include="CircleEmitter.h" />
     <ClInclude Include="CommonEnums.h" />
     <ClInclude Include="Cubemap.h" />
     <ClInclude Include="Curve.h" />

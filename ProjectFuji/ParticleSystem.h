@@ -23,9 +23,11 @@
 #include <deque>
 
 #include "Texture.h"
-#include "Emitter.h"
 #include "VariableManager.h"
 #include "STLPSimulatorCUDA.h"
+
+class Emitter;
+class CircleEmitter;
 
 class LBM;
 
@@ -68,8 +70,17 @@ public:
 	float positionRecalculationThreshold = 0.5f;
 	int maxPositionRecalculations = 0;
 
+	int opacityBlendMode = 1;
+	float opacityBlendRange = 10.0f;
+
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);
+
+
+	// EMITTER TEMPORARY DATA FOR CURRENT FRAME
+	std::vector<glm::vec3> particleVerticesToEmit;
+	std::vector<int> particleProfilesToEmit;
+	std::vector<float> verticalVelocitiesToEmit; // not necessary
 
 
 	//glm::vec3 *particleVertices = nullptr;
