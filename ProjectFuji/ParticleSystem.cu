@@ -26,6 +26,7 @@ ParticleSystem::~ParticleSystem() {
 	//delete[] particleVertices;
 
 	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleVerticesVBO));
+	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleProfilesVBO));
 
 
 	cudaFree(d_numParticles);
@@ -116,6 +117,9 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 }
 
 void ParticleSystem::initParticlesWithZeros() {
+	cout << __FUNCTION__ << " not yet implemented!" << endl;
+
+	/*
 	vector<glm::vec3> particleVertices;
 
 	for (int i = 0; i < numParticles; i++) {
@@ -126,8 +130,10 @@ void ParticleSystem::initParticlesWithZeros() {
 
 	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
 
+
 	cudaMemset(d_profileIndices, 0, sizeof(int) * numParticles);
 	cudaMemset(d_particlePressures, 0, sizeof(float) * numParticles);
+	*/
 }
 
 void ParticleSystem::initParticlesOnTerrain() {
@@ -218,6 +224,7 @@ void ParticleSystem::initParticlesOnTerrain() {
 	cudaMemcpy(d_profileIndices, &particleProfiles[0], sizeof(int) * particleProfiles.size(), cudaMemcpyHostToDevice);
 	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
 
+
 	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
 
 	cout << numParticles << endl;
@@ -225,6 +232,9 @@ void ParticleSystem::initParticlesOnTerrain() {
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	//glBindVertexArray(0);
 	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
+
+	// unused due to unknown error for now
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleProfilesVBO, particleProfilesVBO, cudaGraphicsRegisterFlagsReadOnly)); // this is read only for CUDA!
 
 
 }

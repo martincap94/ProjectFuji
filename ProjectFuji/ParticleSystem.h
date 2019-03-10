@@ -59,6 +59,7 @@ public:
 	float pointSize = 10.0f;
 
 	struct cudaGraphicsResource *cudaParticleVerticesVBO;
+	struct cudaGraphicsResource *cudaParticleProfilesVBO;
 
 
 

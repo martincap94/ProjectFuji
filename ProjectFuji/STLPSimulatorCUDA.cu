@@ -560,22 +560,35 @@ void STLPSimulatorCUDA::initCUDA() {
 
 void STLPSimulatorCUDA::doStep() {
 	
-
-	glm::vec3 *d_mappedParticleVerticesVBO;
-	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaParticleVerticesVBO, 0));
 	size_t num_bytes;
+	glm::vec3 *d_mappedParticleVerticesVBO;
+	int *d_mappedParticleProfilesVBO;
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
+
+
+	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaParticleVerticesVBO, 0));
 	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticleVerticesVBO, &num_bytes, particleSystem->cudaParticleVerticesVBO));
+
+
+	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaParticleProfilesVBO, 0));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticleProfilesVBO, &num_bytes, particleSystem->cudaParticleProfilesVBO));
+
 	//printf("CUDA-STLP mapped VBO: May access %ld bytes\n", num_bytes);
 
 	//CHECK_ERROR(cudaPeekAtLastError());
 
 	// FIX d_ VALUES HERE!!! (use the ones from ParticleSystem)
-	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numParticles, particleSystem->d_verticalVelocities, particleSystem->d_profileIndices, particleSystem->d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
+	//simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numParticles, particleSystem->d_verticalVelocities, particleSystem->d_profileIndices, particleSystem->d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
+
+	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numParticles, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, particleSystem->d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
-	
+	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleProfilesVBO, 0);
+
 
 	/*
 	glm::vec3 *dptr;
