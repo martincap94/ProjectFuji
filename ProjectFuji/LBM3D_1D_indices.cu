@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include "CUDAUtils.cuh"
+#include "ParticleSystem.h"
 
 
 __constant__ int d_latticeWidth;		///< Lattice width constant on the device
@@ -123,7 +124,7 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 		particleVertices[idx].z += finalVelocity.z;
 
 
-		particleColors[idx] = mapToViridis3D(glm::length2(finalVelocity) * 4.0f);
+		//particleColors[idx] = mapToViridis3D(glm::length2(finalVelocity) * 4.0f);
 
 
 		//if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
@@ -1137,7 +1138,7 @@ LBM3D_1D_indices::LBM3D_1D_indices() {
 
 
 
-LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystemLBM(particleSystem), blockDim(blockDim) {
+LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystemLBM(particleSystemLBM), particleSystem(particleSystem), blockDim(blockDim) {
 
 	itau = 1.0f / tau;
 	nu = (2.0f * tau - 1.0f) / 6.0f;
@@ -1204,8 +1205,8 @@ LBM3D_1D_indices::~LBM3D_1D_indices() {
 	cudaFree(d_backLattice);
 	cudaFree(d_velocities);
 
-	cudaGraphicsUnregisterResource(cudaParticleVerticesVBO);
-	cudaGraphicsUnregisterResource(cudaParticleColorsVBO);
+	//cudaGraphicsUnregisterResource(cudaParticleVerticesVBO);
+	//cudaGraphicsUnregisterResource(cudaParticleColorsVBO);
 
 
 }
@@ -1323,22 +1324,26 @@ void LBM3D_1D_indices::doStepCUDA() {
 	// ============================================= move particles CUDA - different respawn from CPU !!!
 
 	glm::vec3 *d_particleVerticesVBO;
-	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
-
+	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaParticleVerticesVBO, 0));
+	
 	size_t num_bytes;
-	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_particleVerticesVBO, &num_bytes, cudaParticleVerticesVBO));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_particleVerticesVBO, &num_bytes, particleSystem->cudaParticleVerticesVBO));
 	//printf("CUDA-LBM mapped VBO: May access %ld bytes\n", num_bytes);
 
+	/*
 	glm::vec3 *d_particleColorsVBO;
 	cudaGraphicsMapResources(1, &cudaParticleColorsVBO, 0);
 	cudaGraphicsResourceGetMappedPointer((void **)&d_particleColorsVBO, &num_bytes, cudaParticleColorsVBO);
+	*/
 
-	moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, d_numParticles, d_particleColorsVBO);
+	moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, d_numParticles, nullptr);
 	//CHECK_ERROR(cudaPeekAtLastError());
 	
-	cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0);
-	cudaGraphicsUnmapResources(1, &cudaParticleColorsVBO, 0);
+	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
 
+	/*
+	cudaGraphicsUnmapResources(1, &cudaParticleColorsVBO, 0);
+	*/
 	//CHECK_ERROR(cudaPeekAtLastError());
 
 

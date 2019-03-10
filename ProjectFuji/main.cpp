@@ -191,7 +191,7 @@ int mouseCursorKey = GLFW_KEY_C;
 bool mouseDown = false;
 
 STLPDiagram stlpDiagram;	///< SkewT/LogP diagram instance
-int mode = 0;				///< Mode: 0 - show SkewT/LogP diagram, 1 - show 3D simulator
+int mode = 3;				///< Mode: 0 - show SkewT/LogP diagram, 1 - show 3D simulator
 
 Skybox *skybox;
 
@@ -352,7 +352,7 @@ int runApp() {
 
 		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
 
-		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, particleSystemLBM, blockDim);
+		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, particleSystemLBM, particleSystem, blockDim);
 
 		vars.latticeWidth = lbm->latticeWidth;
 		vars.latticeHeight = lbm->latticeHeight;

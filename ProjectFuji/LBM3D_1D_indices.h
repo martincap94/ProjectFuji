@@ -25,6 +25,8 @@
 
 #include "LBM.h"
 
+class ParticleSystem;
+
 __constant__ glm::vec3 dirVectorsConst[19];
 __constant__ float WEIGHT_MIDDLE;
 __constant__ float WEIGHT_AXIS;
@@ -95,6 +97,8 @@ public:
 	};
 
 	ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system
+	ParticleSystem *particleSystem;
+	
 	glm::vec3 *particleVertices;		///< Pointer to the particle vertices array (on CPU)
 	int *d_numParticles;	///< Number of particles on the device; managed in memory by Particle System class (its destructor)
 
@@ -151,7 +155,7 @@ public:
 		\param[in] particleSystem	Pointer to the particle system.
 		\param[in] blockDim			Dimensions of blocks to be used when launching CUDA kernels.
 	*/
-	LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim);
+	LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim);
 
 	/// Frees CPU and GPU memory and unmaps CUDA graphics resources (VBOs).
 	virtual ~LBM3D_1D_indices();

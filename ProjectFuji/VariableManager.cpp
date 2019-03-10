@@ -218,6 +218,8 @@ void VariableManager::saveConfigParam(string param, string val) {
 		vsync = stoi(val);
 	} else if (param == "num_particles" || param == "-p") {
 		numParticles = stoi(val);
+	} else if (param == "max_num_particles") {
+		maxNumParticles = stoi(val);
 	} else if (param == "scene_filename" || param == "-s") {
 		sceneFilename = val;
 	} else if (param == "window_width") {

@@ -43,15 +43,19 @@ public:
 	GLuint colorsVBO;	///< VBO of the particle colors
 
 
+
+
 	LBM *lbm;
 	STLPSimulatorCUDA *stlpSim;
 
 	int numParticles;
+	int numActiveParticles;
+
 	int *d_numParticles;
 
 	float *d_verticalVelocities;
 	int *d_profileIndices;
-	float *d_particlePressures;
+	//float *d_particlePressures;
 
 	Texture spriteTexture;
 	Texture secondarySpriteTexture;
@@ -62,7 +66,7 @@ public:
 	struct cudaGraphicsResource *cudaParticleProfilesVBO;
 
 	float positionRecalculationThreshold = 0.5f;
-	int maxPositionRecalculations = 10;
+	int maxPositionRecalculations = 0;
 
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);
@@ -76,6 +80,8 @@ public:
 
 	void initBuffers();
 	void initCUDA();
+
+	void emitParticles();
 
 	void draw(const ShaderProgram &shader, glm::vec3 cameraPos);
 
