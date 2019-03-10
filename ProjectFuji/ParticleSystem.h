@@ -25,6 +25,7 @@
 #include "Texture.h"
 #include "Emitter.h"
 #include "VariableManager.h"
+#include "STLPSimulatorCUDA.h"
 
 class LBM;
 
@@ -33,10 +34,17 @@ public:
 
 	std::vector<Emitter *> emitters;
 
+	HeightMap *heightMap;
+
 	VariableManager *vars;
+
+	GLuint particleVerticesVBO;			///< VBO of the particle vertices
+	GLuint particleProfilesVBO;
+	GLuint colorsVBO;	///< VBO of the particle colors
 
 
 	LBM *lbm;
+	STLPSimulatorCUDA *stlpSim;
 
 	int numParticles;
 	int *d_numParticles;
@@ -49,6 +57,9 @@ public:
 	Texture secondarySpriteTexture;
 
 	float pointSize = 10.0f;
+
+	struct cudaGraphicsResource *cudaParticleVerticesVBO;
+
 
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);
@@ -63,29 +74,30 @@ public:
 	void initBuffers();
 	void initCUDA();
 
-	void draw(const ShaderProgram &shader, bool useCUDA);
+	void draw(const ShaderProgram &shader, glm::vec3 cameraPos);
 
-	void initParticlePositionsWithZeros();
-	void initParticlePositionsOnTerrain();
-	void initParticlePositionsAboveTerrain();
+	void initParticlesWithZeros();
+	void initParticlesOnTerrain();
+	void initParticlesAboveTerrain();
 
 
 
-	/// Initializes particle positions for 3D simulation.
-	void initParticlePositions(int width, int height, int depth, const HeightMap *hm);
+	///// Initializes particle positions for 3D simulation.
+	//void initParticlePositions(int width, int height, int depth, const HeightMap *hm);
 
-	/// Copies data from VBO to CPU when we want to switch from GPU to CPU implementation.
-	void copyDataFromVBOtoCPU();
+	///// Copies data from VBO to CPU when we want to switch from GPU to CPU implementation.
+	//void copyDataFromVBOtoCPU();
 
-	GLuint particleVerticesVBO;			///< VBO of the particle vertices
-	GLuint colorsVBO;	///< VBO of the particle colors
+
 
 private:
 
-	GLuint particleVerticesVAO;			///< VAO of the particle vertices
+	GLuint particlesVAO;			///< VAO of the particle vertices
 
 	GLuint streamLinesVAO;	///< Streamlines VAO
 	GLuint streamLinesVBO;	///< Streamlines VBO
+
+	void generateParticleOnTerrain(std::vector<glm::vec3> &outVector);
 
 };
 

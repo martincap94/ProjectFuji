@@ -5,6 +5,7 @@
 #include "Utils.h"
 #include "HeightMap.h"
 #include "CUDAUtils.cuh"
+#include "ParticleSystem.h"
 
 #include <random>
 
@@ -281,6 +282,7 @@ __global__ void simulationStepKernelAlt(glm::vec3 *particleVertices, int numPart
 
 STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpDiagram) : vars(vars), stlpDiagram(stlpDiagram) {
 	heightMap = vars->heightMap;
+
 	groundHeight = getAltitudeFromPressure(stlpDiagram->P0);
 	boxTopHeight = groundHeight + simulationBoxHeight;
 
@@ -300,7 +302,7 @@ STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpD
 }
 
 STLPSimulatorCUDA::~STLPSimulatorCUDA() {
-	cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0);
+	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleVerticesVBO));
 
 	if (profileMap) {
 		delete(profileMap);
@@ -541,7 +543,24 @@ void STLPSimulatorCUDA::initCUDA() {
 }
 
 void STLPSimulatorCUDA::doStep() {
+	/*
+	glm::vec3 *dptr;
+	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaParticleVerticesVBO, 0));
+	size_t num_bytes;
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes, particleSystem->cudaParticleVerticesVBO));
+	//printf("CUDA-STLP mapped VBO: May access %ld bytes\n", num_bytes);
 
+	//CHECK_ERROR(cudaPeekAtLastError());
+
+	// FIX d_ VALUES HERE!!! (use the ones from ParticleSystem)
+	simulationStepKernel << <gridDim.x, blockDim.x >> > (dptr, numParticles, d_verticalVelocities, d_profileIndices, d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
+
+	CHECK_ERROR(cudaPeekAtLastError());
+
+	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
+	*/
+
+	
 	glm::vec3 *dptr;
 	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
 	size_t num_bytes;
@@ -553,8 +572,8 @@ void STLPSimulatorCUDA::doStep() {
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
-
 	cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0);
+	
 
 
 

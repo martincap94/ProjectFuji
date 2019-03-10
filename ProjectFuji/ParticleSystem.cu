@@ -3,36 +3,54 @@
 #include <cuda_runtime.h>
 
 #include <iostream>
+#include <random>
 
 #include "Utils.h"
 #include "LBM.h"
+#include "CUDAUtils.cuh"
 
 ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
+	heightMap = vars->heightMap;
+	numParticles = vars->numParticles;
+
 	initBuffers();
 	initCUDA();
-	spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
 
+	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
+	secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
 }
 
 
 ParticleSystem::~ParticleSystem() {
 	//delete[] particleVertices;
 
+	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleVerticesVBO));
+
+
 	cudaFree(d_numParticles);
+
 }
 
 
 
 void ParticleSystem::initBuffers() {
 
-	glGenVertexArrays(1, &particleVerticesVAO);
-	glBindVertexArray(particleVerticesVAO);
+	glGenVertexArrays(1, &particlesVAO);
+	glBindVertexArray(particlesVAO);
 	glGenBuffers(1, &particleVerticesVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, particleVerticesVBO);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+
+	glGenBuffers(1, &particleProfilesVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, particleProfilesVBO);
+
+	glEnableVertexAttribArray(5);
+	glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void *)0);
+
+	glBindVertexArray(0);
 
 }
 
@@ -42,11 +60,46 @@ void ParticleSystem::initCUDA() {
 	cudaMalloc((void**)&d_numParticles, sizeof(int));
 	cudaMemcpy(d_numParticles, &numParticles, sizeof(int), cudaMemcpyHostToDevice);
 
+	cudaMalloc((void**)&d_verticalVelocities, sizeof(float) * numParticles);
+	cudaMalloc((void**)&d_profileIndices, sizeof(int) * numParticles);
+	cudaMalloc((void**)&d_particlePressures, sizeof(float) * numParticles);
+
+	cudaMemset(d_verticalVelocities, 0, sizeof(float) * numParticles);
+	//cudaMemset(d_profileIndices, 0, sizeof(int) * numParticles);
+	//cudaMemset(d_particlePressures, 0, sizeof(float) * numParticles);
+
 }
 
 
-void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
+void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 
+
+	glUseProgram(shader.id);
+
+	shader.setInt("u_Tex", 0);
+	shader.setInt("u_SecondTex", 1);
+	shader.setVec3("u_TintColor", vars->tintColor);
+
+	glActiveTexture(GL_TEXTURE0 + 0);
+	glBindTexture(GL_TEXTURE_2D, spriteTexture.id);
+
+	glActiveTexture(GL_TEXTURE0 + 1);
+	glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture.id);
+
+	glPointSize(pointSize);
+	shader.setVec3("u_CameraPos", cameraPos);
+	shader.setFloat("u_PointSizeModifier", pointSize);
+	shader.setFloat("u_OpacityMultiplier", vars->opacityMultiplier);
+
+	glBindVertexArray(particlesVAO);
+
+	//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
+
+	glDrawArrays(GL_POINTS, 0, numParticles);
+
+
+/*
 	glUseProgram(shader.id);
 
 	glActiveTexture(GL_TEXTURE0 + 0);
@@ -55,23 +108,14 @@ void ParticleSystem::draw(const ShaderProgram &shader, bool useCUDA) {
 	glPointSize(pointSize);
 	shader.setVec3("u_Color", particlesColor);
 
-	glBindVertexArray(particleVerticesVAO);
+	glBindVertexArray(particlesVAO);
 
-	//if (!useCUDA) {
-	//	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particleVertices[0], GL_STREAM_DRAW);
-	//}
-	//if (lbm->visualizeVelocity) {
-	//	glEnableVertexAttribArray(1);
-	//} else {
-	//	glDisableVertexAttribArray(1);
-	//}
 
-	glDrawArrays(GL_POINTS, 0, numParticles);
+	glDrawArrays(GL_POINTS, 0, numParticles);*/
 
 }
 
-void ParticleSystem::initParticlePositionsWithZeros() {
+void ParticleSystem::initParticlesWithZeros() {
 	vector<glm::vec3> particleVertices;
 
 	for (int i = 0; i < numParticles; i++) {
@@ -79,13 +123,209 @@ void ParticleSystem::initParticlePositionsWithZeros() {
 	}
 
 	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
+
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
+
+	cudaMemset(d_profileIndices, 0, sizeof(int) * numParticles);
+	cudaMemset(d_particlePressures, 0, sizeof(float) * numParticles);
 }
 
-void ParticleSystem::initParticlePositionsOnTerrain() {
+void ParticleSystem::initParticlesOnTerrain() {
+	vector<glm::vec3> particleVertices;
+	vector<int> particleProfiles;
+	vector<float> particlePressures;
+
+	ppmImage *profileMap = stlpSim->profileMap;
+	STLPDiagram *stlpDiagram = stlpSim->stlpDiagram;
+
+	for (int i = 0; i < numParticles; i++) {
+		// testing generation in circle
+		float randx;
+		float randz;
+
+		randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
+		randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
+		
+
+		// interpolate
+		int leftx = (int)randx;
+		int rightx = leftx + 1;
+		int leftz = (int)randz;
+		int rightz = leftz + 1;
+
+		// leftx and leftz cannot be < 0 and rightx and rightz cannot be >= GRID_WIDTH or GRID_DEPTH
+		float xRatio = randx - leftx;
+		float zRatio = randz - leftz;
+
+		float y1 = heightMap->data[leftx][leftz];
+		float y2 = heightMap->data[leftx][rightz];
+		float y3 = heightMap->data[rightx][leftz];
+		float y4 = heightMap->data[rightx][rightz];
+
+		float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
+		float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
+
+		float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
+
+		//y = 5.0f; //////////////////////////////////////////////////////// FORCE Y to dry adiabat
+
+		particleVertices.push_back(glm::vec3(randx, y, randz));
+
+
+		stlpSim->mapFromSimulationBox(y);
+
+		Particle p;
+		p.position = glm::vec3(randx, y, randz);
+		p.velocity = glm::vec3(0.0f);
+
+
+		if (profileMap && profileMap->height >= heightMap->height && profileMap->width >= heightMap->width) {
+
+			glm::vec2 p1 = profileMap->data[leftx][leftz];
+			glm::vec2 p2 = profileMap->data[leftx][rightz];
+			glm::vec2 p3 = profileMap->data[rightx][leftz];
+			glm::vec2 p4 = profileMap->data[rightx][rightz];
+
+			glm::vec2 pi1 = zRatio * p2 + (1.0f - zRatio) * p1;
+			glm::vec2 pi2 = zRatio * p4 + (1.0f - zRatio) * p3;
+
+			glm::vec2 pif = xRatio * pi2 + (1.0f - xRatio) * pi1;
+			glm::ivec2 pii = (glm::ivec2)pif;
+
+			if (pii.y != pii.x) {
+				p.profileIndex = (rand() % (pii.y - pii.x) + pii.x) % (stlpDiagram->numProfiles - 1);
+			} else {
+				p.profileIndex = pii.x % (stlpDiagram->numProfiles - 1);
+			}
+
+		} else {
+			p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
+		}
+
+
+		p.updatePressureVal();
+
+		//particles.push_back(p);
+		particleProfiles.push_back(p.profileIndex);
+		particlePressures.push_back(p.pressure);
+	}
+
+
+	cudaMemcpy(d_particlePressures, &particlePressures[0], sizeof(float) * particlePressures.size(), cudaMemcpyHostToDevice);
+
+	// PARTICLE PROFILES (INDICES) are currently twice on GPU - once in VBO, once in CUDA global memory -> merge!!! (map VBO to CUDA)
+
+	cudaMemcpy(d_profileIndices, &particleProfiles[0], sizeof(int) * particleProfiles.size(), cudaMemcpyHostToDevice);
+	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
+
+	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
+
+	cout << numParticles << endl;
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
+
+
 }
 
-void ParticleSystem::initParticlePositionsAboveTerrain() {
+void ParticleSystem::initParticlesAboveTerrain() {
+	cout << __FUNCTION__ << " not yet implemented!" << endl;
 }
+
+
+
+//void ParticleSystem::generateParticleOnTerrain(std::vector<glm::vec3>& outVector) {
+//
+//
+//	// testing generation in circle
+//	float randx;
+//	float randz;
+//
+//	bool incircle = false;
+//	if (incircle) {
+//
+//		float R = 10.0f;
+////		static random_device rd;
+//		static mt19937 mt(rd());
+//		static uniform_real_distribution<float> dist(0.0f, 1.0f);
+//
+//		float a = dist(mt) * 2.0f * (float)PI;
+//		float r = R * sqrtf(dist(mt));
+//
+//		randx = r * cos(a);
+//		randz = r * sin(a);
+//
+//		randx += heightMap->width / 2;
+//		randz += heightMap->height / 2;
+//
+//	} else {
+//		randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
+//		randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
+//	}
+//
+//	// interpolate
+//	int leftx = (int)randx;
+//	int rightx = leftx + 1;
+//	int leftz = (int)randz;
+//	int rightz = leftz + 1;
+//
+//	// leftx and leftz cannot be < 0 and rightx and rightz cannot be >= GRID_WIDTH or GRID_DEPTH
+//	float xRatio = randx - leftx;
+//	float zRatio = randz - leftz;
+//
+//	float y1 = heightMap->data[leftx][leftz];
+//	float y2 = heightMap->data[leftx][rightz];
+//	float y3 = heightMap->data[rightx][leftz];
+//	float y4 = heightMap->data[rightx][rightz];
+//
+//	float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
+//	float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
+//
+//	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
+//
+//	//y = 5.0f; //////////////////////////////////////////////////////// FORCE Y to dry adiabat
+//
+//	particlePositions.push_back(glm::vec3(randx, y, randz));
+//
+//
+//	mapFromSimulationBox(y);
+//
+//	Particle p;
+//	p.position = glm::vec3(randx, y, randz);
+//	p.velocity = glm::vec3(0.0f);
+//
+//
+//	if (profileMap && profileMap->height >= heightMap->height && profileMap->width >= heightMap->width) {
+//
+//		glm::vec2 p1 = profileMap->data[leftx][leftz];
+//		glm::vec2 p2 = profileMap->data[leftx][rightz];
+//		glm::vec2 p3 = profileMap->data[rightx][leftz];
+//		glm::vec2 p4 = profileMap->data[rightx][rightz];
+//
+//		glm::vec2 pi1 = zRatio * p2 + (1.0f - zRatio) * p1;
+//		glm::vec2 pi2 = zRatio * p4 + (1.0f - zRatio) * p3;
+//
+//		glm::vec2 pif = xRatio * pi2 + (1.0f - xRatio) * pi1;
+//		glm::ivec2 pii = (glm::ivec2)pif;
+//
+//		if (pii.y != pii.x) {
+//			p.profileIndex = (rand() % (pii.y - pii.x) + pii.x) % (stlpDiagram->numProfiles - 1);
+//		} else {
+//			p.profileIndex = pii.x % (stlpDiagram->numProfiles - 1);
+//		}
+//
+//	} else {
+//		p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
+//	}
+//
+//
+//	p.updatePressureVal();
+//
+//	particles.push_back(p);
+//	numParticles++;
+//
+//}
 
 
 

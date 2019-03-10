@@ -10,12 +10,15 @@
 
 
 class HeightMap;
+class ParticleSystem;
 
 class STLPSimulatorCUDA {
 public:
 
 	VariableManager *vars;
 	STLPDiagram *stlpDiagram;
+
+	ParticleSystem *particleSystem;
 
 	GLuint particlesVBO;
 	GLuint profileDataSSBO;

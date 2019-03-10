@@ -325,6 +325,8 @@ int runApp() {
 	curveShader = ShaderManager::getShaderPtr("curve");
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 
+	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight, dirLightOnlyShader);
+
 
 	struct nk_colorf particlesColor;
 
@@ -342,7 +344,6 @@ int runApp() {
 
 	float ratio = (float)vars.screenWidth / (float)vars.screenHeight;
 
-	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight, dirLightOnlyShader);
 
 
 	// Create and configure the simulator, select from 2D and 3D options and set parameters accordingly
@@ -419,16 +420,13 @@ int runApp() {
 
 	//testMesh.transform.position = glm::vec3(0.0f);
 
-	lbm->heightMap->shader = dirLightOnlyShader;
 
-	//dirLight.direction = glm::vec3(0.2f, 0.4f, 0.5f);
+
+
 	dirLight.position = glm::vec3(100.0f, 60.0f, 60.0f);
 
 
-	glUseProgram(dirLightOnlyShader->id);
 
-
-	//dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
 
 	evsm.dirLight = &dirLight;
 
@@ -460,8 +458,17 @@ int runApp() {
 	stlpSimCUDA->initParticles();
 	stlpSimCUDA->initCUDA();
 
+	particleSystem->stlpSim = stlpSimCUDA;
+	stlpSimCUDA->particleSystem = particleSystem;
+	particleSystem->initParticlesOnTerrain();
+	//particleSystem->initParticlePositions();
+
+
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	((LBM3D_1D_indices*)lbm)->mapVBOTEST(stlpSimCUDA->particlesVBO, stlpSimCUDA->cudaParticleVerticesVBO);
+	lbm->mapVBOTEST(stlpSimCUDA->particlesVBO, stlpSimCUDA->cudaParticleVerticesVBO);
+
+
 
 	// Set these callbacks after nuklear initialization, otherwise they won't work!
 	glfwSetScrollCallback(window, scroll_callback);
@@ -469,15 +476,13 @@ int runApp() {
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 
-	//glfwSetMouseCa
-
 
 
 	stringstream ss;
 	ss << (vars.useCUDA ? "GPU" : "CPU") << "_";
 	ss << vars.sceneFilename;
 	ss << "_h=" << vars.latticeHeight;
-	//ss << "_" << particleSystemLBM->numParticles;
+	ss << "_" << particleSystemLBM->numParticles;
 	vars.timer.configString = ss.str();
 	if (vars.measureTime) {
 		vars.timer.start();
@@ -522,36 +527,7 @@ int runApp() {
 			vars.timer.clockAvgStart();
 		}
 
-		// MAIN SIMULATION STEP
-		//if (!paused) {
-		//	if (useCUDA) {
-		//		lbm->doStepCUDA();
-		//	} else {
-		//		lbm->doStep();
-		//	}
-		//}
 
-		//if (measureTime) {
-		//	if (useCUDA) {
-		//		cudaDeviceSynchronize();
-		//	}
-		//	if (timer.clockAvgEnd() && exitAfterFirstAvg) {
-		//		cout << "Exiting main loop..." << endl;
-		//		break;
-		//	}
-		//}
-
-
-
-		/*
-		glViewport(0, 0, stlpDiagram.textureResolution, stlpDiagram.textureResolution);
-		glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramFramebuffer);
-		glClear(GL_COLOR_BUFFER_BIT);
-		//glBindTextureUnit(0, stlpDiagram.diagramTexture);
-
-		stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
-		stlpDiagram.drawText(*textShader);
-		*/
 
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		view = overlayDiagramCamera->getViewMatrix();
@@ -813,6 +789,7 @@ int runApp() {
 					stlpSim->draw(*singleColorShader, camera->position);
 				}
 			}
+			particleSystem->draw(*pointSpriteTestShader, camera->position);
 			glDepthMask(GL_TRUE);
 
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
