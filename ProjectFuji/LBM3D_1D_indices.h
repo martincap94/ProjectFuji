@@ -94,7 +94,7 @@ public:
 		MIRROR_SIDES_PROP
 	};
 
-	ParticleSystemLBM *particleSystem;		///< Pointer to the particle system
+	ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system
 	glm::vec3 *particleVertices;		///< Pointer to the particle vertices array (on CPU)
 	int *d_numParticles;	///< Number of particles on the device; managed in memory by Particle System class (its destructor)
 

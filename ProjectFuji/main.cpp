@@ -455,7 +455,7 @@ int runApp() {
 
 
 	stlpSim->initParticles();
-	stlpSimCUDA->initParticles();
+	//stlpSimCUDA->initParticles();
 	stlpSimCUDA->initCUDA();
 
 	particleSystem->stlpSim = stlpSimCUDA;
@@ -466,8 +466,8 @@ int runApp() {
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	lbm->mapVBOTEST(stlpSimCUDA->particlesVBO, stlpSimCUDA->cudaParticleVerticesVBO);
-
+	//lbm->mapVBOTEST(stlpSimCUDA->particlesVBO, stlpSimCUDA->cudaParticleVerticesVBO);
+	lbm->mapVBOTEST(particleSystem->particleVerticesVBO, particleSystem->cudaParticleVerticesVBO);
 
 
 	// Set these callbacks after nuklear initialization, otherwise they won't work!

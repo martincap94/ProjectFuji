@@ -1137,7 +1137,7 @@ LBM3D_1D_indices::LBM3D_1D_indices() {
 
 
 
-LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystem(particleSystem), blockDim(blockDim) {
+LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystem, dim3 blockDim) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystemLBM(particleSystem), blockDim(blockDim) {
 
 	itau = 1.0f / tau;
 	nu = (2.0f * tau - 1.0f) / 6.0f;
@@ -1240,10 +1240,10 @@ void LBM3D_1D_indices::initScene() {
 
 	delete[] tempHM;
 
-	particleVertices = particleSystem->particleVertices;
-	d_numParticles = particleSystem->d_numParticles;
+	particleVertices = particleSystemLBM->particleVertices;
+	d_numParticles = particleSystemLBM->d_numParticles;
 
-	particleSystem->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
+	particleSystemLBM->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
 
 
 }
@@ -1324,7 +1324,6 @@ void LBM3D_1D_indices::doStepCUDA() {
 
 	glm::vec3 *d_particleVerticesVBO;
 	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
-	//CHECK_ERROR(cudaPeekAtLastError());
 
 	size_t num_bytes;
 	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_particleVerticesVBO, &num_bytes, cudaParticleVerticesVBO));
@@ -1687,7 +1686,7 @@ void LBM3D_1D_indices::collisionStep() {
 void LBM3D_1D_indices::moveParticles() {
 
 	glm::vec3 adjVelocities[8];
-	for (int i = 0; i < particleSystem->numParticles; i++) {
+	for (int i = 0; i < particleSystemLBM->numParticles; i++) {
 
 		float x = particleVertices[i].x;
 		float y = particleVertices[i].y;
@@ -1987,7 +1986,7 @@ void LBM3D_1D_indices::updateColliders() {
 
 void LBM3D_1D_indices::resetSimulation() {
 	cout << "Resetting simulation..." << endl;
-	particleSystem->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
+	particleSystemLBM->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
 	for (int i = 0; i < latticeWidth * latticeHeight; i++) {
 		for (int j = 0; j < 19; j++) {
 			backLattice[i].adj[j] = 0.0f;
@@ -2020,9 +2019,9 @@ void LBM3D_1D_indices::synchronize() {
 }
 
 void LBM3D_1D_indices::mapVBOTEST(GLuint VBO, struct cudaGraphicsResource *res) {
-	CHECK_ERROR(cudaGetLastError());
 
 	//res = cudaParticleVerticesVBO;
+	//cudaParticleColorsVBO = res;
 
 	cout << "CUDA mapping VBO" << endl;
 	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, VBO, cudaGraphicsMapFlagsWriteDiscard)); // returns out of memory error (even though it shouldn't according to documentation

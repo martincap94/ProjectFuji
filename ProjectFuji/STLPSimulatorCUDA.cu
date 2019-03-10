@@ -312,6 +312,7 @@ STLPSimulatorCUDA::~STLPSimulatorCUDA() {
 
 void STLPSimulatorCUDA::initBuffers() {
 
+	/*
 	glGenVertexArrays(1, &particlesVAO);
 	glBindVertexArray(particlesVAO);
 
@@ -328,6 +329,20 @@ void STLPSimulatorCUDA::initBuffers() {
 	glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void *)0);
 
 	glBindVertexArray(0);
+	*/
+
+	ShaderProgram *s = ShaderManager::getShaderPtr("pointSpriteTest");
+	s->use();
+	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
+		string fullName = "u_ProfileCCLs[" + to_string(i) + "]";
+		float P = stlpDiagram->CCLProfiles[i].y;
+		float y = getAltitudeFromPressure(P);
+		mapToSimulationBox(y);
+		s->setFloat(fullName, y);
+	}
+	s->setInt("u_NumProfiles", stlpDiagram->numProfiles);
+
+
 
 
 	//glGenBuffers(1, &profileDataSSBO);
@@ -415,6 +430,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	gridDim = dim3((int)ceil((float)maxNumParticles / (float)blockDim.x), 1, 1);
 
 
+	/*
 	cudaMalloc((void**)&d_verticalVelocities, sizeof(float) * maxNumParticles);
 	cudaMalloc((void**)&d_profileIndices, sizeof(int) * maxNumParticles);
 	cudaMalloc((void**)&d_particlePressures, sizeof(float) * maxNumParticles);
@@ -432,7 +448,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	}
 	cudaMemcpy(d_profileIndices, &itmp[0], sizeof(int) * itmp.size(), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_particlePressures, &ftmp[0], sizeof(float) * ftmp.size(), cudaMemcpyHostToDevice);
-
+	*/
 	
 
 
@@ -440,7 +456,7 @@ void STLPSimulatorCUDA::initCUDA() {
 
 	cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice);
 
-	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
+	//CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_maxP, &stlpDiagram->maxP, sizeof(float)));
@@ -452,8 +468,8 @@ void STLPSimulatorCUDA::initCUDA() {
 	float latticeH = (float)vars->latticeHeight;
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_latticeHeight, &latticeH, sizeof(float)));
 
-
-	itmp.clear();
+	vector<int> itmp;
+	//itmp.clear();
 	vector<glm::vec2> tmp;
 	vector<glm::ivec2> ivectmp;
 	tmp.reserve(stlpDiagram->numProfiles * stlpDiagram->dryAdiabatProfiles[0].vertices.size()); // probably the largest possible collection
@@ -543,24 +559,25 @@ void STLPSimulatorCUDA::initCUDA() {
 }
 
 void STLPSimulatorCUDA::doStep() {
-	/*
-	glm::vec3 *dptr;
+	
+
+	glm::vec3 *d_mappedParticleVerticesVBO;
 	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaParticleVerticesVBO, 0));
 	size_t num_bytes;
-	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes, particleSystem->cudaParticleVerticesVBO));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticleVerticesVBO, &num_bytes, particleSystem->cudaParticleVerticesVBO));
 	//printf("CUDA-STLP mapped VBO: May access %ld bytes\n", num_bytes);
 
 	//CHECK_ERROR(cudaPeekAtLastError());
 
 	// FIX d_ VALUES HERE!!! (use the ones from ParticleSystem)
-	simulationStepKernel << <gridDim.x, blockDim.x >> > (dptr, numParticles, d_verticalVelocities, d_profileIndices, d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
+	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numParticles, particleSystem->d_verticalVelocities, particleSystem->d_profileIndices, particleSystem->d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
-	*/
-
 	
+
+	/*
 	glm::vec3 *dptr;
 	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
 	size_t num_bytes;
@@ -573,7 +590,7 @@ void STLPSimulatorCUDA::doStep() {
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0);
-	
+	*/
 
 
 
@@ -680,6 +697,7 @@ void STLPSimulatorCUDA::generateParticle() {
 
 void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader, glm::vec3 cameraPos) {
 	
+	/*
 	glUseProgram(particlesShader.id);
 
 	particlesShader.setInt("u_Tex", 0);
@@ -704,7 +722,7 @@ void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader, glm::vec3 cameraPo
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
 
 	glDrawArrays(GL_POINTS, 0, numParticles);
-
+	*/
 
 
 	if (vars->showCCLLevelLayer || vars->showELLevelLayer) {
@@ -752,17 +770,6 @@ void STLPSimulatorCUDA::initParticles() {
 	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
 
 
-	ShaderProgram *s = ShaderManager::getShaderPtr("pointSpriteTest");
-	s->use();
-	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
-		string fullName = "u_ProfileCCLs[" + to_string(i) + "]";
-		float P = stlpDiagram->CCLProfiles[i].y;
-		float y = getAltitudeFromPressure(P);
-		mapToSimulationBox(y);
-		s->setFloat(fullName, y);
-	}
-	s->setInt("u_NumProfiles", stlpDiagram->numProfiles);
-	
 
 }
 
