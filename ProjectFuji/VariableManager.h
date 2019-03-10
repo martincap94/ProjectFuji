@@ -86,11 +86,14 @@ public:
 	glm::vec3 tintColor = glm::vec3(1.0f);
 
 
+
 	////////////////////////////////////////////////////////////////
 	// UI helpers
 	////////////////////////////////////////////////////////////////
 	bool debugWindowOpened = false;
 	bool aboutWindowOpened = false;
+
+	//int show
 
 	VariableManager();
 	~VariableManager();

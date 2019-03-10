@@ -137,6 +137,7 @@ void ParticleSystem::initParticlesWithZeros() {
 }
 
 void ParticleSystem::initParticlesOnTerrain() {
+
 	vector<glm::vec3> particleVertices;
 	vector<int> particleProfiles;
 	vector<float> particlePressures;
@@ -145,13 +146,138 @@ void ParticleSystem::initParticlesOnTerrain() {
 	STLPDiagram *stlpDiagram = stlpSim->stlpDiagram;
 
 	for (int i = 0; i < numParticles; i++) {
+		Particle p;
+
 		// testing generation in circle
 		float randx;
 		float randz;
 
+		int leftx;
+		int rightx;
+		int leftz;
+		int rightz;
+
+		float xRatio;
+		float zRatio;
+
+		if (profileMap && profileMap->height >= heightMap->height && profileMap->width >= heightMap->width) {
+
+			float recalculationVal = 0.0f;
+			glm::vec3 pif(0.0f);
+			int numPositionRecalculations = 0;
+			do {
+				randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
+				randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
+
+				// interpolate
+				leftx = (int)randx;
+				rightx = leftx + 1;
+				leftz = (int)randz;
+				rightz = leftz + 1;
+
+
+				// leftx and leftz cannot be < 0 and rightx and rightz cannot be >= GRID_WIDTH or GRID_DEPTH
+				xRatio = randx - leftx;
+				zRatio = randz - leftz;
+
+				glm::vec3 p1 = profileMap->data[leftx][leftz];
+				glm::vec3 p2 = profileMap->data[leftx][rightz];
+				glm::vec3 p3 = profileMap->data[rightx][leftz];
+				glm::vec3 p4 = profileMap->data[rightx][rightz];
+
+				glm::vec3 pi1 = zRatio * p2 + (1.0f - zRatio) * p1;
+				glm::vec3 pi2 = zRatio * p4 + (1.0f - zRatio) * p3;
+
+				pif = xRatio * pi2 + (1.0f - xRatio) * pi1;
+				recalculationVal = pif.z / (float)profileMap->maxIntensity;
+
+				numPositionRecalculations++;
+
+			} while (recalculationVal < positionRecalculationThreshold && numPositionRecalculations < maxPositionRecalculations);
+
+			glm::ivec3 pii = (glm::ivec3)pif;
+
+			if (pii.y != pii.x) {
+				p.profileIndex = (rand() % (pii.y - pii.x) + pii.x) % (stlpDiagram->numProfiles - 1);
+			} else {
+				p.profileIndex = pii.x % (stlpDiagram->numProfiles - 1);
+			}
+
+		} else {
+
+			randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
+			randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
+
+			// interpolate
+			leftx = (int)randx;
+			rightx = leftx + 1;
+			leftz = (int)randz;
+			rightz = leftz + 1;
+
+
+			// leftx and leftz cannot be < 0 and rightx and rightz cannot be >= GRID_WIDTH or GRID_DEPTH
+			xRatio = randx - leftx;
+			zRatio = randz - leftz;
+
+			p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
+			
+			/*
+			float y1 = heightMap->data[leftx][leftz];
+			float y2 = heightMap->data[leftx][rightz];
+			float y3 = heightMap->data[rightx][leftz];
+			float y4 = heightMap->data[rightx][rightz];
+
+			float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
+			float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
+
+			float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
+
+			
+			particleVertices.push_back(glm::vec3(randx, y, randz));
+
+			stlpSim->mapFromSimulationBox(y);
+
+			p.position = glm::vec3(randx, y, randz);
+			p.velocity = glm::vec3(0.0f);
+
+			p.updatePressureVal();
+
+			//particles.push_back(p);
+			particleProfiles.push_back(p.profileIndex);
+			particlePressures.push_back(p.pressure);
+			*/
+		}
+
+
+		float y1 = heightMap->data[leftx][leftz];
+		float y2 = heightMap->data[leftx][rightz];
+		float y3 = heightMap->data[rightx][leftz];
+		float y4 = heightMap->data[rightx][rightz];
+
+		float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
+		float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
+
+		float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
+
+
+		particleVertices.push_back(glm::vec3(randx, y, randz));
+
+		stlpSim->mapFromSimulationBox(y);
+
+		p.position = glm::vec3(randx, y, randz);
+		p.velocity = glm::vec3(0.0f);
+
+		p.updatePressureVal();
+
+		//particles.push_back(p);
+		particleProfiles.push_back(p.profileIndex);
+		particlePressures.push_back(p.pressure);
+
+
+		/*
 		randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
 		randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
-		
+
 
 		// interpolate
 		int leftx = (int)randx;
@@ -159,9 +285,33 @@ void ParticleSystem::initParticlesOnTerrain() {
 		int leftz = (int)randz;
 		int rightz = leftz + 1;
 
+
 		// leftx and leftz cannot be < 0 and rightx and rightz cannot be >= GRID_WIDTH or GRID_DEPTH
 		float xRatio = randx - leftx;
 		float zRatio = randz - leftz;
+
+		if (profileMap && profileMap->height >= heightMap->height && profileMap->width >= heightMap->width) {
+
+			glm::vec3 p1 = profileMap->data[leftx][leftz];
+			glm::vec3 p2 = profileMap->data[leftx][rightz];
+			glm::vec3 p3 = profileMap->data[rightx][leftz];
+			glm::vec3 p4 = profileMap->data[rightx][rightz];
+
+			glm::vec3 pi1 = zRatio * p2 + (1.0f - zRatio) * p1;
+			glm::vec3 pi2 = zRatio * p4 + (1.0f - zRatio) * p3;
+
+			glm::vec3 pif = xRatio * pi2 + (1.0f - xRatio) * pi1;
+			glm::ivec3 pii = (glm::ivec3)pif;
+
+			if (pii.y != pii.x) {
+				p.profileIndex = (rand() % (pii.y - pii.x) + pii.x) % (stlpDiagram->numProfiles - 1);
+			} else {
+				p.profileIndex = pii.x % (stlpDiagram->numProfiles - 1);
+			}
+
+		} else {
+			p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
+		}
 
 		float y1 = heightMap->data[leftx][leftz];
 		float y2 = heightMap->data[leftx][rightz];
@@ -185,18 +335,81 @@ void ParticleSystem::initParticlesOnTerrain() {
 		p.velocity = glm::vec3(0.0f);
 
 
+
+
+		p.updatePressureVal();
+
+		//particles.push_back(p);
+		particleProfiles.push_back(p.profileIndex);
+		particlePressures.push_back(p.pressure);
+
+		*/
+
+	}
+
+
+	cudaMemcpy(d_particlePressures, &particlePressures[0], sizeof(float) * particlePressures.size(), cudaMemcpyHostToDevice);
+
+	// PARTICLE PROFILES (INDICES) are currently twice on GPU - once in VBO, once in CUDA global memory -> merge!!! (map VBO to CUDA)
+
+	cudaMemcpy(d_profileIndices, &particleProfiles[0], sizeof(int) * particleProfiles.size(), cudaMemcpyHostToDevice);
+	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
+
+
+	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
+
+	cout << numParticles << endl;
+
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindVertexArray(0);
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
+
+	// unused due to unknown error for now
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleProfilesVBO, particleProfilesVBO, cudaGraphicsRegisterFlagsReadOnly)); // this is read only for CUDA!
+
+
+	/*
+	vector<glm::vec3> particleVertices;
+	vector<int> particleProfiles;
+	vector<float> particlePressures;
+
+	ppmImage *profileMap = stlpSim->profileMap;
+	STLPDiagram *stlpDiagram = stlpSim->stlpDiagram;
+
+	for (int i = 0; i < numParticles; i++) {
+		Particle p;
+
+		// testing generation in circle
+		float randx;
+		float randz;
+
+		randx = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->width - 2.0f)));
+		randz = (float)(rand() / (float)(RAND_MAX / ((float)heightMap->height - 2.0f)));
+		
+
+		// interpolate
+		int leftx = (int)randx;
+		int rightx = leftx + 1;
+		int leftz = (int)randz;
+		int rightz = leftz + 1;
+
+
+		// leftx and leftz cannot be < 0 and rightx and rightz cannot be >= GRID_WIDTH or GRID_DEPTH
+		float xRatio = randx - leftx;
+		float zRatio = randz - leftz;
+
 		if (profileMap && profileMap->height >= heightMap->height && profileMap->width >= heightMap->width) {
 
-			glm::vec2 p1 = profileMap->data[leftx][leftz];
-			glm::vec2 p2 = profileMap->data[leftx][rightz];
-			glm::vec2 p3 = profileMap->data[rightx][leftz];
-			glm::vec2 p4 = profileMap->data[rightx][rightz];
+			glm::vec3 p1 = profileMap->data[leftx][leftz];
+			glm::vec3 p2 = profileMap->data[leftx][rightz];
+			glm::vec3 p3 = profileMap->data[rightx][leftz];
+			glm::vec3 p4 = profileMap->data[rightx][rightz];
 
-			glm::vec2 pi1 = zRatio * p2 + (1.0f - zRatio) * p1;
-			glm::vec2 pi2 = zRatio * p4 + (1.0f - zRatio) * p3;
+			glm::vec3 pi1 = zRatio * p2 + (1.0f - zRatio) * p1;
+			glm::vec3 pi2 = zRatio * p4 + (1.0f - zRatio) * p3;
 
-			glm::vec2 pif = xRatio * pi2 + (1.0f - xRatio) * pi1;
-			glm::ivec2 pii = (glm::ivec2)pif;
+			glm::vec3 pif = xRatio * pi2 + (1.0f - xRatio) * pi1;
+			glm::ivec3 pii = (glm::ivec3)pif;
 
 			if (pii.y != pii.x) {
 				p.profileIndex = (rand() % (pii.y - pii.x) + pii.x) % (stlpDiagram->numProfiles - 1);
@@ -207,6 +420,29 @@ void ParticleSystem::initParticlesOnTerrain() {
 		} else {
 			p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
 		}
+
+		float y1 = heightMap->data[leftx][leftz];
+		float y2 = heightMap->data[leftx][rightz];
+		float y3 = heightMap->data[rightx][leftz];
+		float y4 = heightMap->data[rightx][rightz];
+
+		float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
+		float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
+
+		float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
+
+		//y = 5.0f; //////////////////////////////////////////////////////// FORCE Y to dry adiabat
+
+		particleVertices.push_back(glm::vec3(randx, y, randz));
+
+
+		stlpSim->mapFromSimulationBox(y);
+
+		Particle p;
+		p.position = glm::vec3(randx, y, randz);
+		p.velocity = glm::vec3(0.0f);
+
+
 
 
 		p.updatePressureVal();
@@ -235,7 +471,7 @@ void ParticleSystem::initParticlesOnTerrain() {
 
 	// unused due to unknown error for now
 	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleProfilesVBO, particleProfilesVBO, cudaGraphicsRegisterFlagsReadOnly)); // this is read only for CUDA!
-
+	*/
 
 }
 

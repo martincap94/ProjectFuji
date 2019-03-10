@@ -1339,17 +1339,20 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		
 
+		if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram controls", NK_MINIMIZED)) {
+			nk_layout_row_static(ctx, 15, 200, 1);
 
-		nk_checkbox_label(ctx, "Show isobars", &stlpDiagram.showIsobars);
-		nk_checkbox_label(ctx, "Show isotherms", &stlpDiagram.showIsotherms);
-		nk_checkbox_label(ctx, "Show isohumes", &stlpDiagram.showIsohumes);
-		nk_checkbox_label(ctx, "Show dry adiabats", &stlpDiagram.showDryAdiabats);
-		nk_checkbox_label(ctx, "Show moist adiabats", &stlpDiagram.showMoistAdiabats);
-		nk_checkbox_label(ctx, "Show dewpoint curve", &stlpDiagram.showDewpointCurve);
-		nk_checkbox_label(ctx, "Show ambient temp. curve", &stlpDiagram.showAmbientTemperatureCurve);
-		nk_checkbox_label(ctx, "Crop Bounds", &stlpDiagram.cropBounds);
+			nk_checkbox_label(ctx, "Show isobars", &stlpDiagram.showIsobars);
+			nk_checkbox_label(ctx, "Show isotherms", &stlpDiagram.showIsotherms);
+			nk_checkbox_label(ctx, "Show isohumes", &stlpDiagram.showIsohumes);
+			nk_checkbox_label(ctx, "Show dry adiabats", &stlpDiagram.showDryAdiabats);
+			nk_checkbox_label(ctx, "Show moist adiabats", &stlpDiagram.showMoistAdiabats);
+			nk_checkbox_label(ctx, "Show dewpoint curve", &stlpDiagram.showDewpointCurve);
+			nk_checkbox_label(ctx, "Show ambient temp. curve", &stlpDiagram.showAmbientTemperatureCurve);
+			nk_checkbox_label(ctx, "Crop Bounds", &stlpDiagram.cropBounds);
+		}
 
-
+		nk_layout_row_static(ctx, 15, 200, 1);
 
 		int tmp = stlpDiagram.overlayDiagramWidth;
 		int maxDiagramWidth = (vars.screenWidth < vars.screenHeight) ? vars.screenWidth : vars.screenHeight;
@@ -1403,6 +1406,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_property_float(ctx, "Point size", 0.1f, &stlpSim->pointSize, 100.0f, 0.1f, 0.1f);
 		stlpSimCUDA->pointSize = stlpSim->pointSize;
+		particleSystem->pointSize = stlpSim->pointSize;
 		//nk_property_float(ctx, "Point size (CUDA)", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
 
 		nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars.opacityMultiplier, 10.0f, 0.01f, 0.01f);

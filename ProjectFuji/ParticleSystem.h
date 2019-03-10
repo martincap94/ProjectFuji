@@ -61,6 +61,8 @@ public:
 	struct cudaGraphicsResource *cudaParticleVerticesVBO;
 	struct cudaGraphicsResource *cudaParticleProfilesVBO;
 
+	float positionRecalculationThreshold = 0.5f;
+	int maxPositionRecalculations = 10;
 
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);
