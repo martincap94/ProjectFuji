@@ -63,11 +63,8 @@ void main() {
 				v_ComputedOpacity = (diff < 0.0) ? 0.0 : 1.0;
 			}
 		}
-
-
-
-
-		
+	} else {
+		v_ComputedOpacity = 0.0;
 	}
 
 

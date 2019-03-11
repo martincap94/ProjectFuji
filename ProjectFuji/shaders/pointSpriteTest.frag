@@ -11,6 +11,7 @@ uniform sampler2D u_Tex;
 uniform sampler2D u_SecondTex;
 
 uniform float u_OpacityMultiplier;
+uniform bool u_ShowHiddenParticles;
 
 
 float goldNoise(in vec2 coordinate, in float seed);
@@ -19,7 +20,14 @@ float goldNoise(in vec2 coordinate, in float seed);
 void main() {
 
 	if (v_ComputedOpacity == 0.0) {
-		discard;
+		if (u_ShowHiddenParticles) {
+			fragColor = mix(texture(u_Tex, gl_PointCoord), texture(u_SecondTex, gl_PointCoord), 0.5);
+			fragColor.xyz *= vec3(1.0, 0.0, 0.0);
+			fragColor.a *= u_OpacityMultiplier;
+		} else {
+			discard;
+		}
+		return;
 	}
 
 

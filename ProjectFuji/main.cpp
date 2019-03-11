@@ -1439,6 +1439,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_property_int(ctx, "Opacity Blend Mode", 0, &particleSystem->opacityBlendMode, 1, 1, 1);
 		nk_property_float(ctx, "Opacity Blend Range", 0.0f, &particleSystem->opacityBlendRange, 20.0f, 0.1f, 0.1f);
+		nk_checkbox_label(ctx, "Show Hidden Particles", &particleSystem->showHiddenParticles);
 
 		for (int i = 0; i < particleSystem->emitters.size(); i++) {
 			if (nk_tree_push(ctx, NK_TREE_TAB, ("Emitter " + to_string(i)).c_str(), NK_MAXIMIZED)) {

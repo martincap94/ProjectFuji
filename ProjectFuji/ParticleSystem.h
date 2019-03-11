@@ -73,6 +73,8 @@ public:
 	int opacityBlendMode = 1;
 	float opacityBlendRange = 10.0f;
 
+	int showHiddenParticles = 0;
+
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);
 

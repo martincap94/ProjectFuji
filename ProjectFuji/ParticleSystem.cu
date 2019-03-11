@@ -137,6 +137,7 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 
 	glUseProgram(shader.id);
 
+	shader.setBool("u_ShowHiddenParticles", (bool)showHiddenParticles);
 	shader.setInt("u_Tex", 0);
 	shader.setInt("u_SecondTex", 1);
 	shader.setVec3("u_TintColor", vars->tintColor);
