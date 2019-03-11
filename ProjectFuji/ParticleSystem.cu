@@ -17,6 +17,8 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
 	heightMap = vars->heightMap;
 	numParticles = vars->numParticles;
+	positionRecalculationThreshold = vars->positionRecalculationThreshold;
+	maxPositionRecalculations = vars->maxPositionRecalculations;
 	numActiveParticles = 0;
 	//numActiveParticles = numParticles;
 

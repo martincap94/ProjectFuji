@@ -88,6 +88,16 @@ public:
 	glm::vec3 bgClearColor = glm::vec3(0.0f);
 
 
+
+
+	// Particle System variables
+	int maxPositionRecalculations;
+	float positionRecalculationThreshold;
+
+	// LBM variables (new)
+	int useSubgridModel = 0;
+
+
 	////////////////////////////////////////////////////////////////
 	// UI helpers
 	////////////////////////////////////////////////////////////////

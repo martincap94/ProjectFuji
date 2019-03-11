@@ -262,5 +262,10 @@ void VariableManager::saveConfigParam(string param, string val) {
 		exitAfterFirstAvg = (val == "true") ? true : false;
 	} else if (param == "sounding_file" || param == "-sf") {
 		soundingFile = val;
+	} else if (param == "position_recalculation_threshold") {
+		positionRecalculationThreshold = stof(val);
+	} else if (param == "max_position_recalculations") {
+		maxPositionRecalculations = stoi(val);
 	}
+
 }

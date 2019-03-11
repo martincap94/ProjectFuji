@@ -59,19 +59,19 @@ __global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::
 
 		glm::vec3 pos = particleVertices[idx];
 
-		if (pos.x < 0.0f || pos.x >= d_latticeWidth - 1) {
-			pos.x = 0.0f;
+		if (pos.x < 0.0f || pos.x > d_latticeWidth - 2) {
+			pos.x = (float)((__float2int_rd(pos.x) + d_latticeWidth - 2) % (d_latticeWidth - 2));
 		}
 		if (pos.y < 0.0f) {
 			pos.y = 0.0f;
 		}
-		if (pos.y >= d_latticeHeight - 1) {
+		if (pos.y > d_latticeHeight - 2) {
 			// respawn
 			pos.x = 0.0f;
 			pos.y = rand(idx, pos.y) * (d_latticeHeight - 2);
 			pos.z = rand(idx, pos.z) * (d_latticeDepth - 2);
 		}
-		if (pos.z < 0.0f || pos.z >= d_latticeDepth - 1) {
+		if (pos.z < 0.0f || pos.z > d_latticeDepth - 2) {
 			pos.z = (float)((__float2int_rd(pos.z) + d_latticeDepth - 2) % (d_latticeDepth - 2));
 		}
 
@@ -585,7 +585,7 @@ __global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, g
 	\param[in] backLattice		Back lattice in which we do our calculations.
 	\param[in] velocities		Velocities array for the lattice.
 */
-__global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities) {
+__global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities, int useSubgridModel = 0) {
 	float weightMiddle = 1.0f / 3.0f;
 	float weightAxis = 1.0f / 18.0f;
 	float weightNonaxial = 1.0f / 36.0f;
@@ -737,27 +737,90 @@ __global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities) 
 		secondTerm = 4.5f * dotProd * dotProd;
 		float bottomLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
 
+		if (useSubgridModel) {
+			float f[19];
+			f[0] = (backLattice[idx].adj[DIR_MIDDLE_VERTEX] - middleEq);
+			f[1] = (backLattice[idx].adj[DIR_RIGHT_FACE] - rightEq);
+			f[2] = (backLattice[idx].adj[DIR_LEFT_FACE] - leftEq);
+			f[3] = (backLattice[idx].adj[DIR_BACK_FACE] - backEq);
+			f[4] = (backLattice[idx].adj[DIR_FRONT_FACE] - frontEq);
+			f[5] = (backLattice[idx].adj[DIR_TOP_FACE] - topEq);
+			f[6] = (backLattice[idx].adj[DIR_BOTTOM_FACE] - bottomEq);
+			f[7] = (backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
+			f[8] = (backLattice[idx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
+			f[9] = (backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
+			f[10] = (backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
+			f[11] = (backLattice[idx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
+			f[12] = (backLattice[idx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
+			f[13] = (backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
+			f[14] = (backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
+			f[15] = (backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
+			f[16] = (backLattice[idx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
+			f[17] = (backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
+			f[18] = (backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
 
-		backLattice[idx].adj[DIR_MIDDLE_VERTEX] -= d_itau * (backLattice[idx].adj[DIR_MIDDLE_VERTEX] - middleEq);
-		backLattice[idx].adj[DIR_RIGHT_FACE] -= d_itau * (backLattice[idx].adj[DIR_RIGHT_FACE] - rightEq);
-		backLattice[idx].adj[DIR_LEFT_FACE] -= d_itau * (backLattice[idx].adj[DIR_LEFT_FACE] - leftEq);
-		backLattice[idx].adj[DIR_BACK_FACE] -= d_itau * (backLattice[idx].adj[DIR_BACK_FACE] - backEq);
-		backLattice[idx].adj[DIR_FRONT_FACE] -= d_itau * (backLattice[idx].adj[DIR_FRONT_FACE] - frontEq);
-		backLattice[idx].adj[DIR_TOP_FACE] -= d_itau * (backLattice[idx].adj[DIR_TOP_FACE] - topEq);
-		backLattice[idx].adj[DIR_BOTTOM_FACE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_FACE] - bottomEq);
-		backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
-		backLattice[idx].adj[DIR_BACK_LEFT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
-		backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
-		backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
-		backLattice[idx].adj[DIR_TOP_BACK_EDGE] -= d_itau * (backLattice[idx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
-		backLattice[idx].adj[DIR_TOP_FRONT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
-		backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
-		backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
-		backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
-		backLattice[idx].adj[DIR_TOP_LEFT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
-		backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
-		backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
+			float tmp = -1.0f / (2.0f * d_tau);
 
+			float sxx = f[3] + f[4] + f[7] + f[8] + f[9] + f[10] + f[15] + f[16] + f[17] + f[18];
+			float sxz = f[9] - f[8] - f[10] + f[7];
+			float sxy = f[15] + f[16] + f[17] + f[18];
+			float szz = f[1] + f[2] + f[7] + f[8] + f[9] + f[10] + f[11] + f[12] + f[13] + f[14];
+			float szy = f[12] + f[13] - f[14] - f[11];
+			float syy = f[5] + f[6] + f[11] + f[12] + f[13] + f[14] + f[15] + f[16] + f[17] + f[18];
+			sxx *= tmp;
+			sxz *= tmp;
+			sxy *= tmp;
+			szz *= tmp;
+			szy *= tmp;
+			syy *= tmp;
+			float magS = sqrtf(2.0f * (sxx * sxx + syy * syy + szz * szz + 2.0f * sqrtf(sxy * sxy + sxz * sxz + szy * szy)));
+
+			float nu = (2.0f * d_tau - 1.0f) / 6.0f;
+			float itau_new = 1.0f / (3.0f * (nu + SMAG_C * SMAG_C * magS) + 0.5f);
+
+
+			backLattice[idx].adj[DIR_MIDDLE_VERTEX] -= itau_new * (backLattice[idx].adj[DIR_MIDDLE_VERTEX] - middleEq);
+			backLattice[idx].adj[DIR_RIGHT_FACE] -= itau_new * (backLattice[idx].adj[DIR_RIGHT_FACE] - rightEq);
+			backLattice[idx].adj[DIR_LEFT_FACE] -= itau_new * (backLattice[idx].adj[DIR_LEFT_FACE] - leftEq);
+			backLattice[idx].adj[DIR_BACK_FACE] -= itau_new * (backLattice[idx].adj[DIR_BACK_FACE] - backEq);
+			backLattice[idx].adj[DIR_FRONT_FACE] -= itau_new * (backLattice[idx].adj[DIR_FRONT_FACE] - frontEq);
+			backLattice[idx].adj[DIR_TOP_FACE] -= itau_new * (backLattice[idx].adj[DIR_TOP_FACE] - topEq);
+			backLattice[idx].adj[DIR_BOTTOM_FACE] -= itau_new * (backLattice[idx].adj[DIR_BOTTOM_FACE] - bottomEq);
+			backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
+			backLattice[idx].adj[DIR_BACK_LEFT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
+			backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
+			backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
+			backLattice[idx].adj[DIR_TOP_BACK_EDGE] -= itau_new * (backLattice[idx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
+			backLattice[idx].adj[DIR_TOP_FRONT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
+			backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] -= itau_new * (backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
+			backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
+			backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
+			backLattice[idx].adj[DIR_TOP_LEFT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
+			backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
+			backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] -= itau_new * (backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
+
+		} else {
+
+			backLattice[idx].adj[DIR_MIDDLE_VERTEX] -= d_itau * (backLattice[idx].adj[DIR_MIDDLE_VERTEX] - middleEq);
+			backLattice[idx].adj[DIR_RIGHT_FACE] -= d_itau * (backLattice[idx].adj[DIR_RIGHT_FACE] - rightEq);
+			backLattice[idx].adj[DIR_LEFT_FACE] -= d_itau * (backLattice[idx].adj[DIR_LEFT_FACE] - leftEq);
+			backLattice[idx].adj[DIR_BACK_FACE] -= d_itau * (backLattice[idx].adj[DIR_BACK_FACE] - backEq);
+			backLattice[idx].adj[DIR_FRONT_FACE] -= d_itau * (backLattice[idx].adj[DIR_FRONT_FACE] - frontEq);
+			backLattice[idx].adj[DIR_TOP_FACE] -= d_itau * (backLattice[idx].adj[DIR_TOP_FACE] - topEq);
+			backLattice[idx].adj[DIR_BOTTOM_FACE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_FACE] - bottomEq);
+			backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
+			backLattice[idx].adj[DIR_BACK_LEFT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
+			backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
+			backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
+			backLattice[idx].adj[DIR_TOP_BACK_EDGE] -= d_itau * (backLattice[idx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
+			backLattice[idx].adj[DIR_TOP_FRONT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
+			backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
+			backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
+			backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
+			backLattice[idx].adj[DIR_TOP_LEFT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
+			backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
+			backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
+		}
 
 		/*for (int i = 0; i < 19; i++) {
 			if (backLattice[idx].adj[i] < 0.0f) {
@@ -777,7 +840,7 @@ __global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities) 
 	\param[in] backLattice		Back lattice in which we do our calculations.
 	\param[in] velocities		Velocities array for the lattice.
 */
-__global__ void collisionStepKernelShared(Node3D *backLattice, glm::vec3 *velocities) {
+__global__ void collisionStepKernelShared(Node3D *backLattice, glm::vec3 *velocities, int useSubgridModel = 0) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
 	idx += blockDim.x * blockDim.y * blockIdx.x;
@@ -935,26 +998,90 @@ __global__ void collisionStepKernelShared(Node3D *backLattice, glm::vec3 *veloci
 		float bottomLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
 
 
-		cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] -= d_itau * (cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] - middleEq);
-		cache[cacheIdx].adj[DIR_RIGHT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_RIGHT_FACE] - rightEq);
-		cache[cacheIdx].adj[DIR_LEFT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_LEFT_FACE] - leftEq);
-		cache[cacheIdx].adj[DIR_BACK_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_FACE] - backEq);
-		cache[cacheIdx].adj[DIR_FRONT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_FACE] - frontEq);
-		cache[cacheIdx].adj[DIR_TOP_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FACE] - topEq);
-		cache[cacheIdx].adj[DIR_BOTTOM_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FACE] - bottomEq);
-		cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
-		cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
-		cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
-		cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
-		cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
-		cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
-		cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
-		cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
-		cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
-		cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
-		cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
-		cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
+		if (useSubgridModel) {
+			float f[19];
+			f[0] = (cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] - middleEq);
+			f[1] = (cache[cacheIdx].adj[DIR_RIGHT_FACE] - rightEq);
+			f[2] = (cache[cacheIdx].adj[DIR_LEFT_FACE] - leftEq);
+			f[3] = (cache[cacheIdx].adj[DIR_BACK_FACE] - backEq);
+			f[4] = (cache[cacheIdx].adj[DIR_FRONT_FACE] - frontEq);
+			f[5] = (cache[cacheIdx].adj[DIR_TOP_FACE] - topEq);
+			f[6] = (cache[cacheIdx].adj[DIR_BOTTOM_FACE] - bottomEq);
+			f[7] = (cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
+			f[8] = (cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
+			f[9] = (cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
+			f[10] = (cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
+			f[11] = (cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
+			f[12] = (cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
+			f[13] = (cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
+			f[14] = (cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
+			f[15] = (cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
+			f[16] = (cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
+			f[17] = (cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
+			f[18] = (cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
 
+			float tmp = -1.0f / (2.0f * d_tau);
+
+			float sxx = f[3] + f[4] + f[7] + f[8] + f[9] + f[10] + f[15] + f[16] + f[17] + f[18];
+			float sxz = f[9] - f[8] - f[10] + f[7];
+			float sxy = f[15] + f[16] + f[17] + f[18];
+			float szz = f[1] + f[2] + f[7] + f[8] + f[9] + f[10] + f[11] + f[12] + f[13] + f[14];
+			float szy = f[12] + f[13] - f[14] - f[11];
+			float syy = f[5] + f[6] + f[11] + f[12] + f[13] + f[14] + f[15] + f[16] + f[17] + f[18];
+			sxx *= tmp;
+			sxz *= tmp;
+			sxy *= tmp;
+			szz *= tmp;
+			szy *= tmp;
+			syy *= tmp;
+			float magS = sqrtf(2.0f * (sxx * sxx + syy * syy + szz * szz + 2.0f * sqrtf(sxy * sxy + sxz * sxz + szy * szy)));
+
+			float nu = (2.0f * d_tau - 1.0f) / 6.0f;
+			float itau_new = 1.0f / (3.0f * (nu + SMAG_C * SMAG_C * magS) + 0.5f);
+
+
+			cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] -= d_itau * (cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] - middleEq);
+			cache[cacheIdx].adj[DIR_RIGHT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_RIGHT_FACE] - rightEq);
+			cache[cacheIdx].adj[DIR_LEFT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_LEFT_FACE] - leftEq);
+			cache[cacheIdx].adj[DIR_BACK_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_FACE] - backEq);
+			cache[cacheIdx].adj[DIR_FRONT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_FACE] - frontEq);
+			cache[cacheIdx].adj[DIR_TOP_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FACE] - topEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FACE] - bottomEq);
+			cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
+			cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
+			cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
+			cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
+			cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
+			cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
+			cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
+			cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
+
+		} else {
+
+			cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] -= d_itau * (cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] - middleEq);
+			cache[cacheIdx].adj[DIR_RIGHT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_RIGHT_FACE] - rightEq);
+			cache[cacheIdx].adj[DIR_LEFT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_LEFT_FACE] - leftEq);
+			cache[cacheIdx].adj[DIR_BACK_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_FACE] - backEq);
+			cache[cacheIdx].adj[DIR_FRONT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_FACE] - frontEq);
+			cache[cacheIdx].adj[DIR_TOP_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FACE] - topEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FACE] - bottomEq);
+			cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
+			cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
+			cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
+			cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
+			cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
+			cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
+			cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
+			cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
+		}
 
 		/*for (int i = 0; i < 19; i++) {
 			if (cache[cacheIdx].adj[i] < 0.0f) {
@@ -1453,8 +1580,8 @@ void LBM3D_1D_indices::doStepCUDA() {
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= collision step CUDA
-	//collisionStepKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities);
-	collisionStepKernelShared << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities);
+	//collisionStepKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, vars->useSubgridModel);
+	collisionStepKernelShared << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities, vars->useSubgridModel);
 	//collisionStepKernelStreamlinedShared << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities);
 
 	CHECK_ERROR(cudaPeekAtLastError());

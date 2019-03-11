@@ -299,7 +299,7 @@ STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpD
 	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
 	secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
 
-	profileMap = new ppmImage("profileMaps/120x80_pm_03.ppm");
+	profileMap = new ppmImage("profileMaps/120x80_pm_01.ppm");
 
 	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
 

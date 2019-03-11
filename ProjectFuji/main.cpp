@@ -386,7 +386,7 @@ int runApp() {
 	camera = viewportCamera;
 	diagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
 	overlayDiagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
-	freeRoamCamera = new FreeRoamCamera(glm::vec3(0.0f, 100.0f, 30.0f), WORLD_UP, -45.0f, -45.0f);
+	freeRoamCamera = new FreeRoamCamera(glm::vec3(30.0f, 50.0f, 30.0f), WORLD_UP, -35.0f, -35.0f);
 
 
 	viewportProjection = projection;
@@ -1167,7 +1167,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			}
 #endif
 
-			nk_layout_row_dynamic(ctx, 25, 1);
+			nk_layout_row_dynamic(ctx, 15, 1);
 
 			nk_property_float(ctx, "Tau:", 0.5005f, &lbm->tau, 10.0f, 0.005f, 0.005f);
 
@@ -1245,7 +1245,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 400.0f, 1.0f);
 
 
-			nk_layout_row_dynamic(ctx, 30, 2);
+			nk_layout_row_dynamic(ctx, 15, 2);
 			if (nk_option_label(ctx, "Orthographic", projectionMode == ORTHOGRAPHIC)) {
 				projectionMode = ORTHOGRAPHIC;
 			}
@@ -1256,7 +1256,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				nk_slider_float(ctx, 30.0f, &fov, 120.0f, 1.0f);
 			}
 
-			nk_layout_row_dynamic(ctx, 30, 2);
+			nk_layout_row_dynamic(ctx, 15, 2);
 			nk_checkbox_label(ctx, "Skybox", &drawSkybox);
 
 			//int useFreeRoamCameraPrev = vars.useFreeRoamCamera;
@@ -1316,6 +1316,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_checkbox_label(ctx, "y top inlet", &lbm->yTopInlet);
 			nk_checkbox_label(ctx, "z left inlet", &lbm->zLeftInlet);
 			nk_checkbox_label(ctx, "z right inlet", &lbm->zRightInlet);
+
+			nk_checkbox_label(ctx, "Use subgrid model (experimental)", &vars.useSubgridModel);
+
 
 
 		} else if (uiMode == 1) {

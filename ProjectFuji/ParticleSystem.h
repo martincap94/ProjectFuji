@@ -67,13 +67,14 @@ public:
 	struct cudaGraphicsResource *cudaParticleVerticesVBO;
 	struct cudaGraphicsResource *cudaParticleProfilesVBO;
 
+	// will be overwritten from config file if set!
 	float positionRecalculationThreshold = 0.5f;
 	int maxPositionRecalculations = 0;
 
 	int opacityBlendMode = 1;
 	float opacityBlendRange = 10.0f;
 
-	int showHiddenParticles = 0;
+	int showHiddenParticles = 1;
 
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);
