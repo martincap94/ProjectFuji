@@ -26,8 +26,10 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
 	secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
 
-	emitters.push_back(new CircleEmitter(this, glm::vec3(10.0f, 0.0f, 10.0f), 2.0f, true));
-	emitters.push_back(new CircleEmitter(this, glm::vec3(0.0f), 5.0f, true));
+	emitters.push_back(new CircleEmitter(this, glm::vec3(40.0f, 0.0f, 40.0f), 20.0f, true));
+	emitters.push_back(new CircleEmitter(this, glm::vec3(20.0f), 10.0f, true));
+
+	disableAllEmitters();
 
 }
 
@@ -120,7 +122,7 @@ void ParticleSystem::emitParticles() {
 
 	glNamedBufferSubData(particleProfilesVBO, sizeof(int) * prevNumActiveParticles, sizeof(int) * particleProfilesToEmit.size(), particleProfilesToEmit.data());
 
-	cudaMemcpy(d_verticalVelocities + prevNumActiveParticles, verticalVelocitiesToEmit.data(), (numActiveParticles - prevNumActiveParticles) * sizeof(float), cudaMemcpyHostToDevice);
+	CHECK_ERROR(cudaMemcpy(d_verticalVelocities + prevNumActiveParticles, verticalVelocitiesToEmit.data(), (numActiveParticles - prevNumActiveParticles) * sizeof(float), cudaMemcpyHostToDevice));
 
 
 	// clear the temporary emitted particle structures
@@ -333,6 +335,22 @@ void ParticleSystem::initParticlesAboveTerrain() {
 
 void ParticleSystem::activateAllParticles() {
 	numActiveParticles = numParticles;
+}
+
+void ParticleSystem::deactivateAllParticles() {
+	numActiveParticles = 0;
+}
+
+void ParticleSystem::enableAllEmitters() {
+	for (int i = 0; i < emitters.size(); i++) {
+		emitters[i]->enabled = true;
+	}
+}
+
+void ParticleSystem::disableAllEmitters() {
+	for (int i = 0; i < emitters.size(); i++) {
+		emitters[i]->enabled = false;
+	}
 }
 
 

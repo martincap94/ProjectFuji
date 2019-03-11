@@ -46,6 +46,110 @@ __device__ glm::vec3 mapToViridis3D(float val) {
 }
 
 
+
+
+__global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors, int respawnMode, int outOfBoundsMode) {
+
+	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
+	idx += blockDim.x * blockDim.y * blockIdx.x;
+
+	glm::vec3 adjVelocities[8];
+
+	while (idx < numActiveParticles) {
+
+		glm::vec3 pos = particleVertices[idx];
+
+		if (pos.x < 0.0f || pos.x >= d_latticeWidth - 1) {
+			pos.x = 0.0f;
+		}
+		if (pos.y < 0.0f) {
+			pos.y = 0.0f;
+		}
+		if (pos.y >= d_latticeHeight - 1) {
+			// respawn
+			pos.x = 0.0f;
+			pos.y = rand(idx, pos.y) * (d_latticeHeight - 2);
+			pos.z = rand(idx, pos.z) * (d_latticeDepth - 2);
+		}
+		if (pos.z < 0.0f || pos.z >= d_latticeDepth - 1) {
+			pos.z = (float)((__float2int_rd(pos.z) + d_latticeDepth - 2) % (d_latticeDepth - 2));
+		}
+
+
+
+		// SOLVES CRASHES WITH STLP
+		//if (pos.x < 0.0f || pos.x > d_latticeWidth - 1 ||
+		//	pos.y < 0.0f || pos.y > d_latticeHeight - 1 ||
+		//	pos.z < 0.0f || pos.z > d_latticeDepth - 1) {
+
+		//	if (outOfBoundsMode == 0) {
+		//		idx += blockDim.x * blockDim.y * gridDim.x;
+		//		continue; // beware - while cycle goes through multiple particles!
+		//	}
+
+		//	pos.x = 0.0f;
+		//	pos.y = rand(idx, pos.y) * (d_latticeHeight - 1);
+		//	pos.z = rand(idx, pos.z) * (d_latticeDepth - 1);
+		//}
+
+		int leftX = (int)pos.x;
+		int rightX = leftX + 1;
+		int bottomY = (int)pos.y;
+		int topY = bottomY + 1;
+		int backZ = (int)pos.z;
+		int frontZ = backZ + 1;
+
+		adjVelocities[0] = velocities[getIdxKer(leftX, topY, backZ)];
+		adjVelocities[1] = velocities[getIdxKer(rightX, topY, backZ)];
+		adjVelocities[2] = velocities[getIdxKer(leftX, bottomY, backZ)];
+		adjVelocities[3] = velocities[getIdxKer(rightX, bottomY, backZ)];
+		adjVelocities[4] = velocities[getIdxKer(leftX, topY, frontZ)];
+		adjVelocities[5] = velocities[getIdxKer(rightX, topY, frontZ)];
+		adjVelocities[6] = velocities[getIdxKer(leftX, bottomY, frontZ)];
+		adjVelocities[7] = velocities[getIdxKer(rightX, bottomY, frontZ)];
+
+		float horizontalRatio = pos.x - leftX;
+		float verticalRatio = pos.y - bottomY;
+		float depthRatio = pos.z - backZ;
+
+		glm::vec3 topBackVelocity = adjVelocities[0] * horizontalRatio + adjVelocities[1] * (1.0f - horizontalRatio);
+		glm::vec3 bottomBackVelocity = adjVelocities[2] * horizontalRatio + adjVelocities[3] * (1.0f - horizontalRatio);
+
+		glm::vec3 backVelocity = bottomBackVelocity * verticalRatio + topBackVelocity * (1.0f - verticalRatio);
+
+		glm::vec3 topFrontVelocity = adjVelocities[4] * horizontalRatio + adjVelocities[5] * (1.0f - horizontalRatio);
+		glm::vec3 bottomFrontVelocity = adjVelocities[6] * horizontalRatio + adjVelocities[7] * (1.0f - horizontalRatio);
+
+		glm::vec3 frontVelocity = bottomFrontVelocity * verticalRatio + topFrontVelocity * (1.0f - verticalRatio);
+
+		glm::vec3 finalVelocity = backVelocity * depthRatio + frontVelocity * (1.0f - depthRatio);
+
+		pos += finalVelocity;
+
+
+		//if (pos.x < 0.0f || pos.x > d_latticeWidth - 1 ||
+		//	pos.y < 0.0f || pos.y > d_latticeHeight - 1 ||
+		//	pos.z < 0.0f || pos.z > d_latticeDepth - 1) {
+
+		//	pos.x = 0.0f;
+
+		//	if (respawnMode == 1) {
+		//		pos.z = rand(idx, pos.z) * (d_latticeDepth - 1); // comment this out if you want to respawn at same z
+		//	}
+
+		//}
+		particleVertices[idx] = pos;
+
+		idx += blockDim.x * blockDim.y * gridDim.x;
+
+	}
+}
+
+
+
+
+
+
 /// Kernel for moving particles that uses OpenGL interoperability.
 /**
 	Kernel for moving particles that uses OpenGL interoperability for setting particle positions and colors.
@@ -57,7 +161,7 @@ __device__ glm::vec3 mapToViridis3D(float val) {
 	\param[in] numParticles			Number of particles.
 	\param[in] particleColors		VBO of particle colors.
 */
-__global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors, int respawnMode) {
+__global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors, int respawnMode, int outOfBoundsMode) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
 	idx += blockDim.x * blockDim.y * blockIdx.x;
@@ -71,7 +175,11 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 		if (particleVertices[idx].x < 0.0f || particleVertices[idx].x > d_latticeWidth - 1 ||
 			particleVertices[idx].y < 0.0f || particleVertices[idx].y > d_latticeHeight - 1 ||
 			particleVertices[idx].z < 0.0f || particleVertices[idx].z > d_latticeDepth - 1) {
-			//return;
+
+			if (outOfBoundsMode == 0) {
+				idx += blockDim.x * blockDim.y * gridDim.x;
+				continue; // beware - while cycle goes through multiple particles!
+			}
 
 			particleVertices[idx].x = 0.0f;
 			//particleVertices[idx].y = y;
@@ -150,10 +258,10 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 		//}
 
 
-		
-		if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
-			particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
-			particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
+
+		if (particleVertices[idx].x < 0.0f || particleVertices[idx].x > d_latticeWidth - 1 ||
+			particleVertices[idx].y < 0.0f || particleVertices[idx].y > d_latticeHeight - 1 ||
+			particleVertices[idx].z < 0.0f || particleVertices[idx].z > d_latticeDepth - 1) {
 
 			particleVertices[idx].x = 0.0f;
 			//particleVertices[idx].y = y;
@@ -167,14 +275,14 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 			//particleVertices[idx].z = d_respawnZ++;
 
 		}
-		
-		
+
+
 
 		/*
 		if (d_mirrorSides && (particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1)) {
 			particleVertices[idx].z = (int)(particleVertices[idx].z + d_latticeDepth - 1) % (d_latticeDepth - 1);
 		} else if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
-					particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 || 
+					particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
 				   particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
 			particleVertices[idx].x = 0.0f;
 			particleVertices[idx].y = d_respawnY;
@@ -194,7 +302,7 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 			}
 		}
 		*/
-		
+
 
 		/*
 		if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
@@ -238,18 +346,18 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 			}
 		}
 		*/
-		
-		
 
-/*
-		if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1) {
-			particleVertices[idx].x = 0.0f;
-		} else if (particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
-				   particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
 
-			particleVertices[idx].y = (float)((int)(particleVertices[idx].y + d_latticeHeight - 1) % (d_latticeHeight - 1));
-			particleVertices[idx].z = (float)((int)(particleVertices[idx].z + d_latticeDepth - 1) % (d_latticeDepth - 1));
-		}*/
+
+		/*
+				if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1) {
+					particleVertices[idx].x = 0.0f;
+				} else if (particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
+						   particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
+
+					particleVertices[idx].y = (float)((int)(particleVertices[idx].y + d_latticeHeight - 1) % (d_latticeHeight - 1));
+					particleVertices[idx].z = (float)((int)(particleVertices[idx].z + d_latticeDepth - 1) % (d_latticeDepth - 1));
+				}*/
 
 		idx += blockDim.x * blockDim.y * gridDim.x;
 
@@ -285,164 +393,188 @@ __global__ void clearBackLatticeKernel(Node3D *backLattice) {
 	\param[in] velocities		Velocities array for the lattice.
 	\param[in] inletVelocity	Our desired inlet velocity.
 */
-__global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, glm::vec3 inletVelocity) {
-
-	float macroDensity = 1.0f;
-	//glm::vec3 macroVelocity = inletVelocity;
-
-
-	float leftTermMiddle = WEIGHT_MIDDLE * macroDensity;
-	float leftTermAxis = WEIGHT_AXIS * macroDensity;
-	float leftTermNonaxial = WEIGHT_NON_AXIAL * macroDensity;
-
-
-	float macroVelocityDot = glm::dot(inletVelocity, inletVelocity);
-	float thirdTerm = 1.5f * macroVelocityDot;
-
-	float middleEq = leftTermMiddle + leftTermMiddle * (-thirdTerm);
-
-	float dotProd = glm::dot(dirVectorsConst[DIR_RIGHT_FACE], inletVelocity);
-	float firstTerm = 3.0f * dotProd;
-	float secondTerm = 4.5f * dotProd * dotProd;
-	float rightEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_LEFT_FACE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float leftEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
-
-	dotProd = glm::dot(dirVectorsConst[DIR_FRONT_FACE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float frontEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_BACK_FACE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float backEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_TOP_FACE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float topEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_FACE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float bottomEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_BACK_RIGHT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float backRightEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_BACK_LEFT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float backLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_FRONT_RIGHT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float frontRightEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_FRONT_LEFT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float frontLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_TOP_BACK_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float topBackEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_TOP_FRONT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float topFrontEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_BACK_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float bottomBackEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-	dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_FRONT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float bottomFrontEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_TOP_RIGHT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float topRightEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_TOP_LEFT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float topLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-
-	dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_RIGHT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float bottomRightEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
-
-	dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_LEFT_EDGE], inletVelocity);
-	firstTerm = 3.0f * dotProd;
-	secondTerm = 4.5f * dotProd * dotProd;
-	float bottomLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+__global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, glm::vec3 inletVelocity, int xLeftInlet = 1, int xRightInlet = 0, int yBottomInlet = 0, int yTopInlet = 0, int zLeftInlet = 0, int zRightInlet = 0) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
 	idx += blockDim.x * blockDim.y * blockIdx.x;
 
-
-	int x = idx % d_latticeWidth;
-	//int y = (idx / d_latticeWidth) % d_latticeHeight;
-	//int z = idx / (d_latticeHeight * d_latticeWidth);
+	if (idx < d_latticeSize) {
 
 
-	if (x == 0 && idx < d_latticeSize) {
-		backLattice[idx].adj[DIR_MIDDLE_VERTEX] = middleEq;
-		backLattice[idx].adj[DIR_RIGHT_FACE] = rightEq;
-		backLattice[idx].adj[DIR_LEFT_FACE] = leftEq;
-		backLattice[idx].adj[DIR_BACK_FACE] = backEq;
-		backLattice[idx].adj[DIR_FRONT_FACE] = frontEq;
-		backLattice[idx].adj[DIR_TOP_FACE] = topEq;
-		backLattice[idx].adj[DIR_BOTTOM_FACE] = bottomEq;
-		backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] = backRightEq;
-		backLattice[idx].adj[DIR_BACK_LEFT_EDGE] = backLeftEq;
-		backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] = frontRightEq;
-		backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] = frontLeftEq;
-		backLattice[idx].adj[DIR_TOP_BACK_EDGE] = topBackEq;
-		backLattice[idx].adj[DIR_TOP_FRONT_EDGE] = topFrontEq;
-		backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] = bottomBackEq;
-		backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] = bottomFrontEq;
-		backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] = topRightEq;
-		backLattice[idx].adj[DIR_TOP_LEFT_EDGE] = topLeftEq;
-		backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] = bottomRightEq;
-		backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] = bottomLeftEq;
+		int x = idx % d_latticeWidth;
+		int y = (idx / d_latticeWidth) % d_latticeHeight;
+		int z = idx / (d_latticeHeight * d_latticeWidth);
+
+		bool shouldBeSet = false;
+
+		if (xLeftInlet && x == 0) {
+			shouldBeSet = true;
+		}
+		if (xRightInlet && x == d_latticeWidth - 1) {
+			shouldBeSet = true;
+		}
+		if (yBottomInlet && y == 0) {
+			shouldBeSet = true;
+		}
+		if (yTopInlet && y == d_latticeHeight - 1) {
+			shouldBeSet = true;
+		}
+		if (zLeftInlet && z == 0) {
+			shouldBeSet = true;
+		}
+		if (zRightInlet && z == d_latticeDepth - 1) {
+			shouldBeSet = true;
+		}
+		if (shouldBeSet) {
+
+			float macroDensity = 1.0f;
+			//glm::vec3 macroVelocity = inletVelocity;
 
 
-		/*for (int i = 0; i < 19; i++) {
-			if (backLattice[idx].adj[i] < 0.0f) {
-				backLattice[idx].adj[i] = 0.0f;
-			} else if (backLattice[idx].adj[i] > 1.0f) {
-				backLattice[idx].adj[i] = 1.0f;
-			}
-		}*/
+			float leftTermMiddle = WEIGHT_MIDDLE * macroDensity;
+			float leftTermAxis = WEIGHT_AXIS * macroDensity;
+			float leftTermNonaxial = WEIGHT_NON_AXIAL * macroDensity;
+
+
+			float macroVelocityDot = glm::dot(inletVelocity, inletVelocity);
+			float thirdTerm = 1.5f * macroVelocityDot;
+
+			float middleEq = leftTermMiddle + leftTermMiddle * (-thirdTerm);
+
+			float dotProd = glm::dot(dirVectorsConst[DIR_RIGHT_FACE], inletVelocity);
+			float firstTerm = 3.0f * dotProd;
+			float secondTerm = 4.5f * dotProd * dotProd;
+			float rightEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_LEFT_FACE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float leftEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
+
+			dotProd = glm::dot(dirVectorsConst[DIR_FRONT_FACE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float frontEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_BACK_FACE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float backEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_TOP_FACE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float topEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_FACE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float bottomEq = leftTermAxis + leftTermAxis * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_BACK_RIGHT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float backRightEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_BACK_LEFT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float backLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_FRONT_RIGHT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float frontRightEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_FRONT_LEFT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float frontLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_TOP_BACK_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float topBackEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_TOP_FRONT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float topFrontEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_BACK_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float bottomBackEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+			dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_FRONT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float bottomFrontEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_TOP_RIGHT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float topRightEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_TOP_LEFT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float topLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_RIGHT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float bottomRightEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+			dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_LEFT_EDGE], inletVelocity);
+			firstTerm = 3.0f * dotProd;
+			secondTerm = 4.5f * dotProd * dotProd;
+			float bottomLeftEq = leftTermNonaxial + leftTermNonaxial * (firstTerm + secondTerm - thirdTerm);
+
+
+			backLattice[idx].adj[DIR_MIDDLE_VERTEX] = middleEq;
+			backLattice[idx].adj[DIR_RIGHT_FACE] = rightEq;
+			backLattice[idx].adj[DIR_LEFT_FACE] = leftEq;
+			backLattice[idx].adj[DIR_BACK_FACE] = backEq;
+			backLattice[idx].adj[DIR_FRONT_FACE] = frontEq;
+			backLattice[idx].adj[DIR_TOP_FACE] = topEq;
+			backLattice[idx].adj[DIR_BOTTOM_FACE] = bottomEq;
+			backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] = backRightEq;
+			backLattice[idx].adj[DIR_BACK_LEFT_EDGE] = backLeftEq;
+			backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] = frontRightEq;
+			backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] = frontLeftEq;
+			backLattice[idx].adj[DIR_TOP_BACK_EDGE] = topBackEq;
+			backLattice[idx].adj[DIR_TOP_FRONT_EDGE] = topFrontEq;
+			backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] = bottomBackEq;
+			backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] = bottomFrontEq;
+			backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] = topRightEq;
+			backLattice[idx].adj[DIR_TOP_LEFT_EDGE] = topLeftEq;
+			backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] = bottomRightEq;
+			backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] = bottomLeftEq;
+
+
+			/*for (int i = 0; i < 19; i++) {
+				if (backLattice[idx].adj[i] < 0.0f) {
+					backLattice[idx].adj[i] = 0.0f;
+				} else if (backLattice[idx].adj[i] > 1.0f) {
+					backLattice[idx].adj[i] = 1.0f;
+				}
+			}*/
+		}
 	}
 }
 
@@ -1155,32 +1287,32 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	backLattice = new Node3D[latticeSize]();
 	velocities = new glm::vec3[latticeSize]();
 
-	cudaMalloc((void**)&d_frontLattice, sizeof(Node3D) * latticeSize);
-	cudaMalloc((void**)&d_backLattice, sizeof(Node3D) * latticeSize);
-	cudaMalloc((void**)&d_velocities, sizeof(glm::vec3) * latticeSize);
+	CHECK_ERROR(cudaMalloc((void**)&d_frontLattice, sizeof(Node3D) * latticeSize));
+	CHECK_ERROR(cudaMalloc((void**)&d_backLattice, sizeof(Node3D) * latticeSize));
+	CHECK_ERROR(cudaMalloc((void**)&d_velocities, sizeof(glm::vec3) * latticeSize));
 
 
 	//cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleSystem->vbo, cudaGraphicsMapFlagsWriteDiscard);
-	cudaGraphicsGLRegisterBuffer(&cudaParticleColorsVBO, particleSystem->colorsVBO, cudaGraphicsMapFlagsWriteDiscard);
+	//CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleColorsVBO, particleSystem->colorsVBO, cudaGraphicsMapFlagsWriteDiscard));
 
 
-	cudaMemcpyToSymbol(dirVectorsConst, &directionVectors3D[0], 19 * sizeof(glm::vec3));
+	CHECK_ERROR(cudaMemcpyToSymbol(dirVectorsConst, &directionVectors3D[0], 19 * sizeof(glm::vec3)));
 
 	float weightMiddle = 1.0f / 3.0f;
 	float weightAxis = 1.0f / 18.0f;
 	float weightNonaxial = 1.0f / 36.0f;
-	cudaMemcpyToSymbol(WEIGHT_MIDDLE, &weightMiddle, sizeof(float));
-	cudaMemcpyToSymbol(WEIGHT_AXIS, &weightAxis, sizeof(float));
-	cudaMemcpyToSymbol(WEIGHT_NON_AXIAL, &weightNonaxial, sizeof(float));
+	CHECK_ERROR(cudaMemcpyToSymbol(WEIGHT_MIDDLE, &weightMiddle, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(WEIGHT_AXIS, &weightAxis, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(WEIGHT_NON_AXIAL, &weightNonaxial, sizeof(float)));
 
 
-	cudaMemcpyToSymbol(d_latticeWidth, &latticeWidth, sizeof(int));
-	cudaMemcpyToSymbol(d_latticeHeight, &latticeHeight, sizeof(int));
-	cudaMemcpyToSymbol(d_latticeDepth, &latticeDepth, sizeof(int));
-	cudaMemcpyToSymbol(d_latticeSize, &latticeSize, sizeof(int));
-	cudaMemcpyToSymbol(d_tau, &tau, sizeof(float));
-	cudaMemcpyToSymbol(d_itau, &itau, sizeof(float));
-	cudaMemcpyToSymbol(d_mirrorSides, &mirrorSides, sizeof(int));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_latticeWidth, &latticeWidth, sizeof(int)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_latticeHeight, &latticeHeight, sizeof(int)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_latticeDepth, &latticeDepth, sizeof(int)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_latticeSize, &latticeSize, sizeof(int)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_tau, &tau, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_itau, &itau, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_mirrorSides, &mirrorSides, sizeof(int)));
 
 
 	gridDim = dim3((unsigned int)ceil(latticeSize / (blockDim.x * blockDim.y * blockDim.z)) + 1, 1, 1);
@@ -1190,9 +1322,9 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	initBuffers();
 	initLattice();
 
-	cudaMemcpy(d_backLattice, backLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_velocities, velocities, sizeof(glm::vec3) * latticeSize, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_frontLattice, frontLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice);
+	CHECK_ERROR(cudaMemcpy(d_backLattice, backLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice));
+	CHECK_ERROR(cudaMemcpy(d_velocities, velocities, sizeof(glm::vec3) * latticeSize, cudaMemcpyHostToDevice));
+	CHECK_ERROR(cudaMemcpy(d_frontLattice, frontLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice));
 
 
 }
@@ -1206,9 +1338,9 @@ LBM3D_1D_indices::~LBM3D_1D_indices() {
 
 	//delete heightMap;
 
-	cudaFree(d_frontLattice);
-	cudaFree(d_backLattice);
-	cudaFree(d_velocities);
+	CHECK_ERROR(cudaFree(d_frontLattice));
+	CHECK_ERROR(cudaFree(d_backLattice));
+	CHECK_ERROR(cudaFree(d_velocities));
 
 	//cudaGraphicsUnregisterResource(cudaParticleVerticesVBO);
 	//cudaGraphicsUnregisterResource(cudaParticleColorsVBO);
@@ -1219,8 +1351,8 @@ LBM3D_1D_indices::~LBM3D_1D_indices() {
 void LBM3D_1D_indices::recalculateVariables() {
 	itau = 1.0f / tau;
 	nu = (2.0f * tau - 1.0f) / 6.0f;
-	cudaMemcpyToSymbol(d_tau, &tau, sizeof(float));
-	cudaMemcpyToSymbol(d_itau, &itau, sizeof(float));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_tau, &tau, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_itau, &itau, sizeof(float)));
 }
 
 void LBM3D_1D_indices::initScene() {
@@ -1237,9 +1369,9 @@ void LBM3D_1D_indices::initScene() {
 			tempHM[x + z * latticeWidth] = heightMap->data[x][z];
 		}
 	}
-	cudaMalloc((void**)&d_heightMap, sizeof(float) * latticeWidth * latticeDepth);
+	CHECK_ERROR(cudaMalloc((void**)&d_heightMap, sizeof(float) * latticeWidth * latticeDepth));
 	//cudaMemcpy(d_heightMap, heightMap->data, sizeof(float) * latticeWidth * latticeDepth, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_heightMap, tempHM, sizeof(float) * latticeWidth * latticeDepth, cudaMemcpyHostToDevice);
+	CHECK_ERROR(cudaMemcpy(d_heightMap, tempHM, sizeof(float) * latticeWidth * latticeDepth, cudaMemcpyHostToDevice));
 
 
 	cout << "lattice width = " << latticeWidth << ", height = " << latticeHeight << ", depth = " << latticeDepth << endl;
@@ -1300,37 +1432,39 @@ void LBM3D_1D_indices::doStep() {
 
 void LBM3D_1D_indices::doStepCUDA() {
 
-	//CHECK_ERROR(cudaPeekAtLastError());
+	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= clear back lattice CUDA
 	clearBackLatticeKernel << <gridDim, blockDim >> > (d_backLattice);
-	//CHECK_ERROR(cudaPeekAtLastError());
+	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= update inlets CUDA
-	updateInletsKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, inletVelocity);
-	//CHECK_ERROR(cudaPeekAtLastError());
+	//updateInletsKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, inletVelocity);
+	updateInletsKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, inletVelocity, xLeftInlet, xRightInlet, yBottomInlet, yTopInlet, zLeftInlet, zRightInlet);
+
+	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= streaming step CUDA
 	streamingStepKernel << <gridDim, blockDim >> > (d_backLattice, d_frontLattice);
-	//CHECK_ERROR(cudaPeekAtLastError());
+	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= update colliders CUDA
 	updateCollidersKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, d_heightMap);
-	//CHECK_ERROR(cudaPeekAtLastError());
+	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= collision step CUDA
 	//collisionStepKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities);
 	collisionStepKernelShared << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities);
 	//collisionStepKernelStreamlinedShared << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities);
 
-	//CHECK_ERROR(cudaPeekAtLastError());
-	
+	CHECK_ERROR(cudaPeekAtLastError());
+
 
 	// ============================================= move particles CUDA - different respawn from CPU !!!
 
 	glm::vec3 *d_particleVerticesVBO;
 	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaParticleVerticesVBO, 0));
-	
+
 	size_t num_bytes;
 	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_particleVerticesVBO, &num_bytes, particleSystem->cudaParticleVerticesVBO));
 	//printf("CUDA-LBM mapped VBO: May access %ld bytes\n", num_bytes);
@@ -1340,11 +1474,14 @@ void LBM3D_1D_indices::doStepCUDA() {
 	cudaGraphicsMapResources(1, &cudaParticleColorsVBO, 0);
 	cudaGraphicsResourceGetMappedPointer((void **)&d_particleColorsVBO, &num_bytes, cudaParticleColorsVBO);
 	*/
+	CHECK_ERROR(cudaPeekAtLastError());
 
-	moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode);
-	//CHECK_ERROR(cudaPeekAtLastError());
-	
+	//moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode);
+	moveParticlesKernelInteropNew << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode);
+	CHECK_ERROR(cudaPeekAtLastError());
+
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
+	CHECK_ERROR(cudaPeekAtLastError());
 
 	/*
 	cudaGraphicsUnmapResources(1, &cudaParticleColorsVBO, 0);
@@ -1358,6 +1495,8 @@ void LBM3D_1D_indices::doStepCUDA() {
 	//CHECK_ERROR(cudaPeekAtLastError());
 
 	frameId++;
+	CHECK_ERROR(cudaPeekAtLastError());
+
 
 }
 

@@ -6,6 +6,8 @@
 #include "HeightMap.h"
 #include "ShaderProgram.h"
 
+#include <random>
+
 class ParticleSystem;
 
 class Emitter {
@@ -18,12 +20,21 @@ public:
 
 	ShaderProgram *shader;
 
+	random_device rd;
+	mt19937 mt;
+	uniform_real_distribution<float> dist;
+	uniform_real_distribution<float> distRange;
+
 	int maxParticlesToEmit = 0; // 0 means unlimited
 	int numParticlesToEmitPerStep = 1;
 
 	// booleans (as integers for Nuklear)
 	int enabled = 1;
 	int visible = 1;
+	int wiggle = 0; // when enabled, position of the emitter "wiggles" around (shifts) after each emission iteration by the given offset range
+
+	float xWiggleRange = 0.5f;
+	float zWiggleRange = 0.5f;
 
 	//Emitter();
 	Emitter(ParticleSystem *owner);
@@ -35,9 +46,11 @@ public:
 	virtual void emitParticles(int numParticles);
 
 	virtual void update() = 0;
+	virtual void wigglePosition();
 	virtual void draw() = 0;
 	virtual void draw(ShaderProgram *shader) = 0;
 	virtual void initBuffers() = 0;
+
 
 
 protected:

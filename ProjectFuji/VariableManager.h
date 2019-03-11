@@ -66,11 +66,11 @@ public:
 
 	int simulateSun = 0;
 
-	int stlpUseCUDA = 0;
+	int stlpUseCUDA = 1;
 	int applyLBM = 0;
-	int applySTLP = 1;
+	int applySTLP = 0;
 
-	float opacityMultiplier = 0.01f;
+	float opacityMultiplier = 0.03f;
 
 	bool consumeMouseCursor = false;
 	

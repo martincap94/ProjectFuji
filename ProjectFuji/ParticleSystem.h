@@ -107,6 +107,10 @@ public:
 
 
 	void activateAllParticles();
+	void deactivateAllParticles();
+
+	void enableAllEmitters();
+	void disableAllEmitters();
 	
 
 	///// Initializes particle positions for 3D simulation.

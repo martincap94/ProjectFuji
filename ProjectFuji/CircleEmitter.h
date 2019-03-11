@@ -3,6 +3,8 @@
 #include "Emitter.h"
 #include "ParticleSystem.h"
 
+//#include <random>
+
 class CircleEmitter : public Emitter {
 public:
 
@@ -10,6 +12,7 @@ public:
 	float radius;
 
 	int numVisPoints = 36;
+
 
 	CircleEmitter(ParticleSystem *owner, glm::vec3 position = glm::vec3(0.0f), float radius = 1.0f, bool projectOntoTerrain = false);
 	~CircleEmitter();

@@ -457,9 +457,9 @@ void STLPSimulatorCUDA::initCUDA() {
 	
 
 
-	cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size());
+	CHECK_ERROR(cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size()));
 
-	cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice);
+	CHECK_ERROR(cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice));
 
 	//CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
 
@@ -493,7 +493,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_dryAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size()));
 	//cudaMalloc((void**)&d_dryAdiabatOffsets, sizeof(int) * itmp.size());
 	//CHECK_ERROR(cudaMemcpy(d_dryAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size(), cudaMemcpyHostToDevice));
-	cudaMalloc((void**)&d_dryAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * ivectmp.size());
+	CHECK_ERROR(cudaMalloc((void**)&d_dryAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * ivectmp.size()));
 	CHECK_ERROR(cudaMemcpy(d_dryAdiabatOffsetsAndLengths, &ivectmp[0], sizeof(glm::ivec2) * ivectmp.size(), cudaMemcpyHostToDevice));
 
 
@@ -513,7 +513,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_moistAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size()));
 	//cudaMalloc((void**)&d_moistAdiabatOffsets, sizeof(int) * itmp.size());
 	//CHECK_ERROR(cudaMemcpy(d_moistAdiabatOffsets, &itmp[0], sizeof(int) * itmp.size(), cudaMemcpyHostToDevice));
-	cudaMalloc((void**)&d_moistAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * ivectmp.size());
+	CHECK_ERROR(cudaMalloc((void**)&d_moistAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * ivectmp.size()));
 	CHECK_ERROR(cudaMemcpy(d_moistAdiabatOffsetsAndLengths, &ivectmp[0], sizeof(glm::ivec2) * ivectmp.size(), cudaMemcpyHostToDevice));
 
 
@@ -524,7 +524,7 @@ void STLPSimulatorCUDA::initCUDA() {
 		}
 	}
 	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_dryAdiabatProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size()));
-	cudaMalloc((void**)&d_dryAdiabatProfiles, sizeof(glm::vec2) * tmp.size());
+	CHECK_ERROR(cudaMalloc((void**)&d_dryAdiabatProfiles, sizeof(glm::vec2) * tmp.size()));
 	CHECK_ERROR(cudaMemcpy(d_dryAdiabatProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
 
 
@@ -536,7 +536,7 @@ void STLPSimulatorCUDA::initCUDA() {
 		}
 	}
 	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_moistAdiabatProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size()));
-	cudaMalloc((void**)&d_moistAdiabatProfiles, sizeof(glm::vec2) * tmp.size());
+	CHECK_ERROR(cudaMalloc((void**)&d_moistAdiabatProfiles, sizeof(glm::vec2) * tmp.size()));
 	CHECK_ERROR(cudaMemcpy(d_moistAdiabatProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
 
 	// CCL Profiles
@@ -545,7 +545,7 @@ void STLPSimulatorCUDA::initCUDA() {
 		tmp.push_back(stlpDiagram->CCLProfiles[i]);
 	}
 	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_CCLProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size()));
-	cudaMalloc((void**)&d_CCLProfiles, sizeof(glm::vec2) * tmp.size());
+	CHECK_ERROR(cudaMalloc((void**)&d_CCLProfiles, sizeof(glm::vec2) * tmp.size()));
 	CHECK_ERROR(cudaMemcpy(d_CCLProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
 
 
@@ -555,7 +555,7 @@ void STLPSimulatorCUDA::initCUDA() {
 		tmp.push_back(stlpDiagram->TcProfiles[i]);
 	}
 	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_TcProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size()));
-	cudaMalloc((void**)&d_TcProfiles, sizeof(glm::vec2) * tmp.size());
+	CHECK_ERROR(cudaMalloc((void**)&d_TcProfiles, sizeof(glm::vec2) * tmp.size()));
 	CHECK_ERROR(cudaMemcpy(d_TcProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
 
 
@@ -599,7 +599,7 @@ void STLPSimulatorCUDA::doStep() {
 
 	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, /*particleSystem->d_particlePressures,*/ d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
 
-	//CHECK_ERROR(cudaPeekAtLastError());
+	CHECK_ERROR(cudaPeekAtLastError());
 
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleProfilesVBO, 0);

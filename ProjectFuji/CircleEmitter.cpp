@@ -3,8 +3,9 @@
 #include "Utils.h"
 #include "ShaderManager.h"
 
-#include <random>
+//#include <random>
 #include <vector>
+#include <glad\glad.h>
 
 using namespace std;
 
@@ -42,9 +43,10 @@ void CircleEmitter::emitParticle() {
 	// testing generation in circle
 	float randx;
 	float randz;
-		static random_device rd;
-	static mt19937 mt(rd());
-	static uniform_real_distribution<float> dist(0.0f, 1.0f);
+
+	//static random_device rd;
+	//static mt19937 mt(rd());
+	//static uniform_real_distribution<float> dist(0.0f, 1.0f);
 	
 	float a = dist(mt) * 2.0f * (float)PI;
 	float r = radius * sqrtf(dist(mt));
@@ -147,6 +149,12 @@ void CircleEmitter::update() {
 	//if (!enabled) {
 	//	return;
 	//}
+	if (enabled) {
+		if (wiggle) {
+			wigglePosition();
+		}
+	}
+
 
 	if (prevPosition != position || prevRadius != radius) {
 		prevPosition = position;
@@ -166,10 +174,14 @@ void CircleEmitter::draw() {
 	if (!shader) {
 		return;
 	}
+
+	//glDepthFunc(GL_ALWAYS);
 	glPointSize(0.5f);
 	shader->use();
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_POINTS, 0, numVisPoints);
+	//glDrawArrays(GL_LINE_LOOP, 0, numVisPoints);
+	//glDepthFunc(GL_LEQUAL);
 }
 
 void CircleEmitter::draw(ShaderProgram * shader) {

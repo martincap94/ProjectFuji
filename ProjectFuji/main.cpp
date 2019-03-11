@@ -51,7 +51,7 @@
 #include "VariableManager.h"
 #include "StaticMesh.h"
 #include "Model.h"
-
+#include "CUDAUtils.cuh"
 #include "Emitter.h"
 #include "CircleEmitter.h"
 
@@ -353,8 +353,11 @@ int runApp() {
 		printf("LBM3D SETUP...\n");
 
 		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
+		CHECK_ERROR(cudaPeekAtLastError());
 
 		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, particleSystemLBM, particleSystem, blockDim);
+		CHECK_ERROR(cudaPeekAtLastError());
+
 
 		vars.latticeWidth = lbm->latticeWidth;
 		vars.latticeHeight = lbm->latticeHeight;
@@ -377,7 +380,8 @@ int runApp() {
 		orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
 	}
 
-	
+	CHECK_ERROR(cudaPeekAtLastError());
+
 	viewportCamera = orbitCamera;
 	camera = viewportCamera;
 	diagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
@@ -449,21 +453,27 @@ int runApp() {
 
 
 	stlpDiagram.init(vars.soundingFile);
+	CHECK_ERROR(cudaPeekAtLastError());
 
 
 
 	stlpSim = new STLPSimulator(&vars, &stlpDiagram);
 	stlpSimCUDA = new STLPSimulatorCUDA(&vars, &stlpDiagram);
 
+	CHECK_ERROR(cudaPeekAtLastError());
 
 	stlpSim->initParticles();
 	//stlpSimCUDA->initParticles();
 	stlpSimCUDA->initCUDA();
 
+	CHECK_ERROR(cudaPeekAtLastError());
+
+
 	particleSystem->stlpSim = stlpSimCUDA;
 	stlpSimCUDA->particleSystem = particleSystem;
 	particleSystem->initParticlesOnTerrain();
 	//particleSystem->initParticlePositions();
+	CHECK_ERROR(cudaPeekAtLastError());
 
 
 
@@ -492,6 +502,8 @@ int runApp() {
 	double accumulatedTime = 0.0;
 
 	glActiveTexture(GL_TEXTURE0);
+
+	CHECK_ERROR(cudaPeekAtLastError());
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
 		// enable flags each frame because nuklear disables them when it is rendered	
@@ -1285,6 +1297,26 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				lbm->respawnMode = LBM3D_1D_indices::RANDOM_UNIFORM;
 			}
 
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_label(ctx, "LBM Out of Bounds Mode", NK_TEXT_CENTERED);
+			nk_layout_row_dynamic(ctx, 15, 2);
+			if (nk_option_label(ctx, "Ignore Particles", lbm->outOfBoundsMode == LBM3D_1D_indices::KEEP_POSITION)) {
+				lbm->outOfBoundsMode = LBM3D_1D_indices::IGNORE_PARTICLES;
+			}
+			if (nk_option_label(ctx, "Deactivate Particles", lbm->outOfBoundsMode == LBM3D_1D_indices::DEACTIVATE_PARTICLES)) {
+				lbm->outOfBoundsMode = LBM3D_1D_indices::DEACTIVATE_PARTICLES;
+			}
+			if (nk_option_label(ctx, "Respawn Particles in Inlet", lbm->outOfBoundsMode == LBM3D_1D_indices::RESPAWN_PARTICLES_INLET)) {
+				lbm->outOfBoundsMode = LBM3D_1D_indices::RESPAWN_PARTICLES_INLET;
+			}
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_checkbox_label(ctx, "x left inlet", &lbm->xLeftInlet);
+			nk_checkbox_label(ctx, "x right inlet", &lbm->xRightInlet);
+			nk_checkbox_label(ctx, "y bottom inlet", &lbm->yBottomInlet);
+			nk_checkbox_label(ctx, "y top inlet", &lbm->yTopInlet);
+			nk_checkbox_label(ctx, "z left inlet", &lbm->zLeftInlet);
+			nk_checkbox_label(ctx, "z right inlet", &lbm->zRightInlet);
+
 
 		} else if (uiMode == 1) {
 
@@ -1451,12 +1483,16 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_checkbox_label(ctx, "Show Hidden Particles", &particleSystem->showHiddenParticles);
 
 		for (int i = 0; i < particleSystem->emitters.size(); i++) {
-			if (nk_tree_push(ctx, NK_TREE_TAB, ("Emitter " + to_string(i)).c_str(), NK_MAXIMIZED)) {
+			if (nk_tree_push(ctx, NK_TREE_TAB, ("#Emitter " + to_string(i)).c_str(), NK_MAXIMIZED)) {
 				Emitter *e = particleSystem->emitters[i];
 
 				nk_layout_row_static(ctx, 15, 200, 1);
 				nk_checkbox_label(ctx, "#enabled", &e->enabled);
 				nk_checkbox_label(ctx, "#visible", &e->visible);
+				nk_checkbox_label(ctx, "#wiggle", &e->wiggle);
+				nk_property_float(ctx, "#x wiggle", 0.1f, &e->xWiggleRange, 10.0f, 0.1f, 0.1f);
+				nk_property_float(ctx, "#z wiggle", 0.1f, &e->zWiggleRange, 10.0f, 0.1f, 0.1f);
+
 
 				nk_property_float(ctx, "#x", -1000.0f, &e->position.x, 1000.0f, 1.0f, 1.0f);
 				//nk_property_float(ctx, "#y", -1000.0f, &e->position.y, 1000.0f, 1.0f, 1.0f);
@@ -1479,6 +1515,16 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		if (nk_button_label(ctx, "Activate All Particles")) {
 			particleSystem->activateAllParticles();
 		}
+		if (nk_button_label(ctx, "Deactivate All Particles")) {
+			particleSystem->deactivateAllParticles();
+		}
+		if (nk_button_label(ctx, "Enable All Emitters")) {
+			particleSystem->enableAllEmitters();
+		}
+		if (nk_button_label(ctx, "Disable All Emitters")) {
+			particleSystem->disableAllEmitters();
+		}
+
 		nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
 
 

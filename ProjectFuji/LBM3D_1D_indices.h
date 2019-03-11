@@ -94,6 +94,12 @@ public:
 		RANDOM_UNIFORM
 	};
 
+	enum eOutOfBoundsMode {
+		IGNORE_PARTICLES = 0,
+		DEACTIVATE_PARTICLES,
+		RESPAWN_PARTICLES_INLET
+	};
+
 	VariableManager *vars;
 
 	/// Enumeration that should contain all controllable properties of the simulation (through UI).
@@ -126,9 +132,17 @@ public:
 	int respawnLinearly = 0;	///< NOT USED YET! Whether particles should respawn linearly or randomly in the inlet nodes
 
 	int respawnMode = KEEP_POSITION;
+	int outOfBoundsMode = RESPAWN_PARTICLES_INLET;
 
 	string sceneFilename;		///< Filename of the scene that is used for the simulation
 
+
+	int xLeftInlet = 1;
+	int xRightInlet = 0;
+	int zLeftInlet = 0;
+	int zRightInlet = 0;
+	int yBottomInlet = 0;
+	int yTopInlet = 0;
 
 
 	Node3D *frontLattice;			///< Front lattice - the one currently drawn at end of each frame
