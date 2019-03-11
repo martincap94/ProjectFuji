@@ -85,6 +85,7 @@ public:
 
 	glm::vec3 tintColor = glm::vec3(1.0f);
 
+	glm::vec3 bgClearColor = glm::vec3(0.0f);
 
 
 	////////////////////////////////////////////////////////////////

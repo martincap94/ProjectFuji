@@ -57,7 +57,7 @@ __device__ glm::vec3 mapToViridis3D(float val) {
 	\param[in] numParticles			Number of particles.
 	\param[in] particleColors		VBO of particle colors.
 */
-__global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors) {
+__global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors, int respawnMode) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
 	idx += blockDim.x * blockDim.y * blockIdx.x;
@@ -119,9 +119,11 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 
 		glm::vec3 finalVelocity = backVelocity * depthRatio + frontVelocity * (1.0f - depthRatio);
 
-		particleVertices[idx].x += finalVelocity.x;
-		particleVertices[idx].y += finalVelocity.y;
-		particleVertices[idx].z += finalVelocity.z;
+
+		particleVertices[idx] += finalVelocity;
+		//particleVertices[idx].x += finalVelocity.x;
+		//particleVertices[idx].y += finalVelocity.y;
+		//particleVertices[idx].z += finalVelocity.z;
 
 
 		//particleColors[idx] = mapToViridis3D(glm::length2(finalVelocity) * 4.0f);
@@ -152,12 +154,15 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 		if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
 			particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
 			particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
-			
+
 			particleVertices[idx].x = 0.0f;
 			//particleVertices[idx].y = y;
 			//particleVertices[idx].y = rand(idx, y) * (d_latticeHeight - 1);
 			//particleVertices[idx].z = z;
-			particleVertices[idx].z = rand(idx, z) * (d_latticeDepth - 1); // comment this out if you want to respawn at same z
+
+			if (respawnMode == 1) {
+				particleVertices[idx].z = rand(idx, z) * (d_latticeDepth - 1); // comment this out if you want to respawn at same z
+			}
 			//particleVertices[idx].y = d_respawnY;
 			//particleVertices[idx].z = d_respawnZ++;
 
@@ -1336,7 +1341,7 @@ void LBM3D_1D_indices::doStepCUDA() {
 	cudaGraphicsResourceGetMappedPointer((void **)&d_particleColorsVBO, &num_bytes, cudaParticleColorsVBO);
 	*/
 
-	moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr);
+	moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode);
 	//CHECK_ERROR(cudaPeekAtLastError());
 	
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);

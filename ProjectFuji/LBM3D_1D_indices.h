@@ -89,6 +89,11 @@ class LBM3D_1D_indices /*: public LBM*/ {
 
 public:
 
+	enum eRespawnMode {
+		KEEP_POSITION = 0,
+		RANDOM_UNIFORM
+	};
+
 	VariableManager *vars;
 
 	/// Enumeration that should contain all controllable properties of the simulation (through UI).
@@ -119,6 +124,8 @@ public:
 	int mirrorSides = 1;		///< Whether the particles passing through sides of the scene bounding box should show up on the other side		
 	int visualizeVelocity = 0;  ///< Whether the velocity of the particles should be visualized, currently only in 2D
 	int respawnLinearly = 0;	///< NOT USED YET! Whether particles should respawn linearly or randomly in the inlet nodes
+
+	int respawnMode = KEEP_POSITION;
 
 	string sceneFilename;		///< Filename of the scene that is used for the simulation
 

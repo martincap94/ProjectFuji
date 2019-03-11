@@ -584,7 +584,7 @@ int runApp() {
 			camera = diagramCamera;
 			glDisable(GL_DEPTH_TEST);
 		} else {
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClearColor(vars.bgClearColor.x, vars.bgClearColor.y, vars.bgClearColor.z, 1.0f);
 			glfwSwapInterval(0);
 			camera = vars.useFreeRoamCamera ? freeRoamCamera : viewportCamera;
 			glEnable(GL_DEPTH_TEST);
@@ -1275,6 +1275,15 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				nk_combo_end(ctx);
 			}
 
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_label(ctx, "LBM Respawn Mode", NK_TEXT_CENTERED);
+			nk_layout_row_dynamic(ctx, 15, 2);
+			if (nk_option_label(ctx, "Keep Position", lbm->respawnMode == LBM3D_1D_indices::KEEP_POSITION)) {
+				lbm->respawnMode = LBM3D_1D_indices::KEEP_POSITION;
+			}
+			if (nk_option_label(ctx, "Random (Uniform)", lbm->respawnMode == LBM3D_1D_indices::RANDOM_UNIFORM)) {
+				lbm->respawnMode = LBM3D_1D_indices::RANDOM_UNIFORM;
+			}
 
 
 		} else if (uiMode == 1) {
@@ -1428,7 +1437,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		if (nk_combo_begin_color(ctx, nk_rgb_cf(tintColor), nk_vec2(nk_widget_width(ctx), 400))) {
 			nk_layout_row_dynamic(ctx, 120, 1);
 			tintColor = nk_color_picker(ctx, tintColor, NK_RGBA);
-			nk_layout_row_dynamic(ctx, 25, 1);
+			nk_layout_row_dynamic(ctx, 10, 1);
 			tintColor.r = nk_propertyf(ctx, "#R:", 0, tintColor.r, 1.0f, 0.01f, 0.005f);
 			tintColor.g = nk_propertyf(ctx, "#G:", 0, tintColor.g, 1.0f, 0.01f, 0.005f);
 			tintColor.b = nk_propertyf(ctx, "#B:", 0, tintColor.b, 1.0f, 0.01f, 0.005f);
@@ -1450,7 +1459,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				nk_checkbox_label(ctx, "#visible", &e->visible);
 
 				nk_property_float(ctx, "#x", -1000.0f, &e->position.x, 1000.0f, 1.0f, 1.0f);
-				nk_property_float(ctx, "#y", -1000.0f, &e->position.y, 1000.0f, 1.0f, 1.0f);
+				//nk_property_float(ctx, "#y", -1000.0f, &e->position.y, 1000.0f, 1.0f, 1.0f);
 				nk_property_float(ctx, "#z", -1000.0f, &e->position.z, 1000.0f, 1.0f, 1.0f);
 
 				//nk_property_variant_int()
@@ -1474,6 +1483,21 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 
+		tintColor.r = vars.bgClearColor.x;
+		tintColor.g = vars.bgClearColor.y;
+		tintColor.b = vars.bgClearColor.z;
+
+		if (nk_combo_begin_color(ctx, nk_rgb_cf(tintColor), nk_vec2(nk_widget_width(ctx), 400))) {
+			nk_layout_row_dynamic(ctx, 120, 1);
+			tintColor = nk_color_picker(ctx, tintColor, NK_RGBA);
+			nk_layout_row_dynamic(ctx, 10, 1);
+			tintColor.r = nk_propertyf(ctx, "#R:", 0, tintColor.r, 1.0f, 0.01f, 0.005f);
+			tintColor.g = nk_propertyf(ctx, "#G:", 0, tintColor.g, 1.0f, 0.01f, 0.005f);
+			tintColor.b = nk_propertyf(ctx, "#B:", 0, tintColor.b, 1.0f, 0.01f, 0.005f);
+			//tintColor.a = nk_propertyf(ctx, "#A:", 0, tintColor.a, 1.0f, 0.01f, 0.005f);
+			vars.bgClearColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
+			nk_combo_end(ctx);
+		}
 
 
 	}

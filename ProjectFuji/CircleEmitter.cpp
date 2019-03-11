@@ -209,8 +209,8 @@ void CircleEmitter::updateVBOPoints() {
 	float deltaTheta = 360.0f / (float)numVisPoints;
 	float theta = 0.0f;
 	for (int i = 0; i < numVisPoints; i++) {
-		float x = radius * cos(theta) + position.x;
-		float z = radius * sin(theta) + position.z;
+		float x = radius * cos(glm::radians(theta)) + position.x;
+		float z = radius * sin(glm::radians(theta)) + position.z;
 
 		int leftx = (int)x;
 		int rightx = leftx + 1;
