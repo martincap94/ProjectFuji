@@ -165,14 +165,27 @@ void ShaderProgram::setModelMatrix(glm::mat4 modelMatrix, string uniformName) {
 	setMat4fv(uniformName, modelMatrix);
 }
 
-void ShaderProgram::setupMaterialUniforms() {
+void ShaderProgram::setupMaterialUniforms(bool useShader) {
 	if (matType == PHONG) {
-		use();
+		if (useShader) {
+			use();
+		}
 		setInt("u_Material.diffuse", 0);
 		setInt("u_Material.specular", 1);
 		setInt("u_Material.normalMap", 2);
 		setFloat("u_Material.shininess", 4.0f);
 	}
+}
+
+void ShaderProgram::setFogProperties(float fogIntensity, float fogMinDistance, float fogMaxDistance, glm::vec4 fogColor, bool useShader) {
+	if (useShader) {
+		use();
+	}
+	setFloat("u_Fog.intensity", fogIntensity);
+	setFloat("u_Fog.minDistance", fogMinDistance);
+	setFloat("u_Fog.maxDistance", fogMaxDistance);
+	setVec4("u_Fog.color", fogColor);
+
 }
 
 

@@ -5,6 +5,7 @@ out vec4 fragColor;
 in vec4 v_FragPos;
 in vec3 v_Normal;
 in vec4 v_LightSpacePos;
+in vec2 v_TexCoords;
 
 struct DirLight {
 	vec3 direction;
@@ -17,8 +18,10 @@ uniform DirLight u_DirLight;
 
 
 struct Fog {
-	vec4 color;
+	float intensity;
 	float minDistance;
+	float maxDistance;
+	vec4 color; // alpha could be used instead of intensity
 };
 
 uniform Fog u_Fog;
@@ -26,6 +29,7 @@ uniform Fog u_Fog;
 uniform vec3 u_ViewPos;
 
 uniform sampler2D u_DepthMapTexture;
+uniform sampler2D u_DiffuseTexture;
 
 uniform float u_VarianceMinLimit;
 uniform float u_LightBleedReduction;
@@ -45,10 +49,11 @@ float linstep(float minVal, float maxVal, float val);
 
 void main() {
 
-	/*
-	fragColor = vec4(v_Normal, 1.0);
-	return;
-	*/
+	//{
+	//	//fragColor = vec4(v_Normal, 1.0);
+	//	fragColor = texture(u_DiffuseTexture, v_TexCoords * 5.0);
+	//	return;
+	//}
 
 	vec3 norm = normalize(v_Normal);
 	vec3 viewDir = normalize(u_ViewPos - v_FragPos.xyz);
@@ -66,8 +71,13 @@ void main() {
 		result = color * shadow;
 	}
 	fragColor = vec4(result, 1.0);
+
+
 	float distance = length(v_FragPos.xyz - u_ViewPos);
-	fragColor = mix(u_Fog.color, fragColor, min(u_Fog.minDistance / distance, 1.0));
+	float t = (distance - u_Fog.minDistance) / (u_Fog.maxDistance - u_Fog.minDistance);
+	fragColor = mix(fragColor, u_Fog.color, min(t, 1.0) * u_Fog.intensity);
+
+	//fragColor = mix(u_Fog.color, fragColor, min(u_Fog.minDistance / distance, 1.0));
 
 }
 
@@ -82,7 +92,8 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
     
-	vec3 matColor = vec3(0.5, 0.2, 0.2);
+	//vec3 matColor = vec3(0.5, 0.2, 0.2);
+	vec3 matColor = texture(u_DiffuseTexture, v_TexCoords * 20.0).rgb;
 
     // combine results
     vec3 diffuse  = light.color  * diff * matColor;

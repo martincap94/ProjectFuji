@@ -5,6 +5,7 @@
 #include <glm\glm.hpp>
 
 #include "ShaderProgram.h"
+#include "VariableManager.h"
 
 namespace ShaderManager {
 
@@ -18,7 +19,7 @@ namespace ShaderManager {
 	}
 
 
-	bool init();
+	bool init(VariableManager *vars = nullptr);
 	bool tearDown();
 
 	ShaderProgram *getShaderPtr(std::string shaderName);
@@ -36,6 +37,8 @@ namespace ShaderManager {
 	void updateDirectionalLightUniforms(DirectionalLight &dirLight);
 
 	void updateViewPositionUniforms(glm::vec3 viewPos);
+
+	void updateFogUniforms();
 
 
 }

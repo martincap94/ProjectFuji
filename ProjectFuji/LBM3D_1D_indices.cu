@@ -1040,25 +1040,25 @@ __global__ void collisionStepKernelShared(Node3D *backLattice, glm::vec3 *veloci
 			float itau_new = 1.0f / (3.0f * (nu + SMAG_C * SMAG_C * magS) + 0.5f);
 
 
-			cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] -= d_itau * (cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] - middleEq);
-			cache[cacheIdx].adj[DIR_RIGHT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_RIGHT_FACE] - rightEq);
-			cache[cacheIdx].adj[DIR_LEFT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_LEFT_FACE] - leftEq);
-			cache[cacheIdx].adj[DIR_BACK_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_FACE] - backEq);
-			cache[cacheIdx].adj[DIR_FRONT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_FACE] - frontEq);
-			cache[cacheIdx].adj[DIR_TOP_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FACE] - topEq);
-			cache[cacheIdx].adj[DIR_BOTTOM_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FACE] - bottomEq);
-			cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
-			cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
-			cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
-			cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
-			cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
-			cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
-			cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
-			cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
-			cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
-			cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
-			cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
-			cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
+			cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] -= itau_new * (cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] - middleEq);
+			cache[cacheIdx].adj[DIR_RIGHT_FACE] -= itau_new * (cache[cacheIdx].adj[DIR_RIGHT_FACE] - rightEq);
+			cache[cacheIdx].adj[DIR_LEFT_FACE] -= itau_new * (cache[cacheIdx].adj[DIR_LEFT_FACE] - leftEq);
+			cache[cacheIdx].adj[DIR_BACK_FACE] -= itau_new * (cache[cacheIdx].adj[DIR_BACK_FACE] - backEq);
+			cache[cacheIdx].adj[DIR_FRONT_FACE] -= itau_new * (cache[cacheIdx].adj[DIR_FRONT_FACE] - frontEq);
+			cache[cacheIdx].adj[DIR_TOP_FACE] -= itau_new * (cache[cacheIdx].adj[DIR_TOP_FACE] - topEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_FACE] -= itau_new * (cache[cacheIdx].adj[DIR_BOTTOM_FACE] - bottomEq);
+			cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] - backRightEq);
+			cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] - backLeftEq);
+			cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] - frontRightEq);
+			cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] - frontLeftEq);
+			cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] - topBackEq);
+			cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] - topFrontEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] - bottomBackEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] - bottomFrontEq);
+			cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] - topRightEq);
+			cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] - topLeftEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
+			cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] -= itau_new * (cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
 
 		} else {
 

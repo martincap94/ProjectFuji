@@ -16,6 +16,7 @@ namespace ShaderManager {
 		map<string, ShaderProgram *> shadersStr;
 		map<GLuint, ShaderProgram *> shaders;
 		map<GLuint, string> shaderIdName;
+		VariableManager *vars;
 
 		void addShader(string sName, string vertShader, string fragShader, ShaderProgram::eLightingType lightingType, ShaderProgram::eMaterialType matType) {
 			ShaderProgram *sPtr = new ShaderProgram(vertShader.c_str(), fragShader.c_str());
@@ -32,12 +33,18 @@ namespace ShaderManager {
 
 		void initShaders() {
 			for (const auto& kv : shaders) {
-				kv.second->setupMaterialUniforms();
+				kv.second->use();
+				kv.second->setupMaterialUniforms(false);
 
 				// fog testing
-				kv.second->use();
-				kv.second->setVec4("u_Fog.color", glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
-				kv.second->setFloat("u_Fog.minDistance", 20.0f);
+				if (vars) {
+					kv.second->setFogProperties(vars->fogIntensity, vars->fogMinDistance, vars->fogMaxDistance, vars->fogColor);
+				} else {
+					cout << "oopsie" << endl;
+					kv.second->use();
+					kv.second->setVec4("u_Fog.color", glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
+					kv.second->setFloat("u_Fog.minDistance", 20.0f);
+				}
 			}
 		}
 
@@ -89,7 +96,8 @@ namespace ShaderManager {
 	}
 
 
-	bool init() {
+	bool init(VariableManager *vars) {
+		ShaderManager::vars = vars; // not very nice
 		if (initFlag) {
 			cout << "ShaderManager has already been initialized!" << endl;
 			return false;
@@ -187,6 +195,15 @@ namespace ShaderManager {
 		for (const auto& kv : shaders) {
 			kv.second->use();
 			kv.second->setVec3("u_ViewPos", viewPos);
+		}
+	}
+
+	void updateFogUniforms() {
+		if (!vars) {
+			return;
+		}
+		for (const auto &kv : shaders) {
+			kv.second->setFogProperties(vars->fogIntensity, vars->fogMinDistance, vars->fogMaxDistance, vars->fogColor);
 		}
 	}
 

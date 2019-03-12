@@ -17,6 +17,7 @@
 #include "ShaderProgram.h"
 
 #include "Config.h"
+#include "Texture.h"
 
 /// Height map that describes the terrain of 3D scenes.
 /**
@@ -35,6 +36,7 @@ public:
 	
 	float **data;		///< The height map data array		
 
+	Texture *diffuseTexture;
 
 
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)
@@ -57,6 +59,7 @@ public:
 	/// Draws the height map.
 	void draw();
 	void draw(ShaderProgram *shader);
+	void drawGeometry(ShaderProgram *shader);
 
 private:
 

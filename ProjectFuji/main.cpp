@@ -274,7 +274,7 @@ int runApp() {
 	}
 
 
-	ShaderManager::init();
+	ShaderManager::init(&vars);
 	evsm.init();
 	dirLight.init();
 
@@ -394,6 +394,7 @@ int runApp() {
 	camera->setLatticeDimensions(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
 	camera->movementSpeed = vars.cameraSpeed;
 
+	dirLight.focusPoint = glm::vec3(vars.latticeWidth / 2.0f, 0.0f, vars.latticeDepth / 2.0f);
 
 	//particleSystemLBM->lbm = lbm;
 
@@ -760,7 +761,7 @@ int runApp() {
 
 			glDisable(GL_CULL_FACE);
 			evsm.preFirstPass();
-			stlpSim->heightMap->draw(evsm.firstPassShader);
+			stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
 			//testMesh.draw(evsm.firstPassShader);
 
 			evsm.postFirstPass();
@@ -784,6 +785,7 @@ int runApp() {
 
 			evsm.postSecondPass();
 			
+			ShaderManager::updateFogUniforms();
 
 
 			//glCullFace(GL_FRONT);
@@ -1199,7 +1201,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_label(ctx, "Inlet velocity:", NK_TEXT_LEFT);
 
 			nk_layout_row_dynamic(ctx, 15, (vars.lbmType == LBM2D) ? 2 : 3);
-			nk_property_float(ctx, "x:", 0.0f, &lbm->inletVelocity.x, 1.0f, 0.01f, 0.005f);
+			nk_property_float(ctx, "x:", -1.0f, &lbm->inletVelocity.x, 1.0f, 0.01f, 0.005f);
 			nk_property_float(ctx, "y:", -1.0f, &lbm->inletVelocity.y, 1.0f, 0.01f, 0.005f);
 			if (vars.lbmType == LBM3D) {
 				nk_property_float(ctx, "z:", -1.0f, &lbm->inletVelocity.z, 1.0f, 0.01f, 0.005f);
@@ -1270,20 +1272,20 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			//	}
 			//}
 			//nk_colorf()
-			struct nk_colorf dirLightColor;
-			dirLightColor.r = dirLight.color.x;
-			dirLightColor.g = dirLight.color.y;
-			dirLightColor.b = dirLight.color.z;
+			struct nk_colorf tmpColor;
+			tmpColor.r = dirLight.color.x;
+			tmpColor.g = dirLight.color.y;
+			tmpColor.b = dirLight.color.z;
 
-			if (nk_combo_begin_color(ctx, nk_rgb_cf(dirLightColor), nk_vec2(nk_widget_width(ctx), 400))) {
+			if (nk_combo_begin_color(ctx, nk_rgb_cf(tmpColor), nk_vec2(nk_widget_width(ctx), 400))) {
 				nk_layout_row_dynamic(ctx, 120, 1);
-				dirLightColor = nk_color_picker(ctx, dirLightColor, NK_RGBA);
+				tmpColor = nk_color_picker(ctx, tmpColor, NK_RGBA);
 				nk_layout_row_dynamic(ctx, 25, 1);
-				dirLightColor.r = nk_propertyf(ctx, "#R:", 0, dirLightColor.r, 1.0f, 0.01f, 0.005f);
-				dirLightColor.g = nk_propertyf(ctx, "#G:", 0, dirLightColor.g, 1.0f, 0.01f, 0.005f);
-				dirLightColor.b = nk_propertyf(ctx, "#B:", 0, dirLightColor.b, 1.0f, 0.01f, 0.005f);
-				dirLightColor.a = nk_propertyf(ctx, "#A:", 0, dirLightColor.a, 1.0f, 0.01f, 0.005f);
-				dirLight.color = glm::vec3(dirLightColor.r, dirLightColor.g, dirLightColor.b);
+				tmpColor.r = nk_propertyf(ctx, "#R:", 0, tmpColor.r, 1.0f, 0.01f, 0.005f);
+				tmpColor.g = nk_propertyf(ctx, "#G:", 0, tmpColor.g, 1.0f, 0.01f, 0.005f);
+				tmpColor.b = nk_propertyf(ctx, "#B:", 0, tmpColor.b, 1.0f, 0.01f, 0.005f);
+				tmpColor.a = nk_propertyf(ctx, "#A:", 0, tmpColor.a, 1.0f, 0.01f, 0.005f);
+				dirLight.color = glm::vec3(tmpColor.r, tmpColor.g, tmpColor.b);
 				nk_combo_end(ctx);
 			}
 
@@ -1318,6 +1320,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_checkbox_label(ctx, "z right inlet", &lbm->zRightInlet);
 
 			nk_checkbox_label(ctx, "Use subgrid model (experimental)", &vars.useSubgridModel);
+
+
+
 
 
 
@@ -1367,6 +1372,31 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_property_float(ctx, "exponent:", 1.0f, &evsm.exponent, 42.0f, 0.1f, 0.1f);
 
 			nk_checkbox_label(ctx, "shadow only", &evsm.shadowOnly);
+
+
+			nk_property_float(ctx, "Fog intensity", 0.0f, &vars.fogIntensity, 1.0f, 0.01f, 0.01f);
+
+			nk_property_float(ctx, "Fog min distance", 0.0f, &vars.fogMinDistance, 1000.0f, 0.1f, 0.1f);
+			nk_property_float(ctx, "Fog max distance", 0.0f, &vars.fogMaxDistance, 1000.0f, 0.1f, 0.1f);
+
+
+			struct nk_colorf tmpColor;
+			tmpColor.r = vars.fogColor.x;
+			tmpColor.g = vars.fogColor.y;
+			tmpColor.b = vars.fogColor.z;
+			tmpColor.a = vars.fogColor.w;
+
+			if (nk_combo_begin_color(ctx, nk_rgb_cf(tmpColor), nk_vec2(nk_widget_width(ctx), 400))) {
+				nk_layout_row_dynamic(ctx, 120, 1);
+				tmpColor = nk_color_picker(ctx, tmpColor, NK_RGBA);
+				nk_layout_row_dynamic(ctx, 25, 1);
+				tmpColor.r = nk_propertyf(ctx, "#R:", 0, tmpColor.r, 1.0f, 0.01f, 0.005f);
+				tmpColor.g = nk_propertyf(ctx, "#G:", 0, tmpColor.g, 1.0f, 0.01f, 0.005f);
+				tmpColor.b = nk_propertyf(ctx, "#B:", 0, tmpColor.b, 1.0f, 0.01f, 0.005f);
+				tmpColor.a = nk_propertyf(ctx, "#A:", 0, tmpColor.a, 1.0f, 0.01f, 0.005f);
+				vars.fogColor = glm::vec4(tmpColor.r, tmpColor.g, tmpColor.b, tmpColor.a);
+				nk_combo_end(ctx);
+			}
 
 		}
 

@@ -35,6 +35,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 			data[x][z] = ((float)sum / (float)maxSum) * (float)(latticeHeight - 1);
 		}
 	}
+	vector<float> vertexData; // for texture coordinates (which are vec2)
 
 
 
@@ -42,11 +43,22 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 	vector<glm::vec3> triangles;
 	vector<glm::vec3> normals;
 	*/
+	bool uploadTextureCoordinates = true;
+
 	bool flatShading = false;
+
+	if (uploadTextureCoordinates && flatShading) {
+		cerr << "Upload of texture coordinates not possible with flat shading!" << endl;
+		uploadTextureCoordinates = false;
+	}
+
+	numPoints = 0;
 
 	// it would be useful to create a DCEL for the terrain so it would be much easier to modify later on
 	for (int z = height - 1; z >= 1; z--) {
 		for (int x = 0; x < width - 1; x++) {
+
+			float den = (float)((width >= height) ? width : height);
 
 			glm::vec3 p1(x, data[x][z], z);
 			glm::vec3 p2(x + 1, data[x + 1][z], z);
@@ -66,26 +78,101 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 				glm::vec3 normalP4 = computeNormal(x, z - 1);
 
 
-				areaPoints.push_back(p1);
-				areaPoints.push_back(normalP1);
-				areaPoints.push_back(p2);
-				areaPoints.push_back(normalP2);
-				areaPoints.push_back(p3);
-				areaPoints.push_back(normalP3);
+				if (uploadTextureCoordinates) {
 
 
-				areaPoints.push_back(p3);
-				areaPoints.push_back(normalP3);
-				areaPoints.push_back(p4);
-				areaPoints.push_back(normalP4);
-				areaPoints.push_back(p1);
-				areaPoints.push_back(normalP1);
+					
+					vertexData.push_back(p1.x);
+					vertexData.push_back(p1.y);
+					vertexData.push_back(p1.z);
+
+					vertexData.push_back(normalP1.x);
+					vertexData.push_back(normalP1.y);
+					vertexData.push_back(normalP1.z);
+
+					vertexData.push_back(p1.x / den);
+					vertexData.push_back(p1.z / den);
+
+					vertexData.push_back(p2.x);
+					vertexData.push_back(p2.y);
+					vertexData.push_back(p2.z);
+
+					vertexData.push_back(normalP2.x);
+					vertexData.push_back(normalP2.y);
+					vertexData.push_back(normalP2.z);
+
+					vertexData.push_back(p2.x / den);
+					vertexData.push_back(p2.z / den);
+
+					vertexData.push_back(p3.x);
+					vertexData.push_back(p3.y);
+					vertexData.push_back(p3.z);
+
+					vertexData.push_back(normalP3.x);
+					vertexData.push_back(normalP3.y);
+					vertexData.push_back(normalP3.z);
+
+					vertexData.push_back(p3.x / den);
+					vertexData.push_back(p3.z / den);
+
+
+
+
+					vertexData.push_back(p3.x);
+					vertexData.push_back(p3.y);
+					vertexData.push_back(p3.z);
+
+					vertexData.push_back(normalP3.x);
+					vertexData.push_back(normalP3.y);
+					vertexData.push_back(normalP3.z);
+
+					vertexData.push_back(p3.x / den);
+					vertexData.push_back(p3.z / den);
+
+					vertexData.push_back(p4.x);
+					vertexData.push_back(p4.y);
+					vertexData.push_back(p4.z);
+
+					vertexData.push_back(normalP4.x);
+					vertexData.push_back(normalP4.y);
+					vertexData.push_back(normalP4.z);
+
+					vertexData.push_back(p4.x / den);
+					vertexData.push_back(p4.z / den);
+
+					vertexData.push_back(p1.x);
+					vertexData.push_back(p1.y);
+					vertexData.push_back(p1.z);
+
+					vertexData.push_back(normalP1.x);
+					vertexData.push_back(normalP1.y);
+					vertexData.push_back(normalP1.z);
+
+					vertexData.push_back(p1.x / den);
+					vertexData.push_back(p1.z / den);
+
+
+				} else {
+					areaPoints.push_back(p1);
+					areaPoints.push_back(normalP1);
+					areaPoints.push_back(p2);
+					areaPoints.push_back(normalP2);
+					areaPoints.push_back(p3);
+					areaPoints.push_back(normalP3);
+
+
+					areaPoints.push_back(p3);
+					areaPoints.push_back(normalP3);
+					areaPoints.push_back(p4);
+					areaPoints.push_back(normalP4);
+					areaPoints.push_back(p1);
+					areaPoints.push_back(normalP1);
+				}
 			} else {
 
 
 
 				// FLAT SHADING APPROACH
-
 
 				areaPoints.push_back(p1);
 				areaPoints.push_back(n1);
@@ -103,6 +190,8 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 				areaPoints.push_back(n2);
 
 			}
+			numPoints += 6;
+
 
 
 			/*
@@ -141,17 +230,35 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * areaPoints.size(), &areaPoints[0], GL_STATIC_DRAW);
+	if (uploadTextureCoordinates) {
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)0);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexData.size(), vertexData.data(), GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)sizeof(glm::vec3));
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(sizeof(float) * 3));
+
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(sizeof(float) * 6));
+
+
+	} else {
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * areaPoints.size(), &areaPoints[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)0);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)sizeof(glm::vec3));
+
+	}
 
 	glBindVertexArray(0);
 
-	numPoints = areaPoints.size();
+
+	diffuseTexture = new Texture("textures/terrain_diffuse.jpg");
 
 
 
@@ -164,14 +271,18 @@ HeightMap::~HeightMap() {
 		delete[] data[i];
 	}
 	delete[] data;
+	if (diffuseTexture) {
+		delete diffuseTexture;
+	}
 }
 
 void HeightMap::draw() {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glUseProgram(shader->id);
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, numPoints);
+	//glUseProgram(shader->id);
+	//glBindVertexArray(VAO);
+	//glDrawArrays(GL_TRIANGLES, 0, numPoints);
+	draw(shader);
 	
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -182,6 +293,8 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	glUseProgram(shader->id);
 
+	shader->setInt("u_DiffuseTexture", 1);
+	glBindTextureUnit(1, diffuseTexture->id);
 
 
 	glBindVertexArray(VAO);
@@ -189,6 +302,12 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+}
+
+void HeightMap::drawGeometry(ShaderProgram * shader) {
+	glUseProgram(shader->id);
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, numPoints);
 }
 
 // Based on: https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap

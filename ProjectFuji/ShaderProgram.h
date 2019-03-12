@@ -89,7 +89,9 @@ public:
 
 	void setModelMatrix(glm::mat4 modelMatrix, string uniformName = "u_Model");
 
-	void setupMaterialUniforms();
+	void setupMaterialUniforms(bool useShader = true);
+
+	void setFogProperties(float fogIntensity, float fogMinDistance, float fogMaxDistance, glm::vec4 fogColor, bool useShader = true);
 
 
 	//void setPointLightAttributes(int lightNum, PointLight &pointLight);

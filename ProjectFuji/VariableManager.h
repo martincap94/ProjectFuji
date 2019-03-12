@@ -98,6 +98,15 @@ public:
 	int useSubgridModel = 0;
 
 
+
+
+	float fogMinDistance = 0.0f;
+	float fogMaxDistance = 150.0f;
+	float fogIntensity = 0.8f;
+	glm::vec4 fogColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+
+
 	////////////////////////////////////////////////////////////////
 	// UI helpers
 	////////////////////////////////////////////////////////////////
