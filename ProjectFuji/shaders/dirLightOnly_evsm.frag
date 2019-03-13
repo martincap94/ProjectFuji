@@ -70,7 +70,7 @@ void main() {
 	//}
 
 	//vec3 norm = normalize(v_Normal);
-	vec3 norm = texture(u_Material.normalMap, v_TexCoords).rgb;
+	vec3 norm = texture(u_Material.normalMap, v_TexCoords * 20.0).rgb;
 	norm = normalize(norm * 2.0 - 1.0);
 	norm = normalize(v_TBN * norm);
 

@@ -840,6 +840,212 @@ __global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities, 
 	\param[in] backLattice		Back lattice in which we do our calculations.
 	\param[in] velocities		Velocities array for the lattice.
 */
+__global__ void collisionStepKernelSharedNewReorganized(Node3D *backLattice, glm::vec3 *velocities, int useSubgridModel = 0) {
+
+	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
+	idx += blockDim.x * blockDim.y * blockIdx.x;
+
+	extern __shared__ Node3D cache[];
+	int cacheIdx = threadIdx.x + blockDim.x * threadIdx.y;
+
+
+	if (idx < d_latticeSize) {
+
+		cache[cacheIdx] = backLattice[idx];
+		//__syncthreads(); // not needed
+
+		float macroDensity = 0.0f;
+		for (int i = 0; i < 19; i++) {
+			macroDensity += cache[cacheIdx].adj[i];
+		}
+
+		glm::vec3 macroVelocity = glm::vec3(0.0f, 0.0f, 0.0f);
+
+		//macroVelocity += vMiddle * backLattice[idx].adj[DIR_MIDDLE];
+		macroVelocity += dirVectorsConst[DIR_LEFT_FACE] * cache[cacheIdx].adj[DIR_LEFT_FACE];
+		macroVelocity += dirVectorsConst[DIR_FRONT_FACE] * cache[cacheIdx].adj[DIR_FRONT_FACE];
+		macroVelocity += dirVectorsConst[DIR_BOTTOM_FACE] * cache[cacheIdx].adj[DIR_BOTTOM_FACE];
+		macroVelocity += dirVectorsConst[DIR_FRONT_LEFT_EDGE] * cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_BACK_LEFT_EDGE] * cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_BOTTOM_LEFT_EDGE] * cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_TOP_LEFT_EDGE] * cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_BOTTOM_FRONT_EDGE] * cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_TOP_FRONT_EDGE] * cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_RIGHT_FACE] * cache[cacheIdx].adj[DIR_RIGHT_FACE];
+		macroVelocity += dirVectorsConst[DIR_BACK_FACE] * cache[cacheIdx].adj[DIR_BACK_FACE];
+		macroVelocity += dirVectorsConst[DIR_TOP_FACE] * cache[cacheIdx].adj[DIR_TOP_FACE];
+		macroVelocity += dirVectorsConst[DIR_BACK_RIGHT_EDGE] * cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_FRONT_RIGHT_EDGE] * cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_TOP_RIGHT_EDGE] * cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_BOTTOM_RIGHT_EDGE] * cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE];
+		macroVelocity += dirVectorsConst[DIR_TOP_BACK_EDGE] * cache[cacheIdx].adj[DIR_TOP_BACK_EDGE];
+		macroVelocity += dirVectorsConst[DIR_BOTTOM_BACK_EDGE] * cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE];
+		macroVelocity /= macroDensity;
+
+		velocities[idx] = macroVelocity;
+
+		float currLeftTerm = WEIGHT_MIDDLE * macroDensity;
+		//float leftTermAxis = WEIGHT_AXIS * macroDensity;
+		//float leftTermNonaxial = WEIGHT_NON_AXIAL * macroDensity;
+
+		float macroVelocityDot = glm::dot(macroVelocity, macroVelocity);
+		float thirdTerm = 1.5f * macroVelocityDot;
+
+		float currEq = currLeftTerm + currLeftTerm * (-thirdTerm);
+
+		cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] -= d_itau * (cache[cacheIdx].adj[DIR_MIDDLE_VERTEX] - currEq);
+
+		currLeftTerm = WEIGHT_AXIS * macroDensity;
+
+		float dotProd = glm::dot(dirVectorsConst[DIR_RIGHT_FACE], macroVelocity);
+		float firstTerm = 3.0f * dotProd;
+		float secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+
+		cache[cacheIdx].adj[DIR_RIGHT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_RIGHT_FACE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_LEFT_FACE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+
+		cache[cacheIdx].adj[DIR_LEFT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_LEFT_FACE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_FRONT_FACE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+
+		cache[cacheIdx].adj[DIR_FRONT_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_FACE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_BACK_FACE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_BACK_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_FACE] - currEq);
+
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_TOP_FACE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+
+		cache[cacheIdx].adj[DIR_TOP_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FACE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_FACE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_BOTTOM_FACE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FACE] - currEq);
+
+		currLeftTerm = WEIGHT_NON_AXIAL * macroDensity;
+
+		dotProd = glm::dot(dirVectorsConst[DIR_BACK_RIGHT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_RIGHT_EDGE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_BACK_LEFT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BACK_LEFT_EDGE] - currEq);
+
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_FRONT_RIGHT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_RIGHT_EDGE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_FRONT_LEFT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_FRONT_LEFT_EDGE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_TOP_BACK_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_BACK_EDGE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_TOP_FRONT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_FRONT_EDGE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_BACK_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_BACK_EDGE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_FRONT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm *  (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_FRONT_EDGE] - currEq);
+
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_TOP_RIGHT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_RIGHT_EDGE] - currEq);
+
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_TOP_LEFT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_TOP_LEFT_EDGE] - currEq);
+
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_RIGHT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_RIGHT_EDGE] - currEq);
+
+
+		dotProd = glm::dot(dirVectorsConst[DIR_BOTTOM_LEFT_EDGE], macroVelocity);
+		firstTerm = 3.0f * dotProd;
+		secondTerm = 4.5f * dotProd * dotProd;
+		currEq = currLeftTerm + currLeftTerm * (firstTerm + secondTerm - thirdTerm);
+		cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] -= d_itau * (cache[cacheIdx].adj[DIR_BOTTOM_LEFT_EDGE] - currEq);
+
+
+		backLattice[idx] = cache[cacheIdx];
+
+	}
+}
+
+
+
+/// Kernel for calculating the collision operator that uses the shared memory (in naive manner).
+/**
+Kernel that calculates the collision operator using Bhatnagar-Gross-Krook operator.
+\param[in] backLattice		Back lattice in which we do our calculations.
+\param[in] velocities		Velocities array for the lattice.
+*/
 __global__ void collisionStepKernelShared(Node3D *backLattice, glm::vec3 *velocities, int useSubgridModel = 0) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
@@ -1084,11 +1290,11 @@ __global__ void collisionStepKernelShared(Node3D *backLattice, glm::vec3 *veloci
 		}
 
 		/*for (int i = 0; i < 19; i++) {
-			if (cache[cacheIdx].adj[i] < 0.0f) {
-				cache[cacheIdx].adj[i] = 0.0f;
-			} else if (cache[cacheIdx].adj[i] > 1.0f) {
-				cache[cacheIdx].adj[i] = 1.0f;
-			}
+		if (cache[cacheIdx].adj[i] < 0.0f) {
+		cache[cacheIdx].adj[i] = 0.0f;
+		} else if (cache[cacheIdx].adj[i] > 1.0f) {
+		cache[cacheIdx].adj[i] = 1.0f;
+		}
 		}*/
 
 		backLattice[idx] = cache[cacheIdx];
@@ -1581,7 +1787,8 @@ void LBM3D_1D_indices::doStepCUDA() {
 
 	// ============================================= collision step CUDA
 	//collisionStepKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, vars->useSubgridModel);
-	collisionStepKernelShared << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities, vars->useSubgridModel);
+	//collisionStepKernelShared << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities, vars->useSubgridModel);
+	collisionStepKernelSharedNewReorganized << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities, vars->useSubgridModel);
 	//collisionStepKernelStreamlinedShared << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities);
 
 	CHECK_ERROR(cudaPeekAtLastError());
