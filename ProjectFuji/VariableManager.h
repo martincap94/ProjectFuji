@@ -77,6 +77,8 @@ public:
 	string soundingFile;		///< Name of the sounding file to be loaded
 
 
+	int showCloudShadows = 0;
+
 	int dividePrevVelocity = 0;
 	float prevVelocityDivisor = 100.1f;
 
@@ -86,6 +88,8 @@ public:
 	glm::vec3 tintColor = glm::vec3(1.0f);
 
 	glm::vec3 bgClearColor = glm::vec3(0.0f);
+
+	float terrainTextureTiling = 10.0f;
 
 
 

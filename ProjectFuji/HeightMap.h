@@ -19,6 +19,8 @@
 #include "Config.h"
 #include "Texture.h"
 
+class VariableManager;
+
 /// Height map that describes the terrain of 3D scenes.
 /**
 	Height map that describes the terrain of 3D scenes.
@@ -38,6 +40,9 @@ public:
 
 	Texture *diffuseTexture;
 	Texture *normalMap;
+	Texture *testDiffuse;
+
+	VariableManager *vars;
 
 
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)

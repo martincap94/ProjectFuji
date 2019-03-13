@@ -327,8 +327,8 @@ int runApp() {
 	curveShader = ShaderManager::getShaderPtr("curve");
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 
-	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight, dirLightOnlyShader);
-
+	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight, ShaderManager::getShaderPtr("terrain")/*dirLightOnlyShader*/);
+	vars.heightMap->vars = &vars;
 
 	struct nk_colorf particlesColor;
 
@@ -762,6 +762,10 @@ int runApp() {
 			glDisable(GL_CULL_FACE);
 			evsm.preFirstPass();
 			stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
+
+			if (vars.showCloudShadows) {
+				particleSystem->draw(*evsm.firstPassShader, camera->position);
+			}
 			//testMesh.draw(evsm.firstPassShader);
 
 			evsm.postFirstPass();
@@ -1398,7 +1402,11 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				nk_combo_end(ctx);
 			}
 
+			nk_property_float(ctx, "Terrain texture tiling", 0.1f, &vars.terrainTextureTiling, 100.0f, 0.1f, 0.1f);
+
+
 		}
+
 
 
 	}
@@ -1493,6 +1501,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		//nk_property_float(ctx, "Point size (CUDA)", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
 
 		nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars.opacityMultiplier, 10.0f, 0.01f, 0.01f);
+		nk_checkbox_label(ctx, "Show Cloud Shadows", &vars.showCloudShadows);
 
 		struct nk_colorf tintColor;
 		tintColor.r = vars.tintColor.x;

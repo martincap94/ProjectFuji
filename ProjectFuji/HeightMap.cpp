@@ -5,6 +5,7 @@
 #include <glm\glm.hpp>
 #include <vector>
 #include "ppmImage.h"
+#include "VariableManager.h"
 
 HeightMap::HeightMap() {}
 
@@ -41,8 +42,9 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 
 
 
-	diffuseTexture = new Texture("textures/Rock_030_COLOR.jpg");
-	normalMap = new Texture("textures/Rock_030_NORM.jpg");
+	diffuseTexture = new Texture("textures/Ground_Dirt_006_COLOR.jpg");
+	normalMap = new Texture("textures/Ground_Dirt_006_NORM.jpg");
+	testDiffuse = new Texture("textures/Rock_030_COLOR.jpg");
 
 
 
@@ -467,10 +469,12 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	shader->setInt("u_Material.diffuse", 1);
 	shader->setInt("u_Material.normalMap", 3);
+	shader->setInt("u_TestDiffuse", 4);
+	shader->setFloat("u_Material.tiling", vars->terrainTextureTiling);
 
 	glBindTextureUnit(1, diffuseTexture->id);
 	glBindTextureUnit(3, normalMap->id);
-
+	glBindTextureUnit(4, testDiffuse->id);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);

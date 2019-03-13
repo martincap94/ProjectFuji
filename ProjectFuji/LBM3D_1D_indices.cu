@@ -59,22 +59,37 @@ __global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::
 
 		glm::vec3 pos = particleVertices[idx];
 
-		if (pos.x < 0.0f || pos.x > d_latticeWidth - 2) {
-			pos.x = (float)((__float2int_rd(pos.x) + d_latticeWidth - 2) % (d_latticeWidth - 2));
-		}
-		if (pos.y < 0.0f) {
-			pos.y = 0.0f;
-		}
-		if (pos.y > d_latticeHeight - 2) {
-			// respawn
-			pos.x = 0.0f;
-			pos.y = rand(idx, pos.y) * (d_latticeHeight - 2);
-			pos.z = rand(idx, pos.z) * (d_latticeDepth - 2);
-		}
-		if (pos.z < 0.0f || pos.z > d_latticeDepth - 2) {
-			pos.z = (float)((__float2int_rd(pos.z) + d_latticeDepth - 2) % (d_latticeDepth - 2));
-		}
 
+		if (pos.x < 0.0f || pos.x > d_latticeWidth - 2 ||
+			pos.y < 0.0f || pos.y > d_latticeHeight - 2 ||
+			pos.z < 0.0f || pos.z > d_latticeDepth - 2) {
+
+
+			if (respawnMode == 0) {
+
+				if (pos.x < 0.0f || pos.x > d_latticeWidth - 2) {
+					//pos.x = (float)((__float2int_rd(pos.x) + d_latticeWidth - 2) % (d_latticeWidth - 2));
+					pos.x = fmodf(pos.x + d_latticeWidth - 2, d_latticeWidth - 2);
+				}
+				if (pos.y < 0.0f) {
+					pos.y = 0.0f;
+				}
+				if (pos.y > d_latticeHeight - 2) {
+					// respawn
+					pos.x = 0.0f;
+					pos.y = rand(idx, pos.y) * (d_latticeHeight - 2);
+					pos.z = rand(idx, pos.z) * (d_latticeDepth - 2);
+				}
+				if (pos.z < 0.0f || pos.z > d_latticeDepth - 2) {
+					//pos.z = (float)((__float2int_rd(pos.z) + d_latticeDepth - 2) % (d_latticeDepth - 2));
+					pos.z = fmodf(pos.z + d_latticeDepth - 2, d_latticeDepth - 2);
+				}
+			} else {
+				pos.x = 0.0f;
+				pos.y = (float)((__float2int_rd(pos.y) + d_latticeHeight - 2) % (d_latticeHeight - 2));
+				pos.z = rand(idx, pos.z) * (d_latticeDepth - 2);
+			}
+		}
 
 
 		// SOLVES CRASHES WITH STLP

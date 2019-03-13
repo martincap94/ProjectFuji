@@ -429,5 +429,11 @@
     <None Include="shaders\s_normals.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\terrain.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\terrain.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

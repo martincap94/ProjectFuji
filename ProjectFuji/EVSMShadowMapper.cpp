@@ -135,7 +135,7 @@ void EVSMShadowMapper::init() {
 
 	firstPassShader = ShaderManager::getShaderPtr("evsm_1st_pass");
 	//secondPassShader = ShaderManager::getShaderPtr("evsm_2nd_pass");
-	secondPassShader = ShaderManager::getShaderPtr("dirLightOnly_evsm");
+	secondPassShader = ShaderManager::getShaderPtr("terrain");
 
 
 	/*firstPassShader = ShaderManager::getShaderPtr("vsm_1st_pass");
