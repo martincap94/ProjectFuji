@@ -1456,7 +1456,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
 
 		float delta_t_prev = stlpSim->delta_t;
-		nk_property_float(ctx, "delta t", 0.00001f, &stlpSim->delta_t, 1000.0f, 0.00001f, 1.0f);
+		nk_property_float(ctx, "delta t", 0.0001f, &stlpSim->delta_t, 100.0f, 0.0001f, 1.0f);
 		if (stlpSim->delta_t != delta_t_prev) {
 			stlpSimCUDA->delta_t = stlpSim->delta_t;
 			stlpSimCUDA->updateGPU_delta_t();

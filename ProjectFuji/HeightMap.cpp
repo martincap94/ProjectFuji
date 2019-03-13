@@ -10,6 +10,7 @@ HeightMap::HeightMap() {}
 
 HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) : shader(shader) {
 
+
 	ppmImage helper(SCENES_DIR + filename);
 
 	width = helper.width;
@@ -22,7 +23,6 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 	for (int i = 0; i < width; i++) {
 		data[i] = new float[height]();
 	}
-	vector<glm::vec3> areaPoints;
 
 	for (int z = height - 1; z >= 0; z--) {
 		for (int x = 0; x < width; x++) {
@@ -35,14 +35,196 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 			data[x][z] = ((float)sum / (float)maxSum) * (float)(latticeHeight - 1);
 		}
 	}
+	//initBuffersOld();
+	initBuffers();
+
+
+
+
+	diffuseTexture = new Texture("textures/Rock_030_COLOR.jpg");
+	normalMap = new Texture("textures/Rock_030_NORM.jpg");
+
+
+
+}
+
+
+HeightMap::~HeightMap() {
+	cout << "DELETING HEIGHTMAP" << endl;
+	for (int i = 0; i < width; i++) {
+		delete[] data[i];
+	}
+	delete[] data;
+	if (diffuseTexture) {
+		delete diffuseTexture;
+	}
+}
+
+void HeightMap::initBuffers() {
+
+	vector<glm::vec3> vertices;
+	vector<glm::vec3> normals;
+	vector<glm::vec2> texCoords;
+	vector<glm::vec3> tangents;
+	vector<glm::vec3> bitangents;
+
+	vector<float> vertexData;
+
+	//int size = 3 * width * height;
+
+	//vertices.reserve(size);
+	//normals.reserve(size);
+	//texCoords.reserve(size);
+	//tangents.reserve(size);
+	//bitangents.reserve(size);
+
+	//vertexData.reserve(size * 15);
+
+
+
+	numPoints = 0;
+
+	float den = (float)((width >= height) ? width : height);
+
+	for (int z = height - 1; z >= 1; z--) {
+		for (int x = 0; x < width - 1; x++) {
+
+			glm::vec3 p1(x, data[x][z], z);
+			glm::vec3 p2(x + 1, data[x + 1][z], z);
+			glm::vec3 p3(x + 1, data[x + 1][z - 1], z - 1);
+			glm::vec3 p4(x, data[x][z - 1], z - 1);
+
+
+			glm::vec3 normalP1 = computeNormal(x, z);
+			glm::vec3 normalP2 = computeNormal(x + 1, z);
+			glm::vec3 normalP3 = computeNormal(x + 1, z - 1);
+			glm::vec3 normalP4 = computeNormal(x, z - 1);
+
+			vertices.push_back(p1);
+			normals.push_back(normalP1);
+			texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
+
+			vertices.push_back(p2);
+			normals.push_back(normalP2);
+			texCoords.push_back(glm::vec2(p2.x, p2.z) / den);
+
+			vertices.push_back(p3);
+			normals.push_back(normalP3);
+			texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+
+			vertices.push_back(p3);
+			normals.push_back(normalP3);
+			texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+
+			vertices.push_back(p4);
+			normals.push_back(normalP4);
+			texCoords.push_back(glm::vec2(p4.x, p4.z) / den);
+
+			vertices.push_back(p1);
+			normals.push_back(normalP1);
+			texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
+
+			numPoints += 6;
+		}
+	}
+
+
+	//cout << numPoints << " ... " << size << endl;
+	// Based on: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
+	for (int i = 0; i < vertices.size() - 2; i += 3) {
+		glm::vec3 edge1 = vertices[i + 1] - vertices[i];
+		glm::vec3 edge2 = vertices[i + 2] - vertices[i];
+		glm::vec2 deltaUV1 = texCoords[i + 1] - texCoords[i];
+		glm::vec2 deltaUV2 = texCoords[i + 2] - texCoords[i];
+		float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+		glm::vec3 tangent;
+		tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+		tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+		tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+		tangent = glm::normalize(tangent);
+
+		glm::vec3 bitangent;
+		bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+		bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+		bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+		bitangent = glm::normalize(bitangent);
+
+		tangents.push_back(tangent);
+		tangents.push_back(tangent);
+		tangents.push_back(tangent);
+
+		bitangents.push_back(bitangent);
+		bitangents.push_back(bitangent);
+		bitangents.push_back(bitangent);
+
+
+	}
+
+
+	cout << vertices.size() << " ... " << numPoints << endl;
+
+	// merge together
+	for (int i = 0; i < numPoints; i++) {
+		vertexData.push_back(vertices[i].x);
+		vertexData.push_back(vertices[i].y);
+		vertexData.push_back(vertices[i].z);
+		vertexData.push_back(normals[i].x);
+		vertexData.push_back(normals[i].y);
+		vertexData.push_back(normals[i].z);
+		vertexData.push_back(texCoords[i].x);
+		vertexData.push_back(texCoords[i].y);
+		vertexData.push_back(tangents[i].x);
+		vertexData.push_back(tangents[i].y);
+		vertexData.push_back(tangents[i].z);
+		vertexData.push_back(bitangents[i].x);
+		vertexData.push_back(bitangents[i].y);
+		vertexData.push_back(bitangents[i].z);
+	}
+
+	
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexData.size(), vertexData.data(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)(sizeof(float) * 3));
+
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)(sizeof(float) * 6));
+
+
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)(sizeof(float) * 8));
+
+	glEnableVertexAttribArray(4);
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)(sizeof(float) * 11));
+
+
+	
+
+	glBindVertexArray(0);
+}
+
+void HeightMap::initBuffersOld() {
+
+
+	vector<glm::vec3> areaPoints;
 	vector<float> vertexData; // for texture coordinates (which are vec2)
 
 
 
-	/*
-	vector<glm::vec3> triangles;
-	vector<glm::vec3> normals;
-	*/
+							  /*
+							  vector<glm::vec3> triangles;
+							  vector<glm::vec3> normals;
+							  */
 	bool uploadTextureCoordinates = true;
 
 	bool flatShading = false;
@@ -81,7 +263,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 				if (uploadTextureCoordinates) {
 
 
-					
+
 					vertexData.push_back(p1.x);
 					vertexData.push_back(p1.y);
 					vertexData.push_back(p1.z);
@@ -217,10 +399,17 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 		}
 	}
 
+	for (int i = 0; i < vertexData.size(); i += 8) {
+
+		//glm::vec3 edge1 = 
+
+	}
+
+
 	/*
 	for (int i = 0; i < triangles.size(); i++) {
-		areaPoints.push_back(triangles[i]);
-		areaPoints.push_back(normals[i]);
+	areaPoints.push_back(triangles[i]);
+	areaPoints.push_back(normals[i]);
 	}
 	*/
 
@@ -257,23 +446,6 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 
 	glBindVertexArray(0);
 
-
-	diffuseTexture = new Texture("textures/terrain_diffuse.jpg");
-
-
-
-}
-
-
-HeightMap::~HeightMap() {
-	cout << "DELETING HEIGHTMAP" << endl;
-	for (int i = 0; i < width; i++) {
-		delete[] data[i];
-	}
-	delete[] data;
-	if (diffuseTexture) {
-		delete diffuseTexture;
-	}
 }
 
 void HeightMap::draw() {
@@ -283,7 +455,7 @@ void HeightMap::draw() {
 	//glBindVertexArray(VAO);
 	//glDrawArrays(GL_TRIANGLES, 0, numPoints);
 	draw(shader);
-	
+
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 }
@@ -293,8 +465,11 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	glUseProgram(shader->id);
 
-	shader->setInt("u_DiffuseTexture", 1);
+	shader->setInt("u_Material.diffuse", 1);
+	shader->setInt("u_Material.normalMap", 3);
+
 	glBindTextureUnit(1, diffuseTexture->id);
+	glBindTextureUnit(3, normalMap->id);
 
 
 	glBindVertexArray(VAO);

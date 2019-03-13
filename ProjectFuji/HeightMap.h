@@ -37,6 +37,7 @@ public:
 	float **data;		///< The height map data array		
 
 	Texture *diffuseTexture;
+	Texture *normalMap;
 
 
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)
@@ -55,6 +56,9 @@ public:
 
 	/// Deletes the height map data.
 	~HeightMap();
+
+	void initBuffers();
+	void initBuffersOld();
 
 	/// Draws the height map.
 	void draw();

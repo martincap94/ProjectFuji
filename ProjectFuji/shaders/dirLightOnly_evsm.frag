@@ -7,6 +7,8 @@ in vec3 v_Normal;
 in vec4 v_LightSpacePos;
 in vec2 v_TexCoords;
 
+in mat3 v_TBN;
+
 struct DirLight {
 	vec3 direction;
 
@@ -15,6 +17,16 @@ struct DirLight {
 };
 
 uniform DirLight u_DirLight;
+
+struct Material {
+	sampler2D diffuse;
+	sampler2D specular;
+	sampler2D normalMap;
+	float shininess;
+	float tileSize;
+};
+
+uniform Material u_Material;
 
 
 struct Fog {
@@ -29,7 +41,9 @@ uniform Fog u_Fog;
 uniform vec3 u_ViewPos;
 
 uniform sampler2D u_DepthMapTexture;
-uniform sampler2D u_DiffuseTexture;
+
+
+//uniform sampler2D u_DiffuseTexture;
 
 uniform float u_VarianceMinLimit;
 uniform float u_LightBleedReduction;
@@ -55,7 +69,12 @@ void main() {
 	//	return;
 	//}
 
-	vec3 norm = normalize(v_Normal);
+	//vec3 norm = normalize(v_Normal);
+	vec3 norm = texture(u_Material.normalMap, v_TexCoords).rgb;
+	norm = normalize(norm * 2.0 - 1.0);
+	norm = normalize(v_TBN * norm);
+
+
 	vec3 viewDir = normalize(u_ViewPos - v_FragPos.xyz);
 	//vec3 viewDir = normalize(v_FragPos.xyz - u_ViewPos);
 
@@ -93,7 +112,7 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
     
 	//vec3 matColor = vec3(0.5, 0.2, 0.2);
-	vec3 matColor = texture(u_DiffuseTexture, v_TexCoords * 20.0).rgb;
+	vec3 matColor = texture(u_Material.diffuse, v_TexCoords * 20.0).rgb;
 
     // combine results
     vec3 diffuse  = light.color  * diff * matColor;
