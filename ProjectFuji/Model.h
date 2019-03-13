@@ -23,10 +23,16 @@ public:
 
 	~Model();
 
-	void draw();
-	void draw(ShaderProgram &shader);
+	virtual void draw();
+	virtual void draw(ShaderProgram *shader);
 
-private:
+	void makeInstanced(std::vector<Transform> &instanceTransforms);
+
+protected:
+
+	bool instanced = false;
+	int numInstances = 0;
+
 
 	std::vector<Mesh> meshes;
 

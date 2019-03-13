@@ -337,10 +337,6 @@ int runApp() {
 	particleSystem = new ParticleSystem(&vars);
 
 
-	//particlesColor.r = particleSystemLBM->particlesColor.r;
-	//particlesColor.g = particleSystemLBM->particlesColor.g;
-	//particlesColor.b = particleSystemLBM->particlesColor.b;
-
 
 	glm::ivec3 latticeDim(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
 
@@ -426,6 +422,15 @@ int runApp() {
 	testModel.transform.position.x += 1.0f;
 
 	//testMesh.transform.position = glm::vec3(0.0f);
+
+	std::vector<Transform> instanceTransforms;
+	for (unsigned int i = 0; i < 600; i++) {
+		float scaleModifier = getRandFloat(0.5f, 1.5f);
+		Transform t(glm::vec3(getRandFloat(-200.0f, 200.0f), 0.0f, getRandFloat(-200.0f, 200.0f)), glm::vec3(), glm::vec3(scaleModifier));
+		instanceTransforms.push_back(t);
+	}
+	testModel.shader = ShaderManager::getShaderPtr("normals_instanced");
+	testModel.makeInstanced(instanceTransforms);
 
 
 

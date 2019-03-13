@@ -29,14 +29,14 @@ void Model::draw() {
 	material->normalMap->use(2);
 
 	for (int i = 0; i < meshes.size(); i++) {
-		meshes[i].draw(*shader);
+		meshes[i].draw(shader);
 	}
 }
 
-void Model::draw(ShaderProgram & shader) {
+void Model::draw(ShaderProgram *shader) {
 
-	shader.use();
-	shader.setModelMatrix(transform.getModelMatrix());
+	shader->use();
+	shader->setModelMatrix(transform.getModelMatrix());
 
 	material->diffuseTexture->useTexture();
 	material->specularMap->useTexture();
@@ -45,6 +45,15 @@ void Model::draw(ShaderProgram & shader) {
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].draw(shader);
 	}
+}
+
+void Model::makeInstanced(std::vector<Transform> &instanceTransforms) {
+	numInstances = instanceTransforms.size();
+	for (int i = 0; i < meshes.size(); i++) {
+		meshes[i].makeInstanced(instanceTransforms);
+	}
+	instanced = true;
+
 }
 
 void Model::loadModel(string path) {

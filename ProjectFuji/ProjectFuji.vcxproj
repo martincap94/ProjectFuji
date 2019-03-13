@@ -100,6 +100,7 @@
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Grid3D.cpp" />
     <ClCompile Include="HeightMap.cpp" />
+    <ClCompile Include="InstancedModel.cpp" />
     <ClCompile Include="LatticeCollider.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Grid2D.cpp" />
@@ -188,6 +189,7 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Grid3D.h" />
     <ClInclude Include="HeightMap.h" />
+    <ClInclude Include="InstancedModel.h" />
     <ClInclude Include="LatticeCollider.h" />
     <ClCompile Include="Config.h" />
     <ClInclude Include="Grid2D.h" />
@@ -243,6 +245,8 @@
     <None Include="shaders\coloredParticle.vert" />
     <None Include="shaders\curve.frag" />
     <None Include="shaders\curve.vert" />
+    <None Include="shaders\normals_instanced.frag" />
+    <None Include="shaders\normals_instanced.vert" />
     <None Include="shaders\terrain.frag" />
     <None Include="shaders\terrain.vert" />
     <None Include="shaders\dirLightOnly_evsm.frag" />

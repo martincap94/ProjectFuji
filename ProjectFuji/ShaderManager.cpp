@@ -94,6 +94,8 @@ namespace ShaderManager {
 
 			addShader("terrain", "terrain.vert", "terrain.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
 
+			addShader("normals_instanced", "normals_instanced.vert", "normals_instanced.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
+
 		}
 	}
 

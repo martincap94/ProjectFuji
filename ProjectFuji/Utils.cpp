@@ -159,3 +159,6 @@ void reportGLErrors(std::string message) {
 }
 
 
+float getRandFloat(float min, float max) {
+	return (min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min))));
+}

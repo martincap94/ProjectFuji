@@ -164,6 +164,7 @@
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Emitter.cpp" />
     <ClCompile Include="CircleEmitter.cpp" />
+    <ClCompile Include="InstancedModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -284,6 +285,7 @@
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Emitter.h" />
     <ClInclude Include="CircleEmitter.h" />
+    <ClInclude Include="InstancedModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -433,6 +435,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\terrain.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\normals_instanced.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\normals_instanced.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
