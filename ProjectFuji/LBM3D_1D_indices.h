@@ -25,12 +25,16 @@
 
 #include "LBM.h"
 
+#define WEIGHT_MIDDLE (1.0f / 3.0f)
+#define WEIGHT_AXIS (1.0f / 18.0f)
+#define WEIGHT_NON_AXIAL (1.0f / 36.0f)
+
 class ParticleSystem;
 
 __constant__ glm::vec3 dirVectorsConst[19];
-__constant__ float WEIGHT_MIDDLE;
-__constant__ float WEIGHT_AXIS;
-__constant__ float WEIGHT_NON_AXIAL;
+//__constant__ float WEIGHT_MIDDLE;
+//__constant__ float WEIGHT_AXIS;
+//__constant__ float WEIGHT_NON_AXIAL;
 
 
 /// 3D LBM simulator.

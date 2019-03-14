@@ -601,9 +601,6 @@ __global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, g
 	\param[in] velocities		Velocities array for the lattice.
 */
 __global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities, int useSubgridModel = 0) {
-	float weightMiddle = 1.0f / 3.0f;
-	float weightAxis = 1.0f / 18.0f;
-	float weightNonaxial = 1.0f / 36.0f;
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
 	idx += blockDim.x * blockDim.y * blockIdx.x;
@@ -639,9 +636,9 @@ __global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities, 
 
 		velocities[idx] = macroVelocity;
 
-		float leftTermMiddle = weightMiddle * macroDensity;
-		float leftTermAxis = weightAxis * macroDensity;
-		float leftTermNonaxial = weightNonaxial * macroDensity;
+		float leftTermMiddle = WEIGHT_MIDDLE * macroDensity;
+		float leftTermAxis = WEIGHT_AXIS * macroDensity;
+		float leftTermNonaxial = WEIGHT_NON_AXIAL * macroDensity;
 
 		float macroVelocityDot = glm::dot(macroVelocity, macroVelocity);
 		float thirdTerm = 1.5f * macroVelocityDot;
@@ -1686,6 +1683,29 @@ __global__ void streamingStepKernel(Node3D *backLattice, Node3D *frontLattice) {
 
 }
 
+__global__ void initLatticeKernel(Node3D *frontLattice) {
+
+	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
+	idx += blockDim.x * blockDim.y * blockIdx.x;
+
+	//if (idx == 0) {
+	//	printf("d_latticeSize = %d\n", d_latticeSize);
+	//}
+
+	if (idx < d_latticeSize) {
+
+		frontLattice[idx].adj[DIR_MIDDLE_VERTEX] = WEIGHT_MIDDLE;
+		for (int i = 1; i <= 6; i++) {
+			frontLattice[idx].adj[i] = WEIGHT_AXIS;
+		}
+		for (int i = 7; i <= 18; i++) {
+			frontLattice[idx].adj[i] = WEIGHT_NON_AXIAL;
+		}
+	}
+
+
+}
+
 
 
 
@@ -1703,9 +1723,9 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	initScene();
 
 
-	frontLattice = new Node3D[latticeSize]();
-	backLattice = new Node3D[latticeSize]();
-	velocities = new glm::vec3[latticeSize]();
+	//frontLattice = new Node3D[latticeSize]();
+	//backLattice = new Node3D[latticeSize]();
+	//velocities = new glm::vec3[latticeSize]();
 
 	CHECK_ERROR(cudaMalloc((void**)&d_frontLattice, sizeof(Node3D) * latticeSize));
 	CHECK_ERROR(cudaMalloc((void**)&d_backLattice, sizeof(Node3D) * latticeSize));
@@ -1717,13 +1737,6 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 
 
 	CHECK_ERROR(cudaMemcpyToSymbol(dirVectorsConst, &directionVectors3D[0], 19 * sizeof(glm::vec3)));
-
-	float weightMiddle = 1.0f / 3.0f;
-	float weightAxis = 1.0f / 18.0f;
-	float weightNonaxial = 1.0f / 36.0f;
-	CHECK_ERROR(cudaMemcpyToSymbol(WEIGHT_MIDDLE, &weightMiddle, sizeof(float)));
-	CHECK_ERROR(cudaMemcpyToSymbol(WEIGHT_AXIS, &weightAxis, sizeof(float)));
-	CHECK_ERROR(cudaMemcpyToSymbol(WEIGHT_NON_AXIAL, &weightNonaxial, sizeof(float)));
 
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_latticeWidth, &latticeWidth, sizeof(int)));
@@ -1740,11 +1753,17 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 
 
 	initBuffers();
-	initLattice();
+	//initLattice();
 
-	CHECK_ERROR(cudaMemcpy(d_backLattice, backLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice));
-	CHECK_ERROR(cudaMemcpy(d_velocities, velocities, sizeof(glm::vec3) * latticeSize, cudaMemcpyHostToDevice));
-	CHECK_ERROR(cudaMemcpy(d_frontLattice, frontLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice));
+	CHECK_ERROR(cudaMemset(d_backLattice, 0, sizeof(Node3D) * latticeSize));
+	CHECK_ERROR(cudaMemset(d_velocities, 0, sizeof(glm::vec3) * latticeSize));
+	initLatticeKernel << <gridDim, blockDim >> > (d_frontLattice);
+	
+
+
+	//CHECK_ERROR(cudaMemcpy(d_backLattice, backLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice));
+	//CHECK_ERROR(cudaMemcpy(d_velocities, velocities, sizeof(glm::vec3) * latticeSize, cudaMemcpyHostToDevice));
+	//CHECK_ERROR(cudaMemcpy(d_frontLattice, frontLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice));
 
 
 }
@@ -1752,9 +1771,9 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 
 LBM3D_1D_indices::~LBM3D_1D_indices() {
 
-	delete[] frontLattice;
-	delete[] backLattice;
-	delete[] velocities;
+	//delete[] frontLattice;
+	//delete[] backLattice;
+	//delete[] velocities;
 
 	//delete heightMap;
 
@@ -2017,9 +2036,7 @@ void LBM3D_1D_indices::streamingStep() {
 }
 
 void LBM3D_1D_indices::collisionStep() {
-	float weightMiddle = 1.0f / 3.0f;
-	float weightAxis = 1.0f / 18.0f;
-	float weightNonaxial = 1.0f / 36.0f;
+
 
 	for (int x = 0; x < latticeWidth; x++) {
 		for (int y = 0; y < latticeHeight; y++) {
@@ -2038,9 +2055,9 @@ void LBM3D_1D_indices::collisionStep() {
 #endif
 
 
-				float leftTermMiddle = weightMiddle * macroDensity;
-				float leftTermAxis = weightAxis * macroDensity;
-				float leftTermNonaxial = weightNonaxial * macroDensity;
+				float leftTermMiddle = WEIGHT_MIDDLE * macroDensity;
+				float leftTermAxis = WEIGHT_AXIS * macroDensity;
+				float leftTermNonaxial = WEIGHT_NON_AXIAL * macroDensity;
 
 				float macroVelocityDot = glm::dot(macroVelocity, macroVelocity);
 				float thirdTerm = 1.5f * macroVelocityDot;
@@ -2337,18 +2354,14 @@ void LBM3D_1D_indices::moveParticles() {
 
 void LBM3D_1D_indices::updateInlets() {
 
-	float weightMiddle = 1.0f / 3.0f;
-	float weightAxis = 1.0f / 18.0f;
-	float weightNonaxial = 1.0f / 36.0f;
-
 
 	float macroDensity = 1.0f;
 	glm::vec3 macroVelocity = inletVelocity;
 
 
-	float leftTermMiddle = weightMiddle * macroDensity;
-	float leftTermAxis = weightAxis * macroDensity;
-	float leftTermNonaxial = weightNonaxial * macroDensity;
+	float leftTermMiddle = WEIGHT_MIDDLE * macroDensity;
+	float leftTermAxis = WEIGHT_AXIS * macroDensity;
+	float leftTermNonaxial = WEIGHT_NON_AXIAL * macroDensity;
 
 	float macroVelocityDot = glm::dot(macroVelocity, macroVelocity);
 	float thirdTerm = 1.5f * macroVelocityDot;
@@ -2633,19 +2646,17 @@ void LBM3D_1D_indices::initBuffers() {
 }
 
 void LBM3D_1D_indices::initLattice() {
-	float weightMiddle = 1.0f / 3.0f;
-	float weightAxis = 1.0f / 18.0f;
-	float weightNonaxial = 1.0f / 36.0f;
+
 	for (int x = 0; x < latticeWidth; x++) {
 		for (int y = 0; y < latticeHeight; y++) {
 			for (int z = 0; z < latticeDepth; z++) {
 				int idx = getIdx(x, y, z);
-				frontLattice[idx].adj[DIR_MIDDLE_VERTEX] = weightMiddle;
+				frontLattice[idx].adj[DIR_MIDDLE_VERTEX] = WEIGHT_MIDDLE;
 				for (int i = 1; i <= 6; i++) {
-					frontLattice[idx].adj[i] = weightAxis;
+					frontLattice[idx].adj[i] = WEIGHT_AXIS;
 				}
 				for (int i = 7; i <= 18; i++) {
-					frontLattice[idx].adj[i] = weightNonaxial;
+					frontLattice[idx].adj[i] = WEIGHT_NON_AXIAL;
 				}
 			}
 		}
