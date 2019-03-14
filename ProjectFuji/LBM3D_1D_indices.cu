@@ -1478,17 +1478,64 @@ __global__ void updateCollidersKernel(Node3D *backLattice, glm::vec3 *velocities
 		int y = (idx / d_latticeWidth) % d_latticeHeight;
 		int z = idx / (d_latticeHeight * d_latticeWidth);
 
-		//float tmp;
+
 
 		if ((heightMap[x + z * d_latticeWidth] >= y && heightMap[x + z * d_latticeWidth] > 0.01f) || y == 0) {
 
-			// possible way of using less local memory
-			//tmp = backLattice[idx].adj[DIR_RIGHT_FACE];
-			//backLattice[idx].adj[DIR_RIGHT_FACE] = backLattice[idx].adj[DIR_LEFT_FACE];
-			//backLattice[idx].adj[DIR_LEFT_FACE] = tmp;
-			//tmp = backLattice[idx].adj[DIR_BACK_FACE];
+#define USE_REGISTER_FRIENDLY_COLLIDERS
+#ifdef USE_REGISTER_FRIENDLY_COLLIDERS
+			
+			float tmp;
+			float *adj = backLattice[idx].adj;
+			
+			// left and right
+			tmp = adj[DIR_RIGHT_FACE];
+			adj[DIR_RIGHT_FACE] = adj[DIR_LEFT_FACE];
+			adj[DIR_LEFT_FACE] = tmp;
 
+			
+			// top and bottom
+			tmp = adj[DIR_TOP_FACE];
+			adj[DIR_TOP_FACE] = adj[DIR_BOTTOM_FACE];
+			adj[DIR_BOTTOM_FACE] = tmp;
 
+			// front and back
+			tmp = adj[DIR_BACK_FACE];
+			adj[DIR_BACK_FACE] = adj[DIR_FRONT_FACE];
+			adj[DIR_FRONT_FACE] = tmp;
+
+			// frontLeft and backRight
+			tmp = adj[DIR_FRONT_LEFT_EDGE];
+			adj[DIR_FRONT_LEFT_EDGE] = adj[DIR_BACK_RIGHT_EDGE];
+			adj[DIR_BACK_RIGHT_EDGE] = tmp;
+
+			// frontRight and backLeft
+			tmp = adj[DIR_FRONT_RIGHT_EDGE];
+			adj[DIR_FRONT_RIGHT_EDGE] = adj[DIR_BACK_LEFT_EDGE];
+			adj[DIR_BACK_LEFT_EDGE] = adj[DIR_FRONT_RIGHT_EDGE];
+
+			// bottomFront and topBack
+			tmp = adj[DIR_BOTTOM_FRONT_EDGE];
+			adj[DIR_BOTTOM_FRONT_EDGE] = adj[DIR_TOP_BACK_EDGE];
+			adj[DIR_TOP_BACK_EDGE] = tmp;
+
+			// bottomBack and topFront
+			tmp = adj[DIR_BOTTOM_BACK_EDGE];
+			adj[DIR_BOTTOM_BACK_EDGE] = adj[DIR_TOP_FRONT_EDGE];
+			adj[DIR_TOP_FRONT_EDGE] = tmp;
+
+			// topRight and bottomLeft
+			tmp = adj[DIR_TOP_RIGHT_EDGE];
+			adj[DIR_TOP_RIGHT_EDGE] = adj[DIR_BOTTOM_LEFT_EDGE];
+			adj[DIR_BOTTOM_LEFT_EDGE] = tmp;
+
+			// topLeft and bottomRight
+			tmp = adj[DIR_TOP_LEFT_EDGE];
+			adj[DIR_TOP_LEFT_EDGE] = adj[DIR_BOTTOM_RIGHT_EDGE];
+			adj[DIR_BOTTOM_RIGHT_EDGE] = tmp;
+			
+#else // USE_REGISTER_FRIENDLY_COLLIDERS
+			
 			float right = backLattice[idx].adj[DIR_RIGHT_FACE];
 			float left = backLattice[idx].adj[DIR_LEFT_FACE];
 			float back = backLattice[idx].adj[DIR_BACK_FACE];
@@ -1527,6 +1574,7 @@ __global__ void updateCollidersKernel(Node3D *backLattice, glm::vec3 *velocities
 			backLattice[idx].adj[DIR_TOP_LEFT_EDGE] = bottomRight;
 			backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] = topLeft;
 			backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] = topRight;
+#endif // USE_REGISTER_FRIENDLY_COLLIDERS
 
 		}
 	}

@@ -29,6 +29,9 @@ void Model::draw() {
 	material->specularMap->use(1);
 	material->normalMap->use(2);
 
+	shader->setInt("u_DepthMapTexture", 10);
+
+
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].draw(shader);
 	}
