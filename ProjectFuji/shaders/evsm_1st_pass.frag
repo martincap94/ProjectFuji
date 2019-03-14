@@ -1,6 +1,6 @@
 #version 400 core
 
-uniform vec2  u_Exponents = vec2(4.0, 4.0);
+uniform vec2  u_Exponents = vec2(40.0, 40.0);
 
 layout (location = 0) out vec4 FragColor;
 

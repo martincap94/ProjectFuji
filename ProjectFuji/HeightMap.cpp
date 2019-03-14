@@ -450,6 +450,36 @@ void HeightMap::initBuffersOld() {
 
 }
 
+float HeightMap::getHeight(float x, float z) {
+
+	int leftx = (int)x;
+	int rightx = leftx + 1;
+	int leftz = (int)z;
+	int rightz = leftz + 1;
+
+	leftx = glm::clamp(leftx, 0, width - 1);
+	rightx = glm::clamp(rightx, 0, width - 1);
+	leftz = glm::clamp(leftz, 0, height - 1);
+	rightz = glm::clamp(rightz, 0, height - 1);
+
+
+	float xRatio = x - leftx;
+	float zRatio = z - leftz;
+
+	float y1 = data[leftx][leftz];
+	float y2 = data[leftx][rightz];
+	float y3 = data[rightx][leftz];
+	float y4 = data[rightx][rightz];
+
+	float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
+	float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
+
+	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
+
+	return y;
+
+}
+
 void HeightMap::draw() {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -467,14 +497,18 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	glUseProgram(shader->id);
 
-	shader->setInt("u_Material.diffuse", 1);
-	shader->setInt("u_Material.normalMap", 3);
-	shader->setInt("u_TestDiffuse", 4);
+	shader->setInt("u_Material.diffuse", 0);
+	shader->setInt("u_Material.specular", 1);
+	shader->setInt("u_Material.normalMap", 2);
+	shader->setInt("u_TestDiffuse", 3);
+	shader->setInt("u_DepthMapTexture", 10);
+
+	shader->setFloat("u_Material.shininess", 2.0f);
 	shader->setFloat("u_Material.tiling", vars->terrainTextureTiling);
 
-	glBindTextureUnit(1, diffuseTexture->id);
-	glBindTextureUnit(3, normalMap->id);
-	glBindTextureUnit(4, testDiffuse->id);
+	glBindTextureUnit(0, diffuseTexture->id);
+	glBindTextureUnit(2, normalMap->id);
+	glBindTextureUnit(3, testDiffuse->id);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);
@@ -485,6 +519,10 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 void HeightMap::drawGeometry(ShaderProgram * shader) {
 	glUseProgram(shader->id);
+
+	shader->setModelMatrix(glm::mat4(1.0f));
+	shader->setBool("u_IsInstanced", false);
+
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);
 }

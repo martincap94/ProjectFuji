@@ -179,8 +179,8 @@ void CircleEmitter::draw() {
 	glPointSize(0.5f);
 	shader->use();
 	glBindVertexArray(VAO);
-	glDrawArrays(GL_POINTS, 0, numVisPoints);
-	//glDrawArrays(GL_LINE_LOOP, 0, numVisPoints);
+	//glDrawArrays(GL_POINTS, 0, numVisPoints);
+	glDrawArrays(GL_LINE_LOOP, 0, numVisPoints);
 	//glDepthFunc(GL_LEQUAL);
 }
 
@@ -191,7 +191,9 @@ void CircleEmitter::draw(ShaderProgram * shader) {
 	shader->use();
 	glPointSize(0.5f);
 	glBindVertexArray(VAO);
-	glDrawArrays(GL_POINTS, 0, numVisPoints);
+	//glDrawArrays(GL_POINTS, 0, numVisPoints);
+	glDrawArrays(GL_LINE_LOOP, 0, numVisPoints);
+
 }
 
 void CircleEmitter::initBuffers() {
@@ -217,6 +219,8 @@ void CircleEmitter::initBuffers() {
 
 void CircleEmitter::updateVBOPoints() {
 	vector<glm::vec3> vertices;
+
+	numVisPoints = 10 * radius;
 
 	float deltaTheta = 360.0f / (float)numVisPoints;
 	float theta = 0.0f;

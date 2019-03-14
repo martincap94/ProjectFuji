@@ -101,6 +101,7 @@ public:
 	void emitParticles();
 
 	void draw(const ShaderProgram &shader, glm::vec3 cameraPos);
+	void drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos);
 
 	void initParticlesWithZeros();
 	void initParticlesOnTerrain();

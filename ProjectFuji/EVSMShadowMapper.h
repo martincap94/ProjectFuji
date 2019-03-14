@@ -3,6 +3,8 @@
 #include <glad\glad.h>
 #include <glm\glm.hpp>
 
+#include <vector>
+
 class ShaderProgram;
 class DirectionalLight;
 
@@ -10,7 +12,7 @@ class EVSMShadowMapper {
 public:
 
 	bool useBlurPass = true;
-	GLint resolution = 1024;
+	GLint resolution = 2048;
 
 	float shadowBias = 0.001f;
 	float lightBleedReduction = 0.01f;
@@ -43,6 +45,9 @@ public:
 //private:
 
 	bool isReady();
+
+	std::vector<ShaderProgram *> firstPassShaders;
+	std::vector<ShaderProgram *> secondPassShaders;
 
 	ShaderProgram *firstPassShader;
 	ShaderProgram *secondPassShader;

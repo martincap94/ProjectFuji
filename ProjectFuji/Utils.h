@@ -169,5 +169,10 @@ glm::vec3 getNormalizedFromRange(glm::vec3 val, float min = 0.0f, float max = 1.
 
 std::string getGLErrorString(unsigned int err);
 void reportGLErrors(std::string message = "");
+void reportGLErrors(const char *file, int line);
+
+
+#define CHECK_GL_ERRORS() ( reportGLErrors( __FILE__, __LINE__ ) )
+
 
 float getRandFloat(float min, float max);

@@ -137,6 +137,10 @@ void EVSMShadowMapper::init() {
 	//secondPassShader = ShaderManager::getShaderPtr("evsm_2nd_pass");
 	secondPassShader = ShaderManager::getShaderPtr("terrain");
 
+	firstPassShaders.push_back(ShaderManager::getShaderPtr("evsm_1st_pass"));
+	secondPassShaders.push_back(ShaderManager::getShaderPtr("terrain"));
+	secondPassShaders.push_back(ShaderManager::getShaderPtr("normals_instanced"));
+
 
 	/*firstPassShader = ShaderManager::getShaderPtr("vsm_1st_pass");
 	secondPassShader = ShaderManager::getShaderPtr("vsm_2nd_pass");*/
@@ -152,6 +156,8 @@ void EVSMShadowMapper::preFirstPass() {
 	if (!isReady()) {
 		return;
 	}
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_FRONT);
 
 	//glCullFace(GL_FRONT);
 	glViewport(0, 0, resolution, resolution);
@@ -169,9 +175,8 @@ void EVSMShadowMapper::preFirstPass() {
 	glUniform1i(glGetUniformLocation(pid, "u_PCFMode"), 2);
 
 	glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
-	glUniformMatrix4fv(glGetUniformLocation(pid, "u_ProjectionMatrix"), 1, GL_FALSE, &lightProjectionMatrix[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(pid, "u_ModelViewMatrix"), 1, GL_FALSE, &lightViewMatrix[0][0]);
-
+	glUniformMatrix4fv(glGetUniformLocation(pid, "u_Projection"), 1, GL_FALSE, &lightProjectionMatrix[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(pid, "u_View"), 1, GL_FALSE, &lightViewMatrix[0][0]);
 
 
 }
@@ -180,6 +185,8 @@ void EVSMShadowMapper::postFirstPass() {
 	if (!isReady()) {
 		return;
 	}
+
+	glCullFace(GL_BACK);
 
 	if (useBlurPass) {
 		GLuint pid = blurShader->id;
@@ -226,35 +233,42 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
+	glm::mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
+
+
 	//glActiveTextire(GL_)
 	if (useBlurPass) {
-		glBindTextureUnit(0, secondPassBlurTexture); // requires OpenGL 4.5
+		glBindTextureUnit(10, secondPassBlurTexture); // requires OpenGL 4.5
 	} else {
-		glBindTextureUnit(0, depthMapTexture);
+		glBindTextureUnit(10, depthMapTexture);
+		//glBindTextureUnit(3, depthMapTexture);
 	}
 
 
-	secondPassShader->use();
+	for (int i = 0; i < secondPassShaders.size(); i++) {
+		//secondPassShader->use();
+		secondPassShaders[i]->use();
 
-	GLuint pid = secondPassShader->id;
-	secondPassShader->setBool("u_ShadowOnly", (bool)shadowOnly);
+		//GLuint pid = secondPassShader->id;
+		GLuint pid = secondPassShaders[i]->id;
 
-	glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
-	secondPassShader->setFloat("u_ShadowBias", shadowBias);
-	secondPassShader->setFloat("u_LightBleedReduction", lightBleedReduction);
-	//secondPassShader->setFloat("u_VarianceMinLimit", varianceMinLimit);
+		secondPassShaders[i]->setBool("u_ShadowOnly", (bool)shadowOnly);
+
+		glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
+		secondPassShaders[i]->setFloat("u_ShadowBias", shadowBias);
+		secondPassShaders[i]->setFloat("u_LightBleedReduction", lightBleedReduction);
+		//secondPassShader->setFloat("u_VarianceMinLimit", varianceMinLimit);
 
 
-	glm::mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
+		glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightViewMatrix"), 1, GL_FALSE, &lightViewMatrix[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightProjectionMatrix"), 1, GL_FALSE, &lightProjectionMatrix[0][0]);
 
-	glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightViewMatrix"), 1, GL_FALSE, &lightViewMatrix[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightProjectionMatrix"), 1, GL_FALSE, &lightProjectionMatrix[0][0]);
+		//glUniform1i(glGetUniformLocation(pid, "u_DepthMapTexture"), 0);
+		//glUniform1i(glGetUniformLocation(pid, "u_DepthMapTexture"), 3);
 
-	glUniform1i(glGetUniformLocation(pid, "u_DepthMapTexture"), 0);
-
-	//secondPassShader->setVec3("v_ViewPos", di);
-
+		//secondPassShader->setVec3("v_ViewPos", di);
+	}
 
 
 

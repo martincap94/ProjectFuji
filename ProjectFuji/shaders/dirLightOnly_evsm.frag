@@ -19,9 +19,9 @@ struct DirLight {
 uniform DirLight u_DirLight;
 
 struct Material {
-	sampler2D diffuse;
-	sampler2D specular;
-	sampler2D normalMap;
+	sampler2D diffuse; // 0 
+	sampler2D specular; // 1
+	sampler2D normalMap; // 2
 	float shininess;
 	float tileSize;
 };
@@ -40,7 +40,7 @@ uniform Fog u_Fog;
 
 uniform vec3 u_ViewPos;
 
-uniform sampler2D u_DepthMapTexture;
+uniform sampler2D u_DepthMapTexture; // 10
 
 
 //uniform sampler2D u_DiffuseTexture;

@@ -172,6 +172,21 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 
 }
 
+void ParticleSystem::drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos) {
+
+	shader->use();
+
+	glPointSize(pointSize);
+	shader->setModelMatrix(glm::mat4(1.0));
+	shader->setVec3("u_CameraPos", cameraPos);
+	shader->setFloat("u_PointSizeModifier", pointSize);
+	shader->setBool("u_IsInstanced", false);
+
+	glBindVertexArray(particlesVAO);
+	glDrawArrays(GL_POINTS, 0, numActiveParticles);
+
+}
+
 void ParticleSystem::initParticlesWithZeros() {
 	cout << __FUNCTION__ << " not yet implemented!" << endl;
 

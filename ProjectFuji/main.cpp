@@ -423,14 +423,14 @@ int runApp() {
 
 	//testMesh.transform.position = glm::vec3(0.0f);
 
-	std::vector<Transform> instanceTransforms;
-	for (unsigned int i = 0; i < 600; i++) {
-		float scaleModifier = getRandFloat(0.5f, 1.5f);
-		Transform t(glm::vec3(getRandFloat(-200.0f, 200.0f), 0.0f, getRandFloat(-200.0f, 200.0f)), glm::vec3(), glm::vec3(scaleModifier));
-		instanceTransforms.push_back(t);
-	}
+	//std::vector<Transform> instanceTransforms;
+	//for (unsigned int i = 0; i < 600; i++) {
+	//	float scaleModifier = getRandFloat(0.5f, 1.5f);
+	//	Transform t(glm::vec3(getRandFloat(-200.0f, 200.0f), 0.0f, getRandFloat(-200.0f, 200.0f)), glm::vec3(), glm::vec3(scaleModifier));
+	//	instanceTransforms.push_back(t);
+	//}
 	testModel.shader = ShaderManager::getShaderPtr("normals_instanced");
-	testModel.makeInstanced(instanceTransforms);
+	testModel.makeInstanced(vars.heightMap, 100);
 
 
 
@@ -762,18 +762,20 @@ int runApp() {
 			
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
-			//glDepthFunc(GL_LEQUAL);
+			glDepthFunc(GL_LEQUAL);
 
-			glDisable(GL_CULL_FACE);
 			evsm.preFirstPass();
 			stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
 
 			if (vars.showCloudShadows) {
-				particleSystem->draw(*evsm.firstPassShader, camera->position);
+				particleSystem->drawGeometry(evsm.firstPassShader, camera->position);
 			}
 			//testMesh.draw(evsm.firstPassShader);
+			testModel.drawGeometry(evsm.firstPassShader);
 
 			evsm.postFirstPass();
+			CHECK_GL_ERRORS();
+
 
 			glViewport(0, 0, vars.screenWidth, vars.screenHeight);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -783,6 +785,7 @@ int runApp() {
 
 
 			evsm.preSecondPass(vars.screenWidth, vars.screenHeight);
+			CHECK_GL_ERRORS();
 
 			stlpSim->heightMap->draw(evsm.secondPassShader);
 
@@ -794,6 +797,8 @@ int runApp() {
 
 			evsm.postSecondPass();
 			
+			CHECK_GL_ERRORS();
+
 			ShaderManager::updateFogUniforms();
 
 
@@ -830,6 +835,7 @@ int runApp() {
 			
 
 		}
+		CHECK_GL_ERRORS();
 		reportGLErrors("E");
 
 

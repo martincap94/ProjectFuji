@@ -65,6 +65,9 @@ public:
 	void initBuffers();
 	void initBuffersOld();
 
+	float getHeight(float x, float z);
+
+
 	/// Draws the height map.
 	void draw();
 	void draw(ShaderProgram *shader);

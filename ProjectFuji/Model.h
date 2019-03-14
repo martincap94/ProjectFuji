@@ -10,6 +10,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "HeightMap.h"
 
 class Model {
 public:
@@ -25,14 +26,14 @@ public:
 
 	virtual void draw();
 	virtual void draw(ShaderProgram *shader);
+	virtual void drawGeometry(ShaderProgram *shader);
 
 	void makeInstanced(std::vector<Transform> &instanceTransforms);
+	void makeInstanced(HeightMap *heightMap, int numInstances);
 
 protected:
 
 	bool instanced = false;
-	int numInstances = 0;
-
 
 	std::vector<Mesh> meshes;
 

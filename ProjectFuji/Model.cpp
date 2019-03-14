@@ -1,6 +1,7 @@
 #include "Model.h"
 
 #include <iostream>
+#include "Utils.h"
 
 using namespace std;
 
@@ -38,17 +39,51 @@ void Model::draw(ShaderProgram *shader) {
 	shader->use();
 	shader->setModelMatrix(transform.getModelMatrix());
 
+	shader->setInt("u_Material.diffuse", 0);
+	shader->setInt("u_Material.specular", 1);
+	shader->setInt("u_Material.normalMap", 2);
+	shader->setInt("u_DepthMapTexture", 10);
+
 	material->diffuseTexture->useTexture();
 	material->specularMap->useTexture();
 	material->normalMap->useTexture();
+
+	//glBindTextureUnit(3, evsm)
+
 
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].draw(shader);
 	}
 }
 
+void Model::drawGeometry(ShaderProgram * shader) {
+	shader->use();
+	shader->setModelMatrix(transform.getModelMatrix());
+	shader->setBool("u_IsInstanced", instanced);
+	for (int i = 0; i < meshes.size(); i++) {
+		meshes[i].draw(shader);
+	}
+}
+
 void Model::makeInstanced(std::vector<Transform> &instanceTransforms) {
-	numInstances = instanceTransforms.size();
+	for (int i = 0; i < meshes.size(); i++) {
+		meshes[i].makeInstanced(instanceTransforms);
+	}
+	instanced = true;
+}
+
+void Model::makeInstanced(HeightMap *heightMap, int numInstances) {
+
+	std::vector<Transform> instanceTransforms;
+	for (unsigned int i = 0; i < numInstances; i++) {
+		float scaleModifier = getRandFloat(0.5f, 1.5f);
+		float xPos = getRandFloat(0.0f, heightMap->width);
+		float zPos = getRandFloat(0.0f, heightMap->height);
+		float yPos = heightMap->getHeight(xPos, zPos);
+
+		Transform t(glm::vec3(xPos, yPos, zPos), glm::vec3(), glm::vec3(scaleModifier));
+		instanceTransforms.push_back(t);
+	}
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].makeInstanced(instanceTransforms);
 	}

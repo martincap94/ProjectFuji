@@ -153,8 +153,14 @@ std::string getGLErrorString(unsigned int err) {
 void reportGLErrors(std::string message) {
 	GLenum err;
 	while ((err = glGetError()) != GL_NO_ERROR) {
-		printf("Error in %s on line %d: ", __FILE__, __LINE__);
 		std::cerr << message << ": " << getGLErrorString(err) << "(" << err << ")" << std::endl;
+	}
+}
+
+void reportGLErrors(const char * file, int line) {
+	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR) {
+		printf("Error in %s on line %d: %s\n", file , line, getGLErrorString(err).c_str());
 	}
 }
 
