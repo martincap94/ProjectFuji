@@ -1632,6 +1632,27 @@ __global__ void streamingStepKernel(Node3D *backLattice, Node3D *frontLattice) {
 			back = 0;
 		}
 
+		/*
+		backLattice[idx].adj[DIR_LEFT_FACE] = frontLattice[getIdxKer(right, y, z)].adj[DIR_LEFT_FACE];
+		backLattice[idx].adj[DIR_FRONT_FACE] = frontLattice[getIdxKer(x, y, back)].adj[DIR_FRONT_FACE];
+		backLattice[idx].adj[DIR_BOTTOM_FACE] = frontLattice[getIdxKer(x, top, z)].adj[DIR_BOTTOM_FACE];
+		backLattice[idx].adj[DIR_FRONT_LEFT_EDGE] = frontLattice[getIdxKer(right, y, back)].adj[DIR_FRONT_LEFT_EDGE];
+		backLattice[idx].adj[DIR_BACK_LEFT_EDGE] = frontLattice[getIdxKer(right, y, front)].adj[DIR_BACK_LEFT_EDGE];
+		backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] = frontLattice[getIdxKer(right, top, z)].adj[DIR_BOTTOM_LEFT_EDGE];
+		backLattice[idx].adj[DIR_TOP_LEFT_EDGE] = frontLattice[getIdxKer(right, bottom, z)].adj[DIR_TOP_LEFT_EDGE];
+		backLattice[idx].adj[DIR_BOTTOM_FRONT_EDGE] = frontLattice[getIdxKer(x, top, back)].adj[DIR_BOTTOM_FRONT_EDGE];
+		backLattice[idx].adj[DIR_TOP_FRONT_EDGE] = frontLattice[getIdxKer(x, bottom, back)].adj[DIR_TOP_FRONT_EDGE];
+		backLattice[idx].adj[DIR_RIGHT_FACE] = frontLattice[getIdxKer(left, y, z)].adj[DIR_RIGHT_FACE];
+		backLattice[idx].adj[DIR_BACK_FACE] = frontLattice[getIdxKer(x, y, front)].adj[DIR_BACK_FACE];
+		backLattice[idx].adj[DIR_TOP_FACE] = frontLattice[getIdxKer(x, bottom, z)].adj[DIR_TOP_FACE];
+		backLattice[idx].adj[DIR_BACK_RIGHT_EDGE] = frontLattice[getIdxKer(left, y, front)].adj[DIR_BACK_RIGHT_EDGE];
+		backLattice[idx].adj[DIR_FRONT_RIGHT_EDGE] = frontLattice[getIdxKer(left, y, back)].adj[DIR_FRONT_RIGHT_EDGE];
+		backLattice[idx].adj[DIR_TOP_RIGHT_EDGE] = frontLattice[getIdxKer(left, bottom, z)].adj[DIR_TOP_RIGHT_EDGE];
+		backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] = frontLattice[getIdxKer(left, top, z)].adj[DIR_BOTTOM_RIGHT_EDGE];
+		backLattice[idx].adj[DIR_TOP_BACK_EDGE] = frontLattice[getIdxKer(x, bottom, front)].adj[DIR_TOP_BACK_EDGE];
+		backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] = frontLattice[getIdxKer(x, top, front)].adj[DIR_BOTTOM_BACK_EDGE];
+		*/
+		
 		backLattice[idx].adj[DIR_LEFT_FACE] += frontLattice[getIdxKer(right, y, z)].adj[DIR_LEFT_FACE];
 		backLattice[idx].adj[DIR_FRONT_FACE] += frontLattice[getIdxKer(x, y, back)].adj[DIR_FRONT_FACE];
 		backLattice[idx].adj[DIR_BOTTOM_FACE] += frontLattice[getIdxKer(x, top, z)].adj[DIR_BOTTOM_FACE];
@@ -1650,7 +1671,9 @@ __global__ void streamingStepKernel(Node3D *backLattice, Node3D *frontLattice) {
 		backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] += frontLattice[getIdxKer(left, top, z)].adj[DIR_BOTTOM_RIGHT_EDGE];
 		backLattice[idx].adj[DIR_TOP_BACK_EDGE] += frontLattice[getIdxKer(x, bottom, front)].adj[DIR_TOP_BACK_EDGE];
 		backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] += frontLattice[getIdxKer(x, top, front)].adj[DIR_BOTTOM_BACK_EDGE];
+		
 
+		
 		for (int i = 0; i < 19; i++) {
 			if (backLattice[idx].adj[i] < 0.0f) {
 				backLattice[idx].adj[i] = 0.0f;
@@ -1658,6 +1681,7 @@ __global__ void streamingStepKernel(Node3D *backLattice, Node3D *frontLattice) {
 				backLattice[idx].adj[i] = 1.0f;
 			}
 		}
+		
 	}
 
 }
