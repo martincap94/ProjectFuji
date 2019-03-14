@@ -140,7 +140,7 @@ void EVSMShadowMapper::init() {
 	firstPassShaders.push_back(ShaderManager::getShaderPtr("evsm_1st_pass"));
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("terrain"));
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("normals_instanced"));
-
+	secondPassShaders.push_back(ShaderManager::getShaderPtr("normals"));
 
 	/*firstPassShader = ShaderManager::getShaderPtr("vsm_1st_pass");
 	secondPassShader = ShaderManager::getShaderPtr("vsm_2nd_pass");*/
@@ -186,7 +186,7 @@ void EVSMShadowMapper::postFirstPass() {
 		return;
 	}
 
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 
 	if (useBlurPass) {
 		GLuint pid = blurShader->id;
@@ -254,6 +254,8 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 
 		secondPassShaders[i]->setBool("u_ShadowOnly", (bool)shadowOnly);
 
+		secondPassShaders[i]->setInt("u_DepthMapTexture", 10);
+
 		glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
 		secondPassShaders[i]->setFloat("u_ShadowBias", shadowBias);
 		secondPassShaders[i]->setFloat("u_LightBleedReduction", lightBleedReduction);
@@ -261,8 +263,6 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 
 
 		glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightViewMatrix"), 1, GL_FALSE, &lightViewMatrix[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightProjectionMatrix"), 1, GL_FALSE, &lightProjectionMatrix[0][0]);
 
 		//glUniform1i(glGetUniformLocation(pid, "u_DepthMapTexture"), 0);
 		//glUniform1i(glGetUniformLocation(pid, "u_DepthMapTexture"), 3);

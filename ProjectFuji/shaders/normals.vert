@@ -7,10 +7,9 @@ layout (location = 3) in vec3 a_Tangent;
 layout (location = 4) in vec3 a_Bitangent;
 
 out vec2 v_TexCoords;
-out vec3 v_Normal;
 out vec3 v_FragPos;
 out mat3 v_TBN;
-out vec4 v_FragPosLightSpace;
+out vec4 v_LightSpacePos;
 
 uniform mat4 u_Model;
 uniform mat4 u_View;
@@ -24,9 +23,8 @@ void main() {
     v_TBN = mat3(T, B, N);
 	
     v_TexCoords = a_TexCoords;
-    v_Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
     v_FragPos = vec3(u_Model * a_Pos);
-	v_FragPosLightSpace = u_LightSpaceMatrix * vec4(v_FragPos, 1.0);
+	v_LightSpacePos = u_LightSpaceMatrix * u_Model * a_Pos;
 	
 	gl_Position = u_Projection * u_View * u_Model * a_Pos;
 

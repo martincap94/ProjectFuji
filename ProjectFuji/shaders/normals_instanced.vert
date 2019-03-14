@@ -19,7 +19,7 @@ uniform mat4 u_Projection;
 uniform mat4 u_LightSpaceMatrix;
 
 void main() {
-	mat4 finalModelMatrix = a_InstanceModelMatrix * u_Model;
+	mat4 finalModelMatrix = u_Model * a_InstanceModelMatrix;
 	vec3 T = normalize(vec3(finalModelMatrix * vec4(a_Tangent, 0.0)));
     vec3 B = normalize(vec3(finalModelMatrix * vec4(a_Bitangent, 0.0)));
     vec3 N = normalize(vec3(finalModelMatrix * vec4(a_Normal, 0.0)));
@@ -28,8 +28,9 @@ void main() {
     v_TexCoords = a_TexCoords;
     //v_Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
 
-	v_LightSpacePos = u_LightSpaceMatrix * a_Pos;
+	v_FragPos = vec3(finalModelMatrix * a_Pos);
+	v_LightSpacePos = u_LightSpaceMatrix * vec4(v_FragPos, 1.0);
 	
-	gl_Position = u_Projection * u_View * finalModelMatrix * a_Pos;
+	gl_Position = u_Projection * u_View * vec4(v_FragPos, 1.0);
 
 }

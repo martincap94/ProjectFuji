@@ -415,7 +415,9 @@ int runApp() {
 	Material aMat(adiffuse, aspecular, anormal, 32.0f);
 
 	Model armoireModel("models/armoire.fbx", &aMat, ShaderManager::getShaderPtr("normals"));
-	armoireModel.transform.position.x += 2.0f;
+	Model armoireModel2("models/armoire.fbx", &aMat, ShaderManager::getShaderPtr("normals"));
+
+	//armoireModel.transform.position.x += 2.0f;
 
 	//Model testModel("models/housewife.obj", &testMat, dirLightOnlyShader);
 	//StaticMesh testMesh("models/housewife.obj", dirLightOnlyShader, &testMat);
@@ -432,8 +434,11 @@ int runApp() {
 	testModel.shader = ShaderManager::getShaderPtr("normals_instanced");
 	testModel.makeInstanced(vars.heightMap, 100);
 
+	armoireModel.transform.position += glm::vec3(10.0f, 0.0f, 10.0f);
+	armoireModel.transform.scale = glm::vec3(4.0f);
 
-
+	armoireModel2.transform.position += glm::vec3(14.0f, 0.0f, 12.0f);
+	armoireModel2.transform.scale = glm::vec3(5.0f);
 
 	dirLight.position = glm::vec3(100.0f, 60.0f, 60.0f);
 
@@ -772,6 +777,9 @@ int runApp() {
 			}
 			//testMesh.draw(evsm.firstPassShader);
 			testModel.drawGeometry(evsm.firstPassShader);
+			armoireModel.drawGeometry(evsm.firstPassShader);
+			armoireModel2.drawGeometry(evsm.firstPassShader);
+
 
 			evsm.postFirstPass();
 			CHECK_GL_ERRORS();
@@ -794,6 +802,7 @@ int runApp() {
 			testModel.draw();
 			testMesh.draw();
 			armoireModel.draw();
+			armoireModel2.draw();
 
 			evsm.postSecondPass();
 			

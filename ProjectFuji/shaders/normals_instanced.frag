@@ -74,6 +74,9 @@ uniform vec2 u_Exponents = vec2(40.0, 40.0);
 uniform int u_EVSMMode = 0;
 uniform float u_ShadowBias;
 
+uniform bool u_ShadowOnly;
+//uniform bool u_ShadowsDisabled;
+
 
 #define NR_POINT_LIGHTS 8
 uniform PointLight u_PointLights[NR_POINT_LIGHTS];
@@ -90,6 +93,8 @@ float calcShadow(vec4 fragLightSpacePos);
 float chebyshev(vec2 moments, float depth);
 float reduceLightBleed(float p_max, float amount);
 float linstep(float minVal, float maxVal, float val);
+
+
 
 void main() {
 
@@ -116,9 +121,12 @@ void main() {
 
 	
 	float shadow = calcShadow(v_LightSpacePos); // directional light only
-
-    vec3 result = calcDirLight(u_DirLight, norm, viewDir) * shadow;
-    
+	vec3 result;
+	if (u_ShadowOnly) {
+		result = vec3(shadow);
+	} else {
+		result = calcDirLight(u_DirLight, norm, viewDir) * shadow;
+    }
 	/*
 	int numPointLights = u_NumActivePointLights;
 	if (numPointLights > NR_POINT_LIGHTS) {

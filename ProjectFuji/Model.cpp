@@ -76,7 +76,7 @@ void Model::makeInstanced(HeightMap *heightMap, int numInstances) {
 
 	std::vector<Transform> instanceTransforms;
 	for (unsigned int i = 0; i < numInstances; i++) {
-		float scaleModifier = getRandFloat(0.5f, 1.5f);
+		float scaleModifier = getRandFloat(2.5f, 5.0f);
 		float xPos = getRandFloat(0.0f, heightMap->width);
 		float zPos = getRandFloat(0.0f, heightMap->height);
 		float yPos = heightMap->getHeight(xPos, zPos);
