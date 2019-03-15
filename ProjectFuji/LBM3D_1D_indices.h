@@ -17,6 +17,7 @@
 #include "DataStructures.h"
 #include "HeightMap.h"
 #include "VariableManager.h"
+#include "STLPDiagram.h"
 
 #include <cuda_gl_interop.h>
 
@@ -117,6 +118,9 @@ public:
 	glm::vec3 *particleVertices;		///< Pointer to the particle vertices array (on CPU)
 	int *d_numParticles;	///< Number of particles on the device; managed in memory by Particle System class (its destructor)
 
+	glm::vec3 *d_inletVelocities;
+	STLPDiagram *stlpDiagram;
+
 
 	int latticeWidth;		///< Width of the lattice
 	int latticeHeight;		///< Height of the lattice
@@ -180,7 +184,7 @@ public:
 		\param[in] particleSystem	Pointer to the particle system.
 		\param[in] blockDim			Dimensions of blocks to be used when launching CUDA kernels.
 	*/
-	LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim);
+	LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram);
 
 	/// Frees CPU and GPU memory and unmaps CUDA graphics resources (VBOs).
 	virtual ~LBM3D_1D_indices();

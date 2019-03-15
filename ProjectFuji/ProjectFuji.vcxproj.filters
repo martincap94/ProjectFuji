@@ -442,8 +442,5 @@
     <None Include="shaders\normals_instanced.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\normals_instanced.frag">
-      <Filter>Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>

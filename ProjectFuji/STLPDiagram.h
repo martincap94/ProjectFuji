@@ -196,7 +196,7 @@ public:
 	void initBuffersOld();
 
 	glm::vec2 getWindDeltasFromAltitude(float altitude);
-
+	void getWindDeltasForLattice(int latticeHeight, std::vector<glm::vec3> &outWindDeltas);
 
 	///////////////////////////////////////////////////////////////////////////
 	// Normalized coordinates helper functions

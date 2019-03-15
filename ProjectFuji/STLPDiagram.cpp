@@ -1474,6 +1474,30 @@ glm::vec2 STLPDiagram::getWindDeltasFromAltitude(float altitude) {
 	return glm::vec2(0.0f);
 }
 
+void STLPDiagram::getWindDeltasForLattice(int latticeHeight, std::vector<glm::vec3>& outWindDeltas) {
+
+	outWindDeltas.clear();
+	float step = (float)(soundingData.size() - 1) / (float)latticeHeight;
+
+	float idx = 0.0f;
+	for (int i = 0; i < latticeHeight; i++) {
+
+		int idxBottom = (int)idx;
+		int idxTop = idxBottom + 1;
+		glm::vec3 deltaBottom = glm::vec3(windData[idxBottom].delta_x, 0.0f, windData[idxBottom].delta_z);
+		glm::vec3 deltaTop = glm::vec3(windData[idxTop].delta_x, 0.0f, windData[idxTop].delta_z);
+
+		float t = idx - idxBottom;
+
+		glm::vec3 delta = t * deltaTop + (1.0f - t) * deltaBottom;
+		outWindDeltas.push_back(glm::normalize(delta));
+
+		idx += step;
+
+	}
+
+}
+
 
 
 

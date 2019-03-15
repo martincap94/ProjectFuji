@@ -23,10 +23,15 @@ Texture::~Texture() {
 bool Texture::loadTexture(const char *path, bool clampEdges) {
 	stbi_set_flip_vertically_on_load(true);
 	unsigned char *data = stbi_load(path, &width, &height, &numChannels, NULL);
+
+	bool retVal = true;
 	if (!data) {
 		std::cout << "Error loading texture at " << path << std::endl;
 		stbi_image_free(data);
-		return false;
+
+		data = stbi_load("textures/missing.png", &width, &height, &numChannels, NULL);
+
+		retVal = false;
 	}
 	glGenTextures(1, &id);
 
@@ -73,7 +78,7 @@ bool Texture::loadTexture(const char *path, bool clampEdges) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 					
 	stbi_image_free(data);
-	return true;
+	return retVal;
 
 }
 

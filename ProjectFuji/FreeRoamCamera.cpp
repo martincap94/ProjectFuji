@@ -85,6 +85,15 @@ void FreeRoamCamera::processKeyboardMovement(int glfwKey, double deltaTime) {
 //}
 
 void FreeRoamCamera::processMouseScroll(double yoffset) {
+	// scrolling up is more demanding, multiply it
+	if (yoffset > 0.0) {
+		yoffset *= 1.5;
+	}
+	float fineGrainControlMultiplier = glm::clamp(movementSpeed / 10.0f, 0.1f, 5.0f);
+	movementSpeed += fineGrainControlMultiplier * (float)yoffset;
+	if (movementSpeed <= 0.1f) {
+		movementSpeed = 0.1f;
+	}
 }
 
 void FreeRoamCamera::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {

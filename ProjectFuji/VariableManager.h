@@ -91,6 +91,7 @@ public:
 
 	float terrainTextureTiling = 10.0f;
 
+	int useSoundingWindVelocities = 1;
 
 
 

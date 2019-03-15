@@ -20,7 +20,6 @@ __constant__ float d_itau;				///< Inverse tau value (1.0f / tau) on the device
 __constant__ int d_mirrorSides;			///< Whether to mirror sides (cycle) on the device
 
 
-
 __device__ int d_respawnY = 0;			///< Respawn y coordinate on the device, not used (random respawn now used)
 __device__ int d_respawnZ = 0;			///< Respawn z coordinate on the device, not used (random respawn now used)
 
@@ -408,7 +407,7 @@ __global__ void clearBackLatticeKernel(Node3D *backLattice) {
 	\param[in] velocities		Velocities array for the lattice.
 	\param[in] inletVelocity	Our desired inlet velocity.
 */
-__global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, glm::vec3 inletVelocity, int xLeftInlet = 1, int xRightInlet = 0, int yBottomInlet = 0, int yTopInlet = 0, int zLeftInlet = 0, int zRightInlet = 0) {
+__global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, glm::vec3 inletVelocity, glm::vec3 *inletVelocities = nullptr, int xLeftInlet = 1, int xRightInlet = 0, int yBottomInlet = 0, int yTopInlet = 0, int zLeftInlet = 0, int zRightInlet = 0) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
 	idx += blockDim.x * blockDim.y * blockIdx.x;
@@ -441,6 +440,11 @@ __global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, g
 			shouldBeSet = true;
 		}
 		if (shouldBeSet) {
+
+//#define USE_SOUNDING_VELOCITIES
+#ifdef USE_SOUNDING_VELOCITIES
+			inletVelocity = inletVelocities[y];
+#endif
 
 			float macroDensity = 1.0f;
 			//glm::vec3 macroVelocity = inletVelocity;
@@ -1715,7 +1719,7 @@ LBM3D_1D_indices::LBM3D_1D_indices() {
 
 
 
-LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystemLBM(particleSystemLBM), particleSystem(particleSystem), blockDim(blockDim) {
+LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystemLBM(particleSystemLBM), particleSystem(particleSystem), blockDim(blockDim), stlpDiagram(stlpDiagram) {
 
 	itau = 1.0f / tau;
 	nu = (2.0f * tau - 1.0f) / 6.0f;
@@ -1759,6 +1763,16 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	CHECK_ERROR(cudaMemset(d_velocities, 0, sizeof(glm::vec3) * latticeSize));
 	initLatticeKernel << <gridDim, blockDim >> > (d_frontLattice);
 	
+	if (vars->useSoundingWindVelocities) {
+
+		CHECK_ERROR(cudaMalloc((void**)&d_inletVelocities, sizeof(glm::vec3) * latticeHeight));
+
+		vector<glm::vec3> windDeltas;
+		stlpDiagram->getWindDeltasForLattice(latticeHeight, windDeltas);
+
+		CHECK_ERROR(cudaMemcpy(d_inletVelocities, windDeltas.data(), sizeof(glm::vec3) * latticeHeight, cudaMemcpyHostToDevice));
+
+	}
 
 
 	//CHECK_ERROR(cudaMemcpy(d_backLattice, backLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice));
@@ -1879,7 +1893,7 @@ void LBM3D_1D_indices::doStepCUDA() {
 
 	// ============================================= update inlets CUDA
 	//updateInletsKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, inletVelocity);
-	updateInletsKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, inletVelocity, xLeftInlet, xRightInlet, yBottomInlet, yTopInlet, zLeftInlet, zRightInlet);
+	updateInletsKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, inletVelocity, d_inletVelocities, xLeftInlet, xRightInlet, yBottomInlet, yTopInlet, zLeftInlet, zRightInlet);
 
 	CHECK_ERROR(cudaPeekAtLastError());
 

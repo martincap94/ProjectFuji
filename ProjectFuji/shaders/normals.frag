@@ -95,6 +95,11 @@ float linstep(float minVal, float maxVal, float val);
 
 
 void main() {
+	vec4 texColor = texture(u_Material.diffuse, v_TexCoords);
+	if (texColor.a < 0.9) {
+		discard;
+	}
+	
 
 	vec3 norm = texture(u_Material.normalMap, v_TexCoords).rgb;
 	norm = normalize(norm * 2.0 - 1.0);
@@ -109,7 +114,7 @@ void main() {
 	if (u_ShadowOnly) {
 		result = vec3(shadow);
 	} else {
-		result = calcDirLight(u_DirLight, norm, viewDir) * shadow;
+		result = calcDirLight(u_DirLight, norm, viewDir) * min(shadow + 0.2, 1.0);
     }
     
 	/*
@@ -183,13 +188,13 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
 
     
     // combine results
-    //vec3 ambient  = light.color  * vec3(texture(u_Material.diffuse, v_TexCoords));
+    vec3 ambient  = 0.4 * vec3(texture(u_Material.diffuse, v_TexCoords));
     vec3 diffuse  = light.color  * diff * vec3(texture(u_Material.diffuse, v_TexCoords));
     vec3 specular = light.color * spec * vec3(texture(u_Material.specular, v_TexCoords));
 
 	vec3 ret = vec3(0.0, 0.0, 0.0);
 
-	ret = (diffuse + specular);
+	ret = (ambient + diffuse + specular);
 	
 	return ret;
 }

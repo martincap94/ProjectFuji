@@ -24,10 +24,7 @@ void Model::draw() {
 	}
 	shader->use();
 	shader->setModelMatrix(transform.getModelMatrix());
-
-	material->diffuseTexture->use(0);
-	material->specularMap->use(1);
-	material->normalMap->use(2);
+	useMaterial();
 
 	shader->setInt("u_DepthMapTexture", 10);
 
@@ -41,16 +38,9 @@ void Model::draw(ShaderProgram *shader) {
 
 	shader->use();
 	shader->setModelMatrix(transform.getModelMatrix());
+	useMaterial(shader);
 
-	shader->setInt("u_Material.diffuse", 0);
-	shader->setInt("u_Material.specular", 1);
-	shader->setInt("u_Material.normalMap", 2);
 	shader->setInt("u_DepthMapTexture", 10);
-
-	material->diffuseTexture->useTexture();
-	material->specularMap->useTexture();
-	material->normalMap->useTexture();
-
 	//glBindTextureUnit(3, evsm)
 
 
@@ -75,16 +65,25 @@ void Model::makeInstanced(std::vector<Transform> &instanceTransforms) {
 	instanced = true;
 }
 
-void Model::makeInstanced(HeightMap *heightMap, int numInstances) {
+void Model::makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scaleModifier, float maxY, int maxYTests) {
 
 	std::vector<Transform> instanceTransforms;
 	for (unsigned int i = 0; i < numInstances; i++) {
-		float scaleModifier = getRandFloat(2.5f, 5.0f);
-		float xPos = getRandFloat(0.0f, heightMap->width);
-		float zPos = getRandFloat(0.0f, heightMap->height);
-		float yPos = heightMap->getHeight(xPos, zPos);
+		float instanceScaleModifier = getRandFloat(scaleModifier.x, scaleModifier.y);
+		
+		float xPos;
+		float zPos;
+		float yPos;
+		int counter = 0;
 
-		Transform t(glm::vec3(xPos, yPos, zPos), glm::vec3(), glm::vec3(scaleModifier));
+		do {
+			xPos = getRandFloat(0.0f, heightMap->width);
+			zPos = getRandFloat(0.0f, heightMap->height);
+			yPos = heightMap->getHeight(xPos, zPos);
+			counter++;
+		} while (yPos > maxY && counter < maxYTests);
+
+		Transform t(glm::vec3(xPos, yPos, zPos), glm::vec3(), glm::vec3(instanceScaleModifier));
 		instanceTransforms.push_back(t);
 	}
 	for (int i = 0; i < meshes.size(); i++) {
@@ -92,6 +91,23 @@ void Model::makeInstanced(HeightMap *heightMap, int numInstances) {
 	}
 	instanced = true;
 
+}
+
+
+
+void Model::useMaterial() {
+	useMaterial(shader);
+}
+
+void Model::useMaterial(ShaderProgram * shader) {
+	shader->setInt("u_Material.diffuse", 0);
+	shader->setInt("u_Material.specular", 1);
+	shader->setInt("u_Material.normalMap", 2);
+	shader->setFloat("u_Material.shininess", material->shininess);
+
+	material->diffuseTexture->use(0);
+	material->specularMap->use(1);
+	material->normalMap->use(2);
 }
 
 void Model::loadModel(string path) {

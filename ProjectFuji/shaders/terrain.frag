@@ -89,7 +89,7 @@ void main() {
 		result = vec3(shadow);
 	} else {
 		vec3 color = calcDirLight(u_DirLight, norm, viewDir);
-		result = color * shadow;
+		result = color * min(shadow + 0.2, 1.0);
 	}
 	fragColor = vec4(result, 1.0);
 

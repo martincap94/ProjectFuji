@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <glm\glm.hpp>
 
 #include "ShaderProgram.h"
 #include "Mesh.h"
@@ -29,7 +30,7 @@ public:
 	virtual void drawGeometry(ShaderProgram *shader);
 
 	void makeInstanced(std::vector<Transform> &instanceTransforms);
-	void makeInstanced(HeightMap *heightMap, int numInstances);
+	void makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scaleModifier = glm::vec2(0.8, 1.2), float maxY = 1000.0f, int maxYTests = 0);
 
 protected:
 
@@ -38,6 +39,9 @@ protected:
 	std::vector<Mesh> meshes;
 
 	string directory;
+
+	void useMaterial();
+	void useMaterial(ShaderProgram *shader);
 
 	void loadModel(string path);
 	void processNode(aiNode *node, const aiScene *scene);

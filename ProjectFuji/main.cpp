@@ -54,6 +54,7 @@
 #include "CUDAUtils.cuh"
 #include "Emitter.h"
 #include "CircleEmitter.h"
+#include "TextureManager.h"
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
@@ -261,7 +262,7 @@ int runApp() {
 		cerr << "Failed to create GLFW window" << endl;
 		glfwTerminate(); // maybe unnecessary according to the documentation
 		return -1;
-	}
+}	
 
 	glfwGetFramebufferSize(window, &vars.screenWidth, &vars.screenHeight);
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -275,8 +276,11 @@ int runApp() {
 
 
 	ShaderManager::init(&vars);
+	TextureManager::init(&vars);
 	evsm.init();
 	dirLight.init();
+	stlpDiagram.init(vars.soundingFile);
+
 
 	skybox = new Skybox();
 
@@ -351,7 +355,7 @@ int runApp() {
 		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
 		CHECK_ERROR(cudaPeekAtLastError());
 
-		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, particleSystemLBM, particleSystem, blockDim);
+		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, particleSystemLBM, particleSystem, blockDim, & stlpDiagram);
 		CHECK_ERROR(cudaPeekAtLastError());
 
 
@@ -401,21 +405,30 @@ int runApp() {
 	//StaticMesh testMesh("models/House_3.obj", ShaderManager::getShaderPtr("dirLightOnly"), nullptr);
 	//Model testModel("models/House_3.obj");
 
-	Texture diffuse("textures/body2.png", 0);
-	Texture specular("textures/body2_S.png", 1);
-	Texture normal("textures/body2_N.png", 2);
-	Material testMat(diffuse, specular, normal, 32.0f);
+	Material testMat(TextureManager::getTexturePtr("textures/body2.png"), TextureManager::getTexturePtr("textures/body2_S.png"), TextureManager::getTexturePtr("textures/body2_N.png"), 32.0f);
 
 	Model testModel("models/housewife.obj", &testMat, ShaderManager::getShaderPtr("normals"));
 	StaticMesh testMesh("models/housewife.obj", ShaderManager::getShaderPtr("normals"), &testMat);
+
+	Material treeMat(TextureManager::getTextureTripletPtrs("textures/Bark_Pine_001_COLOR.jpg", "textures/Bark_Pine_001_DISP.png", "textures/Bark_Pine_001_NORM.jpg"), 8.0f);
 
 	Texture adiffuse("textures/armoire/albedo.png", 0);
 	Texture aspecular("textures/armoire/metallic.png", 1);
 	Texture anormal("textures/armoire/normal.png", 2);
 	Material aMat(adiffuse, aspecular, anormal, 32.0f);
 
+	Texture gdiffuse("textures/grass.png", 0);
+	Texture gspecular("textures/grass_S.png", 1);
+	Material gMat(gdiffuse, gspecular, anormal, 32.0f);
+
 	Model armoireModel("models/armoire.fbx", &aMat, ShaderManager::getShaderPtr("normals"));
-	Model armoireModel2("models/armoire.fbx", &aMat, ShaderManager::getShaderPtr("normals"));
+	Model grassModel("models/grass.obj", &gMat, ShaderManager::getShaderPtr("normals_instanced"));
+	//Model grassModel("models/grass.obj", &gMat, ShaderManager::getShaderPtr("normals"));
+
+	Model treeModel("models/Tree.obj", &treeMat, ShaderManager::getShaderPtr("normals_instanced"));
+
+	grassModel.makeInstanced(vars.heightMap, 50000, glm::vec2(0.8, 1.5), 4.0f, 3);
+	treeModel.makeInstanced(vars.heightMap, 200, glm::vec2(0.5, 1.1), 5.0f, 20);
 
 	//armoireModel.transform.position.x += 2.0f;
 
@@ -431,14 +444,11 @@ int runApp() {
 	//	Transform t(glm::vec3(getRandFloat(-200.0f, 200.0f), 0.0f, getRandFloat(-200.0f, 200.0f)), glm::vec3(), glm::vec3(scaleModifier));
 	//	instanceTransforms.push_back(t);
 	//}
-	testModel.shader = ShaderManager::getShaderPtr("normals_instanced");
-	testModel.makeInstanced(vars.heightMap, 100);
+	//testModel.shader = ShaderManager::getShaderPtr("normals_instanced");
+	//testModel.makeInstanced(vars.heightMap, 100);
 
 	armoireModel.transform.position += glm::vec3(10.0f, 0.0f, 10.0f);
-	armoireModel.transform.scale = glm::vec3(4.0f);
-
-	armoireModel2.transform.position += glm::vec3(14.0f, 0.0f, 12.0f);
-	armoireModel2.transform.scale = glm::vec3(5.0f);
+	armoireModel.transform.scale = glm::vec3(1.0f);
 
 	dirLight.position = glm::vec3(100.0f, 60.0f, 60.0f);
 
@@ -463,7 +473,6 @@ int runApp() {
 	//double accumulatedTime = 0.0;
 
 
-	stlpDiagram.init(vars.soundingFile);
 	CHECK_ERROR(cudaPeekAtLastError());
 
 
@@ -777,8 +786,9 @@ int runApp() {
 			}
 			//testMesh.draw(evsm.firstPassShader);
 			testModel.drawGeometry(evsm.firstPassShader);
+			//grassModel.drawGeometry(evsm.firstPassShader);
 			armoireModel.drawGeometry(evsm.firstPassShader);
-			armoireModel2.drawGeometry(evsm.firstPassShader);
+			treeModel.drawGeometry(evsm.firstPassShader);
 
 
 			evsm.postFirstPass();
@@ -800,9 +810,10 @@ int runApp() {
 
 			//testModel.draw(*evsm.secondPassShader);
 			testModel.draw();
+			grassModel.draw();
 			testMesh.draw();
 			armoireModel.draw();
-			armoireModel2.draw();
+			treeModel.draw();
 
 			evsm.postSecondPass();
 			
@@ -899,7 +910,7 @@ int runApp() {
 	*/
 
 	ShaderManager::tearDown();
-
+	TextureManager::tearDown();
 
 	nk_glfw3_shutdown();
 	glfwTerminate();
@@ -919,7 +930,7 @@ void refreshProjectionMatrix() {
 	if (mode == 0 || mode == 1) {
 		//projection = glm::ortho(-0.2f, 1.2f, 1.2f, -0.2f, nearPlane, farPlane);
 		projection = diagramProjection;
-		camera->movementSpeed = 4.0f;
+		//camera->movementSpeed = 4.0f;
 	} else {
 		if (projectionMode == ORTHOGRAPHIC) {
 			projection = viewportProjection;
@@ -927,7 +938,7 @@ void refreshProjectionMatrix() {
 			projection = glm::perspective(glm::radians(fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
 		}
 		//mode = 2;
-		camera->movementSpeed = 40.0f;
+		//camera->movementSpeed = 40.0f;
 	}
 
 	ShaderManager::updateProjectionMatrixUniforms(projection);
@@ -1225,10 +1236,10 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_label(ctx, "Inlet velocity:", NK_TEXT_LEFT);
 
 			nk_layout_row_dynamic(ctx, 15, (vars.lbmType == LBM2D) ? 2 : 3);
-			nk_property_float(ctx, "x:", -1.0f, &lbm->inletVelocity.x, 1.0f, 0.01f, 0.005f);
-			nk_property_float(ctx, "y:", -1.0f, &lbm->inletVelocity.y, 1.0f, 0.01f, 0.005f);
+			nk_property_float(ctx, "x:", -10.0f, &lbm->inletVelocity.x, 10.0f, 0.01f, 0.005f);
+			nk_property_float(ctx, "y:", -10.0f, &lbm->inletVelocity.y, 10.0f, 0.01f, 0.005f);
 			if (vars.lbmType == LBM3D) {
-				nk_property_float(ctx, "z:", -1.0f, &lbm->inletVelocity.z, 1.0f, 0.01f, 0.005f);
+				nk_property_float(ctx, "z:", -10.0f, &lbm->inletVelocity.z, 10.0f, 0.01f, 0.005f);
 			}
 
 

@@ -247,7 +247,6 @@
     <None Include="shaders\coloredParticle.vert" />
     <None Include="shaders\curve.frag" />
     <None Include="shaders\curve.vert" />
-    <None Include="shaders\normals_instanced.frag" />
     <None Include="shaders\normals_instanced.vert" />
     <None Include="shaders\terrain.frag" />
     <None Include="shaders\terrain.vert" />
