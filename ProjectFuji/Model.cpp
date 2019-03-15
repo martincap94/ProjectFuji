@@ -83,7 +83,7 @@ void Model::makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scal
 			counter++;
 		} while (yPos > maxY && counter < maxYTests);
 
-		Transform t(glm::vec3(xPos, yPos, zPos), glm::vec3(), glm::vec3(instanceScaleModifier));
+		Transform t(glm::vec3(xPos, yPos, zPos), glm::vec3(0.0f, getRandFloat(0.0f, 90.0f), 0.0f), glm::vec3(instanceScaleModifier));
 		instanceTransforms.push_back(t);
 	}
 	for (int i = 0; i < meshes.size(); i++) {

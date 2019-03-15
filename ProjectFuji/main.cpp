@@ -427,7 +427,7 @@ int runApp() {
 
 	Model treeModel("models/Tree.obj", &treeMat, ShaderManager::getShaderPtr("normals_instanced"));
 
-	grassModel.makeInstanced(vars.heightMap, 50000, glm::vec2(0.8, 1.5), 4.0f, 3);
+	grassModel.makeInstanced(vars.heightMap, 50000, glm::vec2(1.0, 2.0), 4.0f, 3);
 	treeModel.makeInstanced(vars.heightMap, 200, glm::vec2(0.5, 1.1), 5.0f, 20);
 
 	//armoireModel.transform.position.x += 2.0f;
@@ -485,6 +485,7 @@ int runApp() {
 	stlpSim->initParticles();
 	//stlpSimCUDA->initParticles();
 	stlpSimCUDA->initCUDA();
+	//stlpDiagram.particlesVAO = stlpSimCUDA->diagramParticlesVAO; // hack
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
@@ -580,6 +581,10 @@ int runApp() {
 		reportGLErrors("B3");
 
 		stlpDiagram.drawText(*textShader);
+
+		//stlpSimCUDA->drawDiagramParticles(curveShader);
+		//particleSystem->drawDiagramParticles(curveShader);
+
 		reportGLErrors("B4");
 
 

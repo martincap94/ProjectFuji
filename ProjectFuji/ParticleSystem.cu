@@ -41,6 +41,7 @@ ParticleSystem::~ParticleSystem() {
 
 	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleVerticesVBO));
 	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleProfilesVBO));
+	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaDiagramParticleVerticesVBO));
 
 	for (int i = 0; i < emitters.size(); i++) {
 		delete emitters[i];
@@ -83,6 +84,21 @@ void ParticleSystem::initBuffers() {
 
 	glBindVertexArray(0);
 
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// DIAGRAM
+	///////////////////////////////////////////////////////////////////////////////////////
+	glGenVertexArrays(1, &diagramParticlesVAO);
+	glBindVertexArray(diagramParticlesVAO);
+	glGenBuffers(1, &diagramParticleVerticesVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, diagramParticleVerticesVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
 }
 
 
@@ -98,6 +114,9 @@ void ParticleSystem::initCUDA() {
 	cudaMemset(d_verticalVelocities, 0, sizeof(float) * numParticles);
 	//cudaMemset(d_profileIndices, 0, sizeof(int) * numParticles);
 	//cudaMemset(d_particlePressures, 0, sizeof(float) * numParticles);
+
+	//cudaGLRegisterBufferObject(cudaDiagramParticleVerticesVBO, )
+
 
 }
 
@@ -187,6 +206,28 @@ void ParticleSystem::drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos) {
 
 }
 
+void ParticleSystem::drawDiagramParticles(ShaderProgram *shader) {
+	shader->use();
+	GLboolean depthTestEnabled;
+	glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
+	glDisable(GL_DEPTH_TEST);
+
+
+	glPointSize(2.0f);
+	shader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+
+	glBindVertexArray(diagramParticlesVAO);
+	//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+	//glNamedBufferData(particlesVBO, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+	glDrawArrays(GL_POINTS, 0, numActiveParticles);
+	
+	if (depthTestEnabled) {
+		glEnable(GL_DEPTH_TEST);
+	}
+
+}
+
 void ParticleSystem::initParticlesWithZeros() {
 	cout << __FUNCTION__ << " not yet implemented!" << endl;
 
@@ -212,6 +253,7 @@ void ParticleSystem::initParticlesOnTerrain() {
 	vector<glm::vec3> particleVertices;
 	vector<int> particleProfiles;
 	vector<float> particlePressures;
+	vector<glm::vec2> diagramParticleVertices;
 
 	ppmImage *profileMap = stlpSim->profileMap;
 	STLPDiagram *stlpDiagram = stlpSim->stlpDiagram;
@@ -314,8 +356,17 @@ void ParticleSystem::initParticlesOnTerrain() {
 
 		p.updatePressureVal();
 
+		//float particleTemp = stlpDiagram->getDenormalizedTemp(dryAdiabatIntersection.x, normP);
+
+		float normP = stlpDiagram->getNormalizedPres(p.pressure);
+		glm::vec2 dryAdiabatIntersection = stlpDiagram->dryAdiabatProfiles[p.profileIndex].getIntersectionWithIsobar(normP);
+		float particleTemp = stlpDiagram->getDenormalizedTemp(dryAdiabatIntersection.x, normP);
+
+		diagramParticleVertices.push_back(stlpDiagram->getNormalizedCoords(particleTemp, p.pressure));
+
 		//particles.push_back(p);
 		particleProfiles.push_back(p.profileIndex);
+
 		//particlePressures.push_back(p.pressure);
 
 
@@ -342,6 +393,9 @@ void ParticleSystem::initParticlesOnTerrain() {
 	// unused due to unknown error for now
 	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleProfilesVBO, particleProfilesVBO, cudaGraphicsRegisterFlagsReadOnly)); // this is read only for CUDA!
 
+	glNamedBufferData(diagramParticleVerticesVBO, sizeof(glm::vec2) * numParticles, diagramParticleVertices.data(), GL_STATIC_DRAW);
+
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaDiagramParticleVerticesVBO, diagramParticleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
 
 
 }

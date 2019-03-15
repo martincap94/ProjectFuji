@@ -33,11 +33,15 @@
     <CudaCompile Include="CUDAUtils.cuh">
       <Filter>Header Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="STLPSimulatorCUDA.cu" />
     <CudaCompile Include="ParticleSystemLBM.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="ParticleSystem.cu" />
+    <CudaCompile Include="STLPSimulatorCUDA.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="ParticleSystem.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -146,7 +150,6 @@
     <ClCompile Include="VariableManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FreeRoamCamera.cpp" />
     <ClCompile Include="obj_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -159,13 +162,30 @@
     <ClCompile Include="Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="TextureManager.cpp" />
-    <ClCompile Include="Emitter.cpp" />
-    <ClCompile Include="CircleEmitter.cpp" />
-    <ClCompile Include="InstancedModel.cpp" />
-    <ClCompile Include="SceneGraph.cpp" />
+    <ClCompile Include="CircleEmitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Emitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FreeRoamCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InstancedModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneGraph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -264,7 +284,6 @@
     <ClInclude Include="VariableManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FreeRoamCamera.h" />
     <ClInclude Include="obj_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -277,17 +296,36 @@
     <ClInclude Include="Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="Model.h" />
     <ClInclude Include="ParticleSystemLBM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleSystem.h" />
-    <ClInclude Include="TextureManager.h" />
-    <ClInclude Include="Emitter.h" />
-    <ClInclude Include="CircleEmitter.h" />
-    <ClInclude Include="InstancedModel.h" />
-    <ClInclude Include="SceneGraph.h" />
+    <ClInclude Include="CircleEmitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Emitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FreeRoamCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InstancedModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneGraph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

@@ -55,6 +55,10 @@ public:
 
 	struct cudaGraphicsResource *cudaParticleVerticesVBO;
 
+	//GLuint diagramParticlesVAO;
+	//GLuint diagramParticleVerticesVBO;
+	//struct cudaGraphicsResource *cudaDiagramParticleVerticesVBO;
+
 
 	float *d_verticalVelocities;
 	int *d_profileIndices;
@@ -105,6 +109,7 @@ public:
 
 	/// Draws the heightmap and particles.
 	void draw(ShaderProgram &particlesShader, glm::vec3 cameraPos);
+	void drawDiagramParticles(ShaderProgram *shader);
 
 	void initParticles();
 

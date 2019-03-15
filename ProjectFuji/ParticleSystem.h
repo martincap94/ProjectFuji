@@ -46,6 +46,9 @@ public:
 
 
 
+	GLuint diagramParticlesVAO;
+	GLuint diagramParticleVerticesVBO;
+
 
 	LBM *lbm;
 	STLPSimulatorCUDA *stlpSim;
@@ -66,6 +69,7 @@ public:
 
 	struct cudaGraphicsResource *cudaParticleVerticesVBO;
 	struct cudaGraphicsResource *cudaParticleProfilesVBO;
+	struct cudaGraphicsResource *cudaDiagramParticleVerticesVBO;
 
 	// will be overwritten from config file if set!
 	float positionRecalculationThreshold = 0.5f;
@@ -102,6 +106,7 @@ public:
 
 	void draw(const ShaderProgram &shader, glm::vec3 cameraPos);
 	void drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos);
+	void drawDiagramParticles(ShaderProgram *shader);
 
 	void initParticlesWithZeros();
 	void initParticlesOnTerrain();

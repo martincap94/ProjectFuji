@@ -142,7 +142,7 @@ __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int num
 
 
 
-__global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float *verticalVelocities, int *profileIndices, /*float *particlePressures, */glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles) {
+__global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float *verticalVelocities, int *profileIndices, /*float *particlePressures, */glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles, glm::vec2 *diagramParticleVertices) {
 
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 
@@ -163,6 +163,8 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 			//printf("| ambientTemp [deg C] = %0.2f\n", ambientTemp);
 			//printf("| particleTemp [deg C] = %0.2f\n", particleTemp);
 
+			diagramParticleVertices[idx].x = dryAdiabatIntersection.x;
+			diagramParticleVertices[idx].y = normP;
 
 			toKelvin_dev(ambientTemp);
 			toKelvin_dev(particleTemp);
@@ -217,6 +219,8 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 			//printf("| ambientTemp [deg C] = %0.2f\n", ambientTemp);
 			//printf("| particleTemp [deg C] = %0.2f\n", particleTemp);
 
+			diagramParticleVertices[idx].x = moistAdiabatIntersection.x;
+			diagramParticleVertices[idx].y = normP;
 
 			toKelvin_dev(ambientTemp);
 			toKelvin_dev(particleTemp);
@@ -462,6 +466,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	CHECK_ERROR(cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice));
 
 	//CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
+	//CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaDiagramParticleVerticesVBO, stlpDiagram->particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_maxP, &stlpDiagram->maxP, sizeof(float)));
@@ -577,6 +582,7 @@ void STLPSimulatorCUDA::doStep() {
 
 	size_t num_bytes;
 	glm::vec3 *d_mappedParticleVerticesVBO;
+	glm::vec2 *d_mappedDiagramParticleVerticesVBO;
 	int *d_mappedParticleProfilesVBO;
 
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -590,6 +596,8 @@ void STLPSimulatorCUDA::doStep() {
 	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaParticleProfilesVBO, 0));
 	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticleProfilesVBO, &num_bytes, particleSystem->cudaParticleProfilesVBO));
 
+	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaDiagramParticleVerticesVBO, 0));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedDiagramParticleVerticesVBO, &num_bytes, particleSystem->cudaDiagramParticleVerticesVBO));
 	//printf("CUDA-STLP mapped VBO: May access %ld bytes\n", num_bytes);
 
 	//CHECK_ERROR(cudaPeekAtLastError());
@@ -597,12 +605,13 @@ void STLPSimulatorCUDA::doStep() {
 	// FIX d_ VALUES HERE!!! (use the ones from ParticleSystem)
 	//simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numParticles, particleSystem->d_verticalVelocities, particleSystem->d_profileIndices, particleSystem->d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
 
-	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, /*particleSystem->d_particlePressures,*/ d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
+	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, /*particleSystem->d_particlePressures,*/ d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO);
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleProfilesVBO, 0);
+	cudaGraphicsUnmapResources(1, &particleSystem->cudaDiagramParticleVerticesVBO, 0);
 
 
 	/*
@@ -779,6 +788,28 @@ void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader, glm::vec3 cameraPo
 			glEnable(GL_CULL_FACE);
 		}
 	}
+}
+
+void STLPSimulatorCUDA::drawDiagramParticles(ShaderProgram * shader) {
+	shader->use();
+	GLboolean depthTestEnabled;
+	glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
+	glDisable(GL_DEPTH_TEST);
+
+
+	glPointSize(2.0f);
+	shader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+
+	//glBindVertexArray(diagramParticlesVAO);
+	////glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
+	////glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+	////glNamedBufferData(particlesVBO, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+	//glDrawArrays(GL_POINTS, 0, particleSystem->numActiveParticles);
+	//
+	if (depthTestEnabled) {
+		glEnable(GL_DEPTH_TEST);
+	}
+
 }
 
 void STLPSimulatorCUDA::initParticles() {

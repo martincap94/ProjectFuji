@@ -120,6 +120,10 @@ public:
 	GLuint overlayDiagramWidth = 256;
 	GLuint overlayDiagramHeight = 256;
 
+	GLuint particlesVAO;
+	GLuint particlesVBO;
+
+
 	float dryAdiabatDeltaT = 10.0f;
 	float moistAdiabatDeltaT = 5.0f;
 
@@ -246,8 +250,6 @@ private:
 	GLuint mainParameterPointsVBO;
 
 
-	GLuint particlesVAO;
-	GLuint particlesVBO;
 
 	vector<glm::vec2> temperaturePoints;
 
