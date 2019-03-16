@@ -88,6 +88,8 @@ public:
 	float maxP;						///< Maximum pressure in normalized (diagram) coordinates
 	float minT;						///< Minimum temperature in normalized (diagram) coordinates
 	float maxT;						///< Maximum temperature in normalized (diagram) coordinates
+	int maxVerticesPerCurve;
+
 
 	string soundingFile;			///< Filename of the sounding file that will be loaded and displayed
 

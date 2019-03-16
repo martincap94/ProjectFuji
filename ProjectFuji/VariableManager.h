@@ -71,6 +71,8 @@ public:
 	int applyLBM = 0;
 	int applySTLP = 0;
 
+	int stlpMaxProfiles = 100;
+
 	float opacityMultiplier = 0.03f;
 
 	bool consumeMouseCursor = false;
@@ -92,7 +94,7 @@ public:
 
 	glm::vec3 bgClearColor = glm::vec3(0.0f);
 
-	float terrainTextureTiling = 80.0f;
+	float terrainTextureTiling = 10.0f;
 
 	int useSoundingWindVelocities = 0;
 

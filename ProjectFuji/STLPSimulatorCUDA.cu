@@ -16,7 +16,7 @@
 
 
 __constant__ int d_const_numProfiles;
-__constant__ float d_const_maxP;
+__constant__ float d_const_P0;
 __constant__ float d_const_delta_t;
 
 __constant__ float d_const_groundHeight;
@@ -42,7 +42,7 @@ __device__ float getNormalizedTemp(float T, float y) {
 }
 
 __device__ float getNormalizedPres(float P) {
-	return ((log10f(P) - log10f(MIN_P)) / (log10f(d_const_maxP) - log10f(MIN_P)));
+	return ((log10f(P) - log10f(MIN_P)) / (log10f(d_const_P0) - log10f(MIN_P)));
 }
 
 __device__ float getDenormalizedTemp(float x, float y) {
@@ -50,7 +50,7 @@ __device__ float getDenormalizedTemp(float x, float y) {
 }
 
 __device__ float getDenormalizedPres(float y) {
-	return powf(10.0f, y * (log10f(d_const_maxP) - log10f(MIN_P)) + log10f(MIN_P));
+	return powf(10.0f, y * (log10f(d_const_P0) - log10f(MIN_P)) + log10f(MIN_P));
 }
 
 __device__ glm::vec2 getNormalizedCoords(glm::vec2 coords) {
@@ -451,14 +451,11 @@ void STLPSimulatorCUDA::initCUDA() {
 
 	// ambient temp curve can be mapped to VBO, no need for this
 	CHECK_ERROR(cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size()));
-
 	CHECK_ERROR(cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice));
 
-	//CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
-	//CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaDiagramParticleVerticesVBO, stlpDiagram->particlesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
-	CHECK_ERROR(cudaMemcpyToSymbol(d_const_maxP, &stlpDiagram->maxP, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_P0, &stlpDiagram->P0, sizeof(float)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_boxTopHeight, &boxTopHeight, sizeof(float)));
@@ -554,6 +551,114 @@ void STLPSimulatorCUDA::initCUDA() {
 
 
 
+
+}
+
+void STLPSimulatorCUDA::initCUDAGeneral() {
+
+
+	blockDim = dim3(256, 1, 1);
+	gridDim = dim3((int)ceil((float)particleSystem->numParticles / (float)blockDim.x), 1, 1);
+
+
+	CHECK_ERROR(cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size()));
+	CHECK_ERROR(cudaMalloc((void**)&d_dryAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * vars->stlpMaxProfiles));
+	CHECK_ERROR(cudaMalloc((void**)&d_moistAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * vars->stlpMaxProfiles));
+	CHECK_ERROR(cudaMalloc((void**)&d_dryAdiabatProfiles, sizeof(glm::vec2) * vars->stlpMaxProfiles * stlpDiagram->maxVerticesPerCurve));
+	CHECK_ERROR(cudaMalloc((void**)&d_moistAdiabatProfiles, sizeof(glm::vec2) * vars->stlpMaxProfiles * stlpDiagram->maxVerticesPerCurve));
+	CHECK_ERROR(cudaMalloc((void**)&d_CCLProfiles, sizeof(glm::vec2) * vars->stlpMaxProfiles));
+	CHECK_ERROR(cudaMalloc((void**)&d_TcProfiles, sizeof(glm::vec2) * vars->stlpMaxProfiles));
+
+
+}
+
+void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
+
+
+	// ambient temp curve can be mapped to VBO, no need for this
+	CHECK_ERROR(cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice));
+
+
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_P0, &stlpDiagram->P0, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
+
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_boxTopHeight, &boxTopHeight, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_groundHeight, &groundHeight, sizeof(float)));
+
+	float latticeH = (float)vars->latticeHeight;
+	CHECK_ERROR(cudaMemcpyToSymbol(d_const_latticeHeight, &latticeH, sizeof(float)));
+
+
+
+	vector<int> itmp;
+	//itmp.clear();
+	vector<glm::vec2> tmp;
+	vector<glm::ivec2> ivectmp;
+	tmp.reserve(stlpDiagram->numProfiles * stlpDiagram->dryAdiabatProfiles[0].vertices.size()); // probably the largest possible collection
+
+																								// DRY ADIABAT OFFSETS
+	tmp.clear();
+	ivectmp.clear();
+	int sum = 0;
+	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
+		itmp.push_back(sum);
+		float prevSum = sum;
+		sum += stlpDiagram->dryAdiabatProfiles[i].vertices.size();
+		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
+	}
+	CHECK_ERROR(cudaMemcpy(d_dryAdiabatOffsetsAndLengths, &ivectmp[0], sizeof(glm::ivec2) * ivectmp.size(), cudaMemcpyHostToDevice));
+
+
+
+	// MOIST ADIABAT OFFSETS
+	itmp.clear();
+	tmp.clear();
+	ivectmp.clear();
+	sum = 0;
+	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
+		itmp.push_back(sum);
+		float prevSum = sum;
+		sum += stlpDiagram->moistAdiabatProfiles[i].vertices.size();
+		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
+	}
+	CHECK_ERROR(cudaMemcpy(d_moistAdiabatOffsetsAndLengths, &ivectmp[0], sizeof(glm::ivec2) * ivectmp.size(), cudaMemcpyHostToDevice));
+
+
+	// DRY ADIABATS
+	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
+		for (int j = 0; j < stlpDiagram->dryAdiabatProfiles[i].vertices.size(); j++) {
+			tmp.push_back(stlpDiagram->dryAdiabatProfiles[i].vertices[j]);
+		}
+	}
+	cout << vars->stlpMaxProfiles << ", " << tmp.size() << endl;
+	CHECK_ERROR(cudaMemcpy(d_dryAdiabatProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
+
+
+	// MOIST ADIABATS
+	tmp.clear();
+	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
+		for (int j = 0; j < stlpDiagram->moistAdiabatProfiles[i].vertices.size(); j++) {
+			tmp.push_back(stlpDiagram->moistAdiabatProfiles[i].vertices[j]);
+		}
+	}
+	cout << (vars->stlpMaxProfiles * stlpDiagram->maxVerticesPerCurve) << ", " << tmp.size() << endl;
+	CHECK_ERROR(cudaMemcpy(d_moistAdiabatProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
+
+	// CCL Profiles
+	tmp.clear();
+	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
+		tmp.push_back(stlpDiagram->CCLProfiles[i]);
+	}
+	CHECK_ERROR(cudaMemcpy(d_CCLProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
+
+
+	// Tc Profiles
+	tmp.clear();
+	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
+		tmp.push_back(stlpDiagram->TcProfiles[i]);
+	}
+	CHECK_ERROR(cudaMemcpy(d_TcProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
 
 }
 

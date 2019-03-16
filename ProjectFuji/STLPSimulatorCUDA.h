@@ -96,6 +96,10 @@ public:
 
 	void initCUDA();
 
+	// More general approach that would enable us to change the diagram (profiles) at runtime
+	void initCUDAGeneral();
+	void uploadDataFromDiagramToGPU();
+
 	/// Does single step of the simulation.
 	void doStep();
 

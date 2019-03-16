@@ -494,7 +494,11 @@ int runApp() {
 	particleSystem->stlpSim = stlpSimCUDA;
 	stlpSimCUDA->particleSystem = particleSystem;
 
-	stlpSimCUDA->initCUDA();
+	//stlpSimCUDA->initCUDA();
+	stlpSimCUDA->initCUDAGeneral();
+	stlpSimCUDA->uploadDataFromDiagramToGPU();
+
+
 	//stlpDiagram.particlesVAO = stlpSimCUDA->diagramParticlesVAO; // hack
 
 	CHECK_ERROR(cudaPeekAtLastError());
@@ -535,8 +539,6 @@ int runApp() {
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
-	OverlayTexture *overlayDiagram = new OverlayTexture(100, 100, 100, 100, &vars, nullptr);
-	TextureManager::pushOverlayTexture(overlayDiagram);
 
 	vector<GLuint> debugTextureIds;
 	debugTextureIds.push_back(evsm.getDepthMapTextureId());
@@ -872,7 +874,6 @@ int runApp() {
 			if (vars.showOverlayDiagram) {
 				stlpDiagram.drawOverlayDiagram(diagramShader);
 			}
-			overlayDiagram->draw(stlpDiagram.diagramTexture);
 
 
 			TextureManager::drawOverlayTextures(debugTextureIds);
@@ -1515,6 +1516,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		if (nk_button_label(ctx, "Recalculate Params")) {
 			//lbm->resetSimulation();
 			stlpDiagram.recalculateParameters();
+			stlpSimCUDA->uploadDataFromDiagramToGPU();
 		}
 
 		

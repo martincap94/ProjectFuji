@@ -79,8 +79,9 @@ void STLPDiagram::loadSoundingData(string filename) {
 	minT = MIN_TEMP;
 	maxT = MAX_TEMP;
 	minP = MIN_P;
-	maxP = soundingData[0].data[PRES];
-	P0 = maxP;
+	maxP = MAX_P;
+	P0 = soundingData[0].data[PRES];
+	maxVerticesPerCurve = (int)((maxP - minP) / CURVE_DELTA_P + 1.0f);
 
 	groundAltitude = getAltitudeFromPressure(P0);
 	cout << "ground altitude (computed) = " << groundAltitude << endl;
@@ -96,7 +97,7 @@ void STLPDiagram::generateIsobars() {
 
 	numIsobars = 0;
 	float P;
-	for (P = MAX_P; P >= MIN_P; P -= 25.0f) {
+	for (P = MAX_P; P >= MIN_P; P -= CURVE_DELTA_P) {
 		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
 		//P = soundingData[profileIndex].data[PRES];
 		float y = getNormalizedPres(P);
@@ -367,6 +368,10 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, f
 
 	int vertexCounter = 0;
 
+	if (curve != nullptr) {
+		curve->vertices.clear();
+	}
+
 	float x, y, T, P;
 
 	for (P = MAX_P; P >= MIN_P; P -= deltaP) {
@@ -382,6 +387,8 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, f
 		}
 		vertexCounter++;
 	}
+	//cout << vertexCounter << endl;
+	//cout << ((MAX_P - MIN_P) / CURVE_DELTA_P + 1) << endl;
 
 	if (incrementCounter && edgeCounter != nullptr) {
 		numDryAdiabats++;
@@ -397,6 +404,10 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 	float T = getKelvin(theta);
 	int vertexCounter = 0;
 	float x, y;
+
+	if (curve != nullptr) {
+		curve->vertices.clear();
+	}
 
 	for (float p = startP; p >= MIN_P; p -= smallDeltaP) {
 		p *= 100.0f;
@@ -579,7 +590,6 @@ void STLPDiagram::initCurves() {
 	xmax = 1.0f;
 
 	ymin = getNormalizedPres(MIN_P);
-	//float ymax = getNormalizedPres(maxP); // use maximum P from sounding data
 	ymax = getNormalizedPres(MAX_P);
 
 	sP0 = soundingData[0].data[PRES];
@@ -673,13 +683,13 @@ void STLPDiagram::initCurves() {
 	// DRY ADIABAT: T_c <-> CCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	float theta = computeThetaFromAbsoluteC(CCL.x, CCL.y, P0);
-	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &TcDryAdiabat);
+	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &TcDryAdiabat);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// DRY ADIABAT: Ground ambient temperature <-> LCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	theta = computeThetaFromAbsoluteC(soundingData[0].data[TEMP], P0, P0);
-	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &LCLDryAdiabatCurve);
+	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &LCLDryAdiabatCurve);
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -712,7 +722,7 @@ void STLPDiagram::initCurves() {
 		dryAdiabatProfiles.push_back(Curve());
 
 		float theta = computeAbsoluteFromThetaC(TcProfiles[profileIndex].x, P0, P0);
-		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &dryAdiabatProfiles[profileIndex]);
+		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
 
 
 		CCLProfiles.push_back(getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve)));
@@ -764,7 +774,7 @@ void STLPDiagram::initCurves() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// TESTING EL (regular) computation - special moist adiabat (goes through CCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabat_CCL_EL);
+	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_CCL_EL);
 
 	{
 		///////////////////////////////////////////////////////////////////////////////////////////////
@@ -787,7 +797,7 @@ void STLPDiagram::initCurves() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// TESTING EL (orographic) computation - special moist adiabat (goes through LCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabat_LCL_EL);
+	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
 	{
 
 		LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
@@ -802,7 +812,7 @@ void STLPDiagram::initCurves() {
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
 		//int counter = 0;
 		moistAdiabatProfiles.push_back(Curve());
-		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabatProfiles[profileIndex]);
+		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabatProfiles[profileIndex]);
 
 		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve, true);
 		ELProfiles.push_back(getDenormalizedCoords(tmp));
@@ -950,7 +960,7 @@ void STLPDiagram::initCurves() {
 
 void STLPDiagram::recalculateParameters() {
 
-	// TODO
+	
 	recalculateProfileDelta();
 
 
@@ -975,14 +985,14 @@ void STLPDiagram::recalculateParameters() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	float theta = computeThetaFromAbsoluteC(CCL.x, CCL.y, P0);
 	TcDryAdiabat.vertices.clear(); // hack
-	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &TcDryAdiabat);
+	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &TcDryAdiabat);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// DRY ADIABAT: Ground ambient temperature <-> LCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	theta = computeThetaFromAbsoluteC(soundingData[0].data[TEMP], P0, P0); // will need line-to-line intersection for the ground temperature
 	LCLDryAdiabatCurve.vertices.clear(); // hack
-	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &LCLDryAdiabatCurve);
+	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &LCLDryAdiabatCurve);
 
 
 
@@ -1003,7 +1013,7 @@ void STLPDiagram::recalculateParameters() {
 
 		float theta = computeAbsoluteFromThetaC(TcProfiles[profileIndex].x, P0, P0);
 		dryAdiabatProfiles[profileIndex].vertices.clear();
-		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, 25.0f, &dryAdiabatProfiles[profileIndex]);
+		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
 
 		CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve));
 	}
@@ -1029,7 +1039,7 @@ void STLPDiagram::recalculateParameters() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// TESTING EL (regular) computation - special moist adiabat (goes through CCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabat_CCL_EL);
+	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_CCL_EL);
 
 
 	ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve, true);
@@ -1039,7 +1049,7 @@ void STLPDiagram::recalculateParameters() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// TESTING EL (orographic) computation - special moist adiabat (goes through LCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabat_LCL_EL);
+	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
 
 	LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
 	LFC = getDenormalizedCoords(LFCNormalized);
@@ -1050,7 +1060,7 @@ void STLPDiagram::recalculateParameters() {
 
 
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
-		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, 25.0f, &moistAdiabatProfiles[profileIndex]);
+		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabatProfiles[profileIndex]);
 
 		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve, true);
 		ELProfiles[profileIndex] = getDenormalizedCoords(tmp);
@@ -1119,7 +1129,7 @@ float STLPDiagram::getNormalizedTemp(float T, float y) {
 }
 
 float STLPDiagram::getNormalizedPres(float P) {
-	return ((log10f(P) - log10f(MIN_P)) / (log10f(maxP) - log10f(MIN_P)));
+	return ((log10f(P) - log10f(MIN_P)) / (log10f(P0) - log10f(MIN_P)));
 }
 
 float STLPDiagram::getDenormalizedTemp(float x, float y) {
@@ -1127,7 +1137,7 @@ float STLPDiagram::getDenormalizedTemp(float x, float y) {
 }
 
 float STLPDiagram::getDenormalizedPres(float y) {
-	return powf(10.0f, y * (log10f(maxP) - log10f(MIN_P)) + log10f(MIN_P));
+	return powf(10.0f, y * (log10f(P0) - log10f(MIN_P)) + log10f(MIN_P));
 }
 
 
@@ -1525,7 +1535,6 @@ void STLPDiagram::initBuffersOld() {
 	float xmax = 1.0f;
 
 	float ymin = getNormalizedPres(MIN_P);
-	//float ymax = getNormalizedPres(maxP); // use maximum P from sounding data
 	float ymax = getNormalizedPres(MAX_P);
 
 	float P0 = soundingData[0].data[PRES];
@@ -1553,7 +1562,7 @@ void STLPDiagram::initBuffersOld() {
 	vector<glm::vec2> vertices;
 
 	numIsobars = 0;
-	for (P = MAX_P; P >= MIN_P; P -= 25.0f) {
+	for (P = MAX_P; P >= MIN_P; P -= CURVE_DELTA_P) {
 		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
 		//P = soundingData[profileIndex].data[PRES];
 		float y = getNormalizedPres(P);
@@ -1862,7 +1871,7 @@ void STLPDiagram::initBuffersOld() {
 	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += 10.0f) {
 		counter = 0;
 
-		for (P = MAX_P; P >= MIN_P; P -= 25.0f) {
+		for (P = MAX_P; P >= MIN_P; P -= CURVE_DELTA_P) {
 			//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
 			//float P = soundingData[profileIndex].data[PRES];
 
@@ -2076,7 +2085,7 @@ void STLPDiagram::initBuffersOld() {
 	T_P0 = T;
 	// LooooooooooooooP
 	deltaP = 1.0f;
-	for (float p = maxP; p >= MIN_P; p -= deltaP) {
+	for (float p = P0; p >= MIN_P; p -= deltaP) {
 		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
 		//P = soundingData[profileIndex].data[PRES];
 
@@ -2096,7 +2105,7 @@ void STLPDiagram::initBuffersOld() {
 		//integratedVal += getMoistAdiabatIntegralVal(T_P0, profileIndex);
 		//}
 		//integratedVal += (getMoistAdiabatIntegralVal(T_P0, P0) + getMoistAdiabatIntegralVal(T_P0, P1)) / 2.0f;
-		//integratedVal *= (P1 - P0) / 25.0f;
+		//integratedVal *= (P1 - P0) / CURVE_DELTA_P;
 
 		//T_P1 = T_P0 + integratedVal;
 

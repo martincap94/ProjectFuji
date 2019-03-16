@@ -34,6 +34,8 @@
 
 #define MAX_PARTICLE_COUNT 10000	///< Maximum amount of particles to be generated
 
+#define CURVE_DELTA_P 25.0f
+
 // For SkewT/LogP integration (delete later)
 #define GRID_WIDTH 50	///< Old setting for lattice width
 #define GRID_HEIGHT 50	///< Old setting for lattice height

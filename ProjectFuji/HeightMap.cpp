@@ -495,7 +495,7 @@ void HeightMap::draw() {
 void HeightMap::draw(ShaderProgram *shader) {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glUseProgram(shader->id);
+	shader->use();
 
 	shader->setInt("u_Material.diffuse", 0);
 	shader->setInt("u_Material.specular", 1);
@@ -518,7 +518,7 @@ void HeightMap::draw(ShaderProgram *shader) {
 }
 
 void HeightMap::drawGeometry(ShaderProgram * shader) {
-	glUseProgram(shader->id);
+	shader->use();
 
 	shader->setModelMatrix(glm::mat4(1.0f));
 	shader->setBool("u_IsInstanced", false);
