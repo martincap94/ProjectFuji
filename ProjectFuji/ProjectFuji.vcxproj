@@ -136,6 +136,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="obj_loader.cpp" />
+    <ClCompile Include="OverlayTexture.cpp" />
     <ClCompile Include="Particle.cpp" />
     <CudaCompile Include="ParticleSystem.cu">
       <FileType>CppCode</FileType>
@@ -198,6 +199,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="obj_loader.h" />
+    <ClInclude Include="OverlayTexture.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="ppmImage.h" />
@@ -277,8 +279,8 @@
     <None Include="shaders\singleColor_alpha.frag" />
     <None Include="shaders\singleColor_VBO.frag" />
     <None Include="shaders\singleColor_VBO.vert" />
-    <None Include="shaders\diagram.frag" />
-    <None Include="shaders\diagram.vert" />
+    <None Include="shaders\overlayTexture.frag" />
+    <None Include="shaders\overlayTexture.vert" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.vert" />
     <None Include="shaders\s_normals.frag" />

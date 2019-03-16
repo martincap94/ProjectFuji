@@ -40,6 +40,9 @@ public:
 
 	void postSecondPass();
 
+	GLuint getDepthMapTextureId();
+	GLuint getZBufferTextureId();
+
 
 // let it be public for testing now
 //private:

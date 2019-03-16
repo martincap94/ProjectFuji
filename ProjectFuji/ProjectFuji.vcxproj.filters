@@ -186,6 +186,7 @@
     <ClCompile Include="TextureManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OverlayTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -326,6 +327,7 @@
     <ClInclude Include="TextureManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OverlayTexture.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -382,12 +384,6 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\text.vert">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\diagram.frag">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="shaders\diagram.vert">
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\skybox.frag">
@@ -478,6 +474,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\normals_instanced.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\overlayTexture.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\overlayTexture.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

@@ -115,9 +115,12 @@ public:
 
 	void sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy);
 
+
 	void initParticlesWithZeros();
 	void initParticlesOnTerrain();
 	void initParticlesAboveTerrain();
+
+	void refreshParticlesOnTerrain();
 
 
 	void activateAllParticles();

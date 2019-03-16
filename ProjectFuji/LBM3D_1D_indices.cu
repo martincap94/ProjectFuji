@@ -1783,12 +1783,8 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 
 
 	initBuffers();
-	//initLattice();
+	initLattice();
 
-	CHECK_ERROR(cudaMemset(d_backLattice, 0, sizeof(Node3D) * latticeSize));
-	CHECK_ERROR(cudaMemset(d_velocities, 0, sizeof(glm::vec3) * latticeSize));
-	initLatticeKernel << <gridDim, blockDim >> > (d_frontLattice);
-	
 	if (vars->useSoundingWindVelocities) {
 
 		CHECK_ERROR(cudaMalloc((void**)&d_inletVelocities, sizeof(glm::vec3) * latticeHeight));
@@ -2609,7 +2605,9 @@ void LBM3D_1D_indices::updateColliders() {
 
 void LBM3D_1D_indices::resetSimulation() {
 	cout << "Resetting simulation..." << endl;
-	particleSystemLBM->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
+	//particleSystemLBM->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
+
+	/*
 	for (int i = 0; i < latticeWidth * latticeHeight; i++) {
 		for (int j = 0; j < 19; j++) {
 			backLattice[i].adj[j] = 0.0f;
@@ -2617,11 +2615,15 @@ void LBM3D_1D_indices::resetSimulation() {
 		velocities[i] = glm::vec3(0.0f);
 	}
 	initLattice();
+	*/
 
-
+	/*
 	cudaMemcpy(d_frontLattice, frontLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_backLattice, backLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_velocities, velocities, sizeof(glm::vec3) * latticeSize, cudaMemcpyHostToDevice);
+	*/
+
+	initLattice();
 
 }
 
@@ -2687,6 +2689,11 @@ void LBM3D_1D_indices::initBuffers() {
 
 void LBM3D_1D_indices::initLattice() {
 
+	CHECK_ERROR(cudaMemset(d_backLattice, 0, sizeof(Node3D) * latticeSize));
+	CHECK_ERROR(cudaMemset(d_velocities, 0, sizeof(glm::vec3) * latticeSize));
+	initLatticeKernel << <gridDim, blockDim >> > (d_frontLattice);
+
+	/*
 	for (int x = 0; x < latticeWidth; x++) {
 		for (int y = 0; y < latticeHeight; y++) {
 			for (int z = 0; z < latticeDepth; z++) {
@@ -2701,7 +2708,7 @@ void LBM3D_1D_indices::initLattice() {
 			}
 		}
 	}
-
+	*/
 
 }
 

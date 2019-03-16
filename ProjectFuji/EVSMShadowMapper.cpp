@@ -282,6 +282,15 @@ void EVSMShadowMapper::postSecondPass() {
 
 }
 
+GLuint EVSMShadowMapper::getDepthMapTextureId() {
+	return useBlurPass ? secondPassBlurTexture : depthMapTexture;
+}
+
+GLuint EVSMShadowMapper::getZBufferTextureId() {
+	return zBufferTexture;
+}
+
+
 bool EVSMShadowMapper::isReady() {
 	return (dirLight && firstPassShader && blurShader);
 }

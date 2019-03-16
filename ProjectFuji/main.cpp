@@ -55,6 +55,7 @@
 #include "Emitter.h"
 #include "CircleEmitter.h"
 #include "TextureManager.h"
+#include "OverlayTexture.h"
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
@@ -325,7 +326,7 @@ int runApp() {
 
 	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
 	coloredParticleShader = ShaderManager::getShaderPtr("coloredParticle");
-	diagramShader = ShaderManager::getShaderPtr("diagram");
+	diagramShader = ShaderManager::getShaderPtr("overlayTexture");
 
 	textShader = ShaderManager::getShaderPtr("text");
 	curveShader = ShaderManager::getShaderPtr("curve");
@@ -527,6 +528,13 @@ int runApp() {
 	glActiveTexture(GL_TEXTURE0);
 
 	CHECK_ERROR(cudaPeekAtLastError());
+
+	OverlayTexture *overlayDiagram = new OverlayTexture(100, 100, 100, 100, &vars, nullptr);
+	TextureManager::pushOverlayTexture(overlayDiagram);
+
+	vector<GLuint> debugTextureIds;
+	debugTextureIds.push_back(evsm.getDepthMapTextureId());
+
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
 		// enable flags each frame because nuklear disables them when it is rendered	
@@ -856,7 +864,10 @@ int runApp() {
 			if (vars.showOverlayDiagram) {
 				stlpDiagram.drawOverlayDiagram(diagramShader);
 			}
+			overlayDiagram->draw(stlpDiagram.diagramTexture);
 
+
+			TextureManager::drawOverlayTextures(debugTextureIds);
 			
 
 		}
@@ -1170,17 +1181,20 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		//static int op = EASY;
 		//static int property = 20;
 
-		nk_layout_row_dynamic(ctx, 30, 2);
+		nk_layout_row_dynamic(ctx, 15, 3);
 		if (nk_button_label(ctx, "LBM")) {
 			uiMode = 0;
 		}
 		if (nk_button_label(ctx, "Shadows")) {
 			uiMode = 1;
 		}
+		if (nk_button_label(ctx, "Terrain")) {
+			uiMode = 2;
+		}
 
 
 		if (uiMode == 0) {
-			nk_layout_row_dynamic(ctx, 30, 1);
+			nk_layout_row_dynamic(ctx, 15, 1);
 			nk_label(ctx, "LBM Controls", NK_TEXT_CENTERED);
 
 			//if (nk_button_label(ctx, "fullscreen")) {
@@ -1189,10 +1203,11 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			//}
 
 
-			nk_layout_row_static(ctx, 30, 80, 3);
+			nk_layout_row_dynamic(ctx, 15, 1);
 			if (nk_button_label(ctx, "Reset")) {
 				//fprintf(stdout, "button pressed\n");
 				lbm->resetSimulation();
+				particleSystem->refreshParticlesOnTerrain();
 			}
 			const char *buttonDescription = vars.paused ? "Play" : "Pause";
 			if (nk_button_label(ctx, buttonDescription)) {
@@ -1203,40 +1218,18 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			}
 
 
-#ifdef LBM_EXPERIMENTAL
-			nk_layout_row_dynamic(ctx, 30, 1);
-			nk_label_colored_wrap(ctx, "Enabling or disabling CUDA at runtime is highly unstable at the moment, use at your own discretion", nk_rgba_f(1.0f, 0.5f, 0.5f, 1.0f));
-
-			bool useCUDAPrev = useCUDA;
-			nk_checkbox_label(ctx, "Use CUDA", &useCUDACheckbox);
-			useCUDA = useCUDACheckbox;
-			if (useCUDAPrev != useCUDA && useCUDA == false) {
-				lbm->switchToCPU();
-			}
-#endif
-
-			nk_layout_row_dynamic(ctx, 15, 1);
 
 			nk_property_float(ctx, "Tau:", 0.5005f, &lbm->tau, 10.0f, 0.005f, 0.005f);
 
-			int mirrorSidesPrev = lbm->mirrorSides;
+			/*int mirrorSidesPrev = lbm->mirrorSides;
 			nk_layout_row_dynamic(ctx, 15, 1);
 			nk_checkbox_label(ctx, "Mirror sides", &lbm->mirrorSides);
 			if (mirrorSidesPrev != lbm->mirrorSides) {
 				cout << "Mirror sides value changed!" << endl;
 				lbm->updateControlProperty(LBM3D_1D_indices::MIRROR_SIDES_PROP);
-			}
-
-#ifdef LBM_EXPERIMENTAL
-			if (lbmType == LBM3D) {
-				nk_layout_row_dynamic(ctx, 15, 1);
-				nk_checkbox_label(ctx, "Use subgrid model", &lbm->useSubgridModel);
-			}
-#endif
+			}*/
 
 
-
-			nk_layout_row_dynamic(ctx, 15, 1);
 			//nk_label(ctx, "Use point sprites", NK_TEXT_LEFT);
 			int prevVsync = vars.vsync;
 			nk_checkbox_label(ctx, "VSync", &vars.vsync);
@@ -1246,15 +1239,12 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_label(ctx, "Inlet velocity:", NK_TEXT_LEFT);
 
-			nk_layout_row_dynamic(ctx, 15, (vars.lbmType == LBM2D) ? 2 : 3);
 			nk_property_float(ctx, "x:", -10.0f, &lbm->inletVelocity.x, 10.0f, 0.01f, 0.005f);
 			nk_property_float(ctx, "y:", -10.0f, &lbm->inletVelocity.y, 10.0f, 0.01f, 0.005f);
-			if (vars.lbmType == LBM3D) {
-				nk_property_float(ctx, "z:", -10.0f, &lbm->inletVelocity.z, 10.0f, 0.01f, 0.005f);
-			}
+			nk_property_float(ctx, "z:", -10.0f, &lbm->inletVelocity.z, 10.0f, 0.01f, 0.005f);
+			
 
 
-			nk_layout_row_dynamic(ctx, 15, 1);
 			//nk_label(ctx, "Use point sprites", NK_TEXT_LEFT);
 			nk_checkbox_label(ctx, "Use point sprites", &vars.usePointSprites);
 
@@ -1384,7 +1374,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_layout_row_dynamic(ctx, 30, 1);
 
-			nk_label(ctx, "Shadow/Light Controls", NK_TEXT_CENTERED);
+			nk_label(ctx, "Lighting Controls", NK_TEXT_CENTERED);
 
 
 			nk_layout_row_dynamic(ctx, 15, 1);
@@ -1450,11 +1440,19 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				nk_combo_end(ctx);
 			}
 
+
+
+
+		} else if (uiMode == 2) {
+
+
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+
+			nk_label(ctx, "Terrain Controls", NK_TEXT_CENTERED);
+
 			nk_property_float(ctx, "Terrain texture tiling", 0.1f, &vars.terrainTextureTiling, 100.0f, 0.1f, 0.1f);
-
-
 		}
-
 
 
 	}
@@ -1512,7 +1510,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		//nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
 
 		float delta_t_prev = stlpSimCUDA->delta_t;
-		nk_property_float(ctx, "delta t", 0.0001f, &stlpSimCUDA->delta_t, 100.0f, 0.0001f, 1.0f);
+		nk_property_float(ctx, "delta t", 0.001f, &stlpSimCUDA->delta_t, 100.0f, 0.001f, 0.001f);
 		if (stlpSimCUDA->delta_t != delta_t_prev) {
 			//stlpSimCUDA->delta_t = stlpSim->delta_t;
 			stlpSimCUDA->updateGPU_delta_t();
@@ -1794,5 +1792,6 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 		viewportProjection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
 
 	}
+	TextureManager::refreshOverlayTextures();
 	stlpDiagram.refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
 }

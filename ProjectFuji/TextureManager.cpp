@@ -11,12 +11,20 @@ namespace TextureManager {
 
 		VariableManager *vars;
 		map<string, Texture *> textures;
+		vector<OverlayTexture *> overlayTextures;
 
 	}
 
 
 	bool init(VariableManager * vars) {
 		TextureManager::vars = vars;
+
+		// prepare debug overlay textures
+		int debugOverlayTexturesRes = 250;
+		for (int i = 0; i < 4; i++) {
+			overlayTextures.push_back(new OverlayTexture(0, vars->screenHeight - (i + 1) * debugOverlayTexturesRes, debugOverlayTexturesRes, debugOverlayTexturesRes, TextureManager::vars));
+		}
+
 		return true;
 	}
 
@@ -24,6 +32,11 @@ namespace TextureManager {
 		for (const auto &kv : textures) {
 			if (kv.second) { // make sure it is valid, even though it should always be
 				delete kv.second;
+			}
+		}
+		for (int i = 0; i < overlayTextures.size(); i++) {
+			if (overlayTextures[i]) {
+				delete overlayTextures[i];
 			}
 		}
 		return true;
@@ -44,6 +57,42 @@ namespace TextureManager {
 		tmp.push_back(getTexturePtr(normalMapFilename));
 		return tmp;
 	}
+
+	void refreshOverlayTextures() {
+		for (int i = 0; i < overlayTextures.size(); i++) {
+			overlayTextures[i]->refreshVBO();
+		}
+	}
+
+	void drawOverlayTextures() {
+		for (int i = 0; i < overlayTextures.size(); i++) {
+			overlayTextures[i]->draw();
+		}
+	}
+
+	void drawOverlayTextures(std::vector<GLuint> textureIds) {
+		int size = (textureIds.size() <= overlayTextures.size() - 1) ? textureIds.size() : overlayTextures.size();
+		for (int i = 0; i < size; i++) {
+			overlayTextures[i]->draw(textureIds[i]);
+		}
+	}
+
+	int pushOverlayTexture(OverlayTexture * overlayTexture) {
+		overlayTextures.push_back(overlayTexture);
+		return overlayTextures.size() - 1;
+	}
+
+	OverlayTexture * createOverlayTexture(int x, int y, int width, int height, Texture * tex) {
+		overlayTextures.push_back(new OverlayTexture(x, y, width, height, vars, tex));
+		return overlayTextures.back();
+	}
+
+	OverlayTexture * getOverlayTexture(int idx) {
+		if (idx < overlayTextures.size()) {
+			return overlayTextures[idx];
+		}
+		return nullptr;
+	} 
 
 
 

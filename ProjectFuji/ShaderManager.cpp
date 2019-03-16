@@ -74,7 +74,7 @@ namespace ShaderManager {
 			addShader("dirLightOnly", "dirLightOnly.vert", "dirLightOnly.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
 			addShader("pointSpriteTest", "pointSpriteTest.vert", "pointSpriteTest.frag");
 			addShader("coloredParticle", "coloredParticle.vert", "coloredParticle.frag");
-			addShader("diagram", "diagram.vert", "diagram.frag");
+			addShader("overlayTexture", "overlayTexture.vert", "overlayTexture.frag");
 			addShader("text", "text.vert", "text.frag");
 			addShader("curve", "curve.vert", "curve.frag");
 			addShader("skybox", "skybox.vert", "skybox.frag");
