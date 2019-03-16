@@ -47,7 +47,7 @@ __device__ glm::vec3 mapToViridis3D(float val) {
 
 
 
-__global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors, int respawnMode, int outOfBoundsMode) {
+__global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors, int respawnMode, int outOfBoundsMode, float velocityMultiplier = 1.0f, bool useCorrectInterpolation = true) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
 	idx += blockDim.x * blockDim.y * blockIdx.x;
@@ -84,8 +84,10 @@ __global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::
 					pos.z = fmodf(pos.z + d_latticeDepth - 2, d_latticeDepth - 2);
 				}
 			} else {
-				pos.x = 0.0f;
-				pos.y = (float)((__float2int_rd(pos.y) + d_latticeHeight - 2) % (d_latticeHeight - 2));
+				//pos.x = 0.0f;
+				pos.x = fmodf(pos.x + d_latticeWidth - 2, d_latticeWidth - 2);
+				//pos.y = (float)((__float2int_rd(pos.y) + d_latticeHeight - 2) % (d_latticeHeight - 2));
+				pos.y = fmodf(pos.y + d_latticeHeight - 2, d_latticeHeight - 2);
 				pos.z = rand(idx, pos.z) * (d_latticeDepth - 2);
 			}
 		}
@@ -126,17 +128,35 @@ __global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::
 		float verticalRatio = pos.y - bottomY;
 		float depthRatio = pos.z - backZ;
 
-		glm::vec3 topBackVelocity = adjVelocities[0] * horizontalRatio + adjVelocities[1] * (1.0f - horizontalRatio);
-		glm::vec3 bottomBackVelocity = adjVelocities[2] * horizontalRatio + adjVelocities[3] * (1.0f - horizontalRatio);
+		glm::vec3 finalVelocity;
+		if (useCorrectInterpolation) {
+			glm::vec3 topBackVelocity = adjVelocities[1] * horizontalRatio + adjVelocities[0] * (1.0f - horizontalRatio);
+			glm::vec3 bottomBackVelocity = adjVelocities[3] * horizontalRatio + adjVelocities[2] * (1.0f - horizontalRatio);
+			glm::vec3 backVelocity = topBackVelocity * verticalRatio + bottomBackVelocity * (1.0f - verticalRatio);
 
-		glm::vec3 backVelocity = bottomBackVelocity * verticalRatio + topBackVelocity * (1.0f - verticalRatio);
+			glm::vec3 topFrontVelocity = adjVelocities[5] * horizontalRatio + adjVelocities[4] * (1.0f - horizontalRatio);
+			glm::vec3 bottomFrontVelocity = adjVelocities[7] * horizontalRatio + adjVelocities[6] * (1.0f - horizontalRatio);
+			glm::vec3 frontVelocity = topFrontVelocity * verticalRatio + bottomFrontVelocity * (1.0f - verticalRatio);
 
-		glm::vec3 topFrontVelocity = adjVelocities[4] * horizontalRatio + adjVelocities[5] * (1.0f - horizontalRatio);
-		glm::vec3 bottomFrontVelocity = adjVelocities[6] * horizontalRatio + adjVelocities[7] * (1.0f - horizontalRatio);
+			finalVelocity = frontVelocity * depthRatio + backVelocity * (1.0f - depthRatio);
 
-		glm::vec3 frontVelocity = bottomFrontVelocity * verticalRatio + topFrontVelocity * (1.0f - verticalRatio);
+		} else {
 
-		glm::vec3 finalVelocity = backVelocity * depthRatio + frontVelocity * (1.0f - depthRatio);
+			glm::vec3 topBackVelocity = adjVelocities[0] * horizontalRatio + adjVelocities[1] * (1.0f - horizontalRatio);
+			glm::vec3 bottomBackVelocity = adjVelocities[2] * horizontalRatio + adjVelocities[3] * (1.0f - horizontalRatio);
+
+			glm::vec3 backVelocity = bottomBackVelocity * verticalRatio + topBackVelocity * (1.0f - verticalRatio);
+
+			glm::vec3 topFrontVelocity = adjVelocities[4] * horizontalRatio + adjVelocities[5] * (1.0f - horizontalRatio);
+			glm::vec3 bottomFrontVelocity = adjVelocities[6] * horizontalRatio + adjVelocities[7] * (1.0f - horizontalRatio);
+
+			glm::vec3 frontVelocity = bottomFrontVelocity * verticalRatio + topFrontVelocity * (1.0f - verticalRatio);
+
+			finalVelocity = backVelocity * depthRatio + frontVelocity * (1.0f - depthRatio);
+		}
+
+
+		finalVelocity *= velocityMultiplier;
 
 		pos += finalVelocity;
 
@@ -1615,22 +1635,28 @@ __global__ void streamingStepKernel(Node3D *backLattice, Node3D *frontLattice) {
 		front = z + 1;
 		back = z - 1;
 		if (right > d_latticeWidth - 1) {
-			right = d_latticeWidth - 1;
+			//right = d_latticeWidth - 1;
+			right = 0;
 		}
 		if (left < 0) {
-			left = 0;
+			//left = 0;
+			left = d_latticeWidth - 1;
 		}
 		if (top > d_latticeHeight - 1) {
-			top = d_latticeHeight - 1;
+			//top = d_latticeHeight - 1;
+			top = 0;
 		}
 		if (bottom < 0) {
-			bottom = 0;
+			//bottom = 0;
+			bottom = d_latticeHeight - 1;
 		}
 		if (front > d_latticeDepth - 1) {
-			front = d_latticeDepth - 1;
+			//front = d_latticeDepth - 1;
+			front = 0;
 		}
 		if (back < 0) {
-			back = 0;
+			//back = 0;
+			back = d_latticeDepth - 1;
 		}
 
 		/*
@@ -1719,7 +1745,7 @@ LBM3D_1D_indices::LBM3D_1D_indices() {
 
 
 
-LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystemLBM(particleSystemLBM), particleSystem(particleSystem), blockDim(blockDim), stlpDiagram(stlpDiagram) {
+LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystem(particleSystem), blockDim(blockDim), stlpDiagram(stlpDiagram) {
 
 	itau = 1.0f / tau;
 	nu = (2.0f * tau - 1.0f) / 6.0f;
@@ -1831,10 +1857,10 @@ void LBM3D_1D_indices::initScene() {
 
 	delete[] tempHM;
 
-	particleVertices = particleSystemLBM->particleVertices;
-	d_numParticles = particleSystemLBM->d_numParticles;
+	//particleVertices = particleSystemLBM->particleVertices;
+	//d_numParticles = particleSystemLBM->d_numParticles;
 
-	particleSystemLBM->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
+	//particleSystemLBM->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
 
 
 }
@@ -1931,7 +1957,7 @@ void LBM3D_1D_indices::doStepCUDA() {
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	//moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode);
-	moveParticlesKernelInteropNew << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode);
+	moveParticlesKernelInteropNew << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode, vars->lbmVelocityMultiplier, (bool)vars->lbmUseCorrectInterpolation);
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);

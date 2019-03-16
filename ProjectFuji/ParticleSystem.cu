@@ -12,11 +12,36 @@
 #include "Emitter.h"
 #include "CircleEmitter.h"
 
+#include <thrust\sort.h>
+#include <thrust\device_ptr.h>
+#include <thrust\execution_policy.h>
+
+
+
+__global__ void  computeParticleDistances(glm::vec3 *particleVertices, float *particleDistances, glm::vec3 referencePosition, int numParticles) {
+
+	int idx = threadIdx.x + blockDim.x * blockIdx.x;
+
+	if (idx < numParticles) {
+
+		particleDistances[idx] = glm::distance(particleVertices[idx], referencePosition);
+
+	}
+
+}
+
+
 
 ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
+
 	heightMap = vars->heightMap;
 	numParticles = vars->numParticles;
+
+	blockDim = dim3(256, 1, 1);
+	gridDim = dim3((int)ceil((float)numParticles / (float)blockDim.x), 1, 1);
+
+
 	positionRecalculationThreshold = vars->positionRecalculationThreshold;
 	maxPositionRecalculations = vars->maxPositionRecalculations;
 	numActiveParticles = 0;
@@ -104,18 +129,21 @@ void ParticleSystem::initBuffers() {
 
 void ParticleSystem::initCUDA() {
 
-	cudaMalloc((void**)&d_numParticles, sizeof(int));
-	cudaMemcpy(d_numParticles, &numParticles, sizeof(int), cudaMemcpyHostToDevice);
+	CHECK_ERROR(cudaMalloc((void**)&d_numParticles, sizeof(int)));
+	CHECK_ERROR(cudaMemcpy(d_numParticles, &numParticles, sizeof(int), cudaMemcpyHostToDevice));
 
-	cudaMalloc((void**)&d_verticalVelocities, sizeof(float) * numParticles);
-	cudaMalloc((void**)&d_profileIndices, sizeof(int) * numParticles);
+	CHECK_ERROR(cudaMalloc((void**)&d_verticalVelocities, sizeof(float) * numParticles));
+	CHECK_ERROR(cudaMalloc((void**)&d_profileIndices, sizeof(int) * numParticles));
 	//cudaMalloc((void**)&d_particlePressures, sizeof(float) * numParticles);
 
-	cudaMemset(d_verticalVelocities, 0, sizeof(float) * numParticles);
+	CHECK_ERROR(cudaMemset(d_verticalVelocities, 0, sizeof(float) * numParticles));
 	//cudaMemset(d_profileIndices, 0, sizeof(int) * numParticles);
 	//cudaMemset(d_particlePressures, 0, sizeof(float) * numParticles);
 
 	//cudaGLRegisterBufferObject(cudaDiagramParticleVerticesVBO, )
+
+	CHECK_ERROR(cudaMalloc((void**)&d_particleDistances, sizeof(float) * numParticles));
+	CHECK_ERROR(cudaMemset(d_particleDistances, 0, sizeof(float) * numParticles));
 
 
 }
@@ -156,6 +184,46 @@ void ParticleSystem::emitParticles() {
 
 
 void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
+
+	
+	/*
+	size_t num_bytes;
+	glm::vec3 *d_mappedParticleVerticesVBO;
+
+	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticleVerticesVBO, &num_bytes, cudaParticleVerticesVBO));
+
+	CHECK_ERROR(cudaGetLastError());
+
+	computeParticleDistances << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, d_particleDistances, cameraPos, numActiveParticles);
+
+	CHECK_ERROR(cudaGetLastError());
+
+	// this is a no go, we need to sort by key! -> more memory...
+	//thrust::device_ptr<glm::vec3> dptr(d_mappedParticleVerticesVBO);  // add this line before the sort line
+	//thrust::sort(dptr, dptr + numActiveParticles);        // modify your sort line
+
+
+	//thrust::sort_by_key(keys.begin(), keys.end(), values.begin());
+
+
+	//// OLD APPROACH
+	//thrust::device_ptr<glm::vec3> thrustParticleVerticesPtr(d_mappedParticleVerticesVBO);
+	//thrust::device_ptr<float> thrustParticleDistancesPtr(d_particleDistances);
+
+	//thrust::sort_by_key(thrustParticleDistancesPtr, thrustParticleDistancesPtr + numActiveParticles, thrustParticleVerticesPtr, thrust::greater<float>());
+	
+
+	// NEW APPROACH
+	thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::greater<float>());
+	CHECK_ERROR(cudaGetLastError());
+
+
+	//cudaDeviceSynchronize(); // if we do not synchronize, thrust will (?) throw a system error since we unmap the resource before it finishes sorting
+	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
+	*/
+	
+
 
 
 	glUseProgram(shader.id);
@@ -225,6 +293,44 @@ void ParticleSystem::drawDiagramParticles(ShaderProgram *shader) {
 	if (depthTestEnabled) {
 		glEnable(GL_DEPTH_TEST);
 	}
+
+}
+
+void ParticleSystem::sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy) {
+
+	size_t num_bytes;
+	glm::vec3 *d_mappedParticleVerticesVBO;
+
+	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticleVerticesVBO, &num_bytes, cudaParticleVerticesVBO));
+
+	CHECK_ERROR(cudaGetLastError());
+
+	computeParticleDistances << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, d_particleDistances, referencePoint, numActiveParticles);
+
+	CHECK_ERROR(cudaGetLastError());
+
+	switch (sortPolicy) {
+		case GREATER:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::greater<float>());
+			break;
+		case LESS:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::less<float>());
+			break;
+		case GEQUAL:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::greater_equal<float>());
+			break;
+		case LEQUAL:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::less_equal<float>());
+			break;
+	}
+
+	CHECK_ERROR(cudaGetLastError());
+
+
+	//cudaDeviceSynchronize(); // if we do not synchronize, thrust will (?) throw a system error since we unmap the resource before it finishes sorting
+	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
+
 
 }
 

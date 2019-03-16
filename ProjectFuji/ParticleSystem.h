@@ -26,6 +26,7 @@
 #include "VariableManager.h"
 #include "STLPSimulatorCUDA.h"
 
+
 class Emitter;
 class CircleEmitter;
 
@@ -44,7 +45,10 @@ public:
 	GLuint particleProfilesVBO;
 	GLuint colorsVBO;	///< VBO of the particle colors
 
+	float *d_particleDistances;
 
+	dim3 blockDim;
+	dim3 gridDim;
 
 	GLuint diagramParticlesVAO;
 	GLuint diagramParticleVerticesVBO;
@@ -107,6 +111,9 @@ public:
 	void draw(const ShaderProgram &shader, glm::vec3 cameraPos);
 	void drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos);
 	void drawDiagramParticles(ShaderProgram *shader);
+
+
+	void sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy);
 
 	void initParticlesWithZeros();
 	void initParticlesOnTerrain();

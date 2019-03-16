@@ -108,7 +108,7 @@ public:
 	void generateParticle();
 
 	/// Draws the heightmap and particles.
-	void draw(ShaderProgram &particlesShader, glm::vec3 cameraPos);
+	void draw(glm::vec3 cameraPos);
 	void drawDiagramParticles(ShaderProgram *shader);
 
 	void initParticles();

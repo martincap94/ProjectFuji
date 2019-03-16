@@ -85,14 +85,20 @@ public:
 	int showCCLLevelLayer = 0;
 	int showELLevelLayer = 0;
 
+	int showOverlayDiagram = 0;
+
 	glm::vec3 tintColor = glm::vec3(1.0f);
 
 	glm::vec3 bgClearColor = glm::vec3(0.0f);
 
 	float terrainTextureTiling = 10.0f;
 
-	int useSoundingWindVelocities = 1;
+	int useSoundingWindVelocities = 0;
 
+	float lbmVelocityMultiplier = 1.0f;
+	int lbmUseCorrectInterpolation = 0;
+
+	int fullscreen = 0;
 
 
 	// Particle System variables

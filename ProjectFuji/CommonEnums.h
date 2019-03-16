@@ -11,3 +11,10 @@ enum eLBMType {
 	LBM2D,
 	LBM3D
 };
+
+enum eSortPolicy {
+	LESS,
+	GREATER,
+	LEQUAL,
+	GEQUAL
+};

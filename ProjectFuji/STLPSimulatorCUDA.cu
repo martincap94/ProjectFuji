@@ -436,7 +436,7 @@ void STLPSimulatorCUDA::initBuffers() {
 void STLPSimulatorCUDA::initCUDA() {
 
 	blockDim = dim3(256, 1, 1);
-	gridDim = dim3((int)ceil((float)maxNumParticles / (float)blockDim.x), 1, 1);
+	gridDim = dim3((int)ceil((float)particleSystem->numParticles / (float)blockDim.x), 1, 1);
 
 
 	/*
@@ -732,36 +732,8 @@ void STLPSimulatorCUDA::generateParticle() {
 
 }
 
-void STLPSimulatorCUDA::draw(ShaderProgram & particlesShader, glm::vec3 cameraPos) {
+void STLPSimulatorCUDA::draw(glm::vec3 cameraPos) {
 	
-	/*
-	glUseProgram(particlesShader.id);
-
-	particlesShader.setInt("u_Tex", 0);
-	particlesShader.setInt("u_SecondTex", 1);
-	particlesShader.setVec3("u_TintColor", vars->tintColor);
-
-	glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, spriteTexture.id);
-
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture.id);
-
-	glPointSize(pointSize);
-	//particlesShader.setVec4("color", glm::vec4(1.0f, 0.4f, 1.0f, 1.0f));
-	particlesShader.setVec3("u_CameraPos", cameraPos);
-	particlesShader.setFloat("u_PointSizeModifier", pointSize);
-	particlesShader.setFloat("u_OpacityMultiplier", vars->opacityMultiplier);
-
-	glBindVertexArray(particlesVAO);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
-
-	glDrawArrays(GL_POINTS, 0, numParticles);
-	*/
-
-
 	if (vars->showCCLLevelLayer || vars->showELLevelLayer) {
 		GLboolean cullFaceEnabled;
 		glGetBooleanv(GL_CULL_FACE, &cullFaceEnabled);

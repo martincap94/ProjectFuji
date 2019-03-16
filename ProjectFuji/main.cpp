@@ -128,7 +128,7 @@ VariableManager vars;
 LBM3D_1D_indices *lbm;				///< Pointer to the current LBM
 Grid *grid;				///< Pointer to the current grid
 Camera *camera;			///< Pointer to the current camera
-ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system that is to be used throughout the whole application
+//ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system that is to be used throughout the whole application
 ParticleSystem *particleSystem;
 
 //HeightMap *heightMap;
@@ -140,7 +140,7 @@ Camera *orbitCamera;
 Camera2D *diagramCamera;
 Camera2D *overlayDiagramCamera;
 
-STLPSimulator *stlpSim;
+//STLPSimulator *stlpSim;
 STLPSimulatorCUDA *stlpSimCUDA;
 
 EVSMShadowMapper evsm;
@@ -337,7 +337,7 @@ int runApp() {
 	struct nk_colorf particlesColor;
 
 
-	particleSystemLBM = new ParticleSystemLBM(vars.numParticles, vars.drawStreamlines);
+	//particleSystemLBM = new ParticleSystemLBM(vars.numParticles, vars.drawStreamlines);
 	particleSystem = new ParticleSystem(&vars);
 
 
@@ -355,7 +355,7 @@ int runApp() {
 		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
 		CHECK_ERROR(cudaPeekAtLastError());
 
-		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, particleSystemLBM, particleSystem, blockDim, & stlpDiagram);
+		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, nullptr, particleSystem, blockDim, & stlpDiagram);
 		CHECK_ERROR(cudaPeekAtLastError());
 
 
@@ -427,8 +427,8 @@ int runApp() {
 
 	Model treeModel("models/Tree.obj", &treeMat, ShaderManager::getShaderPtr("normals_instanced"));
 
-	grassModel.makeInstanced(vars.heightMap, 50000, glm::vec2(1.0, 2.0), 4.0f, 3);
-	treeModel.makeInstanced(vars.heightMap, 200, glm::vec2(0.5, 1.1), 5.0f, 20);
+	grassModel.makeInstanced(vars.heightMap, 1000000, glm::vec2(0.2, 0.4), 4.0f, 3);
+	treeModel.makeInstanced(vars.heightMap, 400, glm::vec2(0.3, 0.5), 5.0f, 20);
 
 	//armoireModel.transform.position.x += 2.0f;
 
@@ -477,21 +477,23 @@ int runApp() {
 
 
 
-	stlpSim = new STLPSimulator(&vars, &stlpDiagram);
+	//stlpSim = new STLPSimulator(&vars, &stlpDiagram);
 	stlpSimCUDA = new STLPSimulatorCUDA(&vars, &stlpDiagram);
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
-	stlpSim->initParticles();
+	//stlpSim->initParticles();
 	//stlpSimCUDA->initParticles();
+	particleSystem->stlpSim = stlpSimCUDA;
+	stlpSimCUDA->particleSystem = particleSystem;
+
 	stlpSimCUDA->initCUDA();
 	//stlpDiagram.particlesVAO = stlpSimCUDA->diagramParticlesVAO; // hack
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
 
-	particleSystem->stlpSim = stlpSimCUDA;
-	stlpSimCUDA->particleSystem = particleSystem;
+
 	particleSystem->initParticlesOnTerrain();
 	//particleSystem->initParticlePositions();
 	CHECK_ERROR(cudaPeekAtLastError());
@@ -515,7 +517,7 @@ int runApp() {
 	ss << (vars.useCUDA ? "GPU" : "CPU") << "_";
 	ss << vars.sceneFilename;
 	ss << "_h=" << vars.latticeHeight;
-	ss << "_" << particleSystemLBM->numParticles;
+	//ss << "_" << particleSystemLBM->numParticles;
 	vars.timer.configString = ss.str();
 	if (vars.measureTime) {
 		vars.timer.start();
@@ -564,46 +566,48 @@ int runApp() {
 
 
 
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		view = overlayDiagramCamera->getViewMatrix();
-		ShaderManager::updatePVMatrixUniforms(overlayDiagramProjection, view);
-		reportGLErrors("B1");
+		if (vars.showOverlayDiagram) {
+			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+			view = overlayDiagramCamera->getViewMatrix();
+			ShaderManager::updatePVMatrixUniforms(overlayDiagramProjection, view);
+			reportGLErrors("B1");
 
 
-		GLint res = stlpDiagram.textureResolution;
-		glViewport(0, 0, res, res);
-		glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
-		glClear(GL_COLOR_BUFFER_BIT);
-		//glBindTextureUnit(0, stlpDiagram.diagramTexture);
-		reportGLErrors("B2");
+			GLint res = stlpDiagram.textureResolution;
+			glViewport(0, 0, res, res);
+			glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
+			glClear(GL_COLOR_BUFFER_BIT);
+			//glBindTextureUnit(0, stlpDiagram.diagramTexture);
+			reportGLErrors("B2");
 
-		stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
-		reportGLErrors("B3");
+			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
+			reportGLErrors("B3");
 
-		stlpDiagram.drawText(*textShader);
+			stlpDiagram.drawText(*textShader);
 
-		//stlpSimCUDA->drawDiagramParticles(curveShader);
-		//particleSystem->drawDiagramParticles(curveShader);
+			particleSystem->drawDiagramParticles(curveShader);
 
-		reportGLErrors("B4");
-
-
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stlpDiagram.diagramFramebuffer);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
-
-		reportGLErrors("B5");
-
-		//glDrawBuffer(GL_BACK);
-		reportGLErrors("B6");
+			reportGLErrors("B4");
 
 
-		glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-		reportGLErrors("B7");
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stlpDiagram.diagramFramebuffer);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
+
+			reportGLErrors("B5");
+
+			//glDrawBuffer(GL_BACK);
+			reportGLErrors("B6");
 
 
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		reportGLErrors("B8");
+			glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			reportGLErrors("B7");
+
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+			reportGLErrors("B8");
+
+		}
 
 
 		glViewport(0, 0, vars.screenWidth, vars.screenHeight);
@@ -668,10 +672,10 @@ int runApp() {
 
 		if (mode == 0 || mode == 1) {
 
-			if (mode == 1) {
+		/*	if (mode == 1) {
 				stlpSim->doStep();
 			}
-
+*/
 			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
 			stlpDiagram.drawText(*textShader);
 
@@ -757,7 +761,7 @@ int runApp() {
 					stlpSimCUDA->doStep();
 				}
 			} else {
-				stlpSim->doStep();
+				//stlpSim->doStep();
 			}
 
 			//lbm->doStepCUDA();
@@ -784,7 +788,8 @@ int runApp() {
 			glDepthFunc(GL_LEQUAL);
 
 			evsm.preFirstPass();
-			stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
+			vars.heightMap->drawGeometry(evsm.firstPassShader);
+			//stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
 
 			if (vars.showCloudShadows) {
 				particleSystem->drawGeometry(evsm.firstPassShader, camera->position);
@@ -810,8 +815,8 @@ int runApp() {
 			evsm.preSecondPass(vars.screenWidth, vars.screenHeight);
 			CHECK_GL_ERRORS();
 
-			stlpSim->heightMap->draw(evsm.secondPassShader);
-
+			//stlpSim->heightMap->draw(evsm.secondPassShader);
+			vars.heightMap->draw(evsm.secondPassShader);
 
 			//testModel.draw(*evsm.secondPassShader);
 			testModel.draw();
@@ -832,30 +837,25 @@ int runApp() {
 			dirLight.draw();
 
 
-			glEnable(GL_BLEND);
-			glDepthMask(GL_FALSE);
 
-			if (vars.stlpUseCUDA) {
-				if (vars.usePointSprites) {
-					stlpSimCUDA->draw(*pointSpriteTestShader, camera->position);
-				} else {
-					stlpSimCUDA->draw(*singleColorShader, camera->position);
-				}
+
+			if (vars.usePointSprites) {
+				glEnable(GL_BLEND);
+				glDepthMask(GL_FALSE);
+				particleSystem->draw(*pointSpriteTestShader, camera->position);
+				glDepthMask(GL_TRUE);
 			} else {
-				if (vars.usePointSprites) {
-					stlpSim->draw(*pointSpriteTestShader, camera->position);
-				} else {
-					stlpSim->draw(*singleColorShader, camera->position);
-				}
+				particleSystem->draw(*singleColorShader, camera->position);
+
 			}
-			particleSystem->draw(*pointSpriteTestShader, camera->position);
-			glDepthMask(GL_TRUE);
+			stlpSimCUDA->draw(camera->position);
+
 
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
 
-
-			stlpDiagram.drawOverlayDiagram(diagramShader);
-			
+			if (vars.showOverlayDiagram) {
+				stlpDiagram.drawOverlayDiagram(diagramShader);
+			}
 
 			
 
@@ -901,7 +901,7 @@ int runApp() {
 
 	delete skybox;
 
-	delete stlpSim;
+	//delete stlpSim;
 
 
 	//size_t cudaMemFree = 0;
@@ -1183,6 +1183,12 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_layout_row_dynamic(ctx, 30, 1);
 			nk_label(ctx, "LBM Controls", NK_TEXT_CENTERED);
 
+			//if (nk_button_label(ctx, "fullscreen")) {
+			//	vars.fullscreen = !vars.fullscreen;
+			//	glfwWindowHint(GLFW_MAXIMIZED, vars.fullscreen ? GL_TRUE : GL_FALSE); // For maximization of window
+			//}
+
+
 			nk_layout_row_static(ctx, 30, 80, 3);
 			if (nk_button_label(ctx, "Reset")) {
 				//fprintf(stdout, "button pressed\n");
@@ -1252,6 +1258,11 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			//nk_label(ctx, "Use point sprites", NK_TEXT_LEFT);
 			nk_checkbox_label(ctx, "Use point sprites", &vars.usePointSprites);
 
+
+			if (nk_button_label(ctx, "Sort points by camera distance")) {
+				particleSystem->sortParticlesByDistance(camera->position, eSortPolicy::GREATER);
+
+			}
 			if (/*lbmType == LBM2D &&*/ vars.useCUDA && !vars.usePointSprites) {
 				nk_layout_row_dynamic(ctx, 15, 1);
 				nk_checkbox_label(ctx, "Visualize velocity", &lbm->visualizeVelocity);
@@ -1361,7 +1372,8 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_checkbox_label(ctx, "Use subgrid model (experimental)", &vars.useSubgridModel);
 
-
+			nk_property_float(ctx, "LBM velocity multiplier", 0.01f, &vars.lbmVelocityMultiplier, 10.0f, 0.01f, 0.01f);
+			nk_checkbox_label(ctx, "LBM use correct interpolation", &vars.lbmUseCorrectInterpolation);
 
 
 
@@ -1493,16 +1505,16 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			stlpDiagram.resetToDefault();
 		}
 
-		if (nk_button_label(ctx, "Reset simulation")) {
-			stlpSim->resetSimulation();
-		}
+		//if (nk_button_label(ctx, "Reset simulation")) {
+			//stlpSim->resetSimulation();
+		//}
 
-		nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
+		//nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
 
-		float delta_t_prev = stlpSim->delta_t;
-		nk_property_float(ctx, "delta t", 0.0001f, &stlpSim->delta_t, 100.0f, 0.0001f, 1.0f);
-		if (stlpSim->delta_t != delta_t_prev) {
-			stlpSimCUDA->delta_t = stlpSim->delta_t;
+		float delta_t_prev = stlpSimCUDA->delta_t;
+		nk_property_float(ctx, "delta t", 0.0001f, &stlpSimCUDA->delta_t, 100.0f, 0.0001f, 1.0f);
+		if (stlpSimCUDA->delta_t != delta_t_prev) {
+			//stlpSimCUDA->delta_t = stlpSim->delta_t;
 			stlpSimCUDA->updateGPU_delta_t();
 		}
 
@@ -1510,11 +1522,11 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_property_float(ctx, "profile range", -10.0f, &stlpDiagram.convectiveTempRange, 10.0f, 0.01f, 0.01f);
 
-		nk_property_int(ctx, "max particles", 1, &stlpSim->maxNumParticles, 100000, 1, 10.0f);
+		//nk_property_int(ctx, "max particles", 1, &stlpSim->maxNumParticles, 100000, 1, 10.0f);
 
-		nk_checkbox_label(ctx, "Simulate wind", &stlpSim->simulateWind);
+		//nk_checkbox_label(ctx, "Simulate wind", &stlpSim->simulateWind);
 
-		nk_checkbox_label(ctx, "use prev velocity", &stlpSim->usePrevVelocity);
+		//nk_checkbox_label(ctx, "use prev velocity", &stlpSim->usePrevVelocity);
 
 		nk_checkbox_label(ctx, "Divide Previous Velocity", &vars.dividePrevVelocity);
 		if (vars.dividePrevVelocity) {
@@ -1523,6 +1535,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_checkbox_label(ctx, "Show CCL Level", &vars.showCCLLevelLayer);
 		nk_checkbox_label(ctx, "Show EL Level", &vars.showELLevelLayer);
+		nk_checkbox_label(ctx, "Show Overlay Diagram", &vars.showOverlayDiagram);
 
 
 		nk_checkbox_label(ctx, "Use CUDA", &vars.stlpUseCUDA);
@@ -1531,9 +1544,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		nk_checkbox_label(ctx, "Apply STLP", &vars.applySTLP);
 
-		nk_property_float(ctx, "Point size", 0.1f, &stlpSim->pointSize, 100.0f, 0.1f, 0.1f);
-		stlpSimCUDA->pointSize = stlpSim->pointSize;
-		particleSystem->pointSize = stlpSim->pointSize;
+		nk_property_float(ctx, "Point size", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
+		//stlpSimCUDA->pointSize = stlpSim->pointSize;
+		particleSystem->pointSize = stlpSimCUDA->pointSize;
 		//nk_property_float(ctx, "Point size (CUDA)", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
 
 		nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars.opacityMultiplier, 10.0f, 0.01f, 0.01f);
