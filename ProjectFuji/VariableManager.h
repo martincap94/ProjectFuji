@@ -5,6 +5,7 @@
 #include "HeightMap.h"
 
 #include <glm\glm.hpp>
+#include <GLFW\glfw3.h>
 
 #include "Timer.h"
 
@@ -91,7 +92,7 @@ public:
 
 	glm::vec3 bgClearColor = glm::vec3(0.0f);
 
-	float terrainTextureTiling = 10.0f;
+	float terrainTextureTiling = 80.0f;
 
 	int useSoundingWindVelocities = 0;
 
@@ -116,6 +117,11 @@ public:
 	float fogIntensity = 0.8f;
 	glm::vec4 fogColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
+	////////////////////////////////////////////////////////////////
+	// Terrain
+	////////////////////////////////////////////////////////////////
+	int drawGrass = 1;
+	int drawTrees = 1;
 
 
 	////////////////////////////////////////////////////////////////
@@ -123,6 +129,17 @@ public:
 	////////////////////////////////////////////////////////////////
 	bool debugWindowOpened = false;
 	bool aboutWindowOpened = false;
+
+	int toolbarHeight = 20;
+	int debugTabHeight = 300;
+	int leftSidebarWidth = 250;
+	int rightSidebarWidth = 250;
+	int debugTextureRes = leftSidebarWidth;
+
+
+	int prevHideUIKeyState = GLFW_RELEASE;
+	int hideUIKey = GLFW_KEY_F;
+	int hideUI = 0;
 
 	//int show
 

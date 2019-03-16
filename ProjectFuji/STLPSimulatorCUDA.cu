@@ -274,18 +274,7 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 	}
 }
 
-__global__ void simulationStepKernelAlt(glm::vec3 *particleVertices, int numParticles, float *verticalVelocities, int *profileIndices, float *particlePressures) {
 
-	int idx = threadIdx.x + blockDim.x * blockIdx.x;
-
-	if (idx < numParticles) {
-
-
-
-		particleVertices[idx].y += 0.01f;
-
-	}
-}
 
 
 
@@ -460,7 +449,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	*/
 	
 
-
+	// ambient temp curve can be mapped to VBO, no need for this
 	CHECK_ERROR(cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size()));
 
 	CHECK_ERROR(cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice));

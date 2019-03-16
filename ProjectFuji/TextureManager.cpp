@@ -22,7 +22,7 @@ namespace TextureManager {
 		// prepare debug overlay textures
 		int debugOverlayTexturesRes = 250;
 		for (int i = 0; i < 4; i++) {
-			overlayTextures.push_back(new OverlayTexture(0, vars->screenHeight - (i + 1) * debugOverlayTexturesRes, debugOverlayTexturesRes, debugOverlayTexturesRes, TextureManager::vars));
+			overlayTextures.push_back(new OverlayTexture(i * debugOverlayTexturesRes, 0/*vars->screenHeight - (i + 1) * debugOverlayTexturesRes*/, debugOverlayTexturesRes, debugOverlayTexturesRes, TextureManager::vars));
 		}
 
 		return true;
@@ -65,12 +65,18 @@ namespace TextureManager {
 	}
 
 	void drawOverlayTextures() {
+		if (vars->hideUI) {
+			return;
+		}
 		for (int i = 0; i < overlayTextures.size(); i++) {
 			overlayTextures[i]->draw();
 		}
 	}
 
 	void drawOverlayTextures(std::vector<GLuint> textureIds) {
+		if (vars->hideUI) {
+			return;
+		}
 		int size = (textureIds.size() <= overlayTextures.size() - 1) ? textureIds.size() : overlayTextures.size();
 		for (int i = 0; i < size; i++) {
 			overlayTextures[i]->draw(textureIds[i]);

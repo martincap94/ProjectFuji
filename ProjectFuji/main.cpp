@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <chrono>
 #include <sstream>
+#include <iomanip> // setprecision
+
 
 //#include "LBM.h"
 //#include "LBM2D_1D_indices.h"
@@ -193,6 +195,10 @@ int mouseCursorKey = GLFW_KEY_C;
 //string soundingFile;		///< Name of the sounding file to be loaded
 
 bool mouseDown = false;
+
+//bool updateFPSCounter = false;
+float prevAvgFPS;
+float prevAvgDeltaTime;
 
 STLPDiagram stlpDiagram;	///< SkewT/LogP diagram instance
 int mode = 3;				///< Mode: 0 - show SkewT/LogP diagram, 1 - show 3D simulator
@@ -557,10 +563,13 @@ int runApp() {
 		accumulatedTime += deltaTime;
 
 		if (currentFrameTime - prevTime >= 1.0f) {
-			printf("Avg delta time = %0.4f [ms]\n", 1000.0 * (accumulatedTime / frameCounter));
+			prevAvgDeltaTime = 1000.0 * (accumulatedTime / frameCounter);
+			prevAvgFPS = 1000.0 / prevAvgDeltaTime;
+			printf("Avg delta time = %0.4f [ms]\n", prevAvgDeltaTime);
 			prevTime += (currentFrameTime - prevTime);
 			frameCounter = 0;
 			accumulatedTime = 0.0;
+
 		}
 
 		glfwPollEvents();
@@ -775,17 +784,6 @@ int runApp() {
 			//lbm->doStepCUDA();
 
 
-			reportGLErrors("1");
-
-
-			grid->draw(*singleColorShader);
-
-			reportGLErrors("2");
-
-			gGrid.draw(*unlitColorShader);
-
-			reportGLErrors("3");
-
 			if (vars.simulateSun) {
 				dirLight.circularMotionStep(deltaTime);
 			}
@@ -828,10 +826,18 @@ int runApp() {
 
 			//testModel.draw(*evsm.secondPassShader);
 			testModel.draw();
-			grassModel.draw();
+
+			if (vars.drawGrass) {
+				grassModel.draw();
+			}
+			
 			testMesh.draw();
 			armoireModel.draw();
-			treeModel.draw();
+			
+			
+			if (vars.drawTrees) {
+				treeModel.draw();
+			}
 
 			evsm.postSecondPass();
 			
@@ -845,6 +851,8 @@ int runApp() {
 			dirLight.draw();
 
 
+			grid->draw(*singleColorShader);
+			gGrid.draw(*unlitColorShader);
 
 
 			if (vars.usePointSprites) {
@@ -889,7 +897,9 @@ int runApp() {
 		gGrid.draw(*unlitColorShader);*/
 
 		// Render the user interface
-		nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+		if (!vars.hideUI) {
+			nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+		}
 
 		lbm->recalculateVariables(); // recalculate variables based on values set in the user interface
 
@@ -996,7 +1006,14 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
 		//camera->processKeyboardMovement(Camera::ROTATE_RIGHT, deltaTime);
 		camera->processKeyboardMovement(GLFW_KEY_Q, deltaTime);
-
+	}
+	if (glfwGetKey(window, vars.hideUIKey) == GLFW_PRESS) {
+		if (vars.prevHideUIKeyState == GLFW_RELEASE) {
+			vars.hideUI = abs(vars.hideUI - 1);
+		}
+		vars.prevHideUIKeyState = GLFW_PRESS;
+	} else {
+		vars.prevHideUIKeyState = GLFW_RELEASE;
 	}
 	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
 		camera->setView(Camera::VIEW_FRONT);
@@ -1170,18 +1187,23 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	nk_glfw3_new_frame();
 
 	//ctx->style.window.padding = nk_vec2(10.0f, 10.0f);
-	ctx->style.window.padding = nk_vec2(0.0f, 0.0f);
+	ctx->style.window.padding = nk_vec2(0.2f, 0.2f);
+
+	stringstream ss;
 
 
 	/* GUI */
-	if (nk_begin(ctx, "Control Panel", nk_rect(50, 50, 275, 700),
-				 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-				 NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) {
+	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars.toolbarHeight, vars.leftSidebarWidth, vars.screenHeight - vars.debugTextureRes - vars.toolbarHeight),
+				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+				 //NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+				 //NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) 
+		{
+
 		enum { EASY, HARD };
 		//static int op = EASY;
 		//static int property = 20;
 
-		nk_layout_row_dynamic(ctx, 15, 3);
+		nk_layout_row_dynamic(ctx, 30, 3);
 		if (nk_button_label(ctx, "LBM")) {
 			uiMode = 0;
 		}
@@ -1452,6 +1474,10 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_label(ctx, "Terrain Controls", NK_TEXT_CENTERED);
 
 			nk_property_float(ctx, "Terrain texture tiling", 0.1f, &vars.terrainTextureTiling, 100.0f, 0.1f, 0.1f);
+
+			nk_checkbox_label(ctx, "Draw grass", &vars.drawGrass);
+			nk_checkbox_label(ctx, "Draw trees", &vars.drawTrees);
+
 		}
 
 
@@ -1459,13 +1485,33 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	nk_end(ctx);
 
 
+	if (nk_begin(ctx, "Debug Tab", nk_rect(vars.screenWidth - vars.rightSidebarWidth, vars.toolbarHeight, vars.rightSidebarWidth, vars.debugTabHeight), NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
+
+		nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
+		
+		/*
+		ss.clear();
+		ss << "Delta time: " << fixed << setprecision(2) << (deltaTime * 1000.0);
+
+		//string fpsStr = "delta time: " + to_string(deltaTime * 1000.0);
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_CENTERED);
+		*/
+		ss.clear();
+		ss << "Delta time: " << fixed << setprecision(4) << prevAvgDeltaTime << " [ms] (" << setprecision(0) << prevAvgFPS << " FPS)";
+
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+
+	}
+	nk_end(ctx);
+
 
 	// if NK_WINDOW_MOVABLE or NK_WINDOW_SCALABLE -> does not change rectange when window size (screen size) changes
-	if (nk_begin(ctx, "Diagram", nk_rect(vars.screenWidth - 200, 32, 200, vars.screenHeight - 32),
+	if (nk_begin(ctx, "Diagram", nk_rect(vars.screenWidth - vars.rightSidebarWidth, vars.toolbarHeight + vars.debugTabHeight, vars.rightSidebarWidth, vars.screenHeight - vars.toolbarHeight - vars.debugTabHeight),
 				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR /*| NK_WINDOW_MOVABLE*/ /*| NK_WINDOW_SCALABLE*/ /*|
 				 NK_WINDOW_MINIMIZABLE*/ /*| NK_WINDOW_TITLE*/)) {
 
-		nk_layout_row_static(ctx, 15, 200, 1);
+		nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
 		if (nk_button_label(ctx, "Recalculate Params")) {
 			//lbm->resetSimulation();
 			stlpDiagram.recalculateParameters();
@@ -1474,7 +1520,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		
 
 		if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram controls", NK_MINIMIZED)) {
-			nk_layout_row_static(ctx, 15, 200, 1);
+			nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
 
 			nk_checkbox_label(ctx, "Show isobars", &stlpDiagram.showIsobars);
 			nk_checkbox_label(ctx, "Show isotherms", &stlpDiagram.showIsotherms);
@@ -1489,7 +1535,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 		}
 
-		nk_layout_row_static(ctx, 15, 200, 1);
+		nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
 
 		int tmp = stlpDiagram.overlayDiagramWidth;
 		int maxDiagramWidth = (vars.screenWidth < vars.screenHeight) ? vars.screenWidth : vars.screenHeight;
@@ -1572,7 +1618,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_checkbox_label(ctx, "Show Hidden Particles", &particleSystem->showHiddenParticles);
 
 		for (int i = 0; i < particleSystem->emitters.size(); i++) {
-			if (nk_tree_push(ctx, NK_TREE_TAB, ("#Emitter " + to_string(i)).c_str(), NK_MAXIMIZED)) {
+			if (nk_tree_push_id(ctx, NK_TREE_NODE, ("#Emitter " + to_string(i)).c_str(), NK_MINIMIZED, i)) {
 				Emitter *e = particleSystem->emitters[i];
 
 				nk_layout_row_static(ctx, 15, 200, 1);
@@ -1600,7 +1646,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				//particleSystem->emitters[i]
 			}
 		}
-		nk_layout_row_static(ctx, 15, 200, 1);
+		nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
 		if (nk_button_label(ctx, "Activate All Particles")) {
 			particleSystem->activateAllParticles();
 		}
@@ -1644,8 +1690,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 	ctx->style.window.padding = nk_vec2(0, 0);
 
-	static int toolbarHeight = 32;
-	if (nk_begin(ctx, "test", nk_rect(0, 0, vars.screenWidth, toolbarHeight), NK_WINDOW_NO_SCROLLBAR)) {
+	if (nk_begin(ctx, "test", nk_rect(0, 0, vars.screenWidth, vars.toolbarHeight), NK_WINDOW_NO_SCROLLBAR)) {
 
 		int numToolbarItems = 3;
 
@@ -1660,7 +1705,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_menubar_begin(ctx);
 
 		/* menu #1 */
-		nk_layout_row_begin(ctx, NK_STATIC, toolbarHeight, 5);
+		nk_layout_row_begin(ctx, NK_STATIC, vars.toolbarHeight, 5);
 		nk_layout_row_push(ctx, 120);
 		if (nk_menu_begin_label(ctx, "File", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
 			static size_t prog = 40;
@@ -1682,6 +1727,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			if (nk_menu_item_label(ctx, "Debug Window", NK_TEXT_CENTERED)) {
 				cout << "opening debug window" << endl;
 			}
+			//struct nk_command_buffer* out = nk_window_get_canvas(ctx);
+			//nk_stroke_line(out, )
+
 			nk_label(ctx, "Camera Settings", NK_TEXT_CENTERED);
 			if (nk_menu_item_label(ctx, "Front View (I)", NK_TEXT_CENTERED)) {
 				camera->setView(Camera::VIEW_FRONT);
