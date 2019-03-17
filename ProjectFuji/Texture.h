@@ -24,6 +24,12 @@
 class Texture {
 public:
 
+	enum eTextureMaterialType {
+		DIFFUSE,
+		SPECULAR,
+		NORMAL_MAP
+	};
+
 	unsigned int id;			///< Texture id (for OpenGL)
 	unsigned int textureUnit;	///< Texture unit we want to use the texture in
 	int width;					///< Width of the texture image

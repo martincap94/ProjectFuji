@@ -3,7 +3,7 @@
 #include "Texture.h"
 #include "ShaderProgram.h"
 #include <vector>
-
+#include <string>
 
 class Material {
 public:
@@ -27,6 +27,8 @@ public:
 
 	void useMultiple(ShaderProgram *shader, int materialIdx);
 	void setTextureUniformsMultiple(ShaderProgram *shader, int materialIdx);
+
+	std::string tryGetTextureFilename(Texture::eTextureMaterialType texType);
 
 
 };

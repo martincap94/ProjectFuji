@@ -1197,6 +1197,8 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	ctx->style.window.padding = nk_vec2(0.2f, 0.2f);
 
 	stringstream ss;
+	map<string, Texture *> *textures = TextureManager::getTexturesMapPtr();
+
 
 
 	/* GUI */
@@ -1486,6 +1488,71 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_checkbox_label(ctx, "Draw trees", &vars.drawTrees);
 			nk_property_float(ctx, "Nrm mixing ratio: ", 0.0f, &vars.globalNormalMapMixingRatio, 1.0f, 0.01f, 0.01f);
 
+			for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+
+				if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Material " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
+
+					nk_layout_row_dynamic(ctx, 15, 2);
+					
+					nk_label(ctx, "Diffuse", NK_TEXT_LEFT);
+
+					if (nk_combo_begin_label(ctx, vars.heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::DIFFUSE).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+						nk_layout_row_dynamic(ctx, 15, 1);
+						if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+							vars.heightMap->materials[i].diffuseTexture = nullptr;
+						}
+						for (const auto& kv : *textures) {
+							if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+								cout << "here " << endl;
+								vars.heightMap->materials[i].diffuseTexture = kv.second;
+							}
+						}
+						nk_combo_end(ctx);
+					}
+
+					nk_label(ctx, "Specular", NK_TEXT_LEFT);
+
+					if (nk_combo_begin_label(ctx, vars.heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::SPECULAR).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+						nk_layout_row_dynamic(ctx, 15, 1);
+						if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+							vars.heightMap->materials[i].specularMap = nullptr;
+						}
+						for (const auto& kv : *textures) {
+							if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+								cout << "here " << endl;
+								vars.heightMap->materials[i].specularMap = kv.second;
+							}
+						}
+						nk_combo_end(ctx);
+					}
+
+					nk_label(ctx, "Normal Map", NK_TEXT_LEFT);
+
+					if (nk_combo_begin_label(ctx, vars.heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::NORMAL_MAP).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+						nk_layout_row_dynamic(ctx, 15, 1);
+						if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+							vars.heightMap->materials[i].normalMap = nullptr;
+						}
+						for (const auto& kv : *textures) {
+							if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+								cout << "here " << endl;
+								vars.heightMap->materials[i].normalMap = kv.second;
+							}
+						}
+						nk_combo_end(ctx);
+					}
+
+					nk_layout_row_dynamic(ctx, 15, 1);
+					nk_property_float(ctx, "#shininess", 0.0f, &vars.heightMap->materials[i].shininess, 128.0f, 0.1f, 0.1f);
+					nk_property_float(ctx, "#tiling", 0.1f, &vars.heightMap->materials[i].textureTiling, 1000.0f, 0.1f, 1.0f);
+
+
+					nk_tree_pop(ctx);
+				}
+
+			}
+
+
 		}
 
 
@@ -1529,7 +1596,6 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 		vector<OverlayTexture *> *overlayTextures = TextureManager::getOverlayTexturesVectorPtr();
-		map<string, Texture *> *textures = TextureManager::getTexturesMapPtr();
 
 		for (int i = 0; i < overlayTextures->size(); i++) {
 
@@ -1537,6 +1603,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 				if (nk_combo_begin_label(ctx, (*overlayTextures)[i]->getBoundTextureName().c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
 					nk_layout_row_dynamic(ctx, 15, 1);
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+						(*overlayTextures)[i]->texture = nullptr;
+					}
 					for (const auto& kv : *textures) {
 						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
 							cout << "here " << endl;

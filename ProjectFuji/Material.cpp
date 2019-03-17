@@ -101,3 +101,23 @@ void Material::setTextureUniformsMultiple(ShaderProgram * shader, int materialId
 	shader->setInt(preparedMaterialUniforms[materialIdx][SPECULAR], 1 + 3 * materialIdx);
 	shader->setInt(preparedMaterialUniforms[materialIdx][NORMAL_MAP], 2 + 3 * materialIdx);
 }
+
+std::string Material::tryGetTextureFilename(Texture::eTextureMaterialType texType) {
+	Texture *tmp = nullptr;
+	switch (texType) {
+		case Texture::eTextureMaterialType::DIFFUSE:
+			tmp = diffuseTexture;
+			break;
+		case Texture::eTextureMaterialType::SPECULAR:
+			tmp = specularMap;
+			break;
+		case Texture::eTextureMaterialType::NORMAL_MAP:
+			tmp = normalMap;
+			break;
+	}
+	if (tmp) {
+		return tmp->filename;
+	} else {
+		return "NONE";
+	}
+}
