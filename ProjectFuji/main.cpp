@@ -806,8 +806,10 @@ int runApp() {
 			testModel.drawGeometry(evsm.firstPassShader);
 			//grassModel.drawGeometry(evsm.firstPassShader);
 			armoireModel.drawGeometry(evsm.firstPassShader);
-			treeModel.drawGeometry(evsm.firstPassShader);
 
+			if (vars.drawTrees) {
+				treeModel.drawGeometry(evsm.firstPassShader);
+			}
 
 			evsm.postFirstPass();
 			CHECK_GL_ERRORS();
@@ -1478,6 +1480,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_checkbox_label(ctx, "Draw grass", &vars.drawGrass);
 			nk_checkbox_label(ctx, "Draw trees", &vars.drawTrees);
+			nk_property_float(ctx, "Nrm mixing ratio: ", 0.0f, &vars.globalNormalMapMixingRatio, 1.0f, 0.01f, 0.01f);
 
 		}
 

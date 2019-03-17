@@ -250,6 +250,8 @@
     <None Include="shaders\curve.frag" />
     <None Include="shaders\curve.vert" />
     <None Include="shaders\normals_instanced.vert" />
+    <None Include="shaders\terrain_old.frag" />
+    <None Include="shaders\terrain_old.vert" />
     <None Include="shaders\terrain.frag" />
     <None Include="shaders\terrain.vert" />
     <None Include="shaders\dirLightOnly_evsm.frag" />

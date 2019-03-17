@@ -238,9 +238,9 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 
 	//glActiveTextire(GL_)
 	if (useBlurPass) {
-		glBindTextureUnit(10, secondPassBlurTexture); // requires OpenGL 4.5
+		glBindTextureUnit(TEXTURE_UNIT_DEPTH_MAP, secondPassBlurTexture); // requires OpenGL 4.5
 	} else {
-		glBindTextureUnit(10, depthMapTexture);
+		glBindTextureUnit(TEXTURE_UNIT_DEPTH_MAP, depthMapTexture);
 		//glBindTextureUnit(3, depthMapTexture);
 	}
 

@@ -42,6 +42,12 @@ public:
 	Texture *normalMap;
 	Texture *testDiffuse;
 
+	Texture *secondDiffuseTexture;
+	Texture *secondNormalMap;
+
+	Texture *terrainNormalMap;
+	Texture *materialMap;
+
 	VariableManager *vars;
 
 

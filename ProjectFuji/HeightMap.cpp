@@ -44,8 +44,13 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 
 	diffuseTexture = new Texture("textures/Ground_Dirt_006_COLOR.jpg");
 	normalMap = new Texture("textures/Ground_Dirt_006_NORM.jpg");
-	testDiffuse = new Texture("textures/Rock_030_COLOR.jpg");
 
+	secondDiffuseTexture = new Texture("textures/ROCK_030_COLOR.jpg");
+	secondNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
+
+	testDiffuse = new Texture("textures/Rock_030_COLOR.jpg");
+	terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
+	materialMap = new Texture("textures/1200x800_materialMap.png");
 
 
 }
@@ -104,27 +109,33 @@ void HeightMap::initBuffers() {
 
 			vertices.push_back(p1);
 			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
+			texCoords.push_back(glm::vec2(p1.x / width, p1.z / height));
+			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 
 			vertices.push_back(p2);
 			normals.push_back(normalP2);
-			texCoords.push_back(glm::vec2(p2.x, p2.z) / den);
+			texCoords.push_back(glm::vec2(p2.x / width, p2.z / height));
+			//texCoords.push_back(glm::vec2(p2.x, p2.z) / den);
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+			texCoords.push_back(glm::vec2(p3.x / width, p3.z / height));
+			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+			texCoords.push_back(glm::vec2(p3.x / width, p3.z / height));
+			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
 
 			vertices.push_back(p4);
 			normals.push_back(normalP4);
-			texCoords.push_back(glm::vec2(p4.x, p4.z) / den);
+			texCoords.push_back(glm::vec2(p4.x / width, p4.z / height));
+			//texCoords.push_back(glm::vec2(p4.x, p4.z) / den);
 
 			vertices.push_back(p1);
 			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
+			texCoords.push_back(glm::vec2(p1.x / width, p1.z / height));
+			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 
 			numPoints += 6;
 		}
@@ -497,18 +508,44 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	shader->use();
 
-	shader->setInt("u_Material.diffuse", 0);
-	shader->setInt("u_Material.specular", 1);
-	shader->setInt("u_Material.normalMap", 2);
-	shader->setInt("u_TestDiffuse", 3);
-	shader->setInt("u_DepthMapTexture", 10);
+	shader->setInt("u_NumActiveMaterials", 2);
 
-	shader->setFloat("u_Material.shininess", 2.0f);
-	shader->setFloat("u_Material.tiling", vars->terrainTextureTiling);
+	shader->setInt("u_Materials[0].diffuse", 0);
+	shader->setInt("u_Materials[0].specular", 1);
+	shader->setInt("u_Materials[0].normalMap", 2);
+	shader->setInt("u_TestDiffuse", 6);
+	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
+
+	shader->setFloat("u_Materials[0].shininess", 2.0f);
+	shader->setFloat("u_Materials[0].tiling", vars->terrainTextureTiling);
+
+	shader->setInt("u_Materials[1].diffuse", 3);
+	shader->setInt("u_Materials[1].specular", 4);
+	shader->setInt("u_Materials[1].normalMap", 5);
+
+	shader->setFloat("u_Materials[1].shininess", 2.0f);
+	shader->setFloat("u_Materials[1].tiling", vars->terrainTextureTiling);
+
+
+	shader->setInt("u_TerrainNormalMap", 11);
+	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
+
+
+	shader->setInt("u_MaterialMap", 12);
+
+	shader->setFloat("u_UVRatio", (float)width / (float)height);
+
 
 	glBindTextureUnit(0, diffuseTexture->id);
 	glBindTextureUnit(2, normalMap->id);
-	glBindTextureUnit(3, testDiffuse->id);
+
+	glBindTextureUnit(3, secondDiffuseTexture->id);
+	glBindTextureUnit(5, secondNormalMap->id);
+
+	glBindTextureUnit(6, testDiffuse->id);
+
+	glBindTextureUnit(11, terrainNormalMap->id);
+	glBindTextureUnit(12, materialMap->id);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);

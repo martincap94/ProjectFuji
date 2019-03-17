@@ -42,6 +42,10 @@
 #define GRID_DEPTH 50	///< Old setting for lattice depth
 
 
+#define TEXTURE_UNIT_DEPTH_MAP 10
+
+
+
 //#define LBM_EXPERIMENTAL // experimental features
 
 
