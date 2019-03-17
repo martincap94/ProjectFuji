@@ -10,6 +10,11 @@
 class OverlayTexture {
 public:
 
+	int active = 1;
+
+	Texture *texture;
+	int texId = -1;
+
 	OverlayTexture(VariableManager *vars, Texture *texture = nullptr);
 	OverlayTexture(int x, int y, int width, int height, VariableManager *vars, Texture *texture = nullptr);
 	~OverlayTexture();
@@ -33,11 +38,12 @@ public:
 	int getX();
 	int getY();
 
+	std::string getBoundTextureName();
+
 	void refreshVBO();
 
 private:
 
-	Texture *texture;
 
 	VariableManager *vars;
 	ShaderProgram *shader;

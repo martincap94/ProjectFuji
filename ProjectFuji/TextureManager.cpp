@@ -1,7 +1,6 @@
 #include "TextureManager.h"
 
 #include <iostream>
-#include <map>
 
 using namespace std;
 
@@ -11,6 +10,7 @@ namespace TextureManager {
 
 		VariableManager *vars;
 		map<string, Texture *> textures;
+		//map<string, GLuint> customTextures;
 		vector<OverlayTexture *> overlayTextures;
 
 	}
@@ -20,8 +20,8 @@ namespace TextureManager {
 		TextureManager::vars = vars;
 
 		// prepare debug overlay textures
-		int debugOverlayTexturesRes = 250;
-		for (int i = 0; i < 4; i++) {
+		int debugOverlayTexturesRes = vars->leftSidebarWidth;
+		for (int i = 0; i < vars->numDebugOverlayTextures; i++) {
 			overlayTextures.push_back(new OverlayTexture(i * debugOverlayTexturesRes, 0/*vars->screenHeight - (i + 1) * debugOverlayTexturesRes*/, debugOverlayTexturesRes, debugOverlayTexturesRes, TextureManager::vars));
 		}
 
@@ -42,6 +42,16 @@ namespace TextureManager {
 		return true;
 	}
 
+	Texture *pushCustomTexture(GLuint texId, int width, int height, int numChannels, string name, GLuint textureUnit) {
+		Texture *tex = new Texture(texId, width, height, numChannels, name, textureUnit);
+		textures.insert(make_pair(tex->filename, tex));
+		return tex;
+	}
+
+	void pushTexturePtr(Texture * tex) {
+		textures.insert(make_pair(tex->filename, tex));
+	}
+
 	Texture *getTexturePtr(string filename) {
 		if (textures.count(filename) == 0) {
 			cout << "No texture with filename " << filename << " found! Loading..." << endl;
@@ -58,6 +68,10 @@ namespace TextureManager {
 		return tmp;
 	}
 
+	std::map<std::string, Texture *> *getTexturesMapPtr() {
+		return &textures;
+	}
+
 	void refreshOverlayTextures() {
 		for (int i = 0; i < overlayTextures.size(); i++) {
 			overlayTextures[i]->refreshVBO();
@@ -68,11 +82,13 @@ namespace TextureManager {
 		if (vars->hideUI) {
 			return;
 		}
+		//cout << "Drawing overlay textures" << endl;
 		for (int i = 0; i < overlayTextures.size(); i++) {
 			overlayTextures[i]->draw();
 		}
 	}
 
+	// old
 	void drawOverlayTextures(std::vector<GLuint> textureIds) {
 		if (vars->hideUI) {
 			return;
@@ -80,6 +96,7 @@ namespace TextureManager {
 		int size = (textureIds.size() <= overlayTextures.size() - 1) ? textureIds.size() : overlayTextures.size();
 		for (int i = 0; i < size; i++) {
 			overlayTextures[i]->draw(textureIds[i]);
+			overlayTextures[i]->texId = textureIds[i];
 		}
 	}
 
@@ -98,7 +115,21 @@ namespace TextureManager {
 			return overlayTextures[idx];
 		}
 		return nullptr;
-	} 
+	}
+
+	int getNumAvailableOverlayTextures() {
+		return overlayTextures.size();
+	}
+
+	std::vector<OverlayTexture*>* getOverlayTexturesVectorPtr() {
+		return &overlayTextures;
+	}
+
+	void setOverlayTexture(Texture * tex, int idx) {
+		if (idx < overlayTextures.size()) {
+			overlayTextures[idx]->texture = tex;
+		}
+	}
 
 
 

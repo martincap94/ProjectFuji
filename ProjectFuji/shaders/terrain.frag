@@ -29,7 +29,6 @@ struct Material {
 uniform sampler2D u_TestDiffuse;
 
 uniform Material[4] u_Materials;
-uniform int u_NumActiveMaterials;
 
 uniform sampler2D u_MaterialMap;
 

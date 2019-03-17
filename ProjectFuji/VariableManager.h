@@ -139,6 +139,8 @@ public:
 	int rightSidebarWidth = 250;
 	int debugTextureRes = leftSidebarWidth;
 
+	int numDebugOverlayTextures = 4;
+
 
 	int prevHideUIKeyState = GLFW_RELEASE;
 	int hideUIKey = GLFW_KEY_F;

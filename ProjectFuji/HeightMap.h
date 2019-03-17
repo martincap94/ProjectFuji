@@ -18,6 +18,7 @@
 
 #include "Config.h"
 #include "Texture.h"
+#include "Material.h"
 
 class VariableManager;
 
@@ -37,6 +38,10 @@ public:
 	int maxIntensity;	///< Maximum intensity of the height map - at the moment it will always be set to 255 due to .ppm usage
 	
 	float **data;		///< The height map data array		
+
+	
+	Material materials[MAX_TERRAIN_MATERIALS];
+
 
 	Texture *diffuseTexture;
 	Texture *normalMap;
@@ -61,13 +66,13 @@ public:
 		Constructs the height map from the given filename and height. Sets the shader that is used for rendering.
 		\param[in] filename			Filename of the height map to be loaded.
 		\param[in] latticeHeight	Height of the lattice for scaling (and normalization of height values).
-		\param[in] shader			Reference to the shader that will be used for rendering the terrain.
 	*/
-	HeightMap(string filename, int latticeHeight, ShaderProgram *shader);
+	HeightMap(string filename, int latticeHeight);
 
 	/// Deletes the height map data.
 	~HeightMap();
 
+	void initMaterials();
 	void initBuffers();
 	void initBuffersOld();
 

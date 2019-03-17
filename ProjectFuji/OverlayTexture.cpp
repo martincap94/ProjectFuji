@@ -21,21 +21,34 @@ OverlayTexture::~OverlayTexture() {
 }
 
 void OverlayTexture::draw() {
+	if (!active) {
+		return;
+	}
 	if (texture) {
+		//cout << "Texture set in OverlayTexture, drawing..." << endl;
 		glBindTextureUnit(0, texture->id);
 		drawQuad();
+	} else if (texId != -1) {
+		glBindTextureUnit(0, texId);
+		drawQuad();
 	} else {
-		cout << "Texture in overlay texture is nullptr!" << endl;
+		//cout << "Texture in overlay texture is nullptr or -1!" << endl;
 	}
 	
 }
 
 void OverlayTexture::draw(Texture &tex) {
+	if (!active) {
+		return;
+	}
 	glBindTextureUnit(0, tex.id);
 	drawQuad();
 }
 
 void OverlayTexture::draw(GLuint textureId) {
+	if (!active) {
+		return;
+	}
 	glBindTextureUnit(0, textureId);
 	drawQuad();
 }
@@ -98,6 +111,15 @@ int OverlayTexture::getX() {
 
 int OverlayTexture::getY() {
 	return y;
+}
+
+std::string OverlayTexture::getBoundTextureName() {
+	if (texture) {
+		return texture->filename;
+	} else if (texId != -1) {
+		return to_string(texId);
+	}
+	return "";
 }
 
 // Coordinate computation taken from PGR2 framework by David Ambroz and Petr Felkel

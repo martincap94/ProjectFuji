@@ -6,10 +6,13 @@
 #include <vector>
 #include "ppmImage.h"
 #include "VariableManager.h"
+#include "ShaderManager.h"
+#include "TextureManager.h"
+#include "Utils.h"
 
 HeightMap::HeightMap() {}
 
-HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) : shader(shader) {
+HeightMap::HeightMap(string filename, int latticeHeight) {
 
 
 	ppmImage helper(SCENES_DIR + filename);
@@ -40,18 +43,7 @@ HeightMap::HeightMap(string filename, int latticeHeight, ShaderProgram *shader) 
 	initBuffers();
 
 
-
-
-	diffuseTexture = new Texture("textures/Ground_Dirt_006_COLOR.jpg");
-	normalMap = new Texture("textures/Ground_Dirt_006_NORM.jpg");
-
-	secondDiffuseTexture = new Texture("textures/ROCK_030_COLOR.jpg");
-	secondNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
-
-	testDiffuse = new Texture("textures/Rock_030_COLOR.jpg");
-	terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
-	materialMap = new Texture("textures/1200x800_materialMap.png");
-
+	initMaterials();
 
 }
 
@@ -65,6 +57,51 @@ HeightMap::~HeightMap() {
 	if (diffuseTexture) {
 		delete diffuseTexture;
 	}
+}
+
+void HeightMap::initMaterials() {
+
+	CHECK_GL_ERRORS();
+
+	shader = ShaderManager::getShaderPtr("terrain");
+	shader->use();
+
+	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
+	materials[0].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+	materials[0].shininess = 2.0f;
+	materials[0].textureTiling = 80.0f;
+
+	materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
+	materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
+	materials[1].shininess = 16.0f;
+	materials[1].textureTiling = 20.0f;
+
+	//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
+	//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
+	CHECK_GL_ERRORS();
+
+	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+		materials[i].setTextureUniformsMultiple(shader, i);
+	}
+	shader->setInt("u_MaterialMap", 12);
+	shader->setInt("u_TerrainNormalMap", 11);
+	shader->setFloat("u_UVRatio", (float)width / (float)height);
+	
+	CHECK_GL_ERRORS();
+
+
+	diffuseTexture = new Texture("textures/Ground_Dirt_006_COLOR.jpg");
+	normalMap = new Texture("textures/Ground_Dirt_006_NORM.jpg");
+
+	secondDiffuseTexture = new Texture("textures/ROCK_030_COLOR.jpg");
+	secondNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
+
+	testDiffuse = new Texture("textures/Rock_030_COLOR.jpg");
+	terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
+	materialMap = new Texture("textures/1200x800_materialMap.png");
+
+
+
 }
 
 void HeightMap::initBuffers() {
@@ -508,6 +545,38 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	shader->use();
 
+
+	// Set texture uniforms for unknown shader
+	if (shader != this->shader) {
+		for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+			materials[i].setTextureUniformsMultiple(shader, i);
+		}
+		shader->setInt("u_TerrainNormalMap", 11);
+		shader->setInt("u_MaterialMap", 12);
+		shader->setFloat("u_UVRatio", (float)width / (float)height);
+	}
+
+
+
+	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+		materials[i].useMultiple(shader, i);
+	}
+
+
+	shader->setInt("u_TestDiffuse", 9);
+	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
+
+	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
+
+
+
+	glBindTextureUnit(9, testDiffuse->id);
+
+	glBindTextureUnit(11, terrainNormalMap->id);
+	glBindTextureUnit(12, materialMap->id);
+
+
+	/*
 	shader->setInt("u_NumActiveMaterials", 2);
 
 	shader->setInt("u_Materials[0].diffuse", 0);
@@ -546,6 +615,7 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	glBindTextureUnit(11, terrainNormalMap->id);
 	glBindTextureUnit(12, materialMap->id);
+	*/
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);

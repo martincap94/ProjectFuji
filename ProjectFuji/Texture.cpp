@@ -11,6 +11,12 @@ Texture::Texture() {
 	//loadTexture("SP_MissingThumbnail.png");
 }
 
+Texture::Texture(unsigned int id, int width, int height, int numChannels, string filename, unsigned int textureUnit) : id(id), textureUnit(textureUnit), width(width), height(height), numChannels(numChannels), filename(filename) {
+	if (filename.empty()) {
+		filename = to_string(id);
+	}
+}
+
 
 Texture::Texture(const char *path, unsigned int textureUnit, bool clampEdges) : textureUnit(textureUnit) {
 	loadTexture(path, clampEdges);
@@ -21,6 +27,8 @@ Texture::~Texture() {
 }
 
 bool Texture::loadTexture(const char *path, bool clampEdges) {
+	filename = path;
+
 	stbi_set_flip_vertically_on_load(true);
 	unsigned char *data = stbi_load(path, &width, &height, &numChannels, NULL);
 

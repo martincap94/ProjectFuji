@@ -4,6 +4,7 @@
 #include "ShaderManager.h"
 #include "ShaderProgram.h"
 #include "DirectionalLight.h"
+#include "TextureManager.h"
 
 EVSMShadowMapper::EVSMShadowMapper() {
 }
@@ -141,6 +142,10 @@ void EVSMShadowMapper::init() {
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("terrain"));
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("normals_instanced"));
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("normals"));
+
+	TextureManager::pushCustomTexture(depthMapTexture, resolution, resolution, 4, "depthMapTexture");
+	TextureManager::pushCustomTexture(firstPassBlurTexture, resolution, resolution, 4, "firstPassBlurTexture");
+	TextureManager::pushCustomTexture(secondPassBlurTexture, resolution, resolution, 4, "secondPassBlurTexture");
 
 	/*firstPassShader = ShaderManager::getShaderPtr("vsm_1st_pass");
 	secondPassShader = ShaderManager::getShaderPtr("vsm_2nd_pass");*/

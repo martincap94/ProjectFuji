@@ -338,7 +338,7 @@ int runApp() {
 	curveShader = ShaderManager::getShaderPtr("curve");
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 
-	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight, ShaderManager::getShaderPtr("terrain")/*dirLightOnlyShader*/);
+	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight);
 	vars.heightMap->vars = &vars;
 
 	struct nk_colorf particlesColor;
@@ -542,6 +542,8 @@ int runApp() {
 
 	vector<GLuint> debugTextureIds;
 	debugTextureIds.push_back(evsm.getDepthMapTextureId());
+
+	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("depthMapTexture"), 0);
 
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
@@ -826,7 +828,8 @@ int runApp() {
 			CHECK_GL_ERRORS();
 
 			//stlpSim->heightMap->draw(evsm.secondPassShader);
-			vars.heightMap->draw(evsm.secondPassShader);
+			//vars.heightMap->draw(evsm.secondPassShader);
+			vars.heightMap->draw();
 
 			//testModel.draw(*evsm.secondPassShader);
 			testModel.draw();
@@ -878,7 +881,8 @@ int runApp() {
 			}
 
 
-			TextureManager::drawOverlayTextures(debugTextureIds);
+			//TextureManager::drawOverlayTextures(debugTextureIds);
+			TextureManager::drawOverlayTextures();
 			
 
 		}
@@ -1489,7 +1493,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	nk_end(ctx);
 
 
-	if (nk_begin(ctx, "Debug Tab", nk_rect(vars.screenWidth - vars.rightSidebarWidth, vars.toolbarHeight, vars.rightSidebarWidth, vars.debugTabHeight), NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
+	if (nk_begin(ctx, "Debug Tab", nk_rect(vars.screenWidth - vars.rightSidebarWidth, vars.toolbarHeight, vars.rightSidebarWidth, vars.debugTabHeight), NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
 
 		nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
 		
@@ -1500,10 +1504,53 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		//string fpsStr = "delta time: " + to_string(deltaTime * 1000.0);
 		nk_label(ctx, ss.str().c_str(), NK_TEXT_CENTERED);
 		*/
-		ss.clear();
+		stringstream().swap(ss);
 		ss << "Delta time: " << fixed << setprecision(4) << prevAvgDeltaTime << " [ms] (" << setprecision(0) << prevAvgFPS << " FPS)";
 
 		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+		// Quick info -> creation of the strings should be moved to the Diagram since it only changes when the diagram is changed
+		stringstream().swap(ss);
+		ss << "(ref) T_c: " << fixed << setprecision(0) << stlpDiagram.Tc.x << " [deg C] at " << stlpDiagram.Tc.y << " [hPa]";
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+		stringstream().swap(ss);
+		ss << "CCL: " << fixed << setprecision(0) << stlpDiagram.CCL.x << " [deg C] at " << stlpDiagram.CCL.y << " [hPa]";
+
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+		stringstream().swap(ss);
+		ss << "EL: " << fixed << setprecision(0) << stlpDiagram.EL.x << " [deg C] at " << stlpDiagram.EL.y << " [hPa]";
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+		stringstream().swap(ss);
+		ss << "Ground pressure: " << stlpDiagram.P0 << " [hPa]";
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+
+		vector<OverlayTexture *> *overlayTextures = TextureManager::getOverlayTexturesVectorPtr();
+		map<string, Texture *> *textures = TextureManager::getTexturesMapPtr();
+
+		for (int i = 0; i < overlayTextures->size(); i++) {
+
+			if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Overlay Texture " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
+
+				if (nk_combo_begin_label(ctx, (*overlayTextures)[i]->getBoundTextureName().c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					for (const auto& kv : *textures) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+							cout << "here " << endl;
+							(*overlayTextures)[i]->texture = kv.second;
+						}
+					}
+					nk_combo_end(ctx);
+				}
+
+
+				nk_tree_pop(ctx);
+			}
+		
+		}
 
 
 	}

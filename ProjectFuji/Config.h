@@ -44,7 +44,7 @@
 
 #define TEXTURE_UNIT_DEPTH_MAP 10
 
-
+#define MAX_TERRAIN_MATERIALS 3
 
 //#define LBM_EXPERIMENTAL // experimental features
 
