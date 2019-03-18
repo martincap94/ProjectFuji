@@ -110,9 +110,12 @@ public:
 
 	// LBM variables (new)
 	int useSubgridModel = 0;
+	int lbmUseExtendedCollisionStep = 0;
 
+	int lbmStepFrame = 1;
+	int stlpStepFrame = 1;
 
-
+	
 
 	float fogMinDistance = 0.0f;
 	float fogMaxDistance = 150.0f;

@@ -475,7 +475,7 @@ int runApp() {
 	glfwSwapInterval(vars.vsync); // VSync Settings (0 is off, 1 is 60FPS, 2 is 30FPS and so on)
 	
 	double prevTime = glfwGetTime();
-	int totalFrameCounter = 0;
+	long long int totalFrameCounter = 0;
 	//int measurementFrameCounter = 0;
 	//double accumulatedTime = 0.0;
 
@@ -772,14 +772,18 @@ int runApp() {
 
 			if (vars.stlpUseCUDA) {
 				if (vars.applyLBM) {
-					lbm->doStepCUDA();
+					if (totalFrameCounter % vars.lbmStepFrame == 0) {
+						lbm->doStepCUDA();
+					}
 				}
 
 				//particleSystem->update();
 				particleSystem->doStep();
 
 				if (vars.applySTLP) {
-					stlpSimCUDA->doStep();
+					if (totalFrameCounter % vars.stlpStepFrame == 0) {
+						stlpSimCUDA->doStep();
+					}
 				}
 			} else {
 				//stlpSim->doStep();
@@ -1199,6 +1203,8 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	stringstream ss;
 	map<string, Texture *> *textures = TextureManager::getTexturesMapPtr();
 
+	const struct nk_input *in = &ctx->input;
+	struct nk_rect bounds;
 
 
 	/* GUI */
@@ -1395,7 +1401,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_property_float(ctx, "LBM velocity multiplier", 0.01f, &vars.lbmVelocityMultiplier, 10.0f, 0.01f, 0.01f);
 			nk_checkbox_label(ctx, "LBM use correct interpolation", &vars.lbmUseCorrectInterpolation);
-
+			nk_checkbox_label(ctx, "LBM use extended collision step", &vars.lbmUseExtendedCollisionStep);
 
 
 
@@ -1706,8 +1712,19 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_checkbox_label(ctx, "Use CUDA", &vars.stlpUseCUDA);
 
 		nk_checkbox_label(ctx, "Apply LBM", &vars.applyLBM);
+		nk_property_int(ctx, "LBM step frame", 1, &vars.lbmStepFrame, 100, 1, 1);
+
+		/*
+		bounds = nk_widget_bounds(ctx);
+		if (nk_input_is_mouse_hovering_rect(in, bounds)) {
+			nk_tooltip(ctx, "This is a tooltip");
+		}
+		*/
+
+
 
 		nk_checkbox_label(ctx, "Apply STLP", &vars.applySTLP);
+		nk_property_int(ctx, "STLP step frame", 1, &vars.stlpStepFrame, 100, 1, 1);
 
 		nk_property_float(ctx, "Point size", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
 		//stlpSimCUDA->pointSize = stlpSim->pointSize;
