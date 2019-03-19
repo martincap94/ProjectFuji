@@ -36,9 +36,13 @@ public:
 
 	void postFirstPass();
 
+	void preHarris_1st_pass();
+	void postHarris_1st_pass();
+
 	void preSecondPass(int screenWidth, int screenHeight);
 
 	void postSecondPass();
+
 
 	GLuint getDepthMapTextureId();
 	GLuint getZBufferTextureId();
@@ -52,20 +56,24 @@ public:
 	std::vector<ShaderProgram *> firstPassShaders;
 	std::vector<ShaderProgram *> secondPassShaders;
 
-	ShaderProgram *firstPassShader;
-	ShaderProgram *secondPassShader;
+	//ShaderProgram *firstPassShader;
+	//ShaderProgram *secondPassShader;
 	ShaderProgram *blurShader;
 
 	// initial depth map generation
 	GLuint depthMapTexture;
 	GLuint zBufferTexture;
 	GLuint depthMapFramebuffer;
+	GLuint harrisFramebuffer;
 
 	GLuint firstPassBlurTexture;
 	GLuint firstPassBlurFramebuffer;
 
 	GLuint secondPassBlurTexture;
 	GLuint secondPassBlurFramebuffer;
+
+	GLuint harrisTexture;
+
 
 	GLuint quadVAO;
 	GLuint quadVBO;

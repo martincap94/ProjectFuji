@@ -1,9 +1,11 @@
 #include "OverlayTexture.h"
 
+#include "Utils.h"
 
 
 OverlayTexture::OverlayTexture(VariableManager *vars, Texture *texture) : vars(vars), texture(texture) {
 	shader = ShaderManager::getShaderPtr(shaderName);
+	shader->use();
 	shader->setInt("u_Texture", 0);
 	initBuffers();
 	//refreshVBO(); // we expect the user to set the attributes later and refresh the VBO then
@@ -11,6 +13,7 @@ OverlayTexture::OverlayTexture(VariableManager *vars, Texture *texture) : vars(v
 
 OverlayTexture::OverlayTexture(int x, int y, int width, int height, VariableManager * vars, Texture * texture) : x(x), y(y), width(width), height(height), vars(vars), texture(texture) {
 	shader = ShaderManager::getShaderPtr(shaderName);
+	shader->use();
 	shader->setInt("u_Texture", 0);
 
 	initBuffers();
@@ -119,7 +122,7 @@ std::string OverlayTexture::getBoundTextureName() {
 	} else if (texId != -1) {
 		return to_string(texId);
 	}
-	return "";
+	return "NONE";
 }
 
 // Coordinate computation taken from PGR2 framework by David Ambroz and Petr Felkel
@@ -127,6 +130,7 @@ void OverlayTexture::refreshVBO() {
 
 	glm::vec4 vp;
 	glGetFloatv(GL_VIEWPORT, &vp.x);
+	CHECK_GL_ERRORS();
 	//vp.x = 0.0f;
 	//vp.y = 0.0f;
 	if (vars) {
@@ -143,10 +147,15 @@ void OverlayTexture::refreshVBO() {
 
 	glNamedBufferData(VBO, sizeof(normalized_coords_with_tex_coords), &normalized_coords_with_tex_coords, GL_STATIC_DRAW);
 
+	CHECK_GL_ERRORS();
+
+
 
 }
 
 void OverlayTexture::initBuffers() {
+	CHECK_GL_ERRORS();
+
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -161,6 +170,8 @@ void OverlayTexture::initBuffers() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
 	glBindVertexArray(0);
+	CHECK_GL_ERRORS();
+
 }
 
 void OverlayTexture::drawQuad() {
@@ -174,8 +185,9 @@ void OverlayTexture::drawQuad() {
 
 	glDisable(GL_DEPTH_TEST);
 	shader->use();
+	shader->setBool("u_ShowAlphaChannel", (bool)showAlphaChannel);
 
-	glUniform1i(glGetUniformLocation(shader->id, "u_Texture"), 0);
+	//glUniform1i(glGetUniformLocation(shader->id, "u_Texture"), 0);
 
 	glBindVertexArray(VAO);
 

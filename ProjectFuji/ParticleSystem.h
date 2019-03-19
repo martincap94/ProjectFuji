@@ -25,6 +25,7 @@
 #include "Texture.h"
 #include "VariableManager.h"
 #include "STLPSimulatorCUDA.h"
+#include "ShaderProgram.h"
 
 
 class Emitter;
@@ -66,8 +67,8 @@ public:
 	int *d_profileIndices;
 	//float *d_particlePressures;
 
-	Texture spriteTexture;
-	Texture secondarySpriteTexture;
+	Texture *spriteTexture;
+	Texture *secondarySpriteTexture;
 
 	float pointSize = 10.0f;
 
@@ -112,6 +113,8 @@ public:
 	void drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos);
 	void drawDiagramParticles(ShaderProgram *shader);
 
+	void drawHarris_1st_pass(glm::vec3 lightPos);
+	void drawHarris_2nd_pass(glm::vec3 cameraPos);
 
 	void sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy);
 
@@ -139,6 +142,9 @@ public:
 
 
 private:
+
+	ShaderProgram *harris_1st_pass_shader;
+	ShaderProgram *harris_2nd_pass_shader;
 
 	GLuint particlesVAO;			///< VAO of the particle vertices
 

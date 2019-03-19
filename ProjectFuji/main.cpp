@@ -58,6 +58,7 @@
 #include "CircleEmitter.h"
 #include "TextureManager.h"
 #include "OverlayTexture.h"
+#include "HarrisCloudVisualizer.h"
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
@@ -283,7 +284,11 @@ int runApp() {
 
 
 	ShaderManager::init(&vars);
+	CHECK_GL_ERRORS();
+
 	TextureManager::init(&vars);
+	CHECK_GL_ERRORS();
+
 	evsm.init();
 	dirLight.init();
 	stlpDiagram.init(vars.soundingFile);
@@ -544,7 +549,7 @@ int runApp() {
 	debugTextureIds.push_back(evsm.getDepthMapTextureId());
 
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("depthMapTexture"), 0);
-
+	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("harrisTexture"), 1);
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
 		// enable flags each frame because nuklear disables them when it is rendered	
@@ -796,37 +801,46 @@ int runApp() {
 				dirLight.circularMotionStep(deltaTime);
 			}
 
-			
+
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
 			glDepthFunc(GL_LEQUAL);
 
 			evsm.preFirstPass();
-			vars.heightMap->drawGeometry(evsm.firstPassShader);
+			vars.heightMap->drawGeometry(evsm.firstPassShaders[0]);
 			//stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
 
 			if (vars.showCloudShadows) {
-				particleSystem->drawGeometry(evsm.firstPassShader, camera->position);
+				particleSystem->drawGeometry(evsm.firstPassShaders[0], camera->position);
 			}
 			//testMesh.draw(evsm.firstPassShader);
-			testModel.drawGeometry(evsm.firstPassShader);
-			//grassModel.drawGeometry(evsm.firstPassShader);
-			armoireModel.drawGeometry(evsm.firstPassShader);
+			testModel.drawGeometry(evsm.firstPassShaders[0]);
+			//grassModel.drawGeometry(evsm.firstPassShaders[0]);
+			armoireModel.drawGeometry(evsm.firstPassShaders[0]);
 
 			if (vars.drawTrees) {
-				treeModel.drawGeometry(evsm.firstPassShader);
+				treeModel.drawGeometry(evsm.firstPassShaders[0]);
 			}
 
 			evsm.postFirstPass();
 			CHECK_GL_ERRORS();
 
 
-			glViewport(0, 0, vars.screenWidth, vars.screenHeight);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
 
 			//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
+
+			// HARRIS
+			if (vars.run_harris_1st_pass_inNextFrame) {
+				evsm.preHarris_1st_pass();
+
+				particleSystem->drawHarris_1st_pass(dirLight.position);
+
+				evsm.postHarris_1st_pass();
+
+				vars.run_harris_1st_pass_inNextFrame = 0;
+			}
 
 			evsm.preSecondPass(vars.screenWidth, vars.screenHeight);
 			CHECK_GL_ERRORS();
@@ -868,6 +882,8 @@ int runApp() {
 
 			if (vars.usePointSprites) {
 				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 				glDepthMask(GL_FALSE);
 				particleSystem->draw(*pointSpriteTestShader, camera->position);
 				glDepthMask(GL_TRUE);
@@ -1478,6 +1494,11 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			}
 
 
+			//nk_checkbox_label(ctx, "Run Harris 1st pass in next frame", &vars.run_harris_1st_pass_inNextFrame);
+			if (nk_button_label(ctx, "Run Harris 1st pass in the next frame")) {
+				vars.run_harris_1st_pass_inNextFrame = 1;
+			}
+
 
 
 		} else if (uiMode == 2) {
@@ -1509,7 +1530,6 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 						}
 						for (const auto& kv : *textures) {
 							if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-								cout << "here " << endl;
 								vars.heightMap->materials[i].diffuseTexture = kv.second;
 							}
 						}
@@ -1525,7 +1545,6 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 						}
 						for (const auto& kv : *textures) {
 							if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-								cout << "here " << endl;
 								vars.heightMap->materials[i].specularMap = kv.second;
 							}
 						}
@@ -1541,7 +1560,6 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 						}
 						for (const auto& kv : *textures) {
 							if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-								cout << "here " << endl;
 								vars.heightMap->materials[i].normalMap = kv.second;
 							}
 						}
@@ -1606,15 +1624,17 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		for (int i = 0; i < overlayTextures->size(); i++) {
 
 			if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Overlay Texture " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
-
+				nk_layout_row_dynamic(ctx, 15, 2);
+				nk_checkbox_label(ctx, "#active", &(*overlayTextures)[i]->active);
+				nk_checkbox_label(ctx, "#show alpha", &(*overlayTextures)[i]->showAlphaChannel);
 				if (nk_combo_begin_label(ctx, (*overlayTextures)[i]->getBoundTextureName().c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
 					nk_layout_row_dynamic(ctx, 15, 1);
+
 					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
 						(*overlayTextures)[i]->texture = nullptr;
 					}
 					for (const auto& kv : *textures) {
 						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-							cout << "here " << endl;
 							(*overlayTextures)[i]->texture = kv.second;
 						}
 					}
@@ -1787,6 +1807,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
 		if (nk_button_label(ctx, "Activate All Particles")) {
 			particleSystem->activateAllParticles();
+			vars.run_harris_1st_pass_inNextFrame = 1; // DEBUG
 		}
 		if (nk_button_label(ctx, "Deactivate All Particles")) {
 			particleSystem->deactivateAllParticles();

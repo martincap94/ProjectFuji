@@ -99,6 +99,7 @@
     <ClCompile Include="GeneralGrid.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Grid3D.cpp" />
+    <ClCompile Include="HarrisCloudVisualizer.cpp" />
     <ClCompile Include="HeightMap.cpp" />
     <ClCompile Include="InstancedModel.cpp" />
     <ClCompile Include="LatticeCollider.cpp" />
@@ -190,6 +191,7 @@
     <ClInclude Include="GeneralGrid.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Grid3D.h" />
+    <ClInclude Include="HarrisCloudVisualizer.h" />
     <ClInclude Include="HeightMap.h" />
     <ClInclude Include="InstancedModel.h" />
     <ClInclude Include="LatticeCollider.h" />
@@ -249,7 +251,11 @@
     <None Include="shaders\coloredParticle.vert" />
     <None Include="shaders\curve.frag" />
     <None Include="shaders\curve.vert" />
+    <None Include="shaders\harris_1st_pass.frag" />
+    <None Include="shaders\harris_1st_pass.vert" />
     <None Include="shaders\normals_instanced.vert" />
+    <None Include="shaders\harris_2nd_pass.frag" />
+    <None Include="shaders\harris_2nd_pass.vert" />
     <None Include="shaders\terrain_old.frag" />
     <None Include="shaders\terrain_old.vert" />
     <None Include="shaders\terrain.frag" />

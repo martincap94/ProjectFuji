@@ -11,6 +11,7 @@
 
 #include "Emitter.h"
 #include "CircleEmitter.h"
+#include "TextureManager.h"
 
 #include <thrust\sort.h>
 #include <thrust\device_ptr.h>
@@ -34,6 +35,9 @@ __global__ void  computeParticleDistances(glm::vec3 *particleVertices, float *pa
 
 ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
+	harris_1st_pass_shader = ShaderManager::getShaderPtr("harris_1st_pass");
+	harris_2nd_pass_shader = ShaderManager::getShaderPtr("harris_2nd_pass");
+
 
 	heightMap = vars->heightMap;
 	numParticles = vars->numParticles;
@@ -50,8 +54,10 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	initBuffers();
 	initCUDA();
 
-	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
-	secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
+	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
+	secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png");
+	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
+	//secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
 
 	emitters.push_back(new CircleEmitter(this, glm::vec3(40.0f, 0.0f, 40.0f), 20.0f, true));
 	emitters.push_back(new CircleEmitter(this, glm::vec3(20.0f), 10.0f, true));
@@ -238,10 +244,10 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 
 
 	glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, spriteTexture.id);
+	glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
 
 	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture.id);
+	glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture->id);
 
 	glPointSize(pointSize);
 	shader.setVec3("u_CameraPos", cameraPos);
@@ -294,6 +300,27 @@ void ParticleSystem::drawDiagramParticles(ShaderProgram *shader) {
 		glEnable(GL_DEPTH_TEST);
 	}
 
+}
+
+void ParticleSystem::drawHarris_1st_pass(glm::vec3 lightPos) {
+
+	sortParticlesByDistance(lightPos, eSortPolicy::GREATER);
+
+	harris_1st_pass_shader->use();
+	harris_1st_pass_shader->setInt("u_Texture", 0);
+
+	glActiveTexture(GL_TEXTURE0 + 0);
+	glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
+
+	glPointSize(pointSize);
+
+	glBindVertexArray(particlesVAO);
+	glDrawArrays(GL_POINTS, 0, numActiveParticles);
+
+
+}
+
+void ParticleSystem::drawHarris_2nd_pass(glm::vec3 cameraPos) {
 }
 
 void ParticleSystem::sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy) {

@@ -151,8 +151,12 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec4 materialContri
     
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Materials[0].shininess);
+    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Materials[0].shininess);
     
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Materials[0].shininess * materialContributions.r + u_Materials[1].shininess * materialContributions.g);
+
+
+
 	//vec3 matColor = vec3(0.5, 0.2, 0.2);
 	//vec3 matColor = mix(texture(u_Materials[0].diffuse, v_TexCoords * u_Materials[0].tiling).rgb, texture(u_TestDiffuse, v_TexCoords * u_Materials[0].tiling).rgb, degrees(acos(dot(vec3(0.0, 1.0, 0.0), normal))) / 90.0);
 

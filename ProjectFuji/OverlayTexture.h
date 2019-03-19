@@ -15,6 +15,8 @@ public:
 	Texture *texture;
 	int texId = -1;
 
+	int showAlphaChannel = 1;
+
 	OverlayTexture(VariableManager *vars, Texture *texture = nullptr);
 	OverlayTexture(int x, int y, int width, int height, VariableManager *vars, Texture *texture = nullptr);
 	~OverlayTexture();

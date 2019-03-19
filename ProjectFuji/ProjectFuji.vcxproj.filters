@@ -187,6 +187,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OverlayTexture.cpp" />
+    <ClCompile Include="HarrisCloudVisualizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -328,6 +329,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OverlayTexture.h" />
+    <ClInclude Include="HarrisCloudVisualizer.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -486,6 +488,18 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\terrain_old.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\harris_1st_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\harris_1st_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\harris_2nd_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\harris_2nd_pass.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

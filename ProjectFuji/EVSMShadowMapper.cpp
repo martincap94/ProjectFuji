@@ -5,6 +5,7 @@
 #include "ShaderProgram.h"
 #include "DirectionalLight.h"
 #include "TextureManager.h"
+#include "Utils.h"
 
 EVSMShadowMapper::EVSMShadowMapper() {
 }
@@ -14,27 +15,37 @@ EVSMShadowMapper::~EVSMShadowMapper() {
 }
 
 void EVSMShadowMapper::init() {
+	CHECK_GL_ERRORS();
 
+
+	glGenTextures(1, &zBufferTexture);
 	glGenTextures(1, &depthMapTexture);
 	glGenTextures(1, &firstPassBlurTexture);
 	glGenTextures(1, &secondPassBlurTexture);
+	glGenTextures(1, &harrisTexture);
 
 	glGenFramebuffers(1, &depthMapFramebuffer);
 	glGenFramebuffers(1, &firstPassBlurFramebuffer);
 	glGenFramebuffers(1, &secondPassBlurFramebuffer);
+	glGenFramebuffers(1, &harrisFramebuffer);
 
 	GLfloat fLargest;
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &fLargest);
 	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 
-	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, nullptr);
+	GLenum status;
+	CHECK_GL_ERRORS();
+
 
 	/////////////////////////////////////////////////////////////////////////////
 	// DEPTH MAP TEXTURE AND FRAMEBUFFER
 	/////////////////////////////////////////////////////////////////////////////
+
+	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+
 	glTextureParameteri(depthMapTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTextureParameteri(depthMapTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTextureParameteri(depthMapTexture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -45,7 +56,6 @@ void EVSMShadowMapper::init() {
 
 
 
-	glGenTextures(1, &zBufferTexture);
 	glBindTexture(GL_TEXTURE_2D, zBufferTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, resolution, resolution, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
@@ -60,14 +70,16 @@ void EVSMShadowMapper::init() {
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFramebuffer);
-	glNamedFramebufferTexture(depthMapFramebuffer, GL_COLOR_ATTACHMENT0, depthMapTexture, 0);
-	glNamedFramebufferTexture(depthMapFramebuffer, GL_DEPTH_ATTACHMENT, zBufferTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, depthMapTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, zBufferTexture, 0);
+
+	CHECK_GL_ERRORS();
+
 
 	/////////////////////////////////////////////////////////////////////////////
 	// First pass blur texture and framebuffer
 	/////////////////////////////////////////////////////////////////////////////
 
-	glGenTextures(1, &firstPassBlurTexture);
 	glBindTexture(GL_TEXTURE_2D, firstPassBlurTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, nullptr);
 
@@ -81,15 +93,15 @@ void EVSMShadowMapper::init() {
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, firstPassBlurFramebuffer);
-	glNamedFramebufferTexture(firstPassBlurFramebuffer, GL_COLOR_ATTACHMENT0, firstPassBlurTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, firstPassBlurTexture, 0);
 
+	CHECK_GL_ERRORS();
 
 
 	/////////////////////////////////////////////////////////////////////////////
 	// Second pass blur texture and framebuffer
 	/////////////////////////////////////////////////////////////////////////////
 
-	glGenTextures(1, &secondPassBlurTexture);
 	glBindTexture(GL_TEXTURE_2D, secondPassBlurTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, nullptr);
 
@@ -103,7 +115,35 @@ void EVSMShadowMapper::init() {
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, secondPassBlurFramebuffer);
-	glNamedFramebufferTexture(secondPassBlurFramebuffer, GL_COLOR_ATTACHMENT0, secondPassBlurTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, secondPassBlurTexture, 0);
+
+
+	CHECK_GL_ERRORS();
+
+
+	/////////////////////////////////////////////////////////////////////////////
+	// Harris framebuffer and texture
+	/////////////////////////////////////////////////////////////////////////////
+
+	glBindTexture(GL_TEXTURE_2D, harrisTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolution, resolution, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+
+	glTextureParameteri(harrisTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteri(harrisTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTextureParameteri(harrisTexture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTextureParameteri(harrisTexture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	glTextureParameterfv(harrisTexture, GL_TEXTURE_BORDER_COLOR, borderColor);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, harrisFramebuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, harrisTexture, 0);
+
+
+
+	CHECK_GL_ERRORS();
+
 
 
 	// QUAD
@@ -121,8 +161,10 @@ void EVSMShadowMapper::init() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	CHECK_GL_ERRORS();
+
 	GLenum error = glGetError();
-	GLenum status = glCheckNamedFramebufferStatus(depthMapFramebuffer, GL_FRAMEBUFFER);
+	status = glCheckNamedFramebufferStatus(depthMapFramebuffer, GL_FRAMEBUFFER);
 	status |= glCheckNamedFramebufferStatus(firstPassBlurFramebuffer, GL_FRAMEBUFFER);
 	status |= glCheckNamedFramebufferStatus(secondPassBlurFramebuffer, GL_FRAMEBUFFER);
 
@@ -134,18 +176,23 @@ void EVSMShadowMapper::init() {
 	blurShader = ShaderManager::getShaderPtr("gaussianBlur");
 
 
-	firstPassShader = ShaderManager::getShaderPtr("evsm_1st_pass");
+	//firstPassShader = ShaderManager::getShaderPtr("evsm_1st_pass");
 	//secondPassShader = ShaderManager::getShaderPtr("evsm_2nd_pass");
-	secondPassShader = ShaderManager::getShaderPtr("terrain");
+	//secondPassShader = ShaderManager::getShaderPtr("terrain");
 
 	firstPassShaders.push_back(ShaderManager::getShaderPtr("evsm_1st_pass"));
+	firstPassShaders.push_back(ShaderManager::getShaderPtr("harris_1st_pass"));
+
+
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("terrain"));
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("normals_instanced"));
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("normals"));
+	secondPassShaders.push_back(ShaderManager::getShaderPtr("harris_2nd_pass"));
 
 	TextureManager::pushCustomTexture(depthMapTexture, resolution, resolution, 4, "depthMapTexture");
 	TextureManager::pushCustomTexture(firstPassBlurTexture, resolution, resolution, 4, "firstPassBlurTexture");
 	TextureManager::pushCustomTexture(secondPassBlurTexture, resolution, resolution, 4, "secondPassBlurTexture");
+	TextureManager::pushCustomTexture(harrisTexture, resolution, resolution, 4, "harrisTexture");
 
 	/*firstPassShader = ShaderManager::getShaderPtr("vsm_1st_pass");
 	secondPassShader = ShaderManager::getShaderPtr("vsm_2nd_pass");*/
@@ -171,17 +218,22 @@ void EVSMShadowMapper::preFirstPass() {
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	GLuint pid = firstPassShader->id;
-	firstPassShader->use();
 
 	lightViewMatrix = dirLight->getViewMatrix();
 	lightProjectionMatrix = dirLight->getProjectionMatrix();
 
-	glUniform1i(glGetUniformLocation(pid, "u_PCFMode"), 2);
 
-	glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
-	glUniformMatrix4fv(glGetUniformLocation(pid, "u_Projection"), 1, GL_FALSE, &lightProjectionMatrix[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(pid, "u_View"), 1, GL_FALSE, &lightViewMatrix[0][0]);
+	for (int i = 0; i < firstPassShaders.size(); i++) {
+
+		GLuint pid = firstPassShaders[i]->id;
+		firstPassShaders[i]->use();
+
+		glUniform1i(glGetUniformLocation(pid, "u_PCFMode"), 2);
+
+		glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
+		glUniformMatrix4fv(glGetUniformLocation(pid, "u_Projection"), 1, GL_FALSE, &lightProjectionMatrix[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(pid, "u_View"), 1, GL_FALSE, &lightViewMatrix[0][0]);
+	}
 
 
 }
@@ -224,6 +276,31 @@ void EVSMShadowMapper::postFirstPass() {
 	}
 
 
+}
+
+void EVSMShadowMapper::preHarris_1st_pass() {
+	glViewport(0, 0, resolution, resolution);
+	glBindFramebuffer(GL_FRAMEBUFFER, harrisFramebuffer);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendEquation(GL_FUNC_ADD);
+
+	glClear(GL_COLOR_BUFFER_BIT);
+
+
+
+
+}
+
+void EVSMShadowMapper::postHarris_1st_pass() {
+
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 }
 
 void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
@@ -297,5 +374,5 @@ GLuint EVSMShadowMapper::getZBufferTextureId() {
 
 
 bool EVSMShadowMapper::isReady() {
-	return (dirLight && firstPassShader && blurShader);
+	return (dirLight && blurShader);
 }
