@@ -117,7 +117,7 @@ public:
 	int lbmStepFrame = 1;
 	int stlpStepFrame = 1;
 
-	
+	int hosekSkybox = 1;
 
 	float fogMinDistance = 0.0f;
 	float fogMaxDistance = 150.0f;

@@ -178,3 +178,72 @@ const float cubeVertices[] = {
 	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
 	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 };
+
+
+
+const float skyboxVertices[108] = {
+	// positions
+	-1.0f,  1.0f, -1.0f,
+	-1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	-1.0f,  1.0f, -1.0f,
+	1.0f,  1.0f, -1.0f,
+	1.0f,  1.0f,  1.0f,
+	1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	1.0f, -1.0f, -1.0f,
+	1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	1.0f, -1.0f,  1.0f
+};
+
+
+// Indexed skybox taken from: https://github.com/benanders/Hosek-Wilkie/blob/master/src/main.rs
+const float skyboxVerticesNew[24] = {
+		-1.0, -1.0, 1.0, // 0: Left,  bottom, front
+		1.0, -1.0, 1.0, // 1: Right, bottom, front
+		1.0, 1.0, 1.0, // 2: Right, top,    front
+		-1.0, 1.0, 1.0, // 3: Left,  top,    front
+		-1.0, -1.0, -1.0, // 4: Left,  bottom, back
+		1.0, -1.0, -1.0, // 5: Right, bottom, back
+		1.0, 1.0, -1.0, // 6: Right, top,    back
+		-1.0, 1.0, -1.0, // 7: Left,  top,    back
+};
+
+const unsigned int skyboxIndicesNew[36] = {
+		2, 1, 0, 0, 3, 2, // Front
+		5, 6, 7, 7, 4, 5, // Back
+		3, 0, 4, 4, 7, 3, // Left
+		6, 5, 1, 1, 2, 6, // Top
+		6, 2, 3, 3, 7, 6, // Right
+		0, 1, 5, 5, 4, 0, // Bottom
+};

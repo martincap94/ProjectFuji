@@ -88,6 +88,7 @@
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ArHosekSkyModel.c" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Camera2D.cpp" />
     <ClCompile Include="CircleEmitter.cpp" />
@@ -101,6 +102,7 @@
     <ClCompile Include="Grid3D.cpp" />
     <ClCompile Include="HarrisCloudVisualizer.cpp" />
     <ClCompile Include="HeightMap.cpp" />
+    <ClCompile Include="HosekSkyModel.cpp" />
     <ClCompile Include="InstancedModel.cpp" />
     <ClCompile Include="LatticeCollider.cpp" />
     <ClCompile Include="glad.c" />
@@ -177,6 +179,10 @@
     <ClCompile Include="ShaderProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ArHosekSkyModel.h" />
+    <ClInclude Include="ArHosekSkyModelData_CIEXYZ.h" />
+    <ClInclude Include="ArHosekSkyModelData_RGB.h" />
+    <ClInclude Include="ArHosekSkyModelData_Spectral.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Camera2D.h" />
     <ClCompile Include="DataStructures.h" />
@@ -193,6 +199,7 @@
     <ClInclude Include="Grid3D.h" />
     <ClInclude Include="HarrisCloudVisualizer.h" />
     <ClInclude Include="HeightMap.h" />
+    <ClInclude Include="HosekSkyModel.h" />
     <ClInclude Include="InstancedModel.h" />
     <ClInclude Include="LatticeCollider.h" />
     <ClCompile Include="Config.h" />
@@ -256,6 +263,8 @@
     <None Include="shaders\normals_instanced.vert" />
     <None Include="shaders\harris_2nd_pass.frag" />
     <None Include="shaders\harris_2nd_pass.vert" />
+    <None Include="shaders\sky_hosek.frag" />
+    <None Include="shaders\sky_hosek.vert" />
     <None Include="shaders\terrain_old.frag" />
     <None Include="shaders\terrain_old.vert" />
     <None Include="shaders\terrain.frag" />

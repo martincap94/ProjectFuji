@@ -188,6 +188,12 @@
     </ClCompile>
     <ClCompile Include="OverlayTexture.cpp" />
     <ClCompile Include="HarrisCloudVisualizer.cpp" />
+    <ClCompile Include="ArHosekSkyModel.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HosekSkyModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -330,6 +336,21 @@
     </ClInclude>
     <ClInclude Include="OverlayTexture.h" />
     <ClInclude Include="HarrisCloudVisualizer.h" />
+    <ClInclude Include="ArHosekSkyModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ArHosekSkyModelData_CIEXYZ.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ArHosekSkyModelData_RGB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ArHosekSkyModelData_Spectral.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HosekSkyModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -500,6 +521,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\harris_2nd_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sky_hosek.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\sky_hosek.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

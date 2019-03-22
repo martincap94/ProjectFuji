@@ -99,6 +99,9 @@ namespace ShaderManager {
 			addShader("harris_1st_pass", "harris_1st_pass.vert", "harris_1st_pass.frag");
 			addShader("harris_2nd_pass", "harris_2nd_pass.vert", "harris_2nd_pass.frag");
 
+			addShader("sky_hosek", "sky_hosek.vert", "sky_hosek.frag");
+
+
 		}
 	}
 

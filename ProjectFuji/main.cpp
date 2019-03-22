@@ -60,6 +60,11 @@
 #include "OverlayTexture.h"
 #include "HarrisCloudVisualizer.h"
 
+//#include "ArHosekSkyModel.h"
+//#include "ArHosekSkyModel.c"
+
+#include "HosekSkyModel.h"
+
 //#include <omp.h>	// OpenMP for CPU parallelization
 
 //#include <vld.h>	// Visual Leak Detector for memory leaks analysis
@@ -149,7 +154,7 @@ STLPSimulatorCUDA *stlpSimCUDA;
 
 EVSMShadowMapper evsm;
 DirectionalLight dirLight;
-int uiMode = 1;
+int uiMode = 3;
 
 float fov = 90.0f;
 
@@ -161,7 +166,7 @@ float lastMouseY;
 struct nk_context *ctx;
 
 int projectionMode = PERSPECTIVE;
-int drawSkybox = 0;
+int drawSkybox = 1;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///// DEFAULT VALUES THAT ARE TO BE REWRITTEN FROM THE CONFIG FILE
@@ -205,6 +210,7 @@ STLPDiagram stlpDiagram;	///< SkewT/LogP diagram instance
 int mode = 3;				///< Mode: 0 - show SkewT/LogP diagram, 1 - show 3D simulator
 
 Skybox *skybox;
+HosekSkyModel *hosek;
 
 
 ShaderProgram *singleColorShader;
@@ -218,11 +224,14 @@ ShaderProgram *pointSpriteTestShader;
 ShaderProgram *coloredParticleShader;
 ShaderProgram *diagramShader;
 ShaderProgram *skyboxShader;
+ShaderProgram *hosekShader;
 
 
 /// Main - runs the application and sets seed for the random number generator.
 int main(int argc, char **argv) {
 	srand(time(NULL));
+
+
 
 	vars.init(argc, argv);
 
@@ -295,7 +304,7 @@ int runApp() {
 
 
 	skybox = new Skybox();
-
+	hosek = new HosekSkyModel();
 
 	glViewport(0, 0, vars.screenWidth, vars.screenHeight);
 
@@ -342,6 +351,7 @@ int runApp() {
 	textShader = ShaderManager::getShaderPtr("text");
 	curveShader = ShaderManager::getShaderPtr("curve");
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
+	hosekShader = ShaderManager::getShaderPtr("sky_hosek");
 
 	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight);
 	vars.heightMap->vars = &vars;
@@ -682,11 +692,23 @@ int runApp() {
 			projection = glm::perspective(glm::radians(fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
 
 			if (mode == 2 || mode == 3) {
-				skyboxShader->use();
-				glm::mat4 tmpView = glm::mat4(glm::mat3(view));
-				skyboxShader->setMat4fv("u_View", tmpView);
-				skyboxShader->setMat4fv("u_Projection", projection);
-				skybox->draw(*skyboxShader);
+				if (vars.hosekSkybox) {
+
+					hosekShader->use();
+					glm::mat4 tmpView = glm::mat4(glm::mat3(view));
+					hosekShader->setViewMatrix(tmpView);
+					hosekShader->setProjectionMatrix(projection);
+					hosekShader->setVec3("u_SunDir", -dirLight.getDirection());
+					hosek->draw();
+
+
+				} else {
+					skyboxShader->use();
+					glm::mat4 tmpView = glm::mat4(glm::mat3(view));
+					skyboxShader->setMat4fv("u_View", tmpView);
+					skyboxShader->setMat4fv("u_Projection", projection);
+					skybox->draw(*skyboxShader);
+				}
 			}
 		}
 
@@ -774,6 +796,9 @@ int runApp() {
 
 		} else if (mode == 3) {
 
+			if (hosek->liveRecalc) {
+				hosek->update(dirLight.getDirection());
+			}
 
 			if (vars.stlpUseCUDA) {
 				if (vars.applyLBM) {
@@ -1234,7 +1259,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		//static int op = EASY;
 		//static int property = 20;
 
-		nk_layout_row_dynamic(ctx, 30, 3);
+		nk_layout_row_dynamic(ctx, 30, 2);
 		if (nk_button_label(ctx, "LBM")) {
 			uiMode = 0;
 		}
@@ -1243,6 +1268,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		}
 		if (nk_button_label(ctx, "Terrain")) {
 			uiMode = 2;
+		}
+		if (nk_button_label(ctx, "Sky")) {
+			uiMode = 3;
 		}
 
 
@@ -1352,8 +1380,6 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				nk_slider_float(ctx, 30.0f, &fov, 120.0f, 1.0f);
 			}
 
-			nk_layout_row_dynamic(ctx, 15, 2);
-			nk_checkbox_label(ctx, "Skybox", &drawSkybox);
 
 			//int useFreeRoamCameraPrev = vars.useFreeRoamCamera;
 			nk_checkbox_label(ctx, "Use freeroam camera", &vars.useFreeRoamCamera);
@@ -1577,8 +1603,69 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			}
 
 
-		}
+		} else if (uiMode == 3) {
 
+
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+
+			nk_label(ctx, "Sky", NK_TEXT_CENTERED);
+
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_property_float(ctx, "#x:", -1000.0f, &dirLight.position.x, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "#y:", -1000.0f, &dirLight.position.y, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "#z:", -1000.0f, &dirLight.position.z, 1000.0f, 1.0f, 1.0f);
+
+
+			nk_checkbox_label(ctx, "Skybox", &drawSkybox);
+			nk_checkbox_label(ctx, "Hosek", &vars.hosekSkybox);
+
+
+			nk_property_float(ctx, "Turbidity", 1.0f, &hosek->turbidity, 10.0f, 0.1f, 0.1f);
+			nk_property_float(ctx, "Albedo", 0.0f, &hosek->albedo, 1.0f, 0.01f, 0.01f);
+
+			nk_property_float(ctx, "Horizon Offset", 0.001f, &hosek->horizonOffset, 10.0f, 0.001f, 0.001f);
+
+
+			nk_checkbox_label(ctx, "Recalculate Live", &hosek->liveRecalc);
+
+			if (!hosek->liveRecalc) {
+				if (nk_button_label(ctx, "Recalculate Model")) {
+					hosek->update(dirLight.getDirection());
+
+				}
+			}
+
+
+
+			nk_value_float(ctx, "Eta", hosek->eta);
+			nk_value_float(ctx, "Eta (degrees)", hosek->getElevationDegrees());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		}
 
 	}
 	nk_end(ctx);
