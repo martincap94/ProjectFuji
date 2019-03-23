@@ -74,6 +74,7 @@ public:
 
 	struct cudaGraphicsResource *cudaParticleVerticesVBO;
 	struct cudaGraphicsResource *cudaParticleProfilesVBO;
+	struct cudaGraphicsResource *cudaParticlesEBO;
 	struct cudaGraphicsResource *cudaDiagramParticleVerticesVBO;
 
 	// will be overwritten from config file if set!
@@ -147,6 +148,7 @@ private:
 	ShaderProgram *harris_2nd_pass_shader;
 
 	GLuint particlesVAO;			///< VAO of the particle vertices
+	GLuint particlesEBO;
 
 	GLuint streamLinesVAO;	///< Streamlines VAO
 	GLuint streamLinesVBO;	///< Streamlines VBO

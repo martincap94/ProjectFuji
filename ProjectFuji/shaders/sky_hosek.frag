@@ -24,14 +24,14 @@ void main() {
 	//fragColor = vec4(1.0);
 	//fragColor = vec4(vec3(u_Params[0].y), 1.0);
 	//return;
-
+	vec3 sunDir = normalize(u_SunDir);
 	float cosTheta = viewVec.y;
-	float cosGamma = dot(viewVec, u_SunDir);
+	float cosGamma = dot(viewVec, sunDir);
 	float gamma = acos(cosGamma);
 
 	vec3 Z = u_Params[9];
-	vec3 R = /*Z * */hosekWilkie(cosTheta, gamma, cosGamma);
-	 
+	vec3 R = Z * hosekWilkie(cosTheta, gamma, cosGamma);
+
 	if (cosGamma > 0) {
 		// Only positive values of dot product, so we don't end up creating two
 		// spots of light 180 degrees apart
@@ -55,7 +55,7 @@ vec3 hosekWilkie(float cosTheta, float gamma, float cosGamma) {
 	vec3 G = u_Params[6];
 	vec3 H = u_Params[7];
 	vec3 I = u_Params[8];
-	vec3 Z = u_Params[9];
+	//vec3 Z = u_Params[9];
 	vec3 chi = (1 + cosGamma * cosGamma) / pow(1 + H * H - 2 * cosGamma * H, vec3(1.5));
     return (1 + A * exp(B / (cosTheta + u_HorizonOffset))) * (C + D * exp(E * gamma) + F * (cosGamma * cosGamma) + G * chi + I * sqrt(cosTheta));
 }

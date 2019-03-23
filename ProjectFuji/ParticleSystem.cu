@@ -16,6 +16,7 @@
 #include <thrust\sort.h>
 #include <thrust\device_ptr.h>
 #include <thrust\execution_policy.h>
+#include <thrust\sequence.h>
 
 
 
@@ -113,7 +114,19 @@ void ParticleSystem::initBuffers() {
 	glEnableVertexAttribArray(5);
 	glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void *)0);
 
+	vector<unsigned int> indices;
+	for (int i = 0; i < numParticles; i++) {
+		indices.push_back(i);
+	}
+
+	glGenBuffers(1, &particlesEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, particlesEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numParticles * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
 	glBindVertexArray(0);
+
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticlesEBO, particlesEBO, cudaGraphicsMapFlagsWriteDiscard));
+
 
 
 
@@ -256,7 +269,9 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 
 	glBindVertexArray(particlesVAO);
 
-	glDrawArrays(GL_POINTS, 0, numActiveParticles);
+	//glDrawArrays(GL_POINTS, 0, numActiveParticles);
+	glDrawElements(GL_POINTS, numActiveParticles, GL_UNSIGNED_INT, 0);
+
 
 	for (int i = 0; i < emitters.size(); i++) {
 		emitters[i]->draw();
@@ -325,6 +340,52 @@ void ParticleSystem::drawHarris_2nd_pass(glm::vec3 cameraPos) {
 
 void ParticleSystem::sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy) {
 
+
+	size_t num_bytes;
+	glm::vec3 *d_mappedParticleVerticesVBO;
+	unsigned int *d_mappedParticlesEBO;
+
+	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticleVerticesVBO, &num_bytes, cudaParticleVerticesVBO));
+
+	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticlesEBO, 0));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticlesEBO, &num_bytes, cudaParticlesEBO));
+
+
+	CHECK_ERROR(cudaGetLastError());
+
+	computeParticleDistances << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, d_particleDistances, referencePoint, numActiveParticles);
+
+	CHECK_ERROR(cudaGetLastError());
+
+	thrust::sequence(thrust::device, d_mappedParticlesEBO, d_mappedParticlesEBO + numActiveParticles);
+
+	switch (sortPolicy) {
+		case GREATER:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::greater<float>());
+			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::greater<float>());
+			break;
+		case LESS:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::less<float>());
+			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::less<float>());
+			break;
+		case GEQUAL:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::greater_equal<float>());
+			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::greater_equal<float>());
+			break;
+		case LEQUAL:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::less_equal<float>());
+			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::less_equal<float>());
+			break;
+	}
+
+	CHECK_ERROR(cudaGetLastError());
+
+
+	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
+	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticlesEBO, 0));
+
+	/*
 	size_t num_bytes;
 	glm::vec3 *d_mappedParticleVerticesVBO;
 
@@ -355,10 +416,9 @@ void ParticleSystem::sortParticlesByDistance(glm::vec3 referencePoint, eSortPoli
 	CHECK_ERROR(cudaGetLastError());
 
 
-	//cudaDeviceSynchronize(); // if we do not synchronize, thrust will (?) throw a system error since we unmap the resource before it finishes sorting
 	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
 
-
+	*/
 }
 
 void ParticleSystem::initParticlesWithZeros() {
