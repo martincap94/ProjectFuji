@@ -34,8 +34,8 @@ public:
 	int lightBufferResolution = 512;
 
 	int numSlices = 32;
+	int numDisplayedSlices = numSlices;
 	int batchSize;
-	int sliceNum;
 
 	int downSample = 1;
 	int imageWidth;

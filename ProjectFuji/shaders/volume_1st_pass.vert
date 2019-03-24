@@ -2,11 +2,15 @@
 
 layout (location = 0) in vec4 a_Pos;
 
+layout (location = 5) in int a_ProfileIndex;
+
+
 uniform mat4  u_View;
 uniform mat4  u_Projection;
 
 uniform vec3 u_LightPos;
 uniform float u_WorldPointSize;
+
 
 out vec4 v_LightSpacePos;
 

@@ -1,9 +1,11 @@
 #include "ParticleRenderer.h"
 
 #include <iostream>
+#include <algorithm>
 
 #include "Utils.h"
 #include "TextureManager.h"
+
 
 using namespace std;
 
@@ -46,6 +48,7 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	shader->setVec3("u_LightPos", dirLight->position);
 	shader->setFloat("u_WorldPointSize", ps->pointSize);
 	shader->setFloat("u_Opacity", vars->opacityMultiplier);
+	shader->setVec3("u_TintColor", vars->tintColor);
 }
 
 void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, Camera *cam) {
@@ -62,6 +65,9 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
+	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
 
 	setShaderUniforms(firstPassShader);
 	// here, we know that the firstPassShader was used
@@ -72,7 +78,11 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 
 
 	setShaderUniforms(secondPassShader);
-
+	secondPassShader->use();
+	//secondPassShader->setMat4fv("u_LightSpaceView", lightViewMatrix);
+	//secondPassShader->setMat4fv("u_LightSpaceProjection", lightProjectionMatrix);
+	glm::mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
+	secondPassShader->setMat4fv("u_LightSpaceMatrix", lightSpaceMatrix);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
@@ -225,9 +235,12 @@ void ParticleRenderer::drawSlices() {
 
 	CHECK_GL_ERRORS();
 
+	numDisplayedSlices = min(numDisplayedSlices, numSlices);
+
+
 	//glActiveTexture(GL_TEXT)
 
-	for (int i = 0; i < numSlices; i++) {
+	for (int i = 0; i < numDisplayedSlices; i++) {
 		drawSlice(i);
 		CHECK_GL_ERRORS();
 		drawSliceLightView(i);
@@ -245,11 +258,13 @@ void ParticleRenderer::drawSlice(int i) {
 	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
 	glViewport(0, 0, imageWidth, imageHeight);
 
+	
 	if (invertedView) {
 		glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
 	} else {
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	}
+	
 
 	drawPointSprites(secondPassShader, i * batchSize, batchSize, true);
 
@@ -265,6 +280,11 @@ void ParticleRenderer::drawSliceLightView(int i) {
 
 	// TO DO -> set color (or color modifier if color taken from texture)
 	//			-> if texture, set texture uniforms, activate texture unit and bind sprite texture
+
+	// TO DO: SET SHADOW COLOR ALPHA
+
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+
 
 	drawPointSprites(firstPassShader, i * batchSize, batchSize, false);
 

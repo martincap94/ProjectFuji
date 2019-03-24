@@ -6,7 +6,7 @@ layout (location = 0) out vec4 fragColor;
 in vec4 v_LightSpacePos;
 
 uniform sampler2D u_Texture;
-
+uniform vec4 u_Color;
 
 uniform float u_Opacity;
 

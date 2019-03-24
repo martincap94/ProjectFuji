@@ -940,11 +940,11 @@ int runApp() {
 			glm::vec3 sortVec = particleRenderer->getSortVec();
 
 			// NOW sort particles using the sort vector
-			particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::GREATER);
+			particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LESS);
 
 			particleRenderer->render(particleSystem, &dirLight, camera);
 
-
+			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
@@ -1302,6 +1302,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		}
 		if (nk_button_label(ctx, "Sky")) {
 			uiMode = 3;
+		}
+		if (nk_button_label(ctx, "Cloud Visualization")) {
+			uiMode = 4;
 		}
 
 
@@ -1691,6 +1694,24 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 
+
+
+
+
+
+		} else if (uiMode == 4) {
+
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+
+			nk_label(ctx, "Cloud Visualization", NK_TEXT_CENTERED);
+
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+
+			nk_property_int(ctx, "Num slices", 1, &particleRenderer->numSlices, 1024, 1, 1);
+
+			nk_property_int(ctx, "Num displayed slices", 0, &particleRenderer->numDisplayedSlices, particleRenderer->numSlices, 1, 1);
 
 
 
