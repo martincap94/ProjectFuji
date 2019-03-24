@@ -41,6 +41,10 @@ public:
 	int imageWidth;
 	int imageHeight;
 
+	float shadowAlpha100x = 0.5f;
+	float shadowAlpha = shadowAlpha100x * 0.01f;
+
+
 	Texture *spriteTexture;
 
 

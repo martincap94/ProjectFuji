@@ -103,6 +103,8 @@ public:
 
 	int fullscreen = 0;
 
+	int renderVolumeParticlesDirectly = 0;
+
 	int run_harris_1st_pass_inNextFrame = 0;
 
 

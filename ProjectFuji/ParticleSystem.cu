@@ -67,8 +67,13 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	initBuffers();
 	initCUDA();
 
-	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
-	secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png");
+	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "radial-gradient-white-2.png");
+	secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "radial-gradient-white-2.png");
+
+	//spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
+	//secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png");
+
+
 	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
 	//secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
 
@@ -666,6 +671,18 @@ void ParticleSystem::initParticlesAboveTerrain() {
 	cout << __FUNCTION__ << " not yet implemented!" << endl;
 }
 
+void ParticleSystem::formBox(glm::vec3 pos, glm::vec3 size) {
+
+	vector<glm::vec3> particleVertices;
+	for (int i = 0; i < numParticles; i++) {
+		particleVertices.push_back(glm::vec3(getRandFloat(pos.x, pos.x + size.x), getRandFloat(pos.y, pos.y + size.y), getRandFloat(pos.z, pos.z + size.z)));
+	}
+
+
+
+	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
+}
+
 void ParticleSystem::refreshParticlesOnTerrain() {
 
 	vector<glm::vec3> particleVertices;
@@ -801,8 +818,6 @@ void ParticleSystem::refreshParticlesOnTerrain() {
 
 
 	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
-
-	cout << numParticles << endl;
 
 	glNamedBufferData(diagramParticleVerticesVBO, sizeof(glm::vec2) * numParticles, diagramParticleVertices.data(), GL_STATIC_DRAW);
 

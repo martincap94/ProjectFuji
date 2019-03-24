@@ -17,8 +17,8 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars) : vars(vars) {
 	firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass");
 	secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass");
 
-	//spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "radial-gradient-white-2.png");
-	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
+	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png");
+	//spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
 
 
 }
@@ -49,6 +49,7 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	shader->setFloat("u_WorldPointSize", ps->pointSize);
 	shader->setFloat("u_Opacity", vars->opacityMultiplier);
 	shader->setVec3("u_TintColor", vars->tintColor);
+	shader->setFloat("u_ShadowAlpha", shadowAlpha);
 }
 
 void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, Camera *cam) {
@@ -58,9 +59,11 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 	this->dirLight = dirLight;
 	this->cam = cam;
 
+	shadowAlpha = shadowAlpha100x * 0.01f;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClear(GL_DEPTH_BUFFER_BIT);
+
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glClear(GL_DEPTH_BUFFER_BIT);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -91,6 +94,7 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 
 	drawSlices();
 
+	
 
 
 
@@ -103,7 +107,7 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 
 	eyeViewMatrix = cam->getViewMatrix();
 
-	viewVec = -glm::normalize(cam->front); // normalize just to be sure (camera front should always be normalized)
+	viewVec = glm::normalize(cam->front); // normalize just to be sure (camera front should always be normalized)
 	lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
 
 	lightPosEye = eyeViewMatrix * glm::vec4(dirLight->position, 1.0f);
@@ -255,9 +259,17 @@ void ParticleRenderer::drawSlices() {
 
 void ParticleRenderer::drawSlice(int i) {
 
-	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
-	glViewport(0, 0, imageWidth, imageHeight);
 
+	//glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
+	//glViewport(0, 0, imageWidth, imageHeight);
+
+	if (vars->renderVolumeParticlesDirectly) {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, vars->screenWidth, vars->screenHeight);
+	} else {
+		glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
+		glViewport(0, 0, imageWidth, imageHeight);
+	}
 	
 	if (invertedView) {
 		glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
@@ -305,9 +317,15 @@ void ParticleRenderer::drawPointSprites(ShaderProgram * shader, int start, int c
 	// TO DO - set shader uniforms and bind textures
 	//shader->
 
+	if (shadowed) {
+		shader->setInt("u_ShadowTexture", 1);
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, lightTexture[0]);
+	}
+
 	drawPoints(start, count, true);
 
-	glDepthMask(GL_FALSE);
+	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
 
 

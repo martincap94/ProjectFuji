@@ -24,7 +24,7 @@ void main() {
 	float cameraDist = distance(vec3(a_Pos), u_CameraPos);
 	float pointScale = u_WorldPointSize * 100.0 / cameraDist;
 	//v_LightSpacePos = u_LightSpaceProjection * u_LightSpaceView * a_Pos; // matrix multiplication can be moved to CPU
-	v_LightSpacePos = u_LightSpaceMatrix * a_Pos;
+	v_LightSpacePos = u_LightSpaceMatrix /** inverse(u_View)*/ * a_Pos;
 	//gl_Position = v_LightSpacePos; // testing correctness
 
 	gl_Position = u_Projection * u_View * a_Pos;

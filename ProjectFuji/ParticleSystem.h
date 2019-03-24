@@ -132,6 +132,8 @@ public:
 	void initParticlesOnTerrain();
 	void initParticlesAboveTerrain();
 
+	void formBox(glm::vec3 pos, glm::vec3 size);
+
 	void refreshParticlesOnTerrain();
 
 

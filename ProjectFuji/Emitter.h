@@ -29,8 +29,8 @@ public:
 	int numParticlesToEmitPerStep = 1;
 
 	// booleans (as integers for Nuklear)
-	int enabled = 1;
-	int visible = 1;
+	int enabled = 0;
+	int visible = 0;
 	int wiggle = 0; // when enabled, position of the emitter "wiggles" around (shifts) after each emission iteration by the given offset range
 
 	float xWiggleRange = 0.5f;
