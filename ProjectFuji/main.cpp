@@ -59,6 +59,7 @@
 #include "TextureManager.h"
 #include "OverlayTexture.h"
 #include "HarrisCloudVisualizer.h"
+#include "ParticleRenderer.h"
 
 //#include "ArHosekSkyModel.h"
 //#include "ArHosekSkyModel.c"
@@ -139,6 +140,7 @@ Grid *grid;				///< Pointer to the current grid
 Camera *camera;			///< Pointer to the current camera
 //ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system that is to be used throughout the whole application
 ParticleSystem *particleSystem;
+ParticleRenderer *particleRenderer;
 
 //HeightMap *heightMap;
 
@@ -361,7 +363,7 @@ int runApp() {
 
 	//particleSystemLBM = new ParticleSystemLBM(vars.numParticles, vars.drawStreamlines);
 	particleSystem = new ParticleSystem(&vars);
-
+	particleRenderer = new ParticleRenderer(&vars);
 
 
 	glm::ivec3 latticeDim(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
@@ -417,7 +419,7 @@ int runApp() {
 	camera->movementSpeed = vars.cameraSpeed;
 
 	dirLight.focusPoint = glm::vec3(vars.latticeWidth / 2.0f, 0.0f, vars.latticeDepth / 2.0f);
-
+	dirLight.color = glm::vec3(1.0f, 0.99f, 0.9f);
 	//particleSystemLBM->lbm = lbm;
 
 
@@ -558,8 +560,14 @@ int runApp() {
 	vector<GLuint> debugTextureIds;
 	debugTextureIds.push_back(evsm.getDepthMapTextureId());
 
-	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("depthMapTexture"), 0);
-	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("harrisTexture"), 1);
+	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("depthMapTexture"), 0);
+	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("harrisTexture"), 1);
+	
+	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[0]"), 0);
+	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[1]"), 1);
+	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("imageTexture"), 1);
+
+
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
 		// enable flags each frame because nuklear disables them when it is rendered	
@@ -584,7 +592,7 @@ int runApp() {
 		if (currentFrameTime - prevTime >= 1.0f) {
 			prevAvgDeltaTime = 1000.0 * (accumulatedTime / frameCounter);
 			prevAvgFPS = 1000.0 / prevAvgDeltaTime;
-			printf("Avg delta time = %0.4f [ms]\n", prevAvgDeltaTime);
+			//printf("Avg delta time = %0.4f [ms]\n", prevAvgDeltaTime);
 			prevTime += (currentFrameTime - prevTime);
 			frameCounter = 0;
 			accumulatedTime = 0.0;
@@ -867,6 +875,8 @@ int runApp() {
 				vars.run_harris_1st_pass_inNextFrame = 0;
 			}
 
+
+
 			evsm.preSecondPass(vars.screenWidth, vars.screenHeight);
 			CHECK_GL_ERRORS();
 
@@ -919,6 +929,24 @@ int runApp() {
 			stlpSimCUDA->draw(camera->position);
 
 
+
+
+			///////////////////////////////////////////////////////////////
+			//     NVIDIA VOLUMETRIC PARTICLES (HALF ANGLE SLICING)
+			///////////////////////////////////////////////////////////////			
+
+
+			particleRenderer->recalcVectors(camera, &dirLight);
+			glm::vec3 sortVec = particleRenderer->getSortVec();
+
+			// NOW sort particles using the sort vector
+			particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::GREATER);
+
+			particleRenderer->render(particleSystem, &dirLight, camera);
+
+
+
+
 			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
 
 			if (vars.showOverlayDiagram) {
@@ -931,6 +959,8 @@ int runApp() {
 			
 
 		}
+
+
 		CHECK_GL_ERRORS();
 		reportGLErrors("E");
 
@@ -964,6 +994,7 @@ int runApp() {
 
 	//delete particleSystemLBM;
 	delete particleSystem;
+	delete particleRenderer;
 	delete lbm;
 	delete grid;
 	//delete viewportCamera;

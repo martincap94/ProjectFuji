@@ -194,6 +194,7 @@
     <ClCompile Include="HosekSkyModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ParticleRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -351,6 +352,7 @@
     <ClInclude Include="HosekSkyModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -527,6 +529,18 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\sky_hosek.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_1st_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_1st_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_2nd_pass.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_2nd_pass.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

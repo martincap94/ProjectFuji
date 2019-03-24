@@ -20,7 +20,7 @@
 
 
 
-__global__ void  computeParticleDistances(glm::vec3 *particleVertices, float *particleDistances, glm::vec3 referencePosition, int numParticles) {
+__global__ void computeParticleDistances(glm::vec3 *particleVertices, float *particleDistances, glm::vec3 referencePosition, int numParticles) {
 
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 
@@ -31,6 +31,18 @@ __global__ void  computeParticleDistances(glm::vec3 *particleVertices, float *pa
 	}
 
 }
+
+__global__ void computeParticleProjectedDistances(glm::vec3 *particleVertices, float *particleDistances, glm::vec3 sortVector, int numParticles) {
+
+	int idx = threadIdx.x + blockDim.x * blockIdx.x;
+
+	if (idx < numParticles) {
+		particleDistances[idx] = -glm::dot(particleVertices[idx], sortVector);
+	}
+
+
+}
+
 
 
 
@@ -419,6 +431,56 @@ void ParticleSystem::sortParticlesByDistance(glm::vec3 referencePoint, eSortPoli
 	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
 
 	*/
+}
+
+void ParticleSystem::sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy sortPolicy) {
+	
+
+	glm::vec3 *d_mappedParticleVerticesVBO;
+	unsigned int *d_mappedParticlesEBO;
+
+	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticleVerticesVBO, nullptr, cudaParticleVerticesVBO));
+
+	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticlesEBO, 0));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticlesEBO, nullptr, cudaParticlesEBO));
+
+
+	CHECK_ERROR(cudaGetLastError());
+
+	computeParticleProjectedDistances << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, d_particleDistances, sortVector, numActiveParticles);
+
+	CHECK_ERROR(cudaGetLastError());
+
+	thrust::sequence(thrust::device, d_mappedParticlesEBO, d_mappedParticlesEBO + numActiveParticles);
+
+	switch (sortPolicy) {
+		case GREATER:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::greater<float>());
+			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::greater<float>());
+			break;
+		case LESS:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::less<float>());
+			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::less<float>());
+			break;
+		case GEQUAL:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::greater_equal<float>());
+			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::greater_equal<float>());
+			break;
+		case LEQUAL:
+			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::less_equal<float>());
+			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::less_equal<float>());
+			break;
+	}
+
+	CHECK_ERROR(cudaGetLastError());
+
+
+	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
+	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticlesEBO, 0));
+
+
+
 }
 
 void ParticleSystem::initParticlesWithZeros() {

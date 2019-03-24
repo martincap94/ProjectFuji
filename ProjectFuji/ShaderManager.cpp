@@ -101,6 +101,9 @@ namespace ShaderManager {
 
 			addShader("sky_hosek", "sky_hosek.vert", "sky_hosek.frag");
 
+			addShader("volume_1st_pass", "volume_1st_pass.vert", "volume_1st_pass.frag");
+			addShader("volume_2nd_pass", "volume_2nd_pass.vert", "volume_2nd_pass.frag");
+
 
 		}
 	}

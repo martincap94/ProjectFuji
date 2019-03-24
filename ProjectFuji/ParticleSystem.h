@@ -55,6 +55,14 @@ public:
 	GLuint diagramParticleVerticesVBO;
 
 
+
+	// testing -> provide setters later
+	GLuint particlesVAO;			///< VAO of the particle vertices
+	GLuint particlesEBO;
+
+
+
+
 	LBM *lbm;
 	STLPSimulatorCUDA *stlpSim;
 
@@ -118,7 +126,7 @@ public:
 	void drawHarris_2nd_pass(glm::vec3 cameraPos);
 
 	void sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy);
-
+	void sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy sortPolicy);
 
 	void initParticlesWithZeros();
 	void initParticlesOnTerrain();
@@ -147,8 +155,6 @@ private:
 	ShaderProgram *harris_1st_pass_shader;
 	ShaderProgram *harris_2nd_pass_shader;
 
-	GLuint particlesVAO;			///< VAO of the particle vertices
-	GLuint particlesEBO;
 
 	GLuint streamLinesVAO;	///< Streamlines VAO
 	GLuint streamLinesVBO;	///< Streamlines VBO

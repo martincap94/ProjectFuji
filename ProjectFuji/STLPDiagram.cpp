@@ -321,7 +321,7 @@ void STLPDiagram::generateMixingRatioLine() {
 	//float W = (eps * satVP) / (P - satVP);
 	float W = getMixingRatioOfWaterVapor(T, P * 100.0f);
 
-	cout << " -> Computed W = " << W << endl;
+	//cout << " -> Computed W = " << W << endl;
 
 	float deltaP = 20.0f;
 
@@ -333,7 +333,7 @@ void STLPDiagram::generateMixingRatioLine() {
 		float fracPart = log((W * P * 100.0f) / (C * (W + eps)));
 		float computedT = (B * fracPart) / (A - fracPart);
 
-		cout << "P = " << P << "[hPa], T = " << computedT << "[deg C]" << endl;
+		//cout << "P = " << P << "[hPa], T = " << computedT << "[deg C]" << endl;
 
 		y = getNormalizedPres(P);
 		x = getNormalizedTemp(computedT, y);

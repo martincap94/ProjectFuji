@@ -67,7 +67,7 @@ void VariableManager::loadConfigFile() {
 		trim(val);
 
 		//cout << "param = " << param << ", val = " << val << endl;
-		cout << param << ": " << val << endl;
+		cout <<  "   | " << param << ": " << val << endl;
 
 		saveConfigParam(param, val);
 

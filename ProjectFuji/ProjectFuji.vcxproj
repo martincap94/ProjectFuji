@@ -144,6 +144,7 @@
     <CudaCompile Include="ParticleSystem.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
+    <ClCompile Include="ParticleRenderer.cpp" />
     <ClCompile Include="ppmImage.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
@@ -210,6 +211,7 @@
     <ClInclude Include="obj_loader.h" />
     <ClInclude Include="OverlayTexture.h" />
     <ClInclude Include="Particle.h" />
+    <ClInclude Include="ParticleRenderer.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="ppmImage.h" />
     <ClInclude Include="SceneGraph.h" />
@@ -258,6 +260,10 @@
     <None Include="shaders\coloredParticle.vert" />
     <None Include="shaders\curve.frag" />
     <None Include="shaders\curve.vert" />
+    <None Include="shaders\volume_2nd_pass.frag" />
+    <None Include="shaders\volume_2nd_pass.vert" />
+    <None Include="shaders\volume_1st_pass.frag" />
+    <None Include="shaders\volume_1st_pass.vert" />
     <None Include="shaders\harris_1st_pass.frag" />
     <None Include="shaders\harris_1st_pass.vert" />
     <None Include="shaders\normals_instanced.vert" />
