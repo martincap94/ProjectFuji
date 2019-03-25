@@ -177,7 +177,7 @@ void ShaderProgram::setupMaterialUniforms(bool useShader) {
 	}
 }
 
-void ShaderProgram::setFogProperties(float fogIntensity, float fogMinDistance, float fogMaxDistance, glm::vec4 fogColor, bool useShader) {
+void ShaderProgram::setFogProperties(float fogIntensity, float fogMinDistance, float fogMaxDistance, glm::vec4 fogColor, int fogMode, float fogExpFalloff, bool useShader) {
 	if (useShader) {
 		use();
 	}
@@ -185,6 +185,8 @@ void ShaderProgram::setFogProperties(float fogIntensity, float fogMinDistance, f
 	setFloat("u_Fog.minDistance", fogMinDistance);
 	setFloat("u_Fog.maxDistance", fogMaxDistance);
 	setVec4("u_Fog.color", fogColor);
+	setInt("u_Fog.mode", fogMode);
+	setFloat("u_Fog.expFalloff", fogExpFalloff);
 
 }
 

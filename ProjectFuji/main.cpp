@@ -1562,9 +1562,37 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_property_float(ctx, "Fog intensity", 0.0f, &vars.fogIntensity, 1.0f, 0.01f, 0.01f);
 
-			nk_property_float(ctx, "Fog min distance", 0.0f, &vars.fogMinDistance, 1000.0f, 0.1f, 0.1f);
-			nk_property_float(ctx, "Fog max distance", 0.0f, &vars.fogMaxDistance, 1000.0f, 0.1f, 0.1f);
+			if (nk_combo_begin_label(ctx, VariableManager::getFogModeString(vars.fogMode).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+				if (nk_combo_item_label(ctx, "LINEAR", NK_TEXT_CENTERED)) {
+					vars.fogMode = 0;
+				}
+				if (nk_combo_item_label(ctx, "EXPONENTIAL", NK_TEXT_CENTERED)) {
+					vars.fogMode = 1;
+				}
+				nk_combo_end(ctx);
 
+			}
+
+			/*if (nk_combo_begin_label(ctx, "", nk_vec2(nk_widget_width(ctx), 200))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+				if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+					vars.heightMap->materials[i].diffuseTexture = nullptr;
+				}
+				for (const auto& kv : *textures) {
+					if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+						vars.heightMap->materials[i].diffuseTexture = kv.second;
+					}
+				}
+				nk_combo_end(ctx);
+			}*/
+
+			if (vars.fogMode == VariableManager::eFogMode::LINEAR) {
+				nk_property_float(ctx, "Fog min distance", 0.0f, &vars.fogMinDistance, 1000.0f, 0.1f, 0.1f);
+				nk_property_float(ctx, "Fog max distance", 0.0f, &vars.fogMaxDistance, 1000.0f, 0.1f, 0.1f);
+			} else {
+				nk_property_float(ctx, "Fog exp falloff", 0.0f, &vars.fogExpFalloff, 1.0f, 0.01f, 0.01f);
+			}
 
 			struct nk_colorf tmpColor;
 			tmpColor.r = vars.fogColor.x;

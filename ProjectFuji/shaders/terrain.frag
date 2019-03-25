@@ -38,6 +38,9 @@ struct Fog {
 	float minDistance;
 	float maxDistance;
 	vec4 color; // alpha could be used instead of intensity
+	
+	int mode;
+	float expFalloff;
 };
 
 uniform Fog u_Fog;
@@ -132,12 +135,18 @@ void main() {
 	fragColor = vec4(result, 1.0);
 
 	
-	float distance = length(v_FragPos.xyz - u_ViewPos);
-	float t = (distance - u_Fog.minDistance) / (u_Fog.maxDistance - u_Fog.minDistance);
-	fragColor = mix(fragColor, u_Fog.color, min(t, 1.0) * u_Fog.intensity);
-	
-	
-	
+	float dist = distance(v_FragPos.xyz, u_ViewPos);
+
+
+	if (u_Fog.mode == 0) {
+		float t = (dist - u_Fog.minDistance) / (u_Fog.maxDistance - u_Fog.minDistance);
+		fragColor = mix(fragColor, u_Fog.color, clamp(t * u_Fog.intensity, 0.0, 1.0));
+	} else if (u_Fog.mode == 1) {
+		float t = exp(-u_Fog.expFalloff * dist * u_Fog.expFalloff * dist);
+		fragColor = mix(fragColor, u_Fog.color, clamp((1.0 - t) * u_Fog.intensity, 0.0, 1.0));
+
+	}
+ 	
 	//fragColor = mix(u_Fog.color, fragColor, min(u_Fog.minDistance / distance, 1.0));
 
 }

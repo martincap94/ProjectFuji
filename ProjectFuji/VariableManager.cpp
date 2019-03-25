@@ -76,6 +76,16 @@ void VariableManager::loadConfigFile() {
 	}
 }
 
+std::string VariableManager::getFogModeString(int fogMode) {
+	switch (fogMode) {
+		case LINEAR:
+			return "LINEAR";
+		case EXPONENTIAL:
+			return "EXPONENTIAL";
+	}
+	return "NONE";
+}
+
 
 void VariableManager::printHelpMessage(string errorMsg) {
 

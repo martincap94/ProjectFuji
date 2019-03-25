@@ -91,7 +91,7 @@ public:
 
 	void setupMaterialUniforms(bool useShader = true);
 
-	void setFogProperties(float fogIntensity, float fogMinDistance, float fogMaxDistance, glm::vec4 fogColor, bool useShader = true);
+	void setFogProperties(float fogIntensity, float fogMinDistance, float fogMaxDistance, glm::vec4 fogColor, int fogMode = 0, float fogExpFalloff = 0.1f, bool useShader = true);
 
 
 	//void setPointLightAttributes(int lightNum, PointLight &pointLight);

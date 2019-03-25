@@ -218,7 +218,7 @@ namespace ShaderManager {
 			return;
 		}
 		for (const auto &kv : shaders) {
-			kv.second->setFogProperties(vars->fogIntensity, vars->fogMinDistance, vars->fogMaxDistance, vars->fogColor);
+			kv.second->setFogProperties(vars->fogIntensity, vars->fogMinDistance, vars->fogMaxDistance, vars->fogColor, vars->fogMode, vars->fogExpFalloff);
 		}
 	}
 

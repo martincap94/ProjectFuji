@@ -22,9 +22,11 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars) : vars(vars) {
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png"));
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png"));
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture3.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "white.png"));
 
 	spriteTexture = spriteTextures.back();
+
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "white.png"));
+
 
 }
 

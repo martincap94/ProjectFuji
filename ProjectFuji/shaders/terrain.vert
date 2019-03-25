@@ -26,12 +26,12 @@ void main() {
     v_TBN = mat3(T, B, N);
 
 	v_Normal = a_Normal;
-	v_FragPos = a_Pos;
+	v_FragPos = u_Model * a_Pos;
 
 	v_TexCoords = a_TexCoords;
 
-	v_LightSpacePos = u_LightSpaceMatrix * u_Model * a_Pos;
+	v_LightSpacePos = u_LightSpaceMatrix * v_FragPos;
 
-	gl_Position = u_Projection * u_View * u_Model * a_Pos;
+	gl_Position = u_Projection * u_View * v_FragPos;
 }
 

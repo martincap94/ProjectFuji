@@ -124,10 +124,19 @@ public:
 
 	int hosekSkybox = 1;
 
+
+	enum eFogMode {
+		LINEAR = 0,
+		EXPONENTIAL,
+		_NUM_FOG_MODES
+	};
+
+	int fogMode = LINEAR;
+	float fogExpFalloff = 0.01f;
 	float fogMinDistance = 0.0f;
-	float fogMaxDistance = 150.0f;
-	float fogIntensity = 0.8f;
-	glm::vec4 fogColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	float fogMaxDistance = 400.0f;
+	float fogIntensity = 0.3f;
+	glm::vec4 fogColor = glm::vec4(0.05f, 0.05f, 0.08f, 1.0f);
 
 	////////////////////////////////////////////////////////////////
 	// Terrain
@@ -167,6 +176,8 @@ public:
 
 	/// Load configuration file and parse all correct parameters.
 	void loadConfigFile();
+
+	static std::string getFogModeString(int fogMode);
 
 
 private:

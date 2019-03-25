@@ -89,7 +89,7 @@ void EVSMShadowMapper::init() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
 
-	glTextureParameterfv(depthMapTexture, GL_TEXTURE_BORDER_COLOR, borderColor);
+	glTextureParameterfv(firstPassBlurTexture, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, firstPassBlurFramebuffer);
@@ -111,7 +111,7 @@ void EVSMShadowMapper::init() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, fLargest);
 
-	glTextureParameterfv(depthMapTexture, GL_TEXTURE_BORDER_COLOR, borderColor);
+	glTextureParameterfv(secondPassBlurTexture, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, secondPassBlurFramebuffer);
