@@ -1736,6 +1736,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_property_int(ctx, "Num displayed slices", 0, &particleRenderer->numDisplayedSlices, particleRenderer->numSlices, 1, 1);
 
+			nk_value_int(ctx, "Batch size", particleRenderer->batchSize);
+
+
 			nk_checkbox_label(ctx, "Draw volume particles", &vars.renderVolumeParticlesDirectly);
 
 
@@ -1760,8 +1763,27 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_checkbox_label(ctx, "use new", &particleRenderer->compositeResultToFramebuffer);
 
+			nk_property_int(ctx, "first pass shader mode", 0, &particleRenderer->firstPassShaderMode, particleRenderer->numFirstPassShaderModes - 1, 1, 1);
+
+			nk_property_int(ctx, "second pass shader mode", 0, &particleRenderer->secondPassShaderMode, particleRenderer->numSecondPassShaderModes - 1, 1, 1);
 
 
+
+			if (nk_combo_begin_label(ctx, getTextureName(particleRenderer->spriteTexture).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+
+				/*
+				if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+					particleRenderer->spriteTexture = nullptr; // not a very bright idea
+				}
+				*/
+				for (int i = 0; i < particleRenderer->spriteTextures.size(); i++) {
+					if (nk_combo_item_label(ctx, particleRenderer->spriteTextures[i]->filename.c_str(), NK_TEXT_CENTERED)) {
+						particleRenderer->spriteTexture = particleRenderer->spriteTextures[i];
+					}
+				}
+				nk_combo_end(ctx);
+			}
 
 
 

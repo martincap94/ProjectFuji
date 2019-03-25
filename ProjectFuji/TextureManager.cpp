@@ -52,6 +52,13 @@ namespace TextureManager {
 		textures.insert(make_pair(tex->filename, tex));
 	}
 
+	Texture * loadTexture(std::string filename) {
+		if (textures.count(filename) == 0) {
+			textures.insert(make_pair(filename, new Texture(filename.c_str())));
+		}
+		return textures[filename];
+	}
+
 	Texture *getTexturePtr(string filename) {
 		if (textures.count(filename) == 0) {
 			//cout << "No texture with filename " << filename << " found! Loading..." << endl;

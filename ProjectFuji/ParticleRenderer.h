@@ -43,11 +43,19 @@ public:
 
 	int compositeResultToFramebuffer = 1;
 
+	// for easier testing
+	int firstPassShaderMode = 0;
+	int numFirstPassShaderModes = 2;
+
+	int secondPassShaderMode = 0;
+	int numSecondPassShaderModes = 2;
+
 	float shadowAlpha100x = 0.5f;
 	float shadowAlpha = shadowAlpha100x * 0.01f;
 
 
 	Texture *spriteTexture;
+	std::vector<Texture *> spriteTextures;
 
 
 	ParticleRenderer(VariableManager *vars);
@@ -91,6 +99,12 @@ private:
 	GLuint lightDepthTexture;
 
 
+
+
+	GLuint quadVAO;
+	GLuint quadVBO;
+
+
 	GLuint createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format);
 	void initFramebuffers();
 
@@ -102,10 +116,6 @@ private:
 	void drawPoints(int start, int count, bool sorted);
 
 	void compositeResult();
-
-
-	GLuint quadVAO;
-	GLuint quadVBO;
 
 
 

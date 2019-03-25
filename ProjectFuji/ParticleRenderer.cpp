@@ -18,9 +18,13 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars) : vars(vars) {
 	secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass");
 	passThruShader = ShaderManager::getShaderPtr("pass_thru");
 
-	//spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png");
-	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture3.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "white.png"));
 
+	spriteTexture = spriteTextures.back();
 
 }
 
@@ -79,7 +83,7 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 	firstPassShader->use(); // just to be sure, later reorganize
 	firstPassShader->setViewMatrix(lightViewMatrix);
 	firstPassShader->setProjectionMatrix(lightProjectionMatrix);
-
+	firstPassShader->setInt("u_Mode", firstPassShaderMode);
 
 
 	setShaderUniforms(secondPassShader);
@@ -88,6 +92,7 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 	//secondPassShader->setMat4fv("u_LightSpaceProjection", lightProjectionMatrix);
 	glm::mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
 	secondPassShader->setMat4fv("u_LightSpaceMatrix", lightSpaceMatrix);
+	secondPassShader->setInt("u_Mode", secondPassShaderMode);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, spriteTexture->id);

@@ -84,6 +84,19 @@ public:
 
 };
 
+
+std::string getTextureName(const Texture *texture);
+
+
+
+
+
+
+
+
+
+
+
 // Inspired by PGR2 framework by David Ambroz and Petr Felkel
 //void display2DTexture(GLuint textureId, GLuint shaderId, GLint x, GLint y, GLsizei width, GLsizei height);
 
@@ -175,3 +188,5 @@ public:
 //		glEnable(GL_DEPTH_TEST);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, tex_comp_mode);   // set original compare mode
 //}
+
+

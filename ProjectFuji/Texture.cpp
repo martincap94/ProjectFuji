@@ -164,3 +164,11 @@ void Texture::setWrapOptions(unsigned int wrapS, unsigned int wrapT) {
 //	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, tex_comp_mode);   // set original compare mode
 //
 //}
+
+std::string getTextureName(const Texture * texture) {
+	if (texture) {
+		return texture->filename;
+	} else {
+		return "NONE";
+	}
+}

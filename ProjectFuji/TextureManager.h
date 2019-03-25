@@ -30,6 +30,7 @@ namespace TextureManager {
 
 	// This is useful when we want to track this texture globally, expects textures allocated by new (!!!) and the TextureManager takes responsibility for deallocating it (checks if it still exists though)!
 	void pushTexturePtr(Texture *tex);
+	Texture *loadTexture(std::string filename);
 	Texture *getTexturePtr(std::string filename);
 	std::vector<Texture *> getTextureTripletPtrs(std::string diffuseFilename, std::string specularFilename, std::string normalMapFilename);
 	std::map<std::string, Texture *> *getTexturesMapPtr();
