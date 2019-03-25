@@ -195,6 +195,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ParticleRenderer.cpp" />
+    <ClCompile Include="HeightMapOld.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -353,6 +356,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ParticleRenderer.h" />
+    <ClInclude Include="HeightMapOld.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

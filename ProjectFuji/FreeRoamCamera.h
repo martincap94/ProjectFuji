@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Camera.h"
+#include "HeightMap.h"
 
 #include <glm\glm.hpp>
 
@@ -8,6 +9,10 @@ class FreeRoamCamera : public Camera {
 public:
 
 	float mouseSensitivity = 0.1f;
+
+	int walking = 0;
+	float playerHeight = 0.5f;
+	HeightMap *heightMap = nullptr;
 
 
 	/// Constructs orbit camera with given position, up vector, yaw and pitch angles, and focus point.

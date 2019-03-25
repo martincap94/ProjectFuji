@@ -1,6 +1,7 @@
 
 #include <iostream>
 
+#define GLFW_INCLUDE_NONE
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -1348,6 +1349,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			if (nk_button_label(ctx, "EXIT")) {
 				vars.appRunning = false;
 			}
+			if (nk_button_label(ctx, "Refresh HEIGHTMAP")) {
+				lbm->refreshHeightMap();
+			}
 
 
 
@@ -1434,6 +1438,16 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			//int useFreeRoamCameraPrev = vars.useFreeRoamCamera;
 			nk_checkbox_label(ctx, "Use freeroam camera", &vars.useFreeRoamCamera);
+
+			if (vars.useFreeRoamCamera) {
+				FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
+				if (fcam) {
+					nk_checkbox_label(ctx, "Walking", &fcam->walking);
+					nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
+				}
+
+
+			}
 			//if (useFreeRoamCameraPrev != vars.useFreeRoamCamera) {
 			//	if (mode >= 2) {
 			//		camera = (vars.useFreeRoamCamera) ? freeRoamCamera : viewportCamera;
@@ -1652,6 +1666,15 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				}
 
 			}
+
+
+
+			if (nk_button_label(ctx, "Refresh LBM HEIGHTMAP")) {
+				lbm->refreshHeightMap();
+			}
+			nk_property_int(ctx, "x offset", 0, &vars.terrainXOffset, 1000, 1, 1);
+			nk_property_int(ctx, "z offset", 0, &vars.terrainZOffset, 1000, 1, 1);
+
 
 
 		} else if (uiMode == 3) {

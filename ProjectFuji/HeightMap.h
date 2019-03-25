@@ -35,11 +35,19 @@ public:
 	int width;		///< Width of the height map
 	int height;		///< Height of the height map - IMPORTANT - in the scene, the height of the map is described by the depth of the scene!!!
 
+	int terrainWidth;
+	int terrainDepth;
+
+	int downSample = 10;
+
 	int maxIntensity;	///< Maximum intensity of the height map - at the moment it will always be set to 255 due to .ppm usage
 	
-	float **data;		///< The height map data array		
+	float **data;		///< The height map data array	
+	float **terrainData;
 
-	
+	VariableManager *vars;
+
+
 	Material materials[MAX_TERRAIN_MATERIALS];
 
 
@@ -52,8 +60,6 @@ public:
 
 	Texture *terrainNormalMap;
 	Texture *materialMap;
-
-	VariableManager *vars;
 
 
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)
@@ -68,6 +74,10 @@ public:
 		\param[in] latticeHeight	Height of the lattice for scaling (and normalization of height values).
 	*/
 	HeightMap(string filename, int latticeHeight);
+
+	// new version that supports downsampling
+	HeightMap(VariableManager *vars);
+
 
 	/// Deletes the height map data.
 	~HeightMap();

@@ -268,6 +268,10 @@ void VariableManager::saveConfigParam(string param, string val) {
 		positionRecalculationThreshold = stof(val);
 	} else if (param == "max_position_recalculations") {
 		maxPositionRecalculations = stoi(val);
+	} else if (param == "terrain_x_offset") {
+		terrainXOffset = stoi(val);
+	} else if (param == "terrain_z_offset") {
+		terrainZOffset = stoi(val);
 	}
 
 }

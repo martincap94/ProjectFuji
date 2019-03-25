@@ -119,6 +119,10 @@ void FreeRoamCamera::processMouseMovement(float xoffset, float yoffset, bool con
 
 void FreeRoamCamera::updateCameraVectors() {
 
+	if (walking && heightMap) {
+		position.y = heightMap->getHeight(position.x, position.z) + playerHeight;
+	}
+
 	glm::vec3 tmpFront;
 	tmpFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 	tmpFront.y = sin(glm::radians(pitch));

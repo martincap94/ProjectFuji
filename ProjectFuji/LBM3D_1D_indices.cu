@@ -2190,30 +2190,46 @@ void LBM3D_1D_indices::initScene() {
 	//heightMap = new HeightMap(sceneFilename, latticeHeight, nullptr);
 	heightMap = vars->heightMap;
 
-	latticeWidth = heightMap->width;
-	latticeDepth = heightMap->height;
+	latticeWidth = vars->latticeWidth;
+	latticeHeight = vars->latticeHeight;
+	latticeDepth = vars->latticeDepth;
+
+	//latticeWidth = heightMap->width;
+	//latticeDepth = heightMap->height;
 	latticeSize = latticeWidth * latticeHeight * latticeDepth;
 
-	float *tempHM = new float[latticeWidth * latticeDepth];
-	for (int z = 0; z < latticeDepth; z++) {
-		for (int x = 0; x < latticeWidth; x++) {
-			tempHM[x + z * latticeWidth] = heightMap->data[x][z];
-		}
-	}
+
 	CHECK_ERROR(cudaMalloc((void**)&d_heightMap, sizeof(float) * latticeWidth * latticeDepth));
-	//cudaMemcpy(d_heightMap, heightMap->data, sizeof(float) * latticeWidth * latticeDepth, cudaMemcpyHostToDevice);
-	CHECK_ERROR(cudaMemcpy(d_heightMap, tempHM, sizeof(float) * latticeWidth * latticeDepth, cudaMemcpyHostToDevice));
 
+	refreshHeightMap();
+	//cout << "lattice width = " << latticeWidth << ", height = " << latticeHeight << ", depth = " << latticeDepth << endl;
 
-	cout << "lattice width = " << latticeWidth << ", height = " << latticeHeight << ", depth = " << latticeDepth << endl;
-
-	delete[] tempHM;
 
 	//particleVertices = particleSystemLBM->particleVertices;
 	//d_numParticles = particleSystemLBM->d_numParticles;
 
 	//particleSystemLBM->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
 
+
+}
+
+void LBM3D_1D_indices::refreshHeightMap() {
+
+	float *tempHM = new float[latticeWidth * latticeDepth]();
+	for (int z = 0; z < latticeDepth; z++) {
+		for (int x = 0; x < latticeWidth; x++) {
+			int xidx = vars->terrainXOffset + x;
+			int zidx = vars->terrainZOffset + z;
+			if (xidx < heightMap->terrainWidth && zidx < heightMap->terrainDepth) {
+				tempHM[x + z * latticeWidth] = heightMap->data[xidx][zidx];
+			}
+			//tempHM[x + z * latticeWidth] = heightMap->data[x][z];
+		}
+		}
+	CHECK_ERROR(cudaMemcpy(d_heightMap, tempHM, sizeof(float) * latticeWidth * latticeDepth, cudaMemcpyHostToDevice));
+
+
+	delete[] tempHM;
 
 }
 

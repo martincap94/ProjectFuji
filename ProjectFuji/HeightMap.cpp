@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
+
 #include <vector>
 #include "ppmImage.h"
 #include "VariableManager.h"
@@ -19,6 +21,9 @@ HeightMap::HeightMap(string filename, int latticeHeight) {
 
 	width = helper.width;
 	height = helper.height;
+	terrainWidth = width;
+	terrainDepth = height;
+
 	maxIntensity = helper.maxIntensity;
 	int maxSum = maxIntensity * 3;
 
@@ -44,6 +49,52 @@ HeightMap::HeightMap(string filename, int latticeHeight) {
 
 
 	initMaterials();
+
+}
+
+
+
+HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
+
+	if (!vars) {
+		cerr << "Oh noes - VariableManager not set in HeightMap!" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	ppmImage helper(SCENES_DIR + vars->sceneFilename);
+
+
+	terrainWidth = helper.width;
+	terrainDepth = helper.height;
+	width = terrainWidth / downSample;
+	height = terrainDepth / downSample;
+
+	maxIntensity = helper.maxIntensity;
+	int maxSum = maxIntensity * 3;
+
+
+	data = new float*[width]();
+	for (int i = 0; i < width; i++) {
+		data[i] = new float[height]();
+	}
+
+	for (int z = height - 1; z >= 0; z--) {
+		for (int x = 0; x < width; x++) {
+			int sum = 0;
+
+			sum += helper.data[x][z].x;
+			sum += helper.data[x][z].y;
+			sum += helper.data[x][z].z;
+
+			data[x][z] = ((float)sum / (float)maxSum) * (float)(vars->latticeHeight - 1);
+		}
+	}
+	//initBuffersOld();
+	initBuffers();
+
+
+	initMaterials();
+
 
 }
 
@@ -128,10 +179,10 @@ void HeightMap::initBuffers() {
 
 	numPoints = 0;
 
-	float den = (float)((width >= height) ? width : height);
+	float den = (float)((terrainWidth >= terrainDepth) ? terrainWidth : terrainDepth);
 
-	for (int z = height - 1; z >= 1; z--) {
-		for (int x = 0; x < width - 1; x++) {
+	for (int z = terrainDepth - 1; z >= 1; z--) {
+		for (int x = 0; x < terrainWidth - 1; x++) {
 
 			glm::vec3 p1(x, data[x][z], z);
 			glm::vec3 p2(x + 1, data[x + 1][z], z);
@@ -146,32 +197,32 @@ void HeightMap::initBuffers() {
 
 			vertices.push_back(p1);
 			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1.x / width, p1.z / height));
+			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
 			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 
 			vertices.push_back(p2);
 			normals.push_back(normalP2);
-			texCoords.push_back(glm::vec2(p2.x / width, p2.z / height));
+			texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
 			//texCoords.push_back(glm::vec2(p2.x, p2.z) / den);
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3.x / width, p3.z / height));
+			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
 			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3.x / width, p3.z / height));
+			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
 			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
 
 			vertices.push_back(p4);
 			normals.push_back(normalP4);
-			texCoords.push_back(glm::vec2(p4.x / width, p4.z / height));
+			texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
 			//texCoords.push_back(glm::vec2(p4.x, p4.z) / den);
 
 			vertices.push_back(p1);
 			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1.x / width, p1.z / height));
+			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
 			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 
 			numPoints += 6;
@@ -568,7 +619,9 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
 
-
+	glm::mat4 modelMatrix(1.0f);
+	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
+	shader->setModelMatrix(modelMatrix);
 
 	glBindTextureUnit(9, testDiffuse->id);
 
@@ -630,6 +683,11 @@ void HeightMap::drawGeometry(ShaderProgram * shader) {
 	shader->setModelMatrix(glm::mat4(1.0f));
 	shader->setBool("u_IsInstanced", false);
 
+
+	glm::mat4 modelMatrix(1.0f);
+	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
+	shader->setModelMatrix(modelMatrix);
+
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);
 }
@@ -670,15 +728,3 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 
 	return glm::normalize(normal);
 }
-
-
-
-
-
-
-
-
-
-
-
-

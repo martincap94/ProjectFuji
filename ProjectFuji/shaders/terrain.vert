@@ -13,6 +13,7 @@ out vec2 v_TexCoords;
 
 out mat3 v_TBN;
 
+uniform mat4 u_Model;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 uniform mat4 u_LightSpaceMatrix;
@@ -29,8 +30,8 @@ void main() {
 
 	v_TexCoords = a_TexCoords;
 
-	v_LightSpacePos = u_LightSpaceMatrix * a_Pos;
+	v_LightSpacePos = u_LightSpaceMatrix * u_Model * a_Pos;
 
-	gl_Position = u_Projection * u_View * a_Pos;
+	gl_Position = u_Projection * u_View * u_Model * a_Pos;
 }
 

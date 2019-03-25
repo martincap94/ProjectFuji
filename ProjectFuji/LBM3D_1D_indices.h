@@ -196,6 +196,7 @@ public:
 	virtual void recalculateVariables();
 
 	virtual void initScene();
+	virtual void refreshHeightMap();
 
 	virtual void draw(ShaderProgram &shader);
 
