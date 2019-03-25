@@ -23,10 +23,10 @@ HosekSkyModel::HosekSkyModel() {
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 9; j++) {
-			cout << skymodel_state->configs[i][j] << ", ";
+			//cout << skymodel_state->configs[i][j] << ", ";
 		}
-		cout << "radiance: " << skymodel_state->radiances[i];
-		cout << endl;
+		//cout << "radiance: " << skymodel_state->radiances[i];
+		//cout << endl;
 	}
 
 	glm::vec3 tmp(0.0f);
@@ -43,9 +43,11 @@ HosekSkyModel::HosekSkyModel() {
 
 	glUniform3fv(glGetUniformLocation(shader->id, "u_Params"), 10, glm::value_ptr(params[0]));
 
+	/*
 	for (int i = 0; i < 3; i++) {
 		cout << arhosek_tristim_skymodel_radiance(skymodel_state, 40.0, 25.0, i) << endl;
 	}
+	*/
 
 	arhosekskymodelstate_free(skymodel_state);
 

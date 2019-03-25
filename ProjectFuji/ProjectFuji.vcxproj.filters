@@ -417,9 +417,6 @@
     <None Include="shaders\skybox.vert">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="shaders\basic_blur.vert">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="shaders\evsm_1st_pass.frag">
       <Filter>Shaders</Filter>
     </None>
@@ -541,6 +538,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\volume_2nd_pass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\pass_thru.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\pass_thru.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

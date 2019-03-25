@@ -255,7 +255,8 @@
     <Text Include="config.ini" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\basic_blur.vert" />
+    <None Include="shaders\pass_thru.frag" />
+    <None Include="shaders\pass_thru.vert" />
     <None Include="shaders\coloredParticle.frag" />
     <None Include="shaders\coloredParticle.vert" />
     <None Include="shaders\curve.frag" />

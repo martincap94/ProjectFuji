@@ -16,9 +16,10 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars) : vars(vars) {
 
 	firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass");
 	secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass");
+	passThruShader = ShaderManager::getShaderPtr("pass_thru");
 
-	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png");
-	//spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
+	//spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png");
+	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
 
 
 }
@@ -68,9 +69,10 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
+	/*
 	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
 	glClear(GL_DEPTH_BUFFER_BIT);
-
+	*/
 
 	setShaderUniforms(firstPassShader);
 	// here, we know that the firstPassShader was used
@@ -94,7 +96,9 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 
 	drawSlices();
 
-	
+	if (compositeResultToFramebuffer) {
+		compositeResult();
+	}
 
 
 
@@ -108,7 +112,8 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 	eyeViewMatrix = cam->getViewMatrix();
 
 	viewVec = glm::normalize(cam->front); // normalize just to be sure (camera front should always be normalized)
-	lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
+	//lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
+	lightVec = glm::normalize(dirLight->position); // according to the Nvidia source code
 
 	lightPosEye = eyeViewMatrix * glm::vec4(dirLight->position, 1.0f);
 
@@ -139,6 +144,25 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 
 glm::vec3 ParticleRenderer::getSortVec() {
 	return halfVec;
+}
+
+void ParticleRenderer::preSceneRenderImage() {
+	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
+	glViewport(0, 0, imageWidth, imageHeight);
+
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	glDepthMask(GL_TRUE);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+
+}
+
+void ParticleRenderer::postSceneRenderImage() {
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
 }
 
 GLuint ParticleRenderer::createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format) {
@@ -213,6 +237,23 @@ void ParticleRenderer::initFramebuffers() {
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		printf("Creation of framebuffers failed, glCheckFramebufferStatus() = 0x%x\n", status);
 	}
+
+
+
+
+
+	// QUAD
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+
 
 
 	TextureManager::pushCustomTexture(lightTexture[0], lightBufferResolution, lightBufferResolution, 4, "lightTexture[0]");
@@ -345,6 +386,29 @@ void ParticleRenderer::drawPoints(int start, int count, bool sorted) {
 
 
 	glBindVertexArray(0);
+
+
+}
+
+void ParticleRenderer::compositeResult() {
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
+	glDisable(GL_DEPTH_TEST);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glDepthMask(GL_TRUE);
+
+	// draw texture
+	passThruShader->use();
+	passThruShader->setInt("u_Texture", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, imageTexture);
+
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisable(GL_BLEND);
 
 
 }

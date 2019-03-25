@@ -54,7 +54,8 @@ namespace TextureManager {
 
 	Texture *getTexturePtr(string filename) {
 		if (textures.count(filename) == 0) {
-			cout << "No texture with filename " << filename << " found! Loading..." << endl;
+			//cout << "No texture with filename " << filename << " found! Loading..." << endl;
+			cout << "Loading texture " << filename << "..." << endl;
 			textures.insert(make_pair(filename, new Texture(filename.c_str())));
 		}
 		return textures[filename];

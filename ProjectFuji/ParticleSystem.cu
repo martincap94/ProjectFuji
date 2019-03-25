@@ -67,11 +67,11 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	initBuffers();
 	initCUDA();
 
-	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "radial-gradient-white-2.png");
-	secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "radial-gradient-white-2.png");
+	//spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "radial-gradient-white-2.png");
+	//secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "radial-gradient-white-2.png");
 
-	//spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
-	//secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png");
+	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
+	secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png");
 
 
 	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
@@ -459,6 +459,8 @@ void ParticleSystem::sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy
 
 	thrust::sequence(thrust::device, d_mappedParticlesEBO, d_mappedParticlesEBO + numActiveParticles);
 
+
+	
 	switch (sortPolicy) {
 		case GREATER:
 			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::greater<float>());
@@ -477,6 +479,8 @@ void ParticleSystem::sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy
 			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::less_equal<float>());
 			break;
 	}
+	
+	//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO);
 
 	CHECK_ERROR(cudaGetLastError());
 

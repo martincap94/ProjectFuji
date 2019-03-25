@@ -15,11 +15,11 @@ uniform float u_WorldPointSize;
 
 void main(void) {
 	
-	//float lightDist = distance(vec3(a_Pos), u_LightPos);
-	//float pointScale = u_WorldPointSize * 100.0 / lightDist;
+	float lightDist = distance(vec3(a_Pos), u_LightPos);
+	float pointScale = u_WorldPointSize * 100.0 / lightDist;
 
-	float cameraDist = distance(vec3(a_Pos), u_CameraPos);
-	float pointScale = u_WorldPointSize * 100.0 / cameraDist;
+	//float cameraDist = distance(vec3(a_Pos), u_CameraPos);
+	//float pointScale = u_WorldPointSize * 100.0 / cameraDist;
 
 	gl_Position = u_Projection * u_View * a_Pos;
 	gl_PointSize = pointScale;

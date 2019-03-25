@@ -39,6 +39,8 @@ void VariableManager::init(int argc, char **argv) {
 
 void VariableManager::loadConfigFile() {
 
+	cout << "Parsing configuration parameters..." << endl;
+
 	ifstream infile(CONFIG_FILE);
 
 	string line;

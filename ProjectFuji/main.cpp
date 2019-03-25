@@ -919,7 +919,7 @@ int runApp() {
 			gGrid.draw(*unlitColorShader);
 
 
-			if (!vars.renderVolumeParticlesDirectly) {
+			if (!particleRenderer->compositeResultToFramebuffer) {
 				if (vars.usePointSprites) {
 					glEnable(GL_BLEND);
 					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -946,7 +946,12 @@ int runApp() {
 				glm::vec3 sortVec = particleRenderer->getSortVec();
 
 				// NOW sort particles using the sort vector
-				particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LESS);
+				particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
+
+				particleRenderer->preSceneRenderImage();
+				vars.heightMap->draw();
+				particleRenderer->postSceneRenderImage();
+
 
 				particleRenderer->render(particleSystem, &dirLight, camera);
 
@@ -1739,7 +1744,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			}
 
 
-			nk_property_float(ctx, "Shadow alpha (100x)", 0.1f, &particleRenderer->shadowAlpha100x, 100.0f, 0.1f, 0.1f);
+			nk_property_float(ctx, "Shadow alpha (100x)", 0.01f, &particleRenderer->shadowAlpha100x, 100.0f, 0.01f, 0.01f);
 
 
 
@@ -1751,6 +1756,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_property_float(ctx, "Point size", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
 			particleSystem->pointSize = stlpSimCUDA->pointSize;
 			nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars.opacityMultiplier, 10.0f, 0.01f, 0.01f);
+
+
+			nk_checkbox_label(ctx, "use new", &particleRenderer->compositeResultToFramebuffer);
 
 
 

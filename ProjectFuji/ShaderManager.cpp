@@ -78,7 +78,7 @@ namespace ShaderManager {
 			addShader("text", "text.vert", "text.frag");
 			addShader("curve", "curve.vert", "curve.frag");
 			addShader("skybox", "skybox.vert", "skybox.frag");
-			addShader("gaussianBlur", "basic_blur.vert", "gblur_9x9_separated.frag");
+			addShader("gaussianBlur", "pass_thru.vert", "gblur_9x9_separated.frag");
 			addShader("evsm_1st_pass", "evsm_1st_pass.vert", "evsm_1st_pass.frag");
 			addShader("evsm_2nd_pass", "evsm_2nd_pass.vert", "evsm_2nd_pass.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
 
@@ -103,6 +103,8 @@ namespace ShaderManager {
 
 			addShader("volume_1st_pass", "volume_1st_pass.vert", "volume_1st_pass.frag");
 			addShader("volume_2nd_pass", "volume_2nd_pass.vert", "volume_2nd_pass.frag");
+
+			addShader("pass_thru", "pass_thru.vert", "pass_thru.frag");
 
 
 		}

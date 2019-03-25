@@ -41,6 +41,8 @@ public:
 	int imageWidth;
 	int imageHeight;
 
+	int compositeResultToFramebuffer = 1;
+
 	float shadowAlpha100x = 0.5f;
 	float shadowAlpha = shadowAlpha100x * 0.01f;
 
@@ -63,6 +65,10 @@ public:
 	glm::vec3 getSortVec();
 
 
+	void preSceneRenderImage();
+	void postSceneRenderImage();
+
+
 private:
 
 	// Helper members so we do not have to send them through all the functions
@@ -74,6 +80,7 @@ private:
 
 	ShaderProgram *firstPassShader;
 	ShaderProgram *secondPassShader;
+	ShaderProgram *passThruShader;
 
 	GLuint imageFramebuffer;
 	GLuint imageTexture;
@@ -94,7 +101,11 @@ private:
 	void drawPointSprites(ShaderProgram *shader, int start, int count, bool shadowed);
 	void drawPoints(int start, int count, bool sorted);
 
-	//GLuint 
+	void compositeResult();
+
+
+	GLuint quadVAO;
+	GLuint quadVBO;
 
 
 
