@@ -11,7 +11,7 @@ ShaderProgram::ShaderProgram() {
 
 }
 
-ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath) {
+ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const GLchar *gsPath) {
 
 	string vsCode;
 	string fsCode;
@@ -81,9 +81,44 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath) {
 		}*/
 	}
 
+	GLuint gs;
+
+	if (gsPath != nullptr) {
+		string gsCode;
+		ifstream gsFile(SHADERS_DIR + string(gsPath));
+
+		stringstream gsStream;
+
+		gsStream << vsFile.rdbuf();
+
+		gsCode = vsStream.str();
+
+		gsFile.close();
+
+		const GLchar *gsArr = gsCode.c_str();
+
+
+		gs = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(gs, 1, &gsArr, nullptr);
+		glCompileShader(gs);
+
+		glGetShaderiv(gs, GL_COMPILE_STATUS, &result);
+		if (result == GL_FALSE) {
+			cerr << "ERROR::SHADER::GEOMETRY::COMPILATION_FAILED" << endl;
+			glGetShaderInfoLog(vs, 1024, NULL, infoLog);
+			cout << infoLog << endl;
+		}
+	}
+
+
 	id = glCreateProgram();
 	glAttachShader(id, vs);
 	glAttachShader(id, fs);
+
+	if (gsPath != nullptr) {
+		glAttachShader(id, gs);
+	}
+
 	glLinkProgram(id);
 
 	glGetProgramiv(id, GL_LINK_STATUS, &result);

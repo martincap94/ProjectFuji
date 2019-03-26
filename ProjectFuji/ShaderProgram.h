@@ -59,7 +59,7 @@ public:
 		\param[in] vsPath	Path to the vertex shader.
 		\param[in] fsPath	Path to the fragment shader.
 	*/
-	ShaderProgram(const GLchar *vsPath, const GLchar *fsPath);
+	ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const GLchar *gsPath = nullptr);
 
 	/// Default destructor.
 	~ShaderProgram();
