@@ -25,7 +25,7 @@ ppmImage::ppmImage(std::string filename) {
 	inFile >> width;
 	inFile >> height;
 	inFile >> maxIntensity;
-	cout << "Width = " << width << ", height = " << height << ", max intesity = " << maxIntensity << endl;
+	//cout << "Width = " << width << ", height = " << height << ", max intesity = " << maxIntensity << endl;
 
 
 

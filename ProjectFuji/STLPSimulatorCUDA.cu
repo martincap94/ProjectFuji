@@ -631,7 +631,7 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 			tmp.push_back(stlpDiagram->dryAdiabatProfiles[i].vertices[j]);
 		}
 	}
-	cout << vars->stlpMaxProfiles << ", " << tmp.size() << endl;
+	//cout << vars->stlpMaxProfiles << ", " << tmp.size() << endl;
 	CHECK_ERROR(cudaMemcpy(d_dryAdiabatProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
 
 
@@ -642,7 +642,7 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 			tmp.push_back(stlpDiagram->moistAdiabatProfiles[i].vertices[j]);
 		}
 	}
-	cout << (vars->stlpMaxProfiles * stlpDiagram->maxVerticesPerCurve) << ", " << tmp.size() << endl;
+	//cout << (vars->stlpMaxProfiles * stlpDiagram->maxVerticesPerCurve) << ", " << tmp.size() << endl;
 	CHECK_ERROR(cudaMemcpy(d_moistAdiabatProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
 
 	// CCL Profiles

@@ -7,6 +7,9 @@
 #include "TextureManager.h"
 #include "Utils.h"
 
+#include <limits>
+
+
 EVSMShadowMapper::EVSMShadowMapper() {
 }
 
@@ -31,7 +34,8 @@ void EVSMShadowMapper::init() {
 
 	GLfloat fLargest;
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &fLargest);
-	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float maxFloat = numeric_limits<float>().max();
+	float borderColor[] = { maxFloat, maxFloat, maxFloat, maxFloat };
 
 
 	GLenum status;

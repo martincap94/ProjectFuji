@@ -89,23 +89,23 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const G
 
 		stringstream gsStream;
 
-		gsStream << vsFile.rdbuf();
+		gsStream << gsFile.rdbuf();
 
-		gsCode = vsStream.str();
+		gsCode = gsStream.str();
 
 		gsFile.close();
 
 		const GLchar *gsArr = gsCode.c_str();
 
 
-		gs = glCreateShader(GL_VERTEX_SHADER);
+		gs = glCreateShader(GL_GEOMETRY_SHADER);
 		glShaderSource(gs, 1, &gsArr, nullptr);
 		glCompileShader(gs);
 
 		glGetShaderiv(gs, GL_COMPILE_STATUS, &result);
 		if (result == GL_FALSE) {
 			cerr << "ERROR::SHADER::GEOMETRY::COMPILATION_FAILED" << endl;
-			glGetShaderInfoLog(vs, 1024, NULL, infoLog);
+			glGetShaderInfoLog(gs, 1024, NULL, infoLog);
 			cout << infoLog << endl;
 		}
 	}
@@ -140,6 +140,9 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const G
 
 	glDeleteShader(vs);
 	glDeleteShader(fs);
+	if (gs) {
+		glDeleteShader(gs);
+	}
 
 
 }

@@ -31,7 +31,7 @@ LatticeCollider::LatticeCollider(string filename) {
 	inFile >> width;
 	inFile >> height;
 	inFile >> maxIntensity;
-	cout << "Width = " << width << ", height = " << height << ", max intesity = " << maxIntensity << endl;
+	//cout << "Width = " << width << ", height = " << height << ", max intesity = " << maxIntensity << endl;
 
 	area = new bool[width * height]();
 	//for (int i = 0; i < width; i++) {

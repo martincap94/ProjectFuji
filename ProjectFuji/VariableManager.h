@@ -97,7 +97,6 @@ public:
 
 	glm::vec3 bgClearColor = glm::vec3(0.0f);
 
-	float terrainTextureTiling = 10.0f;
 
 	int useSoundingWindVelocities = 0;
 
@@ -143,6 +142,7 @@ public:
 	////////////////////////////////////////////////////////////////
 	int drawGrass = 0;
 	int drawTrees = 0;
+	int visualizeTerrainNormals = 0;
 	float globalNormalMapMixingRatio = 0.2f;
 
 
@@ -164,6 +164,10 @@ public:
 	int prevHideUIKeyState = GLFW_RELEASE;
 	int hideUIKey = GLFW_KEY_F;
 	int hideUI = 0;
+
+	int prevToggleLBMState = GLFW_RELEASE;
+	int toggleLBMState = GLFW_KEY_L;
+
 
 	//int show
 

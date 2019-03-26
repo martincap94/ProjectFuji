@@ -32,7 +32,7 @@ void STLPDiagram::init(string filename) {
 
 void STLPDiagram::loadSoundingData(string filename) {
 
-	cout << "Sounding filename = " << filename << endl;
+	//cout << "Sounding filename = " << filename << endl;
 	soundingFile = filename;
 	filename = string(SOUNDING_DATA_DIR) + filename;
 	ifstream infile(filename);
@@ -84,8 +84,8 @@ void STLPDiagram::loadSoundingData(string filename) {
 	maxVerticesPerCurve = (int)((maxP - minP) / CURVE_DELTA_P + 1.0f);
 
 	groundAltitude = getAltitudeFromPressure(P0);
-	cout << "ground altitude (computed) = " << groundAltitude << endl;
-	cout << "ground altitude (sounding) = " << soundingData[0].data[HGHT] << endl;
+	//cout << "ground altitude (computed) = " << groundAltitude << endl;
+	//cout << "ground altitude (sounding) = " << soundingData[0].data[HGHT] << endl;
 
 
 }
@@ -743,9 +743,9 @@ void STLPDiagram::initCurves() {
 	///////////////////////////////////////////////////////////////////////////////////////
 	// MOIST ADIABATS
 	///////////////////////////////////////////////////////////////////////////////////////
-	cout << "////////////////////////////////////////////////////" << endl;
+	/*cout << "////////////////////////////////////////////////////" << endl;
 	cout << "// MOIST ADIABATS" << endl;
-	cout << "////////////////////////////////////////////////////" << endl;
+	cout << "////////////////////////////////////////////////////" << endl;*/
 
 	float deltaP = 20.0f;
 
@@ -782,9 +782,9 @@ void STLPDiagram::initCurves() {
 		///////////////////////////////////////////////////////////////////////////////////////////////
 
 		ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve, true);
-		cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
+		//cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
 		EL = getDenormalizedCoords(ELNormalized);
-		cout << "EL: T = " << EL.x << ", P = " << EL.y << endl;
+		//cout << "EL: T = " << EL.x << ", P = " << EL.y << endl;
 
 		visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
 		visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
@@ -836,7 +836,7 @@ void STLPDiagram::initCurves() {
 	// trying out stuff
 	P = 432.2f;
 	float normP = getNormalizedPres(P);
-	cout << "Pressure = " << P << ", normalized pressure = " << normP << endl;
+	//cout << "Pressure = " << P << ", normalized pressure = " << normP << endl;
 	visualizationPoints.push_back(glm::vec3(ambientCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
 	visualizationPoints.push_back(glm::vec3(1.0f, 0.0f, 0.0f)); // color
 
@@ -955,7 +955,7 @@ void STLPDiagram::initCurves() {
 	GLfloat lineWidthRange[2] = { 0.0f, 0.0f };
 	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, lineWidthRange);
 	// Maximum supported line width is in lineWidthRange[1].
-	cout << lineWidthRange[0] << " , " << lineWidthRange[1] << endl;
+	//cout << lineWidthRange[0] << " , " << lineWidthRange[1] << endl;
 }
 
 void STLPDiagram::recalculateParameters() {

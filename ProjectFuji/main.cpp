@@ -228,6 +228,7 @@ ShaderProgram *coloredParticleShader;
 ShaderProgram *diagramShader;
 ShaderProgram *skyboxShader;
 ShaderProgram *hosekShader;
+ShaderProgram *visualizeNormalsShader;
 
 
 /// Main - runs the application and sets seed for the random number generator.
@@ -312,7 +313,7 @@ int runApp() {
 	glViewport(0, 0, vars.screenWidth, vars.screenHeight);
 
 	float aspectRatio = (float)vars.screenWidth / (float)vars.screenHeight;
-	cout << "Aspect ratio = " << aspectRatio << endl;
+	//cout << "Aspect ratio = " << aspectRatio << endl;
 
 	float offset = 0.2f;
 	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
@@ -355,6 +356,7 @@ int runApp() {
 	curveShader = ShaderManager::getShaderPtr("curve");
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 	hosekShader = ShaderManager::getShaderPtr("sky_hosek");
+	visualizeNormalsShader = ShaderManager::getShaderPtr("visualize_normals");
 
 	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight);
 	vars.heightMap->vars = &vars;
@@ -889,6 +891,10 @@ int runApp() {
 			//vars.heightMap->draw(evsm.secondPassShader);
 			vars.heightMap->draw();
 
+			if (vars.visualizeTerrainNormals) {
+				vars.heightMap->drawGeometry(visualizeNormalsShader);
+			}
+
 			//testModel.draw(*evsm.secondPassShader);
 			testModel.draw();
 
@@ -1113,6 +1119,17 @@ void processInput(GLFWwindow* window) {
 	} else {
 		vars.prevHideUIKeyState = GLFW_RELEASE;
 	}
+	if (glfwGetKey(window, vars.toggleLBMState) == GLFW_PRESS) {
+		if (vars.prevToggleLBMState == GLFW_RELEASE) {
+			vars.applyLBM = abs(vars.applyLBM - 1);
+		}
+		vars.prevToggleLBMState = GLFW_PRESS;
+	} else {
+		vars.prevToggleLBMState = GLFW_RELEASE;
+	}
+
+
+
 	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
 		camera->setView(Camera::VIEW_FRONT);
 	}
@@ -1346,9 +1363,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			if (nk_button_label(ctx, buttonDescription)) {
 				vars.paused = !vars.paused;
 			}
-			if (nk_button_label(ctx, "EXIT")) {
-				vars.appRunning = false;
-			}
+
 			if (nk_button_label(ctx, "Refresh HEIGHTMAP")) {
 				lbm->refreshHeightMap();
 			}
@@ -1538,6 +1553,8 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_property_float(ctx, "right:", -1000.0f, &dirLight.pRight, 1000.0f, 1.0f, 1.0f);
 			nk_property_float(ctx, "bottom:", -1000.0f, &dirLight.pBottom, 1000.0f, 1.0f, 1.0f);
 			nk_property_float(ctx, "top:", -1000.0f, &dirLight.pTop, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "near:", 0.01f, &dirLight.pNear, 100.0f, 0.01f, 0.01f);
+			nk_property_float(ctx, "far:", 1.0f, &dirLight.pFar, 10000.0f, 1.0f, 1.0f);
 
 			nk_checkbox_label(ctx, "Simulate sun", &vars.simulateSun);
 			nk_property_float(ctx, "Sun speed", 0.1f, &dirLight.circularMotionSpeed, 1000.0f, 0.1f, 0.1f);
@@ -1628,10 +1645,11 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_label(ctx, "Terrain Controls", NK_TEXT_CENTERED);
 
-			nk_property_float(ctx, "Terrain texture tiling", 0.1f, &vars.terrainTextureTiling, 100.0f, 0.1f, 0.1f);
+			nk_layout_row_dynamic(ctx, 15, 1);
 
 			nk_checkbox_label(ctx, "Draw grass", &vars.drawGrass);
 			nk_checkbox_label(ctx, "Draw trees", &vars.drawTrees);
+			nk_checkbox_label(ctx, "Visualize normals", &vars.visualizeTerrainNormals);
 			nk_property_float(ctx, "Nrm mixing ratio: ", 0.0f, &vars.globalNormalMapMixingRatio, 1.0f, 0.01f, 0.01f);
 
 			for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
@@ -1783,7 +1801,11 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 			nk_layout_row_dynamic(ctx, 15, 1);
 
+			int prevNumSlices = particleRenderer->numSlices;
 			nk_property_int(ctx, "Num slices", 1, &particleRenderer->numSlices, 1024, 1, 1);
+			if (prevNumSlices != particleRenderer->numSlices) {
+				particleRenderer->numDisplayedSlices = particleRenderer->numSlices;
+			}
 
 			nk_property_int(ctx, "Num displayed slices", 0, &particleRenderer->numDisplayedSlices, particleRenderer->numSlices, 1, 1);
 
@@ -2337,6 +2359,10 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_progress(ctx, &prog, 100, NK_MODIFIABLE);
 			nk_slider_int(ctx, 0, &slider, 16, 1);
 			nk_checkbox_label(ctx, "check", &check);
+
+			if (nk_button_label(ctx, "EXIT")) {
+				vars.appRunning = false;
+			}
 			nk_menu_end(ctx);
 		}
 		nk_layout_row_push(ctx, 120);
@@ -2442,7 +2468,7 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 	float offset = 0.2f;
 	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
 
-	cout << "Aspect ratio = " << aspectRatio << endl;
+	//cout << "Aspect ratio = " << aspectRatio << endl;
 
 
 	if (vars.lbmType == LBM2D) {

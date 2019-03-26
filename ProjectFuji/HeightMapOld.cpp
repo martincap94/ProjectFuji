@@ -212,7 +212,7 @@ void HeightMap::initBuffers() {
 	}
 
 
-	cout << vertices.size() << " ... " << numPoints << endl;
+	//cout << vertices.size() << " ... " << numPoints << endl;
 
 	// merge together
 	for (int i = 0; i < numPoints; i++) {

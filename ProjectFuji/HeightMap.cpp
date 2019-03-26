@@ -100,14 +100,11 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 
 HeightMap::~HeightMap() {
-	cout << "DELETING HEIGHTMAP" << endl;
+	cout << "Deleting heightmap..." << endl;
 	for (int i = 0; i < width; i++) {
 		delete[] data[i];
 	}
 	delete[] data;
-	if (diffuseTexture) {
-		delete diffuseTexture;
-	}
 }
 
 void HeightMap::initMaterials() {
@@ -120,12 +117,12 @@ void HeightMap::initMaterials() {
 	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
 	materials[0].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
 	materials[0].shininess = 2.0f;
-	materials[0].textureTiling = 80.0f;
+	materials[0].textureTiling = 800.0f;
 
 	materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
 	materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
 	materials[1].shininess = 16.0f;
-	materials[1].textureTiling = 20.0f;
+	materials[1].textureTiling = 100.0f;
 
 	//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
 	//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
@@ -140,14 +137,6 @@ void HeightMap::initMaterials() {
 	
 	CHECK_GL_ERRORS();
 
-
-	diffuseTexture = new Texture("textures/Ground_Dirt_006_COLOR.jpg");
-	normalMap = new Texture("textures/Ground_Dirt_006_NORM.jpg");
-
-	secondDiffuseTexture = new Texture("textures/ROCK_030_COLOR.jpg");
-	secondNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
-
-	testDiffuse = new Texture("textures/Rock_030_COLOR.jpg");
 	terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
 	materialMap = new Texture("textures/1200x800_materialMap.png");
 
@@ -263,7 +252,7 @@ void HeightMap::initBuffers() {
 	}
 
 
-	cout << vertices.size() << " ... " << numPoints << endl;
+	//cout << vertices.size() << " ... " << numPoints << endl;
 
 	// merge together
 	for (int i = 0; i < numPoints; i++) {
@@ -623,7 +612,6 @@ void HeightMap::draw(ShaderProgram *shader) {
 	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
 	shader->setModelMatrix(modelMatrix);
 
-	glBindTextureUnit(9, testDiffuse->id);
 
 	glBindTextureUnit(11, terrainNormalMap->id);
 	glBindTextureUnit(12, materialMap->id);

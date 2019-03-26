@@ -18,8 +18,9 @@ namespace ShaderManager {
 		map<GLuint, string> shaderIdName;
 		VariableManager *vars;
 
-		void addShader(string sName, string vertShader, string fragShader, ShaderProgram::eLightingType lightingType, ShaderProgram::eMaterialType matType) {
-			ShaderProgram *sPtr = new ShaderProgram(vertShader.c_str(), fragShader.c_str());
+		void addShader(string sName, string vertShader, string fragShader, string geomShader, ShaderProgram::eLightingType lightingType, ShaderProgram::eMaterialType matType) {
+			
+			ShaderProgram *sPtr = new ShaderProgram(vertShader.c_str(), fragShader.c_str(), (geomShader.empty()) ? nullptr : geomShader.c_str());
 			sPtr->lightingType = lightingType;
 			sPtr->matType = matType;
 			addShader(sPtr, sName, sPtr->id);
@@ -50,7 +51,7 @@ namespace ShaderManager {
 
 
 		void loadShaders() {
-			cout << "Loading shaders" << endl;
+			cout << "Loading shaders..." << endl;
 
 			//singleColorShader = ShaderManager::getShaderPtr("singleColor");
 			//singleColorShaderAlpha = new ShaderProgram("singleColor.vert", "singleColor_alpha.frag");
@@ -71,7 +72,7 @@ namespace ShaderManager {
 			addShader("singleColorAlpha", "singleColor.vert", "singleColor_alpha.frag");
 			addShader("singleColor_VBO", "singleColor_VBO.vert", "singleColor_VBO.frag");
 			addShader("unlitColor", "unlitColor.vert", "unlitColor.frag");
-			addShader("dirLightOnly", "dirLightOnly.vert", "dirLightOnly.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
+			addShader("dirLightOnly", "dirLightOnly.vert", "dirLightOnly.frag", "", ShaderProgram::LIT, ShaderProgram::PHONG);
 			addShader("pointSpriteTest", "pointSpriteTest.vert", "pointSpriteTest.frag");
 			addShader("coloredParticle", "coloredParticle.vert", "coloredParticle.frag");
 			addShader("overlayTexture", "overlayTexture.vert", "overlayTexture.frag");
@@ -80,9 +81,9 @@ namespace ShaderManager {
 			addShader("skybox", "skybox.vert", "skybox.frag");
 			addShader("gaussianBlur", "pass_thru.vert", "gblur_9x9_separated.frag");
 			addShader("evsm_1st_pass", "evsm_1st_pass.vert", "evsm_1st_pass.frag");
-			addShader("evsm_2nd_pass", "evsm_2nd_pass.vert", "evsm_2nd_pass.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
+			addShader("evsm_2nd_pass", "evsm_2nd_pass.vert", "evsm_2nd_pass.frag", "", ShaderProgram::LIT, ShaderProgram::PHONG);
 
-			addShader("dirLightOnly_evsm", "dirLightOnly_evsm.vert", "dirLightOnly_evsm.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
+			addShader("dirLightOnly_evsm", "dirLightOnly_evsm.vert", "dirLightOnly_evsm.frag", "", ShaderProgram::LIT, ShaderProgram::PHONG);
 
 			addShader("vsm_1st_pass", "vsm_1st_pass.vert", "vsm_1st_pass.frag");
 			addShader("vsm_2nd_pass", "vsm_2nd_pass.vert", "vsm_2nd_pass.frag");
@@ -90,11 +91,11 @@ namespace ShaderManager {
 			addShader("shadow_mapping_1st_pass", "shadow_mapping_1st_pass.vert", "shadow_mapping_1st_pass.frag");
 			addShader("shadow_mapping_2nd_pass", "shadow_mapping_2nd_pass.vert", "shadow_mapping_2nd_pass.frag");
 
-			addShader("normals", "normals.vert", "normals.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
+			addShader("normals", "normals.vert", "normals.frag", "", ShaderProgram::LIT, ShaderProgram::PHONG);
 
-			addShader("terrain", "terrain.vert", "terrain.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
+			addShader("terrain", "terrain.vert", "terrain.frag", "", ShaderProgram::LIT, ShaderProgram::PHONG);
 
-			addShader("normals_instanced", "normals_instanced.vert", "normals.frag", ShaderProgram::LIT, ShaderProgram::PHONG);
+			addShader("normals_instanced", "normals_instanced.vert", "normals.frag", "", ShaderProgram::LIT, ShaderProgram::PHONG);
 
 			addShader("harris_1st_pass", "harris_1st_pass.vert", "harris_1st_pass.frag");
 			addShader("harris_2nd_pass", "harris_2nd_pass.vert", "harris_2nd_pass.frag");
@@ -105,7 +106,7 @@ namespace ShaderManager {
 			addShader("volume_2nd_pass", "volume_2nd_pass.vert", "volume_2nd_pass.frag");
 
 			addShader("pass_thru", "pass_thru.vert", "pass_thru.frag");
-
+			addShader("visualize_normals", "visualize_normals.vert", "visualize_normals.frag", "visualize_normals.geom");
 
 		}
 	}
@@ -117,7 +118,7 @@ namespace ShaderManager {
 			cout << "ShaderManager has already been initialized!" << endl;
 			return false;
 		}
-		cout << "Initializing ShaderManager" << endl;
+		cout << "Initializing ShaderManager..." << endl;
 		loadShaders();
 		initShaders();
 

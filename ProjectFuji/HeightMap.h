@@ -50,14 +50,6 @@ public:
 
 	Material materials[MAX_TERRAIN_MATERIALS];
 
-
-	Texture *diffuseTexture;
-	Texture *normalMap;
-	Texture *testDiffuse;
-
-	Texture *secondDiffuseTexture;
-	Texture *secondNormalMap;
-
 	Texture *terrainNormalMap;
 	Texture *materialMap;
 

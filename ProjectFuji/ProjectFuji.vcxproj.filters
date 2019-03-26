@@ -552,5 +552,14 @@
     <None Include="shaders\pass_thru.frag">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\visualize_normals.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\visualize_normals.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\visualize_normals.geom">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

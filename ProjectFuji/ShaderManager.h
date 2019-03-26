@@ -11,7 +11,7 @@ namespace ShaderManager {
 
 
 	namespace {
-		void addShader(std::string sName, std::string vertShader, std::string fragShader, ShaderProgram::eLightingType lightingType = ShaderProgram::eLightingType::UNLIT, ShaderProgram::eMaterialType matType = ShaderProgram::eMaterialType::NONE);
+		void addShader(std::string sName, std::string vertShader, std::string fragShader, std::string geomShader = "", ShaderProgram::eLightingType lightingType = ShaderProgram::eLightingType::UNLIT, ShaderProgram::eMaterialType matType = ShaderProgram::eMaterialType::NONE);
 
 		void addShader(ShaderProgram *sPtr, std::string sName, GLuint sId);
 
