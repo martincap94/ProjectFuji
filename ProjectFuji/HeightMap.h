@@ -78,7 +78,7 @@ public:
 	void initBuffers();
 	void initBuffersOld();
 
-	float getHeight(float x, float z);
+	float getHeight(float x, float z, bool worldPosition = true);
 
 
 	/// Draws the height map.

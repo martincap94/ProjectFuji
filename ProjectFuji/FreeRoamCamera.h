@@ -11,7 +11,7 @@ public:
 	float mouseSensitivity = 0.1f;
 
 	int walking = 0;
-	float playerHeight = 0.5f;
+	float playerHeight = 1.8f;
 	HeightMap *heightMap = nullptr;
 
 

@@ -414,6 +414,7 @@ int runApp() {
 	diagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
 	overlayDiagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
 	freeRoamCamera = new FreeRoamCamera(glm::vec3(30.0f, 50.0f, 30.0f), WORLD_UP, -35.0f, -35.0f);
+	((FreeRoamCamera *)freeRoamCamera)->heightMap = vars.heightMap;
 
 
 	viewportProjection = projection;

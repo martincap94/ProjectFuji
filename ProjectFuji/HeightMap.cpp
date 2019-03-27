@@ -538,8 +538,12 @@ void HeightMap::initBuffersOld() {
 
 }
 
-float HeightMap::getHeight(float x, float z) {
+float HeightMap::getHeight(float x, float z, bool worldPosition) {
 
+	if (worldPosition) {
+		x += vars->terrainXOffset;
+		z += vars->terrainZOffset;
+	}
 	int leftx = (int)x;
 	int rightx = leftx + 1;
 	int leftz = (int)z;

@@ -77,6 +77,10 @@ void FreeRoamCamera::processKeyboardMovement(int glfwKey, double deltaTime) {
 	//	yaw += velocity;
 	//	updateCameraVectors();
 	//}
+	if (walking && heightMap) {
+		updateCameraVectors();
+	}
+
 }
 
 //void FreeRoamCamera::changeRotation(float yaw, float pitch) {
