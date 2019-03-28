@@ -11,6 +11,9 @@
 #include "ShaderManager.h"
 #include "TextureManager.h"
 #include "Utils.h"
+#include <stb_image.h>
+
+
 
 HeightMap::HeightMap() {}
 
@@ -61,41 +64,106 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 		exit(EXIT_FAILURE);
 	}
 
-	ppmImage helper(SCENES_DIR + vars->sceneFilename);
 
 
-	terrainWidth = helper.width;
-	terrainDepth = helper.height;
-	width = terrainWidth / downSample;
-	height = terrainDepth / downSample;
+	float *imageData;
+	bool useStb = true;
+	if (useStb) {
+		int numChannels;
 
-	maxIntensity = helper.maxIntensity;
-	int maxSum = maxIntensity * 3;
+		stbi_set_flip_vertically_on_load(true);
+		imageData = stbi_loadf((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
 
 
-	data = new float*[width]();
-	for (int i = 0; i < width; i++) {
-		data[i] = new float[height]();
-	}
 
-	for (int z = height - 1; z >= 0; z--) {
-		for (int x = 0; x < width; x++) {
-			int sum = 0;
+		if (!imageData) {
+			cout << "Error loading texture at " << (SCENES_DIR + vars->sceneFilename) << endl;
+			stbi_image_free(imageData);
+			exit(EXIT_FAILURE);
+		}
 
-			sum += helper.data[x][z].x;
-			sum += helper.data[x][z].y;
-			sum += helper.data[x][z].z;
+		data = new float*[width]();
+		for (int i = 0; i < width; i++) {
+			data[i] = new float[height]();
+		}
 
-			//data[x][z] = ((float)sum / (float)maxSum);
-			data[x][z] = ((float)sum / (float)maxSum) * (float)(vars->latticeHeight - 1);
+		terrainWidth = width;
+		terrainDepth = height;
+
+
+		for (int z = height - 1; z >= 0; z--) {
+			for (int x = 0; x < width; x++) {
+				float *pixel = imageData + (x + z * height) * numChannels;
+				float r = pixel[0];
+				float g = pixel[1];
+				float b = pixel[2];
+				float a = 0xff;
+				if (numChannels >= 4) {
+					a = pixel[3];
+				}
+
+				//cout << r << endl;
+				//cout << g << endl;
+				//cout << b << endl;
+				//cout << endl;
+
+				data[x][z] = (r + g + b) / 3.0f;
+				rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+
+				//data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
+			}
+		}
+
+
+	} else {
+
+		ppmImage helper(SCENES_DIR + vars->sceneFilename);
+
+		width = helper.width;
+		height = helper.height;
+		terrainWidth = width;
+		terrainDepth = height;
+
+		data = new float*[width]();
+		for (int i = 0; i < width; i++) {
+			data[i] = new float[height]();
+		}
+
+
+		//terrainWidth = helper.width;
+		//terrainDepth = helper.height;
+		//width = terrainWidth / downSample;
+		//height = terrainDepth / downSample;
+
+		maxIntensity = helper.maxIntensity;
+		int maxSum = maxIntensity * 3;
+
+		for (int z = height - 1; z >= 0; z--) {
+			for (int x = 0; x < width; x++) {
+				int sum = 0;
+
+				sum += helper.data[x][z].x;
+				sum += helper.data[x][z].y;
+				sum += helper.data[x][z].z;
+
+				//data[x][z] = ((float)sum / (float)maxSum);
+				//data[x][z] = ((float)sum / (float)maxSum) * (float)(vars->latticeHeight - 1);
+				data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
+				rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+
+			}
 		}
 	}
+
+	//exit(EXIT_FAILURE); // TESTING!!!
+
 	//initBuffersOld();
 	initBuffers();
 
 
 	initMaterials();
 
+	stbi_image_free(imageData);
 
 }
 
@@ -260,9 +328,9 @@ void HeightMap::initBuffers() {
 
 	// merge together
 	for (int i = 0; i < numPoints; i++) {
-		vertexData.push_back(vertices[i].x);
-		vertexData.push_back(vertices[i].y);
-		vertexData.push_back(vertices[i].z);
+		vertexData.push_back(vertices[i].x * vars->texelWorldSize);
+		vertexData.push_back(vertices[i].y/* * vars->texelWorldSize*/);
+		vertexData.push_back(vertices[i].z * vars->texelWorldSize);
 		vertexData.push_back(normals[i].x);
 		vertexData.push_back(normals[i].y);
 		vertexData.push_back(normals[i].z);

@@ -146,6 +146,8 @@ public:
 	int drawTrees = 0;
 	int visualizeTerrainNormals = 0;
 	float globalNormalMapMixingRatio = 0.2f;
+	float texelWorldSize = 10.0f;
+	glm::vec2 terrainHeightRange = glm::vec2(800.0f, 3700.0f);
 
 
 	////////////////////////////////////////////////////////////////
@@ -210,6 +212,7 @@ private:
 
 	void saveIntParam(int &target, std::string stringVal);
 	void saveFloatParam(float &target, std::string stringVal);
+	void saveVec2Param(glm::vec2 &target, std::string line);
 	void saveVec3Param(glm::vec3 &target, std::string line);
 	void saveVec4Param(glm::vec4 &target, std::string line);
 	void saveBoolParam(bool &target, std::string stringVal);

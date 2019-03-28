@@ -124,6 +124,11 @@ void rangeToRange(glm::vec3 & val, glm::vec3 origMin, glm::vec3 origMax, glm::ve
 	rangeToRange(val.z, origMin.z, origMax.z, newMin.z, newMax.z);
 }
 
+void rangeToRange(glm::vec2 & val, glm::vec2 origMin, glm::vec2 origMax, glm::vec2 newMin, glm::vec2 newMax) {
+	rangeToRange(val.x, origMin.x, origMax.x, newMin.x, newMax.x);
+	rangeToRange(val.y, origMin.y, origMax.y, newMin.y, newMax.y);
+}
+
 void normalizeFromRange(glm::vec3 &val, float min, float max) {
 	val.x = (val.x - min) / (max - min);
 	val.y = (val.y - min) / (max - min);

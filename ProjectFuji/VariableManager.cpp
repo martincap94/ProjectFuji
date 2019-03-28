@@ -285,6 +285,10 @@ void VariableManager::saveConfigParam(string param, string val) {
 	} else if (param == "lattice_position") {
 		saveVec3Param(latticePosition, val);
 		cout << "lattice position: " << latticePosition.x << ", " << latticePosition.y << ", " << latticePosition.z << endl;
+	} else if (param == "texel_world_size") {
+		saveFloatParam(texelWorldSize, val);
+	} else if (param == "terrain_height_range") {
+		saveVec2Param(terrainHeightRange, val);
 	}
 
 }
@@ -297,6 +301,24 @@ void VariableManager::saveIntParam(int & target, std::string stringVal) {
 void VariableManager::saveFloatParam(float & target, std::string stringVal) {
 	// unsafe
 	target = stof(stringVal);
+}
+
+void VariableManager::saveVec2Param(glm::vec2 & target, std::string line) {
+	size_t idx;
+	if (idx = line.find("vec2") == 0) {
+		line = line.substr(5, line.length() - 1);
+		rtrim(line, ")");
+	}
+
+	istringstream iss(line);
+	string tmp;
+	int counter = 0;
+	while (getline(iss, tmp, ',')) {
+		target[counter++] = stof(tmp);
+		if (counter > 1) {
+			break;
+		}
+	}
 }
 
 void VariableManager::saveVec3Param(glm::vec3 & target, std::string line) {

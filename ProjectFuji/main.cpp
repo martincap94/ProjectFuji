@@ -358,8 +358,8 @@ int runApp() {
 	hosekShader = ShaderManager::getShaderPtr("sky_hosek");
 	visualizeNormalsShader = ShaderManager::getShaderPtr("visualize_normals");
 
-	vars.heightMap = new HeightMap(vars.sceneFilename, vars.latticeHeight);
-	vars.heightMap->vars = &vars;
+	vars.heightMap = new HeightMap(&vars/*, vars.sceneFilename, vars.latticeHeight*/);
+	//vars.heightMap->vars = &vars;
 
 	struct nk_colorf particlesColor;
 
@@ -1423,7 +1423,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			}*/
 			nk_layout_row_dynamic(ctx, 15, 1);
 			nk_label(ctx, "Camera movement speed", NK_TEXT_LEFT);
-			nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 400.0f, 1.0f);
+			nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 10000.0f, 1.0f);
 
 
 			nk_layout_row_dynamic(ctx, 15, 2);
@@ -2144,6 +2144,10 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_value_int(ctx, "w:", vars.latticeWidth);
 		nk_value_int(ctx, "h:", vars.latticeHeight);
 		nk_value_int(ctx, "d:", vars.latticeDepth);
+
+		nk_value_float(ctx, "wr [m]", vars.latticeWidth * lbm->worldSizeRatio);
+		nk_value_float(ctx, "wh [m]", vars.latticeHeight * lbm->worldSizeRatio);
+		nk_value_float(ctx, "wd [m]", vars.latticeDepth * lbm->worldSizeRatio);
 
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_value_int(ctx, "terrain width resolution", vars.heightMap->terrainWidth);

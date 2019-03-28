@@ -167,6 +167,8 @@ void rangeToRange(float &val, float origMin = 0.0f, float origMax = 1.0f, float 
 void rangeToRange(glm::vec3 &val, float origMin = 0.0f, float origMax = 1.0f, float newMin = 0.0f, float newMax = 1.0f);
 void rangeToRange(glm::vec3 &val, glm::vec3 origMin = glm::vec3(0.0f), glm::vec3 origMax = glm::vec3(1.0f), glm::vec3 newMin = glm::vec3(0.0f), glm::vec3 newMax = glm::vec3(1.0f));
 
+void rangeToRange(glm::vec2 &val, glm::vec2 origMin = glm::vec2(0.0f), glm::vec2 origMax = glm::vec2(1.0f), glm::vec2 newMin = glm::vec2(0.0f), glm::vec2 newMax = glm::vec2(1.0f));
+
 void normalizeFromRange(glm::vec3 &val, float min = 0.0f, float max = 1.0f);
 
 glm::vec3 getNormalizedFromRange(glm::vec3 val, float min = 0.0f, float max = 1.0f);
