@@ -155,6 +155,11 @@ inline std::string trim_copy(std::string s, const char* t = " \t\n\r\f\v") {
 	return trim(s, t);
 }
 
+inline bool string_starts_with(const std::string &haystack, const std::string &needle) {
+	return (haystack.find_first_of(needle) == 0);
+}
+
+
 
 
 void normalizeFromRange(float &val, float min = 0.0f, float max = 1.0f);

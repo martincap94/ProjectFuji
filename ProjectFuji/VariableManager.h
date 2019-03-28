@@ -118,6 +118,8 @@ public:
 	int useSubgridModel = 0;
 	int lbmUseExtendedCollisionStep = 0;
 
+	glm::vec3 latticePosition;
+
 	int lbmStepFrame = 1;
 	int stlpStepFrame = 1;
 
@@ -206,6 +208,13 @@ private:
 	/// Parses parameter and its value from the configuration file. Assumes correct format for each parameter.
 	void saveConfigParam(std::string param, std::string val);
 
+	void saveIntParam(int &target, std::string stringVal);
+	void saveFloatParam(float &target, std::string stringVal);
+	void saveVec3Param(glm::vec3 &target, std::string line);
+	void saveVec4Param(glm::vec4 &target, std::string line);
+	void saveBoolParam(bool &target, std::string stringVal);
+	void saveIntBoolParam(int &target, std::string stringVal);
+	void saveStringParam(string &target, std::string stringVal);
 
 
 };

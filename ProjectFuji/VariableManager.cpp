@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <sstream>
 
 
 #include "Config.h"
@@ -227,44 +228,43 @@ void VariableManager::saveConfigParam(string param, string val) {
 			lbmType = LBM3D;
 		}
 	} else if (param == "VSync") {
-		vsync = stoi(val);
+		saveIntParam(vsync, val);
 	} else if (param == "num_particles" || param == "-p") {
-		numParticles = stoi(val);
+		saveIntParam(numParticles, val);
 	} else if (param == "max_num_particles") {
-		maxNumParticles = stoi(val);
+		saveIntParam(maxNumParticles, val);
 	} else if (param == "scene_filename" || param == "-s") {
-		sceneFilename = val;
+		saveStringParam(sceneFilename, val);
 	} else if (param == "window_width") {
-		windowWidth = stoi(val);
+		saveIntParam(windowWidth, val);
 	} else if (param == "window_height") {
-		windowHeight = stoi(val);
+		saveIntParam(windowHeight, val);
 	} else if (param == "lattice_width") {
-		latticeWidth = stoi(val);
+		saveIntParam(latticeWidth, val);
 	} else if (param == "lattice_height" || param == "-lh") {
-		latticeHeight = stoi(val);
+		saveIntParam(latticeHeight, val);
 	} else if (param == "lattice_depth") {
-		latticeDepth = stoi(val);
+		saveIntParam(latticeDepth, val);
 	} else if (param == "use_CUDA" || param == "-c") {
-		useCUDA = (val == "true") ? true : false;
+		saveBoolParam(useCUDA, val);
 		useCUDACheckbox = (int)VariableManager::useCUDA;
 	} else if (param == "tau" || param == "-tau") {
-		tau = stof(val);
+		saveFloatParam(tau, val);
 	} else if (param == "draw_streamlines") {
-		drawStreamlines = (val == "true") ? true : false;
+		saveBoolParam(drawStreamlines, val);
 	} else if (param == "autoplay") {
-		paused = (val == "true") ? 0 : 1;
+		saveIntBoolParam(paused, val);
 	} else if (param == "camera_speed") {
-		cameraSpeed = stof(val);
+		saveFloatParam(cameraSpeed, val);
 	} else if (param == "block_dim_2D") {
-		blockDim_2D = stoi(val);
+		saveIntParam(blockDim_2D, val);
 	} else if (param == "block_dim_3D_x") {
-		blockDim_3D_x = stoi(val);
+		saveIntParam(blockDim_3D_x, val);
 	} else if (param == "block_dim_3D_y") {
-		blockDim_3D_y = stoi(val);
+		saveIntParam(blockDim_3D_y, val);
 	} else if (param == "measure_time" || param == "-m") {
-		measureTime = (val == "true") ? true : false;
+		saveBoolParam(measureTime, val);
 	} else if (param == "avg_frame_count" || param == "-mavg") {
-		//avgFrameCount = stoi(val);
 		timer.numMeasurementsForAvg = stoi(val);
 	} else if (param == "log_measurements_to_file") {
 		timer.logToFile = (val == "true") ? true : false;
@@ -282,6 +282,98 @@ void VariableManager::saveConfigParam(string param, string val) {
 		terrainXOffset = stoi(val);
 	} else if (param == "terrain_z_offset") {
 		terrainZOffset = stoi(val);
+	} else if (param == "lattice_position") {
+		saveVec3Param(latticePosition, val);
+		cout << "lattice position: " << latticePosition.x << ", " << latticePosition.y << ", " << latticePosition.z << endl;
 	}
 
+}
+
+void VariableManager::saveIntParam(int & target, std::string stringVal) {
+	// unsafe
+	target = stoi(stringVal);
+}
+
+void VariableManager::saveFloatParam(float & target, std::string stringVal) {
+	// unsafe
+	target = stof(stringVal);
+}
+
+void VariableManager::saveVec3Param(glm::vec3 & target, std::string line) {
+	size_t idx;
+	if (idx = line.find("vec3") == 0) {
+		line = line.substr(5, line.length() - 1);
+		rtrim(line, ")");
+	}
+
+	istringstream iss(line);
+	string tmp;
+	int counter = 0;
+	while (getline(iss, tmp, ',')) {
+		target[counter++] = stof(tmp);
+		if (counter > 2) {
+			break;
+		}
+	}
+	/*
+	idx = line.find_first_of(" ");
+
+	target.x = stof(line.substr(0, idx));
+
+	string tmp = line.substr(idx + 1, line.length() - 1);
+	idx = tmp.find_first_of(" ");
+
+	target.y = stof(tmp.substr(0, idx));
+	target.z = stof(tmp.substr(idx + 1, tmp.length() - 1));
+	*/
+
+}
+
+void VariableManager::saveVec4Param(glm::vec4 & target, std::string line) {
+	size_t idx;
+	if (idx = line.find("vec4") == 0) {
+		line = line.substr(5, line.length() - 1);
+		rtrim(line, ")");
+	}
+
+	istringstream iss(line);
+	string tmp;
+	int counter = 0;
+	while (getline(iss, tmp, ',')) {
+		target[counter++] = stof(tmp);
+		if (counter > 3) {
+			break;
+		}
+	}
+}
+
+void VariableManager::saveBoolParam(bool & target, std::string stringVal) {
+	transform(stringVal.begin(), stringVal.end(), stringVal.begin(), ::tolower);
+	if (stringVal == "true" || stringVal == "t") {
+		target = true;
+	} else if (stringVal == "false" || stringVal == "f") {
+		target = false;
+	} else {
+		// unsafe - try integer
+		int tmp = stoi(stringVal);
+		target = (bool)tmp;
+	}
+
+}
+
+void VariableManager::saveIntBoolParam(int & target, std::string stringVal) {
+	transform(stringVal.begin(), stringVal.end(), stringVal.begin(), ::tolower);
+	if (stringVal == "true" || stringVal == "t") {
+		target = 1;
+	} else if (stringVal == "false" || stringVal == "f") {
+		target = 0;
+	} else {
+		// unsafe - try integer
+		int tmp = stoi(stringVal);
+		target = tmp;
+	}
+}
+
+void VariableManager::saveStringParam(string & target, std::string stringVal) {
+	target = stringVal;
 }
