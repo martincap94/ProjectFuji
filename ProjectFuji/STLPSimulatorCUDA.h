@@ -39,7 +39,7 @@ public:
 	HeightMap *heightMap;
 
 	//int maxNumParticles = MAX_PARTICLE_COUNT;
-	int maxNumParticles = 1000000;
+	//int maxNumParticles = 1000000;
 
 	ppmImage *profileMap; // needs to have the same parameters as the height map (width, height), or at least larger
 
@@ -115,7 +115,7 @@ public:
 	void draw(glm::vec3 cameraPos);
 	void drawDiagramParticles(ShaderProgram *shader);
 
-	void initParticles();
+	//void initParticles();
 
 	void mapToSimulationBox(float &val);
 	void mapFromSimulationBox(float &val);
@@ -123,7 +123,6 @@ public:
 
 private:
 
-	GLuint particlesVAO;
 
 	GLuint particleProfilesVBO;
 

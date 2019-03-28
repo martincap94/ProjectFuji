@@ -184,7 +184,7 @@ glm::mat4 diagramProjection;
 glm::mat4 overlayDiagramProjection;
 
 float nearPlane = 0.1f;		///< Near plane of the view frustum
-float farPlane = 1000.0f;	///< Far plane of the view frustum
+float farPlane = 100000.0f;	///< Far plane of the view frustum
 
 float projWidth;			///< Width of the ortographic projection
 float projHeight;			///< Height of the ortographic projection
@@ -375,9 +375,8 @@ int runApp() {
 
 
 
-	// Create and configure the simulator, select from 2D and 3D options and set parameters accordingly
+	// Create and configure the simulator
 	{
-		printf("LBM3D SETUP...\n");
 
 		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
 		CHECK_ERROR(cudaPeekAtLastError());
@@ -399,11 +398,10 @@ int runApp() {
 		projHeight = projectionRange;
 		projWidth = projHeight * ratio;
 
-		//projection = glm::ortho(-projectionRange, projectionRange, -projectionRange, projectionRange, nearPlane, farPlane);
 		projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
-		grid = new Grid3D(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth, 6, 6, 6);
+		grid = new Grid3D(vars.latticeWidth * lbm->worldSizeRatio, vars.latticeHeight * lbm->worldSizeRatio, vars.latticeDepth * lbm->worldSizeRatio, 6, 6, 6);
 		float cameraRadius = sqrtf((float)(vars.latticeWidth * vars.latticeWidth + vars.latticeDepth * vars.latticeDepth)) + 10.0f;
-		//camera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
+
 		orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
 	}
 
@@ -458,22 +456,8 @@ int runApp() {
 	grassModel.makeInstanced(vars.heightMap, 1000000, glm::vec2(0.2, 0.4), 4.0f, 3);
 	treeModel.makeInstanced(vars.heightMap, 400, glm::vec2(0.3, 0.5), 5.0f, 20);
 
-	//armoireModel.transform.position.x += 2.0f;
-
-	//Model testModel("models/housewife.obj", &testMat, dirLightOnlyShader);
-	//StaticMesh testMesh("models/housewife.obj", dirLightOnlyShader, &testMat);
 	testModel.transform.position.x += 1.0f;
 
-	//testMesh.transform.position = glm::vec3(0.0f);
-
-	//std::vector<Transform> instanceTransforms;
-	//for (unsigned int i = 0; i < 600; i++) {
-	//	float scaleModifier = getRandFloat(0.5f, 1.5f);
-	//	Transform t(glm::vec3(getRandFloat(-200.0f, 200.0f), 0.0f, getRandFloat(-200.0f, 200.0f)), glm::vec3(), glm::vec3(scaleModifier));
-	//	instanceTransforms.push_back(t);
-	//}
-	//testModel.shader = ShaderManager::getShaderPtr("normals_instanced");
-	//testModel.makeInstanced(vars.heightMap, 100);
 
 	armoireModel.transform.position += glm::vec3(10.0f, 0.0f, 10.0f);
 	armoireModel.transform.scale = glm::vec3(1.0f);
@@ -527,7 +511,7 @@ int runApp() {
 
 
 	particleSystem->initParticlesOnTerrain();
-	particleSystem->formBox(glm::vec3(20.0f), glm::vec3(20.0f));
+	particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
 	particleSystem->activateAllParticles();
 
 
@@ -1342,7 +1326,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		if (nk_button_label(ctx, "Diagram controls")) {
 			uiMode = 5;
 		}
-
+		if (nk_button_label(ctx, "LBM DEVELOPER")) {
+			uiMode = 6;
+		}
 
 		if (uiMode == 0) {
 			nk_layout_row_dynamic(ctx, 15, 1);
@@ -1830,7 +1816,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 
-			nk_property_float(ctx, "Point size", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
+			nk_property_float(ctx, "Point size", 0.1f, &stlpSimCUDA->pointSize, 100000.0f, 0.1f, 0.1f);
 			particleSystem->pointSize = stlpSimCUDA->pointSize;
 			nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars.opacityMultiplier, 10.0f, 0.01f, 0.01f);
 
@@ -1866,6 +1852,10 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 		} else if (uiMode == 5) {
+
+
+
+
 			nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
 			if (nk_button_label(ctx, "Recalculate Params")) {
 				//lbm->resetSimulation();
@@ -2047,7 +2037,32 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			}
 		}
 
+	} else if (uiMode == 6) {
+
+
+		nk_layout_row_dynamic(ctx, 30, 1);
+		nk_label(ctx, "LBM DEVELOPER", NK_TEXT_CENTERED);
+
+		nk_layout_row_dynamic(ctx, 15, 1);
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	}
+
+
+
 	nk_end(ctx);
 
 
@@ -2126,6 +2141,13 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_value_float(ctx, "cam fy:", camera->front.y);
 		nk_value_float(ctx, "cam fz:", camera->front.z);
 
+		nk_value_int(ctx, "w:", vars.latticeWidth);
+		nk_value_int(ctx, "h:", vars.latticeHeight);
+		nk_value_int(ctx, "d:", vars.latticeDepth);
+
+		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_value_int(ctx, "terrain width resolution", vars.heightMap->terrainWidth);
+		nk_value_int(ctx, "terrain depth resolution", vars.heightMap->terrainDepth);
 
 
 
@@ -2135,197 +2157,6 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 
-	//
-	//// if NK_WINDOW_MOVABLE or NK_WINDOW_SCALABLE -> does not change rectange when window size (screen size) changes
-	//if (nk_begin(ctx, "Diagram", nk_rect(vars.screenWidth - vars.rightSidebarWidth, vars.toolbarHeight + vars.debugTabHeight, vars.rightSidebarWidth, vars.screenHeight - vars.toolbarHeight - vars.debugTabHeight),
-	//			 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR /*| NK_WINDOW_MOVABLE*/ /*| NK_WINDOW_SCALABLE*/ /*|
-	//			 NK_WINDOW_MINIMIZABLE*/ /*| NK_WINDOW_TITLE*/)) {
-
-	//	nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
-	//	if (nk_button_label(ctx, "Recalculate Params")) {
-	//		//lbm->resetSimulation();
-	//		stlpDiagram.recalculateParameters();
-	//		stlpSimCUDA->uploadDataFromDiagramToGPU();
-	//	}
-
-	//	
-
-	//	if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram controls", NK_MINIMIZED)) {
-	//		nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
-
-	//		nk_checkbox_label(ctx, "Show isobars", &stlpDiagram.showIsobars);
-	//		nk_checkbox_label(ctx, "Show isotherms", &stlpDiagram.showIsotherms);
-	//		nk_checkbox_label(ctx, "Show isohumes", &stlpDiagram.showIsohumes);
-	//		nk_checkbox_label(ctx, "Show dry adiabats", &stlpDiagram.showDryAdiabats);
-	//		nk_checkbox_label(ctx, "Show moist adiabats", &stlpDiagram.showMoistAdiabats);
-	//		nk_checkbox_label(ctx, "Show dewpoint curve", &stlpDiagram.showDewpointCurve);
-	//		nk_checkbox_label(ctx, "Show ambient temp. curve", &stlpDiagram.showAmbientTemperatureCurve);
-	//		nk_checkbox_label(ctx, "Crop Bounds", &stlpDiagram.cropBounds);
-
-	//		nk_tree_pop(ctx);
-
-	//	}
-
-	//	nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
-
-	//	int tmp = stlpDiagram.overlayDiagramWidth;
-	//	int maxDiagramWidth = (vars.screenWidth < vars.screenHeight) ? vars.screenWidth : vars.screenHeight;
-	//	nk_slider_int(ctx, 10, (int *)&stlpDiagram.overlayDiagramWidth, maxDiagramWidth, 1);
-	//	if (tmp != stlpDiagram.overlayDiagramWidth) {
-	//		stlpDiagram.overlayDiagramHeight = stlpDiagram.overlayDiagramWidth;
-	//		stlpDiagram.refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
-	//	}
-
-	//	if (nk_button_label(ctx, "Reset to default")) {
-	//		stlpDiagram.resetToDefault();
-	//	}
-
-	//	//if (nk_button_label(ctx, "Reset simulation")) {
-	//		//stlpSim->resetSimulation();
-	//	//}
-
-	//	//nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
-
-	//	float delta_t_prev = stlpSimCUDA->delta_t;
-	//	nk_property_float(ctx, "delta t", 0.001f, &stlpSimCUDA->delta_t, 100.0f, 0.001f, 0.001f);
-	//	if (stlpSimCUDA->delta_t != delta_t_prev) {
-	//		//stlpSimCUDA->delta_t = stlpSim->delta_t;
-	//		stlpSimCUDA->updateGPU_delta_t();
-	//	}
-
-	//	nk_property_int(ctx, "number of profiles", 2, &stlpDiagram.numProfiles, 100, 1, 1.0f); // somewhere bug when only one profile -> FIX!
-
-	//	nk_property_float(ctx, "profile range", -10.0f, &stlpDiagram.convectiveTempRange, 10.0f, 0.01f, 0.01f);
-
-	//	//nk_property_int(ctx, "max particles", 1, &stlpSim->maxNumParticles, 100000, 1, 10.0f);
-
-	//	//nk_checkbox_label(ctx, "Simulate wind", &stlpSim->simulateWind);
-
-	//	//nk_checkbox_label(ctx, "use prev velocity", &stlpSim->usePrevVelocity);
-
-	//	nk_checkbox_label(ctx, "Divide Previous Velocity", &vars.dividePrevVelocity);
-	//	if (vars.dividePrevVelocity) {
-	//		nk_property_float(ctx, "Divisor (x100)", 100.0f, &vars.prevVelocityDivisor, 1000.0f, 0.1f, 0.1f); // [1.0, 10.0]
-	//	}
-
-	//	nk_checkbox_label(ctx, "Show CCL Level", &vars.showCCLLevelLayer);
-	//	nk_checkbox_label(ctx, "Show EL Level", &vars.showELLevelLayer);
-	//	nk_checkbox_label(ctx, "Show Overlay Diagram", &vars.showOverlayDiagram);
-
-
-	//	nk_checkbox_label(ctx, "Use CUDA", &vars.stlpUseCUDA);
-
-	//	nk_checkbox_label(ctx, "Apply LBM", &vars.applyLBM);
-	//	nk_property_int(ctx, "LBM step frame", 1, &vars.lbmStepFrame, 100, 1, 1);
-
-	//	/*
-	//	bounds = nk_widget_bounds(ctx);
-	//	if (nk_input_is_mouse_hovering_rect(in, bounds)) {
-	//		nk_tooltip(ctx, "This is a tooltip");
-	//	}
-	//	*/
-
-
-
-	//	nk_checkbox_label(ctx, "Apply STLP", &vars.applySTLP);
-	//	nk_property_int(ctx, "STLP step frame", 1, &vars.stlpStepFrame, 100, 1, 1);
-
-	//	nk_property_float(ctx, "Point size", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
-	//	//stlpSimCUDA->pointSize = stlpSim->pointSize;
-	//	particleSystem->pointSize = stlpSimCUDA->pointSize;
-	//	//nk_property_float(ctx, "Point size (CUDA)", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
-
-	//	nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars.opacityMultiplier, 10.0f, 0.01f, 0.01f);
-	//	nk_checkbox_label(ctx, "Show Cloud Shadows", &vars.showCloudShadows);
-
-	//	struct nk_colorf tintColor;
-	//	tintColor.r = vars.tintColor.x;
-	//	tintColor.g = vars.tintColor.y;
-	//	tintColor.b = vars.tintColor.z;
-
-	//	if (nk_combo_begin_color(ctx, nk_rgb_cf(tintColor), nk_vec2(nk_widget_width(ctx), 400))) {
-	//		nk_layout_row_dynamic(ctx, 120, 1);
-	//		tintColor = nk_color_picker(ctx, tintColor, NK_RGBA);
-	//		nk_layout_row_dynamic(ctx, 10, 1);
-	//		tintColor.r = nk_propertyf(ctx, "#R:", 0, tintColor.r, 1.0f, 0.01f, 0.005f);
-	//		tintColor.g = nk_propertyf(ctx, "#G:", 0, tintColor.g, 1.0f, 0.01f, 0.005f);
-	//		tintColor.b = nk_propertyf(ctx, "#B:", 0, tintColor.b, 1.0f, 0.01f, 0.005f);
-	//		tintColor.a = nk_propertyf(ctx, "#A:", 0, tintColor.a, 1.0f, 0.01f, 0.005f);
-	//		vars.tintColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
-	//		nk_combo_end(ctx);
-	//	}
-
-	//	nk_property_int(ctx, "Opacity Blend Mode", 0, &particleSystem->opacityBlendMode, 1, 1, 1);
-	//	nk_property_float(ctx, "Opacity Blend Range", 0.0f, &particleSystem->opacityBlendRange, 20.0f, 0.1f, 0.1f);
-	//	nk_checkbox_label(ctx, "Show Hidden Particles", &particleSystem->showHiddenParticles);
-
-	//	for (int i = 0; i < particleSystem->emitters.size(); i++) {
-	//		if (nk_tree_push_id(ctx, NK_TREE_NODE, ("#Emitter " + to_string(i)).c_str(), NK_MINIMIZED, i)) {
-	//			Emitter *e = particleSystem->emitters[i];
-
-	//			nk_layout_row_static(ctx, 15, 200, 1);
-	//			nk_checkbox_label(ctx, "#enabled", &e->enabled);
-	//			nk_checkbox_label(ctx, "#visible", &e->visible);
-	//			nk_checkbox_label(ctx, "#wiggle", &e->wiggle);
-	//			nk_property_float(ctx, "#x wiggle", 0.1f, &e->xWiggleRange, 10.0f, 0.1f, 0.1f);
-	//			nk_property_float(ctx, "#z wiggle", 0.1f, &e->zWiggleRange, 10.0f, 0.1f, 0.1f);
-
-
-	//			nk_property_float(ctx, "#x", -1000.0f, &e->position.x, 1000.0f, 1.0f, 1.0f);
-	//			//nk_property_float(ctx, "#y", -1000.0f, &e->position.y, 1000.0f, 1.0f, 1.0f);
-	//			nk_property_float(ctx, "#z", -1000.0f, &e->position.z, 1000.0f, 1.0f, 1.0f);
-
-	//			//nk_property_variant_int()
-	//			nk_property_int(ctx, "#emit per step", 0, &e->numParticlesToEmitPerStep, 10000, 10, 10);
-
-	//			CircleEmitter *ce = dynamic_cast<CircleEmitter *>(e);
-	//			if (ce) {
-	//				nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
-	//			}
-
-
-	//			nk_tree_pop(ctx);
-	//			//particleSystem->emitters[i]
-	//		}
-	//	}
-	//	nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
-	//	if (nk_button_label(ctx, "Activate All Particles")) {
-	//		particleSystem->activateAllParticles();
-	//		vars.run_harris_1st_pass_inNextFrame = 1; // DEBUG
-	//	}
-	//	if (nk_button_label(ctx, "Deactivate All Particles")) {
-	//		particleSystem->deactivateAllParticles();
-	//	}
-	//	if (nk_button_label(ctx, "Enable All Emitters")) {
-	//		particleSystem->enableAllEmitters();
-	//	}
-	//	if (nk_button_label(ctx, "Disable All Emitters")) {
-	//		particleSystem->disableAllEmitters();
-	//	}
-
-	//	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
-
-
-
-	//	tintColor.r = vars.bgClearColor.x;
-	//	tintColor.g = vars.bgClearColor.y;
-	//	tintColor.b = vars.bgClearColor.z;
-
-	//	if (nk_combo_begin_color(ctx, nk_rgb_cf(tintColor), nk_vec2(nk_widget_width(ctx), 400))) {
-	//		nk_layout_row_dynamic(ctx, 120, 1);
-	//		tintColor = nk_color_picker(ctx, tintColor, NK_RGBA);
-	//		nk_layout_row_dynamic(ctx, 10, 1);
-	//		tintColor.r = nk_propertyf(ctx, "#R:", 0, tintColor.r, 1.0f, 0.01f, 0.005f);
-	//		tintColor.g = nk_propertyf(ctx, "#G:", 0, tintColor.g, 1.0f, 0.01f, 0.005f);
-	//		tintColor.b = nk_propertyf(ctx, "#B:", 0, tintColor.b, 1.0f, 0.01f, 0.005f);
-	//		//tintColor.a = nk_propertyf(ctx, "#A:", 0, tintColor.a, 1.0f, 0.01f, 0.005f);
-	//		vars.bgClearColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
-	//		nk_combo_end(ctx);
-	//	}
-
-
-	//}
-	//nk_end(ctx);
 
 
 

@@ -105,6 +105,9 @@ public:
 		RESPAWN_PARTICLES_INLET
 	};
 
+
+	float worldSizeRatio = 3.0f; // (number of meters) / (cell unit size)
+
 	VariableManager *vars;
 
 	/// Enumeration that should contain all controllable properties of the simulation (through UI).

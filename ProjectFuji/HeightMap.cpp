@@ -86,6 +86,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 			sum += helper.data[x][z].y;
 			sum += helper.data[x][z].z;
 
+			//data[x][z] = ((float)sum / (float)maxSum);
 			data[x][z] = ((float)sum / (float)maxSum) * (float)(vars->latticeHeight - 1);
 		}
 	}
@@ -171,7 +172,9 @@ void HeightMap::initBuffers() {
 	float den = (float)((terrainWidth >= terrainDepth) ? terrainWidth : terrainDepth);
 
 	for (int z = terrainDepth - 1; z >= 1; z--) {
+
 		for (int x = 0; x < terrainWidth - 1; x++) {
+
 
 			glm::vec3 p1(x, data[x][z], z);
 			glm::vec3 p2(x + 1, data[x + 1][z], z);
@@ -215,6 +218,7 @@ void HeightMap::initBuffers() {
 			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 
 			numPoints += 6;
+
 		}
 	}
 
@@ -328,9 +332,14 @@ void HeightMap::initBuffersOld() {
 
 	// it would be useful to create a DCEL for the terrain so it would be much easier to modify later on
 	for (int z = height - 1; z >= 1; z--) {
+
+
 		for (int x = 0; x < width - 1; x++) {
 
+
 			float den = (float)((width >= height) ? width : height);
+
+			
 
 			glm::vec3 p1(x, data[x][z], z);
 			glm::vec3 p2(x + 1, data[x + 1][z], z);
@@ -484,7 +493,6 @@ void HeightMap::initBuffersOld() {
 			//areaPoints.push_back(glm::vec3(x + 1, data[x + 1][z - 1], z - 1));
 			//areaPoints.push_back(glm::vec3(x, data[x][z - 1], z - 1));
 			//areaPoints.push_back(glm::vec3(x, data[x][z], z));
-
 
 		}
 	}

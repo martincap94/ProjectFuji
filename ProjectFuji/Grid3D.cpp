@@ -59,9 +59,9 @@ Grid3D::Grid3D(int width, int height, int depth, int stepX, int stepY, int stepZ
 
 	bData.clear();
 
-	float gw = width - 1;
-	float gh = height - 1;
-	float gd = depth - 1;
+	float gw = width;
+	float gh = height;
+	float gd = depth;
 	bData.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
 	bData.push_back(glm::vec3(gw, 0.0f, 0.0f));
 

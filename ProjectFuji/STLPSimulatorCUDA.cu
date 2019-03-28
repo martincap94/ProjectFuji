@@ -148,7 +148,9 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 	if (idx < numParticles) {
 
-		float particlePressure = getPressureVal_dev(getMappedFromSimulationBox_dev(particleVertices[idx].y));
+		//float particlePressure = getPressureVal_dev(getMappedFromSimulationBox_dev(particleVertices[idx].y));
+		float particlePressure = getPressureVal_dev(particleVertices[idx].y);
+
 		if (particlePressure > CCLProfiles[profileIndices[idx]].y) {
 
 			//printf("| pressure = %0.2f\n", particlePressures[idx]);
@@ -174,38 +176,16 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
-			//printf("| a = %0.2f\n", a);
 
 			verticalVelocities[idx] = verticalVelocities[idx] + a * d_const_delta_t;
 			float deltaY = verticalVelocities[idx] * d_const_delta_t + 0.5f * a * d_const_delta_t * d_const_delta_t;
 
-			//printf("| delta y = %0.2f\n", deltaY);
+			//mapFromSimulationBox_dev(particleVertices[idx].y);
 
-			//printf("| height (before unmap) = %0.2f\n", particleVertices[idx].y);
-
-
-			mapFromSimulationBox_dev(particleVertices[idx].y);
-			//float tmpY = getRealWorldCoords_dev(particleVertices[idx].y);
-
-			//printf("| height (after unmap) = %0.2f\n", particleVertices[idx].y);
 			particleVertices[idx].y += deltaY;
 
-			//printf("| height (after unmap) = %0.2f\n", tmpY);
+			//mapToSimulationBox_dev(particleVertices[idx].y);
 
-			//tmpY += deltaY;
-
-			//printf("| height (after unmap + delta y) = %0.2f\n", particleVertices[idx].y);
-			//particlePressures[idx] = getPressureVal_dev(particleVertices[idx].y);
-
-			//printf("| height (after unmap + delta y) = %0.2f\n", tmpY);
-
-			//particlePressures[idx] = getPressureVal_dev(tmpY);
-
-			//particleVertices[idx].y = getSimulationBoxCoords_dev(tmpY);
-
-			mapToSimulationBox_dev(particleVertices[idx].y);
-
-			//printf("| height (final) = %0.2f\n", particleVertices[idx].y);
 
 
 		} else {
@@ -215,9 +195,6 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 			float ambientTemp = getDenormalizedTemp(ambientIntersection.x, normP);
 			float particleTemp = getDenormalizedTemp(moistAdiabatIntersection.x, normP);
-
-			//printf("| ambientTemp [deg C] = %0.2f\n", ambientTemp);
-			//printf("| particleTemp [deg C] = %0.2f\n", particleTemp);
 
 			diagramParticleVertices[idx].x = moistAdiabatIntersection.x;
 			diagramParticleVertices[idx].y = normP;
@@ -230,40 +207,17 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
-			//printf("| a = %0.2f\n", a);
 
 			verticalVelocities[idx] = verticalVelocities[idx] + a * d_const_delta_t;
 			float deltaY = verticalVelocities[idx] * d_const_delta_t + 0.5f * a * d_const_delta_t * d_const_delta_t;
 
-			//printf("| delta y = %0.2f\n", deltaY);
+			
 
-			//printf("| height (before unmap) = %0.2f\n", particleVertices[idx].y);
+			//mapFromSimulationBox_dev(particleVertices[idx].y);
 
-
-			mapFromSimulationBox_dev(particleVertices[idx].y);
-			//float tmpY = getRealWorldCoords_dev(particleVertices[idx].y);
-
-			//printf("| height (after unmap) = %0.2f\n", particleVertices[idx].y);
 			particleVertices[idx].y += deltaY;
 
-			//printf("| height (after unmap) = %0.2f\n", tmpY);
-
-			//tmpY += deltaY;
-
-			//printf("| height (after unmap + delta y) = %0.2f\n", particleVertices[idx].y);
-			//particlePressures[idx] = getPressureVal_dev(particleVertices[idx].y);
-
-			//printf("| height (after unmap + delta y) = %0.2f\n", tmpY);
-
-			//particlePressures[idx] = getPressureVal_dev(tmpY);
-
-			//particleVertices[idx].y = getSimulationBoxCoords_dev(tmpY);
-
-			mapToSimulationBox_dev(particleVertices[idx].y);
-
-			//printf("| height (final) = %0.2f\n", particleVertices[idx].y);
-
-
+			//mapToSimulationBox_dev(particleVertices[idx].y);
 
 		}
 
@@ -309,25 +263,6 @@ STLPSimulatorCUDA::~STLPSimulatorCUDA() {
 }
 
 void STLPSimulatorCUDA::initBuffers() {
-
-	/*
-	glGenVertexArrays(1, &particlesVAO);
-	glBindVertexArray(particlesVAO);
-
-	glGenBuffers(1, &particlesVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
-
-	glGenBuffers(1, &particleProfilesVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, particleProfilesVBO);
-
-	glEnableVertexAttribArray(5);
-	glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void *)0);
-
-	glBindVertexArray(0);
-	*/
 
 	ShaderProgram *s = ShaderManager::getShaderPtr("pointSpriteTest");
 	s->use();
@@ -878,6 +813,7 @@ void STLPSimulatorCUDA::drawDiagramParticles(ShaderProgram * shader) {
 
 }
 
+/*
 void STLPSimulatorCUDA::initParticles() {
 	for (int i = 0; i < maxNumParticles; i++) {
 		generateParticle();
@@ -894,9 +830,10 @@ void STLPSimulatorCUDA::initParticles() {
 	}
 	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
 
-
+	
 
 }
+*/
 
 void STLPSimulatorCUDA::mapToSimulationBox(float & val) {
 	rangeToRange(val, groundHeight, boxTopHeight, 0.0f, vars->latticeHeight);

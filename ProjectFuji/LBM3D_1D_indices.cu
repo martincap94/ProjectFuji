@@ -18,10 +18,13 @@ __constant__ int d_latticeSize;			///< Lattice size constant on the device (latt
 __constant__ float d_tau;				///< Tau value on the device
 __constant__ float d_itau;				///< Inverse tau value (1.0f / tau) on the device
 __constant__ int d_mirrorSides;			///< Whether to mirror sides (cycle) on the device
+__constant__ float d_worldSizeRatio;
 
 
 __device__ int d_respawnY = 0;			///< Respawn y coordinate on the device, not used (random respawn now used)
 __device__ int d_respawnZ = 0;			///< Respawn z coordinate on the device, not used (random respawn now used)
+
+
 
 
 /// Returns the flattened index using the device constants and provided coordinates.
@@ -44,6 +47,15 @@ __device__ glm::vec3 mapToViridis3D(float val) {
 	return glm::vec3(viridis_cm[discreteVal][0], viridis_cm[discreteVal][1], viridis_cm[discreteVal][2]);
 }
 
+__host__ __device__ glm::vec3 getLatticePosition(const glm::vec3 &worldPosition) {
+	// TO DO - offsets (model matrix?), maybe even scaling (model matrix scale)
+	return glm::vec3(worldPosition.x / d_worldSizeRatio, worldPosition.y / d_worldSizeRatio, worldPosition.z / d_worldSizeRatio);
+	//return glm::vec3();
+}
+
+__host__ __device__ glm::vec3 getWorldPosition(const glm::vec3 &latticePosition) {
+	return glm::vec3(latticePosition.x * d_worldSizeRatio, latticePosition.y * d_worldSizeRatio, latticePosition.z * d_worldSizeRatio);
+}
 
 
 __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors, int respawnMode, int outOfBoundsMode, float velocityMultiplier = 1.0f, bool useCorrectInterpolation = true) {
@@ -55,7 +67,9 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 
 	while (idx < numActiveParticles) {
 
-		glm::vec3 pos = particleVertices[idx];
+		//glm::vec3 pos = particleVertices[idx];
+
+		glm::vec3 pos = getLatticePosition(particleVertices[idx]);
 
 
 		if (pos.x < 0.0f || pos.x > d_latticeWidth - 1 ||
@@ -164,7 +178,10 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 		finalVelocity *= velocityMultiplier;
 
 		pos += finalVelocity;
-		particleVertices[idx] = pos;
+
+
+		//particleVertices[idx] = pos;
+		particleVertices[idx] = getWorldPosition(pos);
 
 		idx += blockDim.x * blockDim.y * gridDim.x;
 
@@ -2132,7 +2149,7 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	CHECK_ERROR(cudaMemcpyToSymbol(d_tau, &tau, sizeof(float)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_itau, &itau, sizeof(float)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_mirrorSides, &mirrorSides, sizeof(int)));
-
+	CHECK_ERROR(cudaMemcpyToSymbol(d_worldSizeRatio, &worldSizeRatio, sizeof(float)));
 
 	gridDim = dim3((unsigned int)ceil(latticeSize / (blockDim.x * blockDim.y * blockDim.z)) + 1, 1, 1);
 	cacheSize = blockDim.x * blockDim.y * blockDim.z * sizeof(Node3D);
@@ -2220,8 +2237,16 @@ void LBM3D_1D_indices::refreshHeightMap() {
 		for (int x = 0; x < latticeWidth; x++) {
 			int xidx = vars->terrainXOffset + x;
 			int zidx = vars->terrainZOffset + z;
+
+			// TESTING
+			xidx = xidx * worldSizeRatio;
+			zidx = zidx * worldSizeRatio;
+
+
+
 			if (xidx < heightMap->terrainWidth && zidx < heightMap->terrainDepth) {
-				tempHM[x + z * latticeWidth] = heightMap->data[xidx][zidx];
+				//tempHM[x + z * latticeWidth] = heightMap->data[xidx][zidx];
+				tempHM[x + z * latticeWidth] = heightMap->data[xidx][zidx] / worldSizeRatio;
 			}
 			//tempHM[x + z * latticeWidth] = heightMap->data[x][z];
 		}

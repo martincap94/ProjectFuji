@@ -45,8 +45,8 @@ public:
 	int latticeHeight = 100;	///< Default lattice height
 	int latticeDepth = 100;		///< Defailt lattice depth
 
-	int terrainXOffset = 50;
-	int terrainZOffset = 50;
+	int terrainXOffset = 0;
+	int terrainZOffset = 0;
 
 
 	float tau = 0.52f;			///< Default tau value
