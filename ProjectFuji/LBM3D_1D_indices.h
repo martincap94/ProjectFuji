@@ -115,10 +115,7 @@ public:
 	};
 
 
-	struct PrevStateData {
-		glm::vec3 position;
 
-	};
 
 
 	glm::vec3 position = glm::vec3(0.0f);
@@ -209,7 +206,15 @@ public:
 	virtual void recalculateVariables();
 
 	virtual void refreshHeightMap();
+	virtual void startEditing();
+	virtual void stopEditing(bool saveChanges);
+
+	// TO DO - make these two functions private later on
 	virtual void saveChanges();
+	virtual void resetChanges();
+
+	bool isUnderEdit();
+
 
 	void draw(); // new function, draws grid
 	virtual void draw(ShaderProgram &shader);
@@ -258,6 +263,18 @@ protected:
 
 private:
 
+	struct PrevStateData {
+		glm::vec3 position;
+		float scale;
+
+
+	};
+
+	PrevStateData prevState;
+
+
+	bool editing = false;
+
 	int frameId = 0; ///< Frame id for debugging
 
 	int respawnY = 0;	///< Respawn y coordinate
@@ -279,6 +296,7 @@ private:
 	/// Calculates macroscopic velocity of the node at coordinates x, y, z with the specified macroscopic density.
 	glm::vec3 calculateMacroscopicVelocity(int x, int y, int z, float macroDensity);
 
-
+	void saveState();
+	void resetToPrevState();
 };
 

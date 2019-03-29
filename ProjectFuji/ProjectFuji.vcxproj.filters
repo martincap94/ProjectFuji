@@ -199,6 +199,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GridLBM.cpp" />
+    <ClCompile Include="UserInterface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -361,6 +362,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GridLBM.h" />
+    <ClInclude Include="UIConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

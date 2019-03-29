@@ -2261,6 +2261,23 @@ void LBM3D_1D_indices::refreshHeightMap() {
 
 }
 
+void LBM3D_1D_indices::startEditing() {
+	editing = true;
+
+	saveState();
+
+
+}
+
+void LBM3D_1D_indices::stopEditing(bool saveChanges) {
+	editing = false;
+	if (saveChanges) {
+		this->saveChanges();
+	} else {
+		resetChanges();
+	}
+}
+
 void LBM3D_1D_indices::saveChanges() {
 
 
@@ -2273,6 +2290,15 @@ void LBM3D_1D_indices::saveChanges() {
 
 
 
+}
+
+void LBM3D_1D_indices::resetChanges() {
+	resetToPrevState();
+
+}
+
+bool LBM3D_1D_indices::isUnderEdit() {
+	return editing;
 }
 
 void LBM3D_1D_indices::draw() {
@@ -3202,4 +3228,14 @@ glm::vec3 LBM3D_1D_indices::calculateMacroscopicVelocity(int x, int y, int z, fl
 	macroVelocity /= macroDensity;
 
 	return macroVelocity;
+}
+
+void LBM3D_1D_indices::saveState() {
+	prevState.position = position;
+	prevState.scale = scale;
+}
+
+void LBM3D_1D_indices::resetToPrevState() {
+	position = prevState.position;
+	scale = prevState.scale;
 }

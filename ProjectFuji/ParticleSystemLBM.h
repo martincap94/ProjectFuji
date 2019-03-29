@@ -42,7 +42,7 @@ public:
 
 	bool drawStreamlines = false;	///< Whether the streamline visualization should be used (2D CPU only) - smallest priority (configuration file overwrites this setting as well as setting in the main function
 
-	float pointSize = 1.0f;			///< Point size of the particles
+	float pointSize = 1500.0f;			///< Point size of the particles
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);	///< Color of the particles (if they're not drawn as point sprites or their velocity isn't visualized)
 

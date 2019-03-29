@@ -175,6 +175,7 @@
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="UserInterface.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VariableManager.cpp" />
     <CudaCompile Include="LBM2D_1D_indices.cu">
@@ -254,6 +255,8 @@
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="UIConfig.h" />
+    <ClInclude Include="UserInterface.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="VariableManager.h" />
     <CudaCompile Include="LBM.h">

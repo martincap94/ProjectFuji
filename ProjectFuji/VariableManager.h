@@ -123,7 +123,9 @@ public:
 	int lbmStepFrame = 1;
 	int stlpStepFrame = 1;
 
+	int drawSkybox = 0;
 	int hosekSkybox = 1;
+
 
 
 	enum eFogMode {
@@ -135,7 +137,7 @@ public:
 	int fogMode = LINEAR;
 	float fogExpFalloff = 0.01f;
 	float fogMinDistance = 0.0f;
-	float fogMaxDistance = 400.0f;
+	float fogMaxDistance = 20000.0f;
 	float fogIntensity = 0.3f;
 	glm::vec4 fogColor = glm::vec4(0.05f, 0.05f, 0.08f, 1.0f);
 
@@ -163,8 +165,6 @@ public:
 	int debugTextureRes = leftSidebarWidth;
 
 	int numDebugOverlayTextures = 4;
-
-	bool lbmEditMode = false;
 
 
 	int prevHideUIKeyState = GLFW_RELEASE;

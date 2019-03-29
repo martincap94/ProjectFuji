@@ -78,7 +78,7 @@ public:
 	Texture *spriteTexture;
 	Texture *secondarySpriteTexture;
 
-	float pointSize = 10.0f;
+	float pointSize = 1500.0f;
 
 	struct cudaGraphicsResource *cudaParticleVerticesVBO;
 	struct cudaGraphicsResource *cudaParticleProfilesVBO;

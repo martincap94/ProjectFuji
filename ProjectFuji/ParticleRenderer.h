@@ -33,8 +33,10 @@ public:
 
 	int lightBufferResolution = 512;
 
-	int numSlices = 32;
+	int maxNumSlices = 4096;
+	int numSlices = 256;
 	int numDisplayedSlices = numSlices;
+
 	int batchSize;
 
 	int downSample = 1;

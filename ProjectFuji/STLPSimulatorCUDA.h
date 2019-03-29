@@ -26,7 +26,7 @@ public:
 	Texture spriteTexture;
 	Texture secondarySpriteTexture;
 
-	float pointSize = 10.0f;
+	float pointSize = 1500.0f;
 
 
 	float delta_t = 1.0f;
