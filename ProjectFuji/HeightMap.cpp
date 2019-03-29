@@ -12,6 +12,7 @@
 #include "TextureManager.h"
 #include "Utils.h"
 #include <stb_image.h>
+#include <limits>
 
 
 
@@ -66,14 +67,13 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 
 
-	float *imageData;
+	unsigned short *imageData = nullptr;
 	bool useStb = true;
 	if (useStb) {
 		int numChannels;
 
 		stbi_set_flip_vertically_on_load(true);
-		imageData = stbi_loadf((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
-
+		imageData = stbi_load_16((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
 
 
 		if (!imageData) {
@@ -90,14 +90,15 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 		terrainWidth = width;
 		terrainDepth = height;
 
+		cout << "Width: " << width << ", height: " << height << endl;
 
 		for (int z = height - 1; z >= 0; z--) {
 			for (int x = 0; x < width; x++) {
-				float *pixel = imageData + (x + z * height) * numChannels;
-				float r = pixel[0];
-				float g = pixel[1];
-				float b = pixel[2];
-				float a = 0xff;
+				unsigned short *pixel = imageData + (x * height + z) * numChannels;
+				unsigned short r = pixel[0];
+				unsigned short g = pixel[1];
+				unsigned short b = pixel[2];
+				unsigned short a = 0xff;
 				if (numChannels >= 4) {
 					a = pixel[3];
 				}
@@ -107,9 +108,11 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 				//cout << b << endl;
 				//cout << endl;
 
-				data[x][z] = (r + g + b) / 3.0f;
+				data[x][z] = (float)r /*+ (float)g + (float)b*/;
+				data[x][z] /= /*3.0f * */(float)numeric_limits<unsigned short>().max();
+				//cout << "height before mapping: " << data[x][z] << endl;
 				rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
-
+				//cout << "after mapping: " << data[x][z] << endl;
 				//data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
 			}
 		}
@@ -163,7 +166,9 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 	initMaterials();
 
-	stbi_image_free(imageData);
+	if (imageData != nullptr) {
+		stbi_image_free(imageData);
+	}
 
 }
 
@@ -181,6 +186,7 @@ void HeightMap::initMaterials() {
 	CHECK_GL_ERRORS();
 
 	shader = ShaderManager::getShaderPtr("terrain");
+	//shader = ShaderManager::getShaderPtr("singleColor");
 	shader->use();
 
 	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
@@ -243,6 +249,16 @@ void HeightMap::initBuffers() {
 
 		for (int x = 0; x < terrainWidth - 1; x++) {
 
+			//float xw = x * vars->texelWorldSize;
+			//float zw = z * vars->texelWorldSize;
+			//float tws = vars->texelWorldSize;
+
+			//glm::vec3 p1(xw, data[x][z], zw);
+			//glm::vec3 p2(xw + tws, data[x + 1][z], zw);
+			//glm::vec3 p3(xw + tws, data[x + 1][z - 1], zw - tws);
+			//glm::vec3 p4(xw, data[x][z - 1], zw - tws);
+
+
 
 			glm::vec3 p1(x, data[x][z], z);
 			glm::vec3 p2(x + 1, data[x + 1][z], z);
@@ -250,40 +266,86 @@ void HeightMap::initBuffers() {
 			glm::vec3 p4(x, data[x][z - 1], z - 1);
 
 
+			glm::vec3 n1 = glm::normalize(glm::cross(p2 - p3, p2 - p1));
+			glm::vec3 n2 = glm::normalize(glm::cross(p4 - p1, p4 - p3)); // flat shading normals
+
+
+
 			glm::vec3 normalP1 = computeNormal(x, z);
 			glm::vec3 normalP2 = computeNormal(x + 1, z);
 			glm::vec3 normalP3 = computeNormal(x + 1, z - 1);
 			glm::vec3 normalP4 = computeNormal(x, z - 1);
 
-			vertices.push_back(p1);
-			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
-			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
+			if (true) {
 
-			vertices.push_back(p2);
-			normals.push_back(normalP2);
-			texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
-			//texCoords.push_back(glm::vec2(p2.x, p2.z) / den);
+				vertices.push_back(p1);
 
-			vertices.push_back(p3);
-			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
-			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+				normals.push_back(normalP1);
+				//normals.push_back(n1);
 
-			vertices.push_back(p3);
-			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
-			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+				texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+				//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 
-			vertices.push_back(p4);
-			normals.push_back(normalP4);
-			texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
-			//texCoords.push_back(glm::vec2(p4.x, p4.z) / den);
+				vertices.push_back(p2);
+				normals.push_back(normalP2);
+				//normals.push_back(n1);
 
-			vertices.push_back(p1);
-			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
-			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
+				texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
+				//texCoords.push_back(glm::vec2(p2.x, p2.z) / den);
+
+				vertices.push_back(p3);
+				normals.push_back(normalP3);
+				//normals.push_back(n1);
+
+				texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+				//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+
+				vertices.push_back(p3);
+				normals.push_back(normalP3);
+				//normals.push_back(n2);
+
+				texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+				//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+
+				vertices.push_back(p4);
+				normals.push_back(normalP4);
+				//normals.push_back(n2);
+
+				texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
+				//texCoords.push_back(glm::vec2(p4.x, p4.z) / den);
+
+				vertices.push_back(p1);
+				normals.push_back(normalP1);
+				//normals.push_back(n2);
+
+				texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+				//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
+			} else {
+
+				vertices.push_back(p1);
+				normals.push_back(n1);
+				texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+
+				vertices.push_back(p2);
+				normals.push_back(n1);
+				texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
+
+				vertices.push_back(p3);
+				normals.push_back(n1);
+				texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+
+				vertices.push_back(p3);
+				normals.push_back(n2);
+				texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+
+				vertices.push_back(p4);
+				normals.push_back(n2);
+				texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
+
+				vertices.push_back(p1);
+				normals.push_back(n2);
+				texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+			}
 
 			numPoints += 6;
 
@@ -329,7 +391,7 @@ void HeightMap::initBuffers() {
 	// merge together
 	for (int i = 0; i < numPoints; i++) {
 		vertexData.push_back(vertices[i].x * vars->texelWorldSize);
-		vertexData.push_back(vertices[i].y/* * vars->texelWorldSize*/);
+		vertexData.push_back(vertices[i].y /** vars->texelWorldSize*/);
 		vertexData.push_back(vertices[i].z * vars->texelWorldSize);
 		vertexData.push_back(normals[i].x);
 		vertexData.push_back(normals[i].y);
@@ -762,6 +824,40 @@ void HeightMap::drawGeometry(ShaderProgram * shader) {
 
 // Based on: https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap
 glm::vec3 HeightMap::computeNormal(int x, int z) {
+	int offset = 1;
+
+	int xLeft = x - offset;
+	int xRight = x + offset;
+	int zBottom = z + offset;
+	int zTop = z - offset;
+
+	if (xLeft < 0) {
+		xLeft = 0;
+	}
+	if (xRight > width - 1) {
+		xRight = width - 1;
+	}
+	if (zBottom > height - 1) {
+		zBottom = height - 1;
+	}
+	if (zTop < 0) {
+		zTop = 0;
+	}
+	float hLeft = data[xLeft][z];
+	float hRight = data[xRight][z];
+	float hBottom = data[x][zBottom];
+	float hTop = data[x][zTop];
+
+	glm::vec3 normal;
+	normal.x = hLeft - hRight;
+	//normal.y = hBottom - hTop;
+	//normal.z = -2.0f;
+	normal.y = 2.0f * vars->texelWorldSize;
+	normal.z = hBottom - hTop;
+
+	return glm::normalize(normal);
+
+	/*
 
 	int offset = 1;
 
@@ -795,4 +891,5 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 	normal.z = hTop - hBottom;
 
 	return glm::normalize(normal);
+	*/
 }

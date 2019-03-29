@@ -283,7 +283,7 @@ int runApp() {
 		cerr << "Failed to create GLFW window" << endl;
 		glfwTerminate(); // maybe unnecessary according to the documentation
 		return -1;
-}	
+	}
 
 	glfwGetFramebufferSize(window, &vars.screenWidth, &vars.screenHeight);
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -381,7 +381,7 @@ int runApp() {
 		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
 		CHECK_ERROR(cudaPeekAtLastError());
 
-		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, nullptr, particleSystem, blockDim, & stlpDiagram);
+		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, nullptr, particleSystem, blockDim, &stlpDiagram);
 		CHECK_ERROR(cudaPeekAtLastError());
 
 
@@ -399,7 +399,7 @@ int runApp() {
 		projWidth = projHeight * ratio;
 
 		projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
-		grid = new Grid3D(vars.latticeWidth * lbm->worldSizeRatio, vars.latticeHeight * lbm->worldSizeRatio, vars.latticeDepth * lbm->worldSizeRatio, 6, 6, 6);
+		grid = new Grid3D(vars.latticeWidth * lbm->scale, vars.latticeHeight * lbm->scale, vars.latticeDepth * lbm->scale, 6, 6, 6);
 		float cameraRadius = sqrtf((float)(vars.latticeWidth * vars.latticeWidth + vars.latticeDepth * vars.latticeDepth)) + 10.0f;
 
 		orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
@@ -411,9 +411,9 @@ int runApp() {
 	camera = viewportCamera;
 	diagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
 	overlayDiagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
-	freeRoamCamera = new FreeRoamCamera(glm::vec3(30.0f, 50.0f, 30.0f), WORLD_UP, -35.0f, -35.0f);
+	freeRoamCamera = new FreeRoamCamera(glm::vec3(30.0f, vars.terrainHeightRange.y, 30.0f), WORLD_UP, -35.0f, -35.0f);
 	((FreeRoamCamera *)freeRoamCamera)->heightMap = vars.heightMap;
-
+	freeRoamCamera->movementSpeed = vars.cameraSpeed;
 
 	viewportProjection = projection;
 
@@ -462,7 +462,7 @@ int runApp() {
 	armoireModel.transform.position += glm::vec3(10.0f, 0.0f, 10.0f);
 	armoireModel.transform.scale = glm::vec3(1.0f);
 
-	dirLight.position = glm::vec3(100.0f, 60.0f, 60.0f);
+	dirLight.position = glm::vec3(10000.0f, 15000.0f, 20000.0f);
 
 
 
@@ -478,7 +478,7 @@ int runApp() {
 
 	int frameCounter = 0;
 	glfwSwapInterval(vars.vsync); // VSync Settings (0 is off, 1 is 60FPS, 2 is 30FPS and so on)
-	
+
 	double prevTime = glfwGetTime();
 	long long int totalFrameCounter = 0;
 	//int measurementFrameCounter = 0;
@@ -554,7 +554,7 @@ int runApp() {
 
 	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("depthMapTexture"), 0);
 	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("harrisTexture"), 1);
-	
+
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[0]"), 0);
 	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[1]"), 1);
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("imageTexture"), 1);
@@ -685,7 +685,7 @@ int runApp() {
 
 		//dirLightOnlyShader->use();
 		//dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
-		
+
 		reportGLErrors("D2");
 
 		if (drawSkybox) {
@@ -720,10 +720,10 @@ int runApp() {
 
 		if (mode == 0 || mode == 1) {
 
-		/*	if (mode == 1) {
-				stlpSim->doStep();
-			}
-*/
+			/*	if (mode == 1) {
+					stlpSim->doStep();
+				}
+	*/
 			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
 			stlpDiagram.drawText(*textShader);
 
@@ -739,7 +739,7 @@ int runApp() {
 
 
 			//Show2DTexture(stlpDiagram.diagramTexture, 0, 0, 200, 200);
-		
+
 		} else if (mode == 2) {
 
 			if (!vars.paused) {
@@ -764,7 +764,7 @@ int runApp() {
 			// DRAW SCENE
 			grid->draw(*singleColorShader);
 
-			
+
 			lbm->draw(*singleColorShader);
 
 			//if (vars.usePointSprites) {
@@ -886,17 +886,17 @@ int runApp() {
 			if (vars.drawGrass) {
 				grassModel.draw();
 			}
-			
+
 			testMesh.draw();
 			armoireModel.draw();
-			
-			
+
+
 			if (vars.drawTrees) {
 				treeModel.draw();
 			}
 
 			evsm.postSecondPass();
-			
+
 			CHECK_GL_ERRORS();
 
 			ShaderManager::updateFogUniforms();
@@ -906,8 +906,8 @@ int runApp() {
 			//stlpSim->heightMap->draw();
 			dirLight.draw();
 
-
-			grid->draw(*singleColorShader);
+			lbm->draw();
+			//grid->draw(*singleColorShader);
 			gGrid.draw(*unlitColorShader);
 
 
@@ -934,26 +934,26 @@ int runApp() {
 				///////////////////////////////////////////////////////////////			
 
 
-				particleRenderer->recalcVectors(camera, &dirLight);
-				glm::vec3 sortVec = particleRenderer->getSortVec();
+			particleRenderer->recalcVectors(camera, &dirLight);
+			glm::vec3 sortVec = particleRenderer->getSortVec();
 
-				// NOW sort particles using the sort vector
-				particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
+			// NOW sort particles using the sort vector
+			particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
 
-				particleRenderer->preSceneRenderImage();
-				vars.heightMap->draw();
-				particleRenderer->postSceneRenderImage();
+			particleRenderer->preSceneRenderImage();
+			vars.heightMap->draw();
+			particleRenderer->postSceneRenderImage();
 
 
-				particleRenderer->render(particleSystem, &dirLight, camera);
+			particleRenderer->render(particleSystem, &dirLight, camera);
 
-/*
-				glDisable(GL_BLEND);
-				glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-				glEnable(GL_DEPTH_TEST);*/
-			//}
+			/*
+							glDisable(GL_BLEND);
+							glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+							glEnable(GL_DEPTH_TEST);*/
+							//}
 
-			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
+							//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
 
 			if (vars.showOverlayDiagram) {
 				stlpDiagram.drawOverlayDiagram(diagramShader);
@@ -962,7 +962,7 @@ int runApp() {
 
 			//TextureManager::drawOverlayTextures(debugTextureIds);
 			TextureManager::drawOverlayTextures();
-			
+
 
 		}
 
@@ -1160,7 +1160,7 @@ void processInput(GLFWwindow* window) {
 		mode = 3;
 		glEnable(GL_DEPTH_TEST);
 		refreshProjectionMatrix();
-		
+
 	}
 	if (glfwGetKey(window, mouseCursorKey) == GLFW_PRESS) {
 		if (prevMouseCursorKeyState == GLFW_RELEASE) {
@@ -1299,9 +1299,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	/* GUI */
 	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars.toolbarHeight, vars.leftSidebarWidth, vars.screenHeight - vars.debugTextureRes - vars.toolbarHeight),
 				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
-				 //NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-				 //NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) 
-		{
+		//NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+		//NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE)) 
+	{
 
 		enum { EASY, HARD };
 		//static int op = EASY;
@@ -1380,7 +1380,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 			nk_property_float(ctx, "x:", -10.0f, &lbm->inletVelocity.x, 10.0f, 0.01f, 0.005f);
 			nk_property_float(ctx, "y:", -10.0f, &lbm->inletVelocity.y, 10.0f, 0.01f, 0.005f);
 			nk_property_float(ctx, "z:", -10.0f, &lbm->inletVelocity.z, 10.0f, 0.01f, 0.005f);
-			
+
 
 
 			//nk_label(ctx, "Use point sprites", NK_TEXT_LEFT);
@@ -1400,27 +1400,27 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				nk_layout_row_dynamic(ctx, 15, 1);
 				nk_checkbox_label(ctx, "Respawn linearly", &lbm->respawnLinearly);
 			}
-/*
-			nk_layout_row_dynamic(ctx, 10, 1);
-			nk_labelf(ctx, NK_TEXT_LEFT, "Point size");
-			nk_slider_float(ctx, 1.0f, &particleSystemLBM->pointSize, 100.0f, 0.5f);
+			/*
+						nk_layout_row_dynamic(ctx, 10, 1);
+						nk_labelf(ctx, NK_TEXT_LEFT, "Point size");
+						nk_slider_float(ctx, 1.0f, &particleSystemLBM->pointSize, 100.0f, 0.5f);
 
-			if (!vars.usePointSprites && !lbm->visualizeVelocity) {
-				nk_layout_row_dynamic(ctx, 20, 1);
-				nk_label(ctx, "Particles Color:", NK_TEXT_LEFT);
-				nk_layout_row_dynamic(ctx, 25, 1);
-				if (nk_combo_begin_color(ctx, nk_rgb_cf(particlesColor), nk_vec2(nk_widget_width(ctx), 400))) {
-					nk_layout_row_dynamic(ctx, 120, 1);
-					particlesColor = nk_color_picker(ctx, particlesColor, NK_RGBA);
-					nk_layout_row_dynamic(ctx, 25, 1);
-					particlesColor.r = nk_propertyf(ctx, "#R:", 0, particlesColor.r, 1.0f, 0.01f, 0.005f);
-					particlesColor.g = nk_propertyf(ctx, "#G:", 0, particlesColor.g, 1.0f, 0.01f, 0.005f);
-					particlesColor.b = nk_propertyf(ctx, "#B:", 0, particlesColor.b, 1.0f, 0.01f, 0.005f);
-					particlesColor.a = nk_propertyf(ctx, "#A:", 0, particlesColor.a, 1.0f, 0.01f, 0.005f);
-					particleSystemLBM->particlesColor = glm::vec3(particlesColor.r, particlesColor.g, particlesColor.b);
-					nk_combo_end(ctx);
-				}
-			}*/
+						if (!vars.usePointSprites && !lbm->visualizeVelocity) {
+							nk_layout_row_dynamic(ctx, 20, 1);
+							nk_label(ctx, "Particles Color:", NK_TEXT_LEFT);
+							nk_layout_row_dynamic(ctx, 25, 1);
+							if (nk_combo_begin_color(ctx, nk_rgb_cf(particlesColor), nk_vec2(nk_widget_width(ctx), 400))) {
+								nk_layout_row_dynamic(ctx, 120, 1);
+								particlesColor = nk_color_picker(ctx, particlesColor, NK_RGBA);
+								nk_layout_row_dynamic(ctx, 25, 1);
+								particlesColor.r = nk_propertyf(ctx, "#R:", 0, particlesColor.r, 1.0f, 0.01f, 0.005f);
+								particlesColor.g = nk_propertyf(ctx, "#G:", 0, particlesColor.g, 1.0f, 0.01f, 0.005f);
+								particlesColor.b = nk_propertyf(ctx, "#B:", 0, particlesColor.b, 1.0f, 0.01f, 0.005f);
+								particlesColor.a = nk_propertyf(ctx, "#A:", 0, particlesColor.a, 1.0f, 0.01f, 0.005f);
+								particleSystemLBM->particlesColor = glm::vec3(particlesColor.r, particlesColor.g, particlesColor.b);
+								nk_combo_end(ctx);
+							}
+						}*/
 			nk_layout_row_dynamic(ctx, 15, 1);
 			nk_label(ctx, "Camera movement speed", NK_TEXT_LEFT);
 			nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 10000.0f, 1.0f);
@@ -1524,24 +1524,24 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_float(ctx, "#x:", -1000.0f, &dirLight.position.x, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "#y:", -1000.0f, &dirLight.position.y, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "#z:", -1000.0f, &dirLight.position.z, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "#x:", -100000.0f, &dirLight.position.x, 100000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "#y:", -100000.0f, &dirLight.position.y, 100000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "#z:", -100000.0f, &dirLight.position.z, 100000.0f, 1.0f, 1.0f);
 
 
 			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_float(ctx, "focus x:", -1000.0f, &dirLight.focusPoint.x, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "focus y:", -1000.0f, &dirLight.focusPoint.y, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "focus z:", -1000.0f, &dirLight.focusPoint.z, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "focus x:", -100000.0f, &dirLight.focusPoint.x, 100000.0f, 10.0f, 10.0f);
+			nk_property_float(ctx, "focus y:", -100000.0f, &dirLight.focusPoint.y, 100000.0f, 10.0f, 10.0f);
+			nk_property_float(ctx, "focus z:", -100000.0f, &dirLight.focusPoint.z, 100000.0f, 10.0f, 10.0f);
 
 
 			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_float(ctx, "left:", -1000.0f, &dirLight.pLeft, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "right:", -1000.0f, &dirLight.pRight, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "bottom:", -1000.0f, &dirLight.pBottom, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "top:", -1000.0f, &dirLight.pTop, 1000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "left:", -100000.0f, &dirLight.pLeft, 100000.0f, 10.0f, 10.0f);
+			nk_property_float(ctx, "right:", -100000.0f, &dirLight.pRight, 100000.0f, 10.0f, 10.0f);
+			nk_property_float(ctx, "bottom:", -100000.0f, &dirLight.pBottom, 100000.0f, 10.0f, 10.0f);
+			nk_property_float(ctx, "top:", -100000.0f, &dirLight.pTop, 100000.0f, 10.0f, 10.0f);
 			nk_property_float(ctx, "near:", 0.01f, &dirLight.pNear, 100.0f, 0.01f, 0.01f);
-			nk_property_float(ctx, "far:", 1.0f, &dirLight.pFar, 10000.0f, 1.0f, 1.0f);
+			nk_property_float(ctx, "far:", 1.0f, &dirLight.pFar, 100000.0f, 10.0f, 10.0f);
 
 			nk_checkbox_label(ctx, "Simulate sun", &vars.simulateSun);
 			nk_property_float(ctx, "Sun speed", 0.1f, &dirLight.circularMotionSpeed, 1000.0f, 0.1f, 0.1f);
@@ -1644,7 +1644,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Material " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
 
 					nk_layout_row_dynamic(ctx, 15, 2);
-					
+
 					nk_label(ctx, "Diffuse", NK_TEXT_LEFT);
 
 					if (nk_combo_begin_label(ctx, vars.heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::DIFFUSE).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
@@ -2035,26 +2035,48 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 				vars.bgClearColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
 				nk_combo_end(ctx);
 			}
+		} else if (uiMode == 6) {
+
+
+			nk_layout_row_dynamic(ctx, 30, 1);
+			nk_label(ctx, "LBM DEVELOPER", NK_TEXT_CENTERED);
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+
+
+			if (!vars.lbmEditMode) {
+				if (nk_button_label(ctx, "EDIT LBM")) {
+					vars.lbmEditMode = true;
+				}
+			} else {
+
+				nk_property_float(ctx, "#x", -10000.0f, &lbm->position.x, 100000.0f, 10.0f, 10.0f);
+				nk_property_float(ctx, "#y", -10000.0f, &lbm->position.y, 100000.0f, 10.0f, 10.0f);
+				nk_property_float(ctx, "#z", -10000.0f, &lbm->position.z, 100000.0f, 10.0f, 10.0f);
+
+				/*
+				// This needs LBM reinitialization - maybe later
+				nk_property_int(ctx, "x cells", 10, &lbm->latticeWidth, 1000, 1, 1);
+				nk_property_int(ctx, "y cells", 10, &lbm->latticeHeight, 1000, 1, 1);
+				nk_property_int(ctx, "z cells", 10, &lbm->latticeDepth, 1000, 1, 1);
+				*/
+
+				nk_property_float(ctx, "scale", 1.0f, &lbm->scale, 1000.0f, 1.0f, 1.0f);
+
+				if (nk_button_label(ctx, "SAVE CHANGES")) {
+
+					lbm->saveChanges(); // testing 
+					vars.lbmEditMode = false;
+				}
+				if (nk_button_label(ctx, "CANCEL")) {
+
+
+					vars.lbmEditMode = false;
+				}
+
+			}
+
 		}
-
-	} else if (uiMode == 6) {
-
-
-		nk_layout_row_dynamic(ctx, 30, 1);
-		nk_label(ctx, "LBM DEVELOPER", NK_TEXT_CENTERED);
-
-		nk_layout_row_dynamic(ctx, 15, 1);
-		
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2069,7 +2091,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 	if (nk_begin(ctx, "Debug Tab", nk_rect(vars.screenWidth - vars.rightSidebarWidth, vars.toolbarHeight, vars.rightSidebarWidth, /*vars.debugTabHeight*/vars.screenHeight - vars.toolbarHeight), NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
 
 		nk_layout_row_static(ctx, 15, vars.rightSidebarWidth, 1);
-		
+
 		/*
 		ss.clear();
 		ss << "Delta time: " << fixed << setprecision(2) << (deltaTime * 1000.0);
@@ -2126,7 +2148,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 				nk_tree_pop(ctx);
 			}
-		
+
 		}
 
 		nk_layout_row_dynamic(ctx, 15, 1);
@@ -2145,9 +2167,9 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 		nk_value_int(ctx, "h:", vars.latticeHeight);
 		nk_value_int(ctx, "d:", vars.latticeDepth);
 
-		nk_value_float(ctx, "wr [m]", vars.latticeWidth * lbm->worldSizeRatio);
-		nk_value_float(ctx, "wh [m]", vars.latticeHeight * lbm->worldSizeRatio);
-		nk_value_float(ctx, "wd [m]", vars.latticeDepth * lbm->worldSizeRatio);
+		nk_value_float(ctx, "wr [m]", vars.latticeWidth * lbm->scale);
+		nk_value_float(ctx, "wh [m]", vars.latticeHeight * lbm->scale);
+		nk_value_float(ctx, "wd [m]", vars.latticeDepth * lbm->scale);
 
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_value_int(ctx, "terrain width resolution", vars.heightMap->terrainWidth);
@@ -2256,7 +2278,7 @@ void constructUserInterface(nk_context *ctx, nk_colorf &particlesColor) {
 
 
 	/*
-	
+
 			static int show_group =  1;
 		if (show_group) {
 			nk_layout_row_dynamic(ctx, 100, 1);

@@ -55,6 +55,7 @@ public:
 
 
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)
+	//ShaderProgram *wireframeShader;
 
 	/// Default constructor.
 	HeightMap();

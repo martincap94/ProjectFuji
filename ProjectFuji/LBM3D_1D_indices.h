@@ -18,6 +18,7 @@
 #include "HeightMap.h"
 #include "VariableManager.h"
 #include "STLPDiagram.h"
+#include "GridLBM.h"
 
 #include <cuda_gl_interop.h>
 
@@ -32,7 +33,6 @@
 
 class ParticleSystem;
 
-__constant__ glm::vec3 dirVectorsConst[19];
 //__constant__ float WEIGHT_MIDDLE;
 //__constant__ float WEIGHT_AXIS;
 //__constant__ float WEIGHT_NON_AXIAL;
@@ -105,8 +105,7 @@ public:
 		RESPAWN_PARTICLES_INLET
 	};
 
-
-	float worldSizeRatio = 3.0f; // (number of meters) / (cell unit size)
+	GridLBM *grid = nullptr;
 
 	VariableManager *vars;
 
@@ -114,6 +113,17 @@ public:
 	enum eLBMControlProperty {
 		MIRROR_SIDES_PROP
 	};
+
+
+	struct PrevStateData {
+		glm::vec3 position;
+
+	};
+
+
+	glm::vec3 position = glm::vec3(0.0f);
+	float scale = 100.0f; // (number of meters) / (cell unit size)
+
 
 	ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system
 	ParticleSystem *particleSystem;
@@ -200,7 +210,9 @@ public:
 
 	virtual void initScene();
 	virtual void refreshHeightMap();
+	virtual void saveChanges();
 
+	void draw(); // new function, draws grid
 	virtual void draw(ShaderProgram &shader);
 
 	virtual void doStep();
@@ -219,6 +231,11 @@ public:
 	virtual void switchToCPU();
 	virtual void synchronize();
 
+	float getWorldWidth();
+	float getWorldHeight();
+	float getWorldDepth();
+
+	glm::mat4 getModelMatrix();
 
 	void mapVBOTEST(GLuint VBO, struct cudaGraphicsResource *res);
 

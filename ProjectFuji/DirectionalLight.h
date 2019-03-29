@@ -34,12 +34,12 @@ public:
 	glm::mat4 projectionMatrix;
 	//glm::mat4 viewMatrix;
 
-	float pLeft = -100.0f;
-	float pRight = 100.0f;
-	float pBottom = -100.0f;
-	float pTop = 100.0f;
-	float pNear = 1.0f;
-	float pFar = 1000.0f;
+	float pLeft = -30000.0f;
+	float pRight = 30000.0f;
+	float pBottom = -30000.0f;
+	float pTop = 30000.0f;
+	float pNear = 10.0f;
+	float pFar = 50000.0f;
 
 	// for circular motion -> overwrites position and direction (focus point is the center of the circular motion)
 	float theta = 0.0f;

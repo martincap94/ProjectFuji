@@ -164,6 +164,8 @@ public:
 
 	int numDebugOverlayTextures = 4;
 
+	bool lbmEditMode = false;
+
 
 	int prevHideUIKeyState = GLFW_RELEASE;
 	int hideUIKey = GLFW_KEY_F;

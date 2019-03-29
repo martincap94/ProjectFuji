@@ -4,6 +4,7 @@
 #include "device_launch_parameters.h"
 
 #include <glm\gtx\norm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
 
 
 #include <iostream>
@@ -20,9 +21,11 @@ __constant__ float d_itau;				///< Inverse tau value (1.0f / tau) on the device
 __constant__ int d_mirrorSides;			///< Whether to mirror sides (cycle) on the device
 __constant__ float d_worldSizeRatio;
 
+__constant__ glm::vec3 d_position;
 
 __device__ int d_respawnY = 0;			///< Respawn y coordinate on the device, not used (random respawn now used)
 __device__ int d_respawnZ = 0;			///< Respawn z coordinate on the device, not used (random respawn now used)
+__constant__ glm::vec3 dirVectorsConst[19];
 
 
 
@@ -47,14 +50,19 @@ __device__ glm::vec3 mapToViridis3D(float val) {
 	return glm::vec3(viridis_cm[discreteVal][0], viridis_cm[discreteVal][1], viridis_cm[discreteVal][2]);
 }
 
-__host__ __device__ glm::vec3 getLatticePosition(const glm::vec3 &worldPosition) {
+__host__ __device__ glm::vec3 getLatticePosition(glm::vec3 worldPosition) {
 	// TO DO - offsets (model matrix?), maybe even scaling (model matrix scale)
-	return glm::vec3(worldPosition.x / d_worldSizeRatio, worldPosition.y / d_worldSizeRatio, worldPosition.z / d_worldSizeRatio);
+	worldPosition -= d_position;
+	return (worldPosition / d_worldSizeRatio);
+	//return glm::vec3(worldPosition.x / d_worldSizeRatio, worldPosition.y / d_worldSizeRatio, worldPosition.z / d_worldSizeRatio);
 	//return glm::vec3();
 }
 
-__host__ __device__ glm::vec3 getWorldPosition(const glm::vec3 &latticePosition) {
-	return glm::vec3(latticePosition.x * d_worldSizeRatio, latticePosition.y * d_worldSizeRatio, latticePosition.z * d_worldSizeRatio);
+__host__ __device__ glm::vec3 getWorldPosition(glm::vec3 latticePosition) {
+	latticePosition *= d_worldSizeRatio;
+	return (latticePosition + d_position);
+
+	//return glm::vec3(latticePosition.x * d_worldSizeRatio, latticePosition.y * d_worldSizeRatio, latticePosition.z * d_worldSizeRatio);
 }
 
 
@@ -2149,7 +2157,8 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	CHECK_ERROR(cudaMemcpyToSymbol(d_tau, &tau, sizeof(float)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_itau, &itau, sizeof(float)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_mirrorSides, &mirrorSides, sizeof(int)));
-	CHECK_ERROR(cudaMemcpyToSymbol(d_worldSizeRatio, &worldSizeRatio, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_worldSizeRatio, &scale, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_position, glm::value_ptr(position), sizeof(glm::vec3)));
 
 	gridDim = dim3((unsigned int)ceil(latticeSize / (blockDim.x * blockDim.y * blockDim.z)) + 1, 1, 1);
 	cacheSize = blockDim.x * blockDim.y * blockDim.z * sizeof(Node3D);
@@ -2174,6 +2183,7 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	//CHECK_ERROR(cudaMemcpy(d_velocities, velocities, sizeof(glm::vec3) * latticeSize, cudaMemcpyHostToDevice));
 	//CHECK_ERROR(cudaMemcpy(d_frontLattice, frontLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice));
 
+	grid = new GridLBM(this);
 
 }
 
@@ -2192,6 +2202,10 @@ LBM3D_1D_indices::~LBM3D_1D_indices() {
 
 	//cudaGraphicsUnregisterResource(cudaParticleVerticesVBO);
 	//cudaGraphicsUnregisterResource(cudaParticleColorsVBO);
+
+	if (grid) {
+		delete grid;
+	}
 
 
 }
@@ -2239,14 +2253,15 @@ void LBM3D_1D_indices::refreshHeightMap() {
 			int zidx = vars->terrainZOffset + z;
 
 			// TESTING
-			xidx = xidx * worldSizeRatio;
-			zidx = zidx * worldSizeRatio;
+			xidx = (xidx * scale) + position.x;
+			zidx = (zidx * scale) + position.z;
 
+			xidx /= vars->texelWorldSize;
+			zidx /= vars->texelWorldSize;
 
-
-			if (xidx < heightMap->terrainWidth && zidx < heightMap->terrainDepth) {
+			if (xidx < heightMap->terrainWidth && xidx >= 0 && zidx < heightMap->terrainDepth && zidx >= 0) {
 				//tempHM[x + z * latticeWidth] = heightMap->data[xidx][zidx];
-				tempHM[x + z * latticeWidth] = heightMap->data[xidx][zidx] / worldSizeRatio;
+				tempHM[x + z * latticeWidth] = (heightMap->data[xidx][zidx] - position.y) / scale;
 			}
 			//tempHM[x + z * latticeWidth] = heightMap->data[x][z];
 		}
@@ -2256,6 +2271,24 @@ void LBM3D_1D_indices::refreshHeightMap() {
 
 	delete[] tempHM;
 
+}
+
+void LBM3D_1D_indices::saveChanges() {
+
+
+	CHECK_ERROR(cudaMemcpyToSymbol(d_worldSizeRatio, &scale, sizeof(float)));
+	CHECK_ERROR(cudaMemcpyToSymbol(d_position, glm::value_ptr(position), sizeof(glm::vec3)));
+
+	refreshHeightMap();
+
+	CHECK_ERROR(cudaGetLastError());
+
+
+
+}
+
+void LBM3D_1D_indices::draw() {
+	grid->draw();
 }
 
 void LBM3D_1D_indices::draw(ShaderProgram & shader) {
@@ -3043,6 +3076,25 @@ void LBM3D_1D_indices::switchToCPU() {
 
 void LBM3D_1D_indices::synchronize() {
 	cudaDeviceSynchronize();
+}
+
+float LBM3D_1D_indices::getWorldWidth() {
+	return scale * latticeWidth;
+}
+
+float LBM3D_1D_indices::getWorldHeight() {
+	return scale * latticeHeight;
+}
+
+float LBM3D_1D_indices::getWorldDepth() {
+	return scale * latticeDepth;
+}
+
+glm::mat4 LBM3D_1D_indices::getModelMatrix() {
+	glm::mat4 model(1.0f);
+	model = glm::translate(model, position);
+	model = glm::scale(model, glm::vec3(scale));
+	return model;
 }
 
 void LBM3D_1D_indices::mapVBOTEST(GLuint VBO, struct cudaGraphicsResource *res) {

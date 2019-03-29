@@ -100,6 +100,7 @@
     <ClCompile Include="GeneralGrid.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Grid3D.cpp" />
+    <ClCompile Include="GridLBM.cpp" />
     <ClCompile Include="HarrisCloudVisualizer.cpp" />
     <ClCompile Include="HeightMapOld.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -202,6 +203,7 @@
     <ClInclude Include="GeneralGrid.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Grid3D.h" />
+    <ClInclude Include="GridLBM.h" />
     <ClInclude Include="HarrisCloudVisualizer.h" />
     <ClInclude Include="HeightMapOld.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

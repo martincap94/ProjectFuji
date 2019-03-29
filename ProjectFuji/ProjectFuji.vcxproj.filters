@@ -198,6 +198,7 @@
     <ClCompile Include="HeightMapOld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GridLBM.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -359,6 +360,7 @@
     <ClInclude Include="HeightMapOld.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GridLBM.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
