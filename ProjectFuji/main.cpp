@@ -30,8 +30,8 @@
 //#include "LBM2D_1D_indices.h"
 #include "LBM3D_1D_indices.h"
 #include "HeightMap.h"
-#include "Grid2D.h"
-#include "Grid3D.h"
+//#include "Grid2D.h"
+//#include "Grid3D.h"
 #include "GeneralGrid.h"
 #include "ShaderProgram.h"
 #include "Camera.h"
@@ -41,7 +41,7 @@
 #include "ParticleSystemLBM.h"
 #include "ParticleSystem.h"
 #include "DirectionalLight.h"
-#include "Grid.h"
+//#include "Grid.h"
 #include "Utils.h"
 #include "Timer.h"
 #include "STLPDiagram.h"
@@ -137,7 +137,7 @@ VariableManager vars;
 //eLBMType lbmType;		///< The LBM type that is to be displayed
 
 LBM3D_1D_indices *lbm;				///< Pointer to the current LBM
-Grid *grid;				///< Pointer to the current grid
+//Grid *grid;				///< Pointer to the current grid
 Camera *camera;			///< Pointer to the current camera
 //ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system that is to be used throughout the whole application
 ParticleSystem *particleSystem;
@@ -399,7 +399,7 @@ int runApp() {
 		projWidth = projHeight * ratio;
 
 		projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
-		grid = new Grid3D(vars.latticeWidth * lbm->scale, vars.latticeHeight * lbm->scale, vars.latticeDepth * lbm->scale, 6, 6, 6);
+		//grid = new Grid3D(vars.latticeWidth * lbm->scale, vars.latticeHeight * lbm->scale, vars.latticeDepth * lbm->scale, 6, 6, 6);
 		float cameraRadius = sqrtf((float)(vars.latticeWidth * vars.latticeWidth + vars.latticeDepth * vars.latticeDepth)) + 10.0f;
 
 		orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
@@ -762,7 +762,7 @@ int runApp() {
 			}
 
 			// DRAW SCENE
-			grid->draw(*singleColorShader);
+			//grid->draw(*singleColorShader);
 
 
 			lbm->draw(*singleColorShader);
@@ -1002,7 +1002,7 @@ int runApp() {
 	delete particleSystem;
 	delete particleRenderer;
 	delete lbm;
-	delete grid;
+	//delete grid;
 	//delete viewportCamera;
 	delete freeRoamCamera;
 	delete diagramCamera;

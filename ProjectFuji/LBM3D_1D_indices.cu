@@ -2131,7 +2131,20 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	itau = 1.0f / tau;
 	nu = (2.0f * tau - 1.0f) / 6.0f;
 
-	initScene();
+	heightMap = vars->heightMap;
+
+	latticeWidth = vars->latticeWidth;
+	latticeHeight = vars->latticeHeight;
+	latticeDepth = vars->latticeDepth;
+
+	//latticeWidth = heightMap->width;
+	//latticeDepth = heightMap->height;
+	latticeSize = latticeWidth * latticeHeight * latticeDepth;
+
+
+	CHECK_ERROR(cudaMalloc((void**)&d_heightMap, sizeof(float) * latticeWidth * latticeDepth));
+
+	refreshHeightMap();
 
 
 	//frontLattice = new Node3D[latticeSize]();
@@ -2217,32 +2230,7 @@ void LBM3D_1D_indices::recalculateVariables() {
 	CHECK_ERROR(cudaMemcpyToSymbol(d_itau, &itau, sizeof(float)));
 }
 
-void LBM3D_1D_indices::initScene() {
-	//heightMap = new HeightMap(sceneFilename, latticeHeight, nullptr);
-	heightMap = vars->heightMap;
 
-	latticeWidth = vars->latticeWidth;
-	latticeHeight = vars->latticeHeight;
-	latticeDepth = vars->latticeDepth;
-
-	//latticeWidth = heightMap->width;
-	//latticeDepth = heightMap->height;
-	latticeSize = latticeWidth * latticeHeight * latticeDepth;
-
-
-	CHECK_ERROR(cudaMalloc((void**)&d_heightMap, sizeof(float) * latticeWidth * latticeDepth));
-
-	refreshHeightMap();
-	//cout << "lattice width = " << latticeWidth << ", height = " << latticeHeight << ", depth = " << latticeDepth << endl;
-
-
-	//particleVertices = particleSystemLBM->particleVertices;
-	//d_numParticles = particleSystemLBM->d_numParticles;
-
-	//particleSystemLBM->initParticlePositions(latticeWidth, latticeHeight, latticeDepth, heightMap);
-
-
-}
 
 void LBM3D_1D_indices::refreshHeightMap() {
 

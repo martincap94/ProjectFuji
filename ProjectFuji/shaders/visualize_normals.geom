@@ -7,7 +7,7 @@ in NormalData {
 	vec3 normal;
 } normalData[];
 
-const float size = 0.5;
+const float size = 2.0;
 
 void generateLine(int index) {
 	gl_Position = gl_in[index].gl_Position;

@@ -848,12 +848,19 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 	float hBottom = data[x][zBottom];
 	float hTop = data[x][zTop];
 
+	//rangeToRange(hLeft, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+	rangeToRange(hLeft, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
+	rangeToRange(hRight, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
+	rangeToRange(hBottom, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
+	rangeToRange(hTop, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
+
+
 	glm::vec3 normal;
 	normal.x = hLeft - hRight;
 	//normal.y = hBottom - hTop;
 	//normal.z = -2.0f;
-	normal.y = 2.0f * vars->texelWorldSize;
-	normal.z = hBottom - hTop;
+	normal.y = 2.0f/* * vars->texelWorldSize * 10.0f*/;
+	normal.z = hTop - hBottom;
 
 	return glm::normalize(normal);
 

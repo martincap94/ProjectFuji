@@ -208,7 +208,6 @@ public:
 
 	virtual void recalculateVariables();
 
-	virtual void initScene();
 	virtual void refreshHeightMap();
 	virtual void saveChanges();
 

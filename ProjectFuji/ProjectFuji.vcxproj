@@ -98,8 +98,14 @@
     <ClCompile Include="EVSMShadowMapper.cpp" />
     <ClCompile Include="FreeRoamCamera.cpp" />
     <ClCompile Include="GeneralGrid.cpp" />
-    <ClCompile Include="Grid.cpp" />
-    <ClCompile Include="Grid3D.cpp" />
+    <ClCompile Include="Grid.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Grid3D.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GridLBM.cpp" />
     <ClCompile Include="HarrisCloudVisualizer.cpp" />
     <ClCompile Include="HeightMapOld.cpp">
@@ -111,7 +117,10 @@
     <ClCompile Include="InstancedModel.cpp" />
     <ClCompile Include="LatticeCollider.cpp" />
     <ClCompile Include="glad.c" />
-    <ClCompile Include="Grid2D.cpp" />
+    <ClCompile Include="Grid2D.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="LBM.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -201,8 +210,14 @@
     <ClInclude Include="EVSMShadowMapper.h" />
     <ClInclude Include="FreeRoamCamera.h" />
     <ClInclude Include="GeneralGrid.h" />
-    <ClInclude Include="Grid.h" />
-    <ClInclude Include="Grid3D.h" />
+    <ClInclude Include="Grid.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Grid3D.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="GridLBM.h" />
     <ClInclude Include="HarrisCloudVisualizer.h" />
     <ClInclude Include="HeightMapOld.h">
@@ -214,7 +229,10 @@
     <ClInclude Include="InstancedModel.h" />
     <ClInclude Include="LatticeCollider.h" />
     <ClCompile Include="Config.h" />
-    <ClInclude Include="Grid2D.h" />
+    <ClInclude Include="Grid2D.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
