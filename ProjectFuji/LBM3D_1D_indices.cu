@@ -2197,6 +2197,7 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	//CHECK_ERROR(cudaMemcpy(d_frontLattice, frontLattice, sizeof(Node3D) * latticeSize, cudaMemcpyHostToDevice));
 
 	grid = new GridLBM(this);
+	editGrid = new GridLBM(this, glm::vec3(1.0f, 0.2f, 0.2f));
 
 }
 
@@ -2219,7 +2220,9 @@ LBM3D_1D_indices::~LBM3D_1D_indices() {
 	if (grid) {
 		delete grid;
 	}
-
+	if (editGrid) {
+		delete editGrid;
+	}
 
 }
 
@@ -2303,6 +2306,9 @@ bool LBM3D_1D_indices::isUnderEdit() {
 
 void LBM3D_1D_indices::draw() {
 	grid->draw();
+	if (editing) {
+		editGrid->draw(getPrevStateModelMatrix());
+	}
 }
 
 void LBM3D_1D_indices::draw(ShaderProgram & shader) {
@@ -3108,6 +3114,13 @@ glm::mat4 LBM3D_1D_indices::getModelMatrix() {
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, position);
 	model = glm::scale(model, glm::vec3(scale));
+	return model;
+}
+
+glm::mat4 LBM3D_1D_indices::getPrevStateModelMatrix() {
+	glm::mat4 model(1.0f);
+	model = glm::translate(model, prevState.position);
+	model = glm::scale(model, glm::vec3(prevState.scale));
 	return model;
 }
 

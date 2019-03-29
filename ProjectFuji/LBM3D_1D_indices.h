@@ -106,6 +106,7 @@ public:
 	};
 
 	GridLBM *grid = nullptr;
+	GridLBM *editGrid = nullptr;
 
 	VariableManager *vars;
 
@@ -240,6 +241,7 @@ public:
 	float getWorldDepth();
 
 	glm::mat4 getModelMatrix();
+	glm::mat4 getPrevStateModelMatrix();
 
 	void mapVBOTEST(GLuint VBO, struct cudaGraphicsResource *res);
 

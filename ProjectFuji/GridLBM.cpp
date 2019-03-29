@@ -6,7 +6,7 @@
 
 using namespace std;
 
-GridLBM::GridLBM(LBM3D_1D_indices *owner, glm::vec3 stepSize) : lbm(owner), stepSize(stepSize) {
+GridLBM::GridLBM(LBM3D_1D_indices *owner, glm::vec3 boxColor, glm::vec3 stepSize) : lbm(owner), boxColor(boxColor), stepSize(stepSize) {
 
 	shader = ShaderManager::getShaderPtr("singleColorModel");
 
@@ -81,12 +81,14 @@ GridLBM::~GridLBM() {
 }
 
 void GridLBM::draw() {
+	draw(lbm->getModelMatrix());
+}
 
-
+void GridLBM::draw(glm::mat4 modelMatrix) {
 	shader->use();
 
-	shader->setVec3("u_Color", lineColor);
-	shader->setModelMatrix(lbm->getModelMatrix());
+	shader->setVec3("u_Color", boxColor);
+	shader->setModelMatrix(modelMatrix);
 
 	glBindVertexArray(boxVAO);
 	glDrawArrays(GL_LINES, 0, 24);

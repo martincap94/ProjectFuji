@@ -11,15 +11,16 @@ class ShaderProgram;
 class GridLBM {
 public:
 
-	GridLBM(LBM3D_1D_indices *owner, glm::vec3 stepSize = glm::vec3(1.0f));
+	GridLBM(LBM3D_1D_indices *owner, glm::vec3 boxColor = glm::vec3(0.9f, 0.9f, 0.2f), glm::vec3 stepSize = glm::vec3(1.0f));
 	~GridLBM();
 
 	void draw();
+	void draw(glm::mat4 modelMatrix);
 
 private:
 
 	glm::vec3 stepSize;
-	glm::vec3 lineColor = glm::vec3(0.9f, 0.9f, 0.2f);
+	glm::vec3 boxColor = glm::vec3(0.9f, 0.9f, 0.2f);
 
 	LBM3D_1D_indices *lbm = nullptr;
 
