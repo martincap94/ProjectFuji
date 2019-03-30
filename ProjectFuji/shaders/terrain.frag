@@ -79,9 +79,10 @@ vec2 getTexCoords(int materialIdx);
 
 void main() {
 
+
 	//{
-	//	//fragColor = vec4(v_Normal, 1.0);
-	//	fragColor = texture(u_DiffuseTexture, v_TexCoords * 5.0);
+	//	fragColor = vec4(v_Normal, 1.0);
+	//	//fragColor = texture(u_DiffuseTexture, v_TexCoords * 5.0);
 	//	return;
 	//}
 
@@ -116,6 +117,14 @@ void main() {
 	norm = normalize(norm);
 	norm = normalize(norm * 2.0 - 1.0);
 	norm = normalize(v_TBN * norm);
+
+	//{
+	//	fragColor = vec4(norm, 1.0);
+	//	return;
+	//}
+	
+
+
 
 
 	vec3 viewDir = normalize(u_ViewPos - v_FragPos.xyz);
