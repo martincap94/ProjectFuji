@@ -200,6 +200,8 @@
     </ClCompile>
     <ClCompile Include="GridLBM.cpp" />
     <ClCompile Include="UserInterface.cpp" />
+    <ClCompile Include="StreamlineParticleSystem.cu" />
+    <ClCompile Include="GPUVBO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -366,6 +368,8 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UserInterface.h" />
+    <ClInclude Include="StreamlineParticleSystem.h" />
+    <ClInclude Include="GPUVBO.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

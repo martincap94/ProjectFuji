@@ -23,6 +23,7 @@ class STLPDiagram;
 class STLPSimulatorCUDA;
 class ParticleRenderer;
 class HosekSkyModel;
+class StreamlineParticleSystem;
 
 struct nk_context;
 
@@ -39,6 +40,10 @@ public:
 	STLPSimulatorCUDA *stlpSimCUDA = nullptr;
 	ParticleRenderer *particleRenderer = nullptr;
 	HosekSkyModel *hosek = nullptr;
+	StreamlineParticleSystem *sps = nullptr;
+
+	float prevAvgFPS;
+	float prevAvgDeltaTime;
 
 	UserInterface(GLFWwindow *window);
 	~UserInterface();
@@ -50,6 +55,8 @@ public:
 
 private:
 
+	//bool streamlinesAvailable = false;
+	bool streamlineInitMode = false;
 
 	int uiMode = 4;
 

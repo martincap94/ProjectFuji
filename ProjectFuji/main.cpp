@@ -62,6 +62,7 @@
 #include "HarrisCloudVisualizer.h"
 #include "ParticleRenderer.h"
 #include "UIConfig.h"
+#include "StreamlineParticleSystem.h"
 
 //#include "ArHosekSkyModel.h"
 //#include "ArHosekSkyModel.c"
@@ -127,6 +128,8 @@ Camera *camera;			///< Pointer to the current camera
 ParticleSystem *particleSystem;
 ParticleRenderer *particleRenderer;
 
+StreamlineParticleSystem *streamlineParticleSystem;
+
 UserInterface *ui;
 
 //HeightMap *heightMap;
@@ -143,9 +146,7 @@ STLPSimulatorCUDA *stlpSimCUDA;
 
 EVSMShadowMapper evsm;
 DirectionalLight dirLight;
-int uiMode = 4;
 
-float fov = 90.0f;
 
 float lastMouseX;
 float lastMouseY;
@@ -154,7 +155,7 @@ float lastMouseY;
 
 struct nk_context *ctx;
 
-int projectionMode = PERSPECTIVE;
+//int projectionMode = PERSPECTIVE;
 //int drawSkybox = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -341,6 +342,8 @@ int runApp() {
 	particleSystem = new ParticleSystem(&vars);
 	particleRenderer = new ParticleRenderer(&vars);
 
+	streamlineParticleSystem = new StreamlineParticleSystem(&vars);
+
 
 	glm::ivec3 latticeDim(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
 
@@ -393,10 +396,13 @@ int runApp() {
 	camera->setLatticeDimensions(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
 	camera->movementSpeed = vars.cameraSpeed;
 
-	dirLight.focusPoint = glm::vec3(vars.latticeWidth / 2.0f, 0.0f, vars.latticeDepth / 2.0f);
+	dirLight.focusPoint = glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, 0.0f, vars.heightMap->getWorldDepth() / 2.0f);
 	dirLight.color = glm::vec3(1.0f, 0.99f, 0.9f);
 	//particleSystemLBM->lbm = lbm;
 
+	// TO DO - cleanup this hack
+	lbm->streamlineParticleSystem = streamlineParticleSystem;
+	streamlineParticleSystem->lbm = lbm;
 
 
 
@@ -542,6 +548,7 @@ int runApp() {
 	ui->stlpSimCUDA = stlpSimCUDA;
 	ui->vars = &vars;
 	ui->hosek = hosek;
+	ui->sps = streamlineParticleSystem;
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
 		// enable flags each frame because nuklear disables them when it is rendered	
@@ -570,6 +577,8 @@ int runApp() {
 			prevTime += (currentFrameTime - prevTime);
 			frameCounter = 0;
 			accumulatedTime = 0.0;
+			ui->prevAvgDeltaTime = prevAvgDeltaTime;
+			ui->prevAvgFPS = prevAvgFPS;
 
 		}
 
@@ -675,7 +684,7 @@ int runApp() {
 		reportGLErrors("D2");
 
 		if (vars.drawSkybox) {
-			projection = glm::perspective(glm::radians(fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
+			projection = glm::perspective(glm::radians(vars.fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
 
 			if (mode == 2 || mode == 3) {
 				if (vars.hosekSkybox) {
@@ -896,6 +905,8 @@ int runApp() {
 			//grid->draw(*singleColorShader);
 			gGrid.draw(*unlitColorShader);
 
+			streamlineParticleSystem->draw();
+
 
 			if (!particleRenderer->compositeResultToFramebuffer) {
 				if (vars.usePointSprites) {
@@ -988,6 +999,7 @@ int runApp() {
 	//delete particleSystemLBM;
 	delete particleSystem;
 	delete particleRenderer;
+	delete streamlineParticleSystem;
 	delete lbm;
 	//delete grid;
 	//delete viewportCamera;
@@ -1034,10 +1046,10 @@ void refreshProjectionMatrix() {
 		projection = diagramProjection;
 		//camera->movementSpeed = 4.0f;
 	} else {
-		if (projectionMode == ORTHOGRAPHIC) {
+		if (vars.projectionMode == ORTHOGRAPHIC) {
 			projection = viewportProjection;
 		} else {
-			projection = glm::perspective(glm::radians(fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
+			projection = glm::perspective(glm::radians(vars.fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
 		}
 		//mode = 2;
 		//camera->movementSpeed = 40.0f;

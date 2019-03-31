@@ -16,6 +16,8 @@
 #include "HosekSkyModel.h"
 #include "Emitter.h"
 #include "CircleEmitter.h"
+#include "FreeRoamCamera.h"
+#include "StreamlineParticleSystem.h"
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -146,9 +148,8 @@ void UserInterface::constructUserInterface() {
 		nk_label(ctx, ss.str().c_str(), NK_TEXT_CENTERED);
 		*/
 		stringstream().swap(ss);
-		// TO DO - make this work
-		//ss << "Delta time: " << fixed << setprecision(4) << prevAvgDeltaTime << " [ms] (" << setprecision(0) << prevAvgFPS << " FPS)";
-		//nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+		ss << "Delta time: " << fixed << setprecision(4) << prevAvgDeltaTime << " [ms] (" << setprecision(0) << prevAvgFPS << " FPS)";
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
 
 		// Quick info -> creation of the strings should be moved to the Diagram since it only changes when the diagram is changed
 		stringstream().swap(ss);
@@ -301,7 +302,7 @@ void UserInterface::constructUserInterface() {
 					vars->drawSkybox = true;
 				}
 			}
-			
+
 
 			nk_menu_end(ctx);
 
@@ -479,18 +480,18 @@ void UserInterface::constructLBMTab() {
 
 
 	// TO DO - get this back in working order
-	/*
+
 
 
 	nk_layout_row_dynamic(ctx, 15, 2);
-	if (nk_option_label(ctx, "Orthographic", projectionMode == ORTHOGRAPHIC)) {
-	projectionMode = ORTHOGRAPHIC;
+	if (nk_option_label(ctx, "Orthographic", vars->projectionMode == ORTHOGRAPHIC)) {
+		vars->projectionMode = ORTHOGRAPHIC;
 	}
-	if (nk_option_label(ctx, "Perspective", projectionMode == PERSPECTIVE)) {
-	projectionMode = PERSPECTIVE;
+	if (nk_option_label(ctx, "Perspective", vars->projectionMode == PERSPECTIVE)) {
+		vars->projectionMode = PERSPECTIVE;
 	}
-	if (projectionMode == PERSPECTIVE) {
-	nk_slider_float(ctx, 30.0f, &fov, 120.0f, 1.0f);
+	if (vars->projectionMode == PERSPECTIVE) {
+		nk_slider_float(ctx, 30.0f, &vars->fov, 120.0f, 1.0f);
 	}
 
 
@@ -499,15 +500,15 @@ void UserInterface::constructLBMTab() {
 	nk_checkbox_label(ctx, "Use freeroam camera", &vars->useFreeRoamCamera);
 
 	if (vars->useFreeRoamCamera) {
-	FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
-	if (fcam) {
-	nk_checkbox_label(ctx, "Walking", &fcam->walking);
-	nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
-	}
+		FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
+		if (fcam) {
+			nk_checkbox_label(ctx, "Walking", &fcam->walking);
+			nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
+		}
 
 
 	}
-	*/
+
 
 
 
@@ -605,8 +606,8 @@ void UserInterface::constructLightingTab() {
 	nk_property_float(ctx, "right:", -100000.0f, &dirLight->pRight, 100000.0f, 10.0f, 10.0f);
 	nk_property_float(ctx, "bottom:", -100000.0f, &dirLight->pBottom, 100000.0f, 10.0f, 10.0f);
 	nk_property_float(ctx, "top:", -100000.0f, &dirLight->pTop, 100000.0f, 10.0f, 10.0f);
-	nk_property_float(ctx, "near:", 0.01f, &dirLight->pNear, 100.0f, 0.01f, 0.01f);
-	nk_property_float(ctx, "far:", 1.0f, &dirLight->pFar, 100000.0f, 10.0f, 10.0f);
+	nk_property_float(ctx, "near:", 0.1f, &dirLight->pNear, 100000.0f, 10.0f, 10.0f);
+	nk_property_float(ctx, "far:", 1.0f, &dirLight->pFar, 1000000.0f, 1000.0f, 1000.0f);
 
 	nk_checkbox_label(ctx, "Simulate sun", &vars->simulateSun);
 	nk_property_float(ctx, "Sun speed", 0.1f, &dirLight->circularMotionSpeed, 1000.0f, 0.1f, 0.1f);
@@ -759,7 +760,7 @@ void UserInterface::constructTerrainTab() {
 
 			nk_layout_row_dynamic(ctx, 15, 1);
 			nk_property_float(ctx, "#shininess", 0.0f, &vars->heightMap->materials[i].shininess, 128.0f, 0.1f, 0.1f);
-			nk_property_float(ctx, "#tiling", 0.1f, &vars->heightMap->materials[i].textureTiling, 1000.0f, 0.1f, 1.0f);
+			nk_property_float(ctx, "#tiling", 0.1f, &vars->heightMap->materials[i].textureTiling, 100000.0f, 0.1f, 1.0f);
 
 
 			nk_tree_pop(ctx);
@@ -776,7 +777,18 @@ void UserInterface::constructTerrainTab() {
 	nk_property_int(ctx, "z offset", 0, &vars->terrainZOffset, 1000, 1, 1);
 
 
+	nk_checkbox_label(ctx, "normals only", &vars->heightMap->showNormalsOnly);
+	nk_property_int(ctx, "normals mode", 0, &vars->heightMap->normalsShaderMode, 10, 1, 1);
+
+
 }
+
+
+
+
+
+
+
 
 void UserInterface::constructSkyTab() {
 
@@ -822,6 +834,13 @@ void UserInterface::constructSkyTab() {
 
 
 }
+
+
+
+
+
+
+
 
 void UserInterface::constructCloudVisualizationTab() {
 
@@ -895,6 +914,11 @@ void UserInterface::constructCloudVisualizationTab() {
 		nk_combo_end(ctx);
 	}
 }
+
+
+
+
+
 
 void UserInterface::constructDiagramControlsTab() {
 
@@ -1082,6 +1106,12 @@ void UserInterface::constructDiagramControlsTab() {
 	}
 }
 
+
+
+
+
+
+
 void UserInterface::constructLBMDebugTab() {
 
 
@@ -1120,11 +1150,58 @@ void UserInterface::constructLBMDebugTab() {
 		}
 
 	}
-}
 
-void UserInterface::constructDebugTab() {
-}
 
-void UserInterface::uivec2(glm::vec2 & target) {
+	nk_layout_row_dynamic(ctx, 200, 1); // wrapping row
 
-}
+	if (nk_group_begin(ctx, "Streamlines", NK_WINDOW_BORDER)) {
+
+		nk_layout_row_dynamic(ctx, 15, 1);
+
+		if (!sps->initialized && !streamlineInitMode) {
+			if (nk_button_label(ctx, "Use streamlines")) {
+				//sps->init();
+				streamlineInitMode = true;
+			}
+
+		} else if (sps->initialized) {
+
+			nk_checkbox_label(ctx, "visible", &sps->visible);
+			if (nk_button_label(ctx, "set horizontal line")) {
+				sps->setPositionInHorizontalLine();
+			}
+
+			if (nk_button_label(ctx, "Activate streamlines")) {
+				sps->activate();
+			}
+
+			nk_checkbox_label(ctx, "live line cleanup", &sps->liveLineCleanup);
+
+
+		} else if (streamlineInitMode) {
+
+			nk_property_int(ctx, "max streamlines", 1, &sps->maxNumStreamlines, 10000, 1, 1);
+			nk_property_int(ctx, "max streamline length", 1, &sps->maxStreamlineLength, 1000, 1, 1);
+			//nk_property_int(ctx, "streamline sampling", 1, &sps->sampling)
+
+			if (nk_button_label(ctx, "Apply settings")) {
+				cout << "Initializing streamline data..." << endl;
+				sps->init();
+				streamlineInitMode = false;
+			}
+
+		}
+		nk_group_end(ctx);
+
+	}
+
+
+
+	}
+
+	void UserInterface::constructDebugTab() {
+	}
+
+	void UserInterface::uivec2(glm::vec2 & target) {
+
+	}

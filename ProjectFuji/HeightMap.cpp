@@ -13,7 +13,7 @@
 #include "Utils.h"
 #include <stb_image.h>
 #include <limits>
-
+#include <set>
 
 
 HeightMap::HeightMap() {}
@@ -65,15 +65,16 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 		exit(EXIT_FAILURE);
 	}
 
+	typedef unsigned char img_type;
 
 	cout << "Creating Terrain..." << endl;
-	unsigned short *imageData = nullptr;
+	img_type *imageData = nullptr;
 	bool useStb = true;
 	if (useStb) {
 		int numChannels;
 
 		stbi_set_flip_vertically_on_load(true);
-		imageData = stbi_load_16((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
+		imageData = stbi_load((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
 
 
 		if (!imageData) {
@@ -89,16 +90,21 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 		terrainWidth = width;
 		terrainDepth = height;
+		set<img_type> valsR;
+		set<img_type> valsG;
+		set<img_type> valsB;
+
 
 		cout << "Width: " << width << ", height: " << height << endl;
+		cout << (float)numeric_limits<img_type>().max() << endl;
 
 		for (int z = height - 1; z >= 0; z--) {
 			for (int x = 0; x < width; x++) {
-				unsigned short *pixel = imageData + (x * height + z) * numChannels;
-				unsigned short r = pixel[0];
-				unsigned short g = pixel[1];
-				unsigned short b = pixel[2];
-				unsigned short a = 0xff;
+				img_type *pixel = imageData + (x * height + z) * numChannels;
+				img_type r = pixel[0];
+				img_type g = pixel[1];
+				img_type b = pixel[2];
+				img_type a = 0xff;
 				if (numChannels >= 4) {
 					a = pixel[3];
 				}
@@ -108,14 +114,26 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 				//cout << b << endl;
 				//cout << endl;
 
-				data[x][z] = (float)r /*+ (float)g + (float)b*/;
-				data[x][z] /= /*3.0f * */(float)numeric_limits<unsigned short>().max();
+				valsR.insert(r);
+				valsG.insert(g);
+				valsB.insert(b);
+
+				data[x][z] = (float)r * 0.6f + (float)g * 0.3f + (float)b * 0.1f;
+				data[x][z] /= (float)numeric_limits<img_type>().max();
 				//cout << "height before mapping: " << data[x][z] << endl;
 				rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
 				//cout << "after mapping: " << data[x][z] << endl;
 				//data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
 			}
 		}
+		cout << "VALS R size: " << valsR.size() << endl;
+		cout << "VALS G size: " << valsG.size() << endl;
+		cout << "VALS B size: " << valsB.size() << endl;
+
+		//for (const auto &i : valsR) {
+		//	cout << i << endl;
+		//}
+
 
 
 	} else {
@@ -160,6 +178,16 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 	//exit(EXIT_FAILURE); // TESTING!!!
 
+
+	smoothHeights();
+	smoothHeights();
+	smoothHeights();
+
+	//smoothHeights();
+	//smoothHeights();
+	//smoothHeights();
+	//smoothHeights();
+
 	//initBuffersOld();
 	initBuffers();
 
@@ -169,6 +197,47 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 	if (imageData != nullptr) {
 		stbi_image_free(imageData);
 	}
+
+}
+
+// this can be easily parallelized on GPU
+void HeightMap::smoothHeights() {
+
+	const float kernel[] = {
+		0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067,
+		0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292,
+		0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117,
+		0.00038771,	0.01330373,	0.11098164,	0.22508352,	0.11098164,	0.01330373,	0.00038771,
+		0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117,
+		0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292,
+		0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067
+	};
+
+
+	for (int x = 3; x < width - 3; x++) {
+		for (int z = 3; z < height - 3; z++) {
+
+			float sum = 0.0f;
+			for (int j = -3; j <= 3; j++) {
+				for (int k = -3; k <= 3; k++) {
+					float scale = kernel[(3 + j) * 7 + (3 + k)];
+					sum += scale * data[x + j][z + k];
+				}
+			}
+			data[x][z] = sum;
+
+
+		}
+	}
+
+
+
+	//for (int z = height - 1; z >= 0; z--) {
+	//	for (int x = 0; x < width; x++) {
+
+
+	//	}
+	//}
 
 }
 
@@ -192,12 +261,12 @@ void HeightMap::initMaterials() {
 	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
 	materials[0].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
 	materials[0].shininess = 2.0f;
-	materials[0].textureTiling = 800.0f;
+	materials[0].textureTiling = 8000.0f;
 
 	materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
 	materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
 	materials[1].shininess = 16.0f;
-	materials[1].textureTiling = 100.0f;
+	materials[1].textureTiling = 1000.0f;
 
 	//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
 	//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
@@ -249,6 +318,8 @@ void HeightMap::initBuffers() {
 
 		for (int x = 0; x < terrainWidth - 1; x++) {
 
+
+			
 			float tws = vars->texelWorldSize;
 			glm::vec3 p1(x * tws, data[x][z], z * tws);
 			glm::vec3 p2((x + 1) * tws, data[x + 1][z], z * tws);
@@ -298,11 +369,11 @@ void HeightMap::initBuffers() {
 			texCoords.push_back(glm::vec2(p1i.x / terrainWidth, p1i.z / terrainDepth));
 
 			numPoints += 6;
+			
 
 
-
+			
 			/*
-
 
 			glm::vec3 p1(x, data[x][z], z);
 			glm::vec3 p2(x + 1, data[x + 1][z], z);
@@ -395,6 +466,7 @@ void HeightMap::initBuffers() {
 			numPoints += 6;
 			*/
 			
+			
 
 		}
 	}
@@ -405,6 +477,8 @@ void HeightMap::initBuffers() {
 	for (int i = 0; i < vertices.size() - 2; i += 3) {
 		glm::vec3 edge1 = vertices[i + 1] - vertices[i];
 		glm::vec3 edge2 = vertices[i + 2] - vertices[i];
+		//edge1 *= vars->texelWorldSize;
+		//edge2 *= vars->texelWorldSize;
 		glm::vec2 deltaUV1 = texCoords[i + 1] - texCoords[i];
 		glm::vec2 deltaUV2 = texCoords[i + 2] - texCoords[i];
 		float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
@@ -660,7 +734,7 @@ void HeightMap::initBuffersOld() {
 			}
 			numPoints += 6;
 
-
+			
 
 			/*
 			triangles.push_back(p1);
@@ -739,11 +813,17 @@ float HeightMap::getHeight(float x, float z, bool worldPosition) {
 		x += vars->terrainXOffset;
 		z += vars->terrainZOffset;
 	}
+
+	x /= vars->texelWorldSize;
+	z /= vars->texelWorldSize;
+
+
 	int leftx = (int)x;
 	int rightx = leftx + 1;
 	int leftz = (int)z;
 	int rightz = leftz + 1;
 
+	// clamp to edges
 	leftx = glm::clamp(leftx, 0, width - 1);
 	rightx = glm::clamp(rightx, 0, width - 1);
 	leftz = glm::clamp(leftz, 0, height - 1);
@@ -765,6 +845,14 @@ float HeightMap::getHeight(float x, float z, bool worldPosition) {
 
 	return y;
 
+}
+
+float HeightMap::getWorldWidth() {
+	return width * vars->texelWorldSize;
+}
+
+float HeightMap::getWorldDepth() {
+	return height * vars->texelWorldSize;
 }
 
 void HeightMap::draw() {
@@ -807,8 +895,12 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
 
+	shader->setBool("u_NormalsOnly", (bool)showNormalsOnly);
+	shader->setInt("u_NormalsMode", normalsShaderMode);
+
 	glm::mat4 modelMatrix(1.0f);
 	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
+	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
 	shader->setModelMatrix(modelMatrix);
 
 
@@ -873,6 +965,8 @@ void HeightMap::drawGeometry(ShaderProgram * shader) {
 
 	glm::mat4 modelMatrix(1.0f);
 	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
+	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
+
 	shader->setModelMatrix(modelMatrix);
 
 	glBindVertexArray(VAO);
@@ -915,11 +1009,14 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 
 	glm::vec3 normal;
 	normal.x = (hLeft - hRight) / vars->texelWorldSize;
+	//normal.x = (hLeft - hRight);
 	//normal.y = hBottom - hTop;
 	//normal.z = -2.0f;
 	normal.y = 2.0f/* * vars->texelWorldSize * 10.0f*/;
 	//rangeToRange(normal.y, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
 	normal.z = (hTop - hBottom) / vars->texelWorldSize;
+	//normal.z = (hTop - hBottom);
+
 
 	return glm::normalize(normal);
 

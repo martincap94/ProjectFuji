@@ -203,6 +203,14 @@ void ShaderProgram::setModelMatrix(glm::mat4 modelMatrix, string uniformName) {
 	setMat4fv(uniformName, modelMatrix);
 }
 
+void ShaderProgram::setColor(glm::vec3 color, string uniformName) {
+	setVec3(uniformName, color);
+}
+
+void ShaderProgram::setColorAlpha(glm::vec4 color, string uniformName) {
+	setVec4(uniformName, color);
+}
+
 void ShaderProgram::setupMaterialUniforms(bool useShader) {
 	if (matType == PHONG) {
 		if (useShader) {

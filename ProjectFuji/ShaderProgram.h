@@ -89,6 +89,9 @@ public:
 
 	void setModelMatrix(glm::mat4 modelMatrix, string uniformName = "u_Model");
 
+	void setColor(glm::vec3 color, string uniformName = "u_Color");
+	void setColorAlpha(glm::vec4 color, string uniformName = "u_Color");
+
 	void setupMaterialUniforms(bool useShader = true);
 
 	void setFogProperties(float fogIntensity, float fogMinDistance, float fogMaxDistance, glm::vec4 fogColor, int fogMode = 0, float fogExpFalloff = 0.1f, bool useShader = true);

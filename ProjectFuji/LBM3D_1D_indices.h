@@ -32,6 +32,7 @@
 #define WEIGHT_NON_AXIAL (1.0f / 36.0f)
 
 class ParticleSystem;
+class StreamlineParticleSystem;
 
 //__constant__ float WEIGHT_MIDDLE;
 //__constant__ float WEIGHT_AXIS;
@@ -125,6 +126,7 @@ public:
 
 	ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system
 	ParticleSystem *particleSystem;
+	StreamlineParticleSystem *streamlineParticleSystem;
 	
 	glm::vec3 *particleVertices;		///< Pointer to the particle vertices array (on CPU)
 	int *d_numParticles;	///< Number of particles on the device; managed in memory by Particle System class (its destructor)
@@ -239,6 +241,8 @@ public:
 	float getWorldWidth();
 	float getWorldHeight();
 	float getWorldDepth();
+
+	//float getWorld
 
 	glm::mat4 getModelMatrix();
 	glm::mat4 getPrevStateModelMatrix();

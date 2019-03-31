@@ -10,6 +10,7 @@
 #include <iostream>
 #include "CUDAUtils.cuh"
 #include "ParticleSystem.h"
+#include "StreamlineParticleSystem.h"
 
 
 __constant__ int d_latticeWidth;		///< Lattice width constant on the device
@@ -64,6 +65,146 @@ __host__ __device__ glm::vec3 getWorldPosition(glm::vec3 latticePosition) {
 
 	//return glm::vec3(latticePosition.x * d_worldSizeRatio, latticePosition.y * d_worldSizeRatio, latticePosition.z * d_worldSizeRatio);
 }
+
+
+
+__global__ void moveStreamlineParticlesKernel(glm::vec3 *streamlineVertices, glm::vec3 *velocities, int *streamlineLengths, int maxStreamlineLength, int maxNumStreamlines, int respawnMode, int outOfBoundsMode, float velocityMultiplier = 1.0f, bool useCorrectInterpolation = true) {
+
+	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
+	idx += blockDim.x * blockDim.y * blockIdx.x;
+
+	glm::vec3 adjVelocities[8];
+
+	while (idx < maxNumStreamlines) {
+
+
+		if (streamlineLengths[idx] >= maxStreamlineLength) {
+			idx += blockDim.x * blockDim.y * gridDim.x;
+			continue;
+		}
+
+		int off = idx * maxStreamlineLength + streamlineLengths[idx]; // buffer offset for current vertex of the streamline with idx
+
+
+		glm::vec3 pos = getLatticePosition(streamlineVertices[off]);
+
+
+		if (pos.x < 0.0f || pos.x > d_latticeWidth - 1 ||
+			pos.y < 0.0f || pos.y > d_latticeHeight - 1 ||
+			pos.z < 0.0f || pos.z > d_latticeDepth - 1) {
+
+			//streamlineLengths[idx] = maxStreamlineLength; // so we do not try to draw it again
+			// we actually want to remember the streamline lengths so we can then render the lines cleanly
+			idx += blockDim.x * blockDim.y * gridDim.x;
+			continue;
+
+			/*
+			if (respawnMode == 0) {
+
+				if (pos.x < 0.0f || pos.x > d_latticeWidth - 1) {
+					pos.x = fmodf(pos.x + d_latticeWidth - 1, d_latticeWidth - 1);
+				}
+				if (pos.y < 0.0f) {
+					pos.y = 0.0f;
+				}
+				if (pos.y > d_latticeHeight - 1) {
+					// respawn
+					pos.x = 0.0f;
+					pos.y = rand(idx, pos.y) * (d_latticeHeight - 1);
+					pos.z = rand(idx, pos.z) * (d_latticeDepth - 1);
+				}
+				if (pos.z < 0.0f || pos.z > d_latticeDepth - 1) {
+					pos.z = fmodf(pos.z + d_latticeDepth - 1, d_latticeDepth - 1);
+				}
+			} else {
+				//pos.x = 0.0f;
+				pos.x = fmodf(pos.x + d_latticeWidth - 1, d_latticeWidth - 1);
+				pos.y = fmodf(pos.y + d_latticeHeight - 1, d_latticeHeight - 1);
+				pos.z = rand(idx, pos.z) * (d_latticeDepth - 1);
+			}
+			*/
+		}
+
+		int leftX = (int)pos.x;
+		int rightX = leftX + 1;
+		if (rightX > d_latticeWidth - 1) {
+			rightX = 0;
+		}
+		int bottomY = (int)pos.y;
+		int topY = bottomY + 1;
+		if (topY > d_latticeHeight - 1) {
+			topY = 0;
+		}
+		int frontZ = (int)pos.z;
+		int backZ = frontZ + 1;
+		if (backZ > d_latticeDepth - 1) {
+			backZ = 0;
+		}
+
+
+
+		adjVelocities[0] = velocities[getIdxKer(leftX, topY, frontZ)];		// 0: V010
+		adjVelocities[1] = velocities[getIdxKer(rightX, topY, frontZ)];		// 1: V110
+		adjVelocities[2] = velocities[getIdxKer(leftX, bottomY, frontZ)];	// 2: V000
+		adjVelocities[3] = velocities[getIdxKer(rightX, bottomY, frontZ)];	// 3: V100
+		adjVelocities[4] = velocities[getIdxKer(leftX, topY, backZ)];		// 4: V011
+		adjVelocities[5] = velocities[getIdxKer(rightX, topY, backZ)];		// 5: V111
+		adjVelocities[6] = velocities[getIdxKer(leftX, bottomY, backZ)];	// 6: V001
+		adjVelocities[7] = velocities[getIdxKer(rightX, bottomY, backZ)];	// 7: V101
+
+		float horizontalRatio = pos.x - (float)leftX;
+		float verticalRatio = pos.y - (float)bottomY;
+		float depthRatio = pos.z - (float)frontZ;
+
+		glm::vec3 finalVelocity;
+		if (useCorrectInterpolation) {
+
+			finalVelocity =
+				adjVelocities[2] * (1.0f - horizontalRatio) * (1.0f - verticalRatio) * (1.0f - depthRatio) +
+				adjVelocities[3] * horizontalRatio * (1.0f - verticalRatio) * (1.0f - depthRatio) +
+				adjVelocities[0] * (1.0f - horizontalRatio) * verticalRatio * (1.0f - depthRatio) +
+				adjVelocities[6] * (1.0f - horizontalRatio) * (1.0f - verticalRatio) * depthRatio +
+				adjVelocities[7] * horizontalRatio * (1.0f - verticalRatio) * depthRatio +
+				adjVelocities[4] * (1.0f - horizontalRatio) * verticalRatio * depthRatio +
+				adjVelocities[1] * horizontalRatio * verticalRatio * (1.0f - depthRatio) +
+				adjVelocities[5] * horizontalRatio * verticalRatio * depthRatio;
+
+
+		} else {
+
+			glm::vec3 topBackVelocity = adjVelocities[0] * horizontalRatio + adjVelocities[1] * (1.0f - horizontalRatio);
+			glm::vec3 bottomBackVelocity = adjVelocities[2] * horizontalRatio + adjVelocities[3] * (1.0f - horizontalRatio);
+
+			glm::vec3 backVelocity = bottomBackVelocity * verticalRatio + topBackVelocity * (1.0f - verticalRatio);
+
+			glm::vec3 topFrontVelocity = adjVelocities[4] * horizontalRatio + adjVelocities[5] * (1.0f - horizontalRatio);
+			glm::vec3 bottomFrontVelocity = adjVelocities[6] * horizontalRatio + adjVelocities[7] * (1.0f - horizontalRatio);
+
+			glm::vec3 frontVelocity = bottomFrontVelocity * verticalRatio + topFrontVelocity * (1.0f - verticalRatio);
+
+			finalVelocity = backVelocity * depthRatio + frontVelocity * (1.0f - depthRatio);
+		}
+
+
+		finalVelocity *= velocityMultiplier;
+
+		pos += finalVelocity;
+
+
+		//particleVertices[idx] = pos;
+
+		streamlineVertices[off + 1] = getWorldPosition(pos);
+		streamlineLengths[idx]++;
+
+
+		idx += blockDim.x * blockDim.y * gridDim.x;
+
+	}
+}
+
+
+
+
 
 
 __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors, int respawnMode, int outOfBoundsMode, float velocityMultiplier = 1.0f, bool useCorrectInterpolation = true) {
@@ -2413,6 +2554,40 @@ void LBM3D_1D_indices::doStepCUDA() {
 
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
 	CHECK_ERROR(cudaPeekAtLastError());
+
+
+
+
+
+	if (streamlineParticleSystem->active) {
+		streamlineParticleSystem->frameCounter++;
+		glm::vec3 *d_streamlinesVBO;
+		CHECK_ERROR(cudaGraphicsMapResources(1, &streamlineParticleSystem->cudaStreamlinesVBO, 0));
+
+		size_t num_bytes;
+		CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_streamlinesVBO, &num_bytes, streamlineParticleSystem->cudaStreamlinesVBO));
+
+		CHECK_ERROR(cudaPeekAtLastError());
+
+		moveStreamlineParticlesKernel << <gridDim, blockDim >> > (d_streamlinesVBO, d_velocities, streamlineParticleSystem->d_currActiveVertices, streamlineParticleSystem->maxStreamlineLength, streamlineParticleSystem->maxNumStreamlines, respawnMode, outOfBoundsMode, vars->lbmVelocityMultiplier, (bool)vars->lbmUseCorrectInterpolation);
+		CHECK_ERROR(cudaPeekAtLastError());
+
+		cudaGraphicsUnmapResources(1, &streamlineParticleSystem->cudaStreamlinesVBO, 0);
+		CHECK_ERROR(cudaPeekAtLastError());
+
+		streamlineParticleSystem->update();
+
+		if (streamlineParticleSystem->frameCounter >= streamlineParticleSystem->maxStreamlineLength) {
+			// we should be finished with creating the streamlines
+			streamlineParticleSystem->deactivate();
+
+		}
+
+	}
+	
+
+
+
 
 	/*
 	cudaGraphicsUnmapResources(1, &cudaParticleColorsVBO, 0);

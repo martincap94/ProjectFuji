@@ -98,6 +98,7 @@
     <ClCompile Include="EVSMShadowMapper.cpp" />
     <ClCompile Include="FreeRoamCamera.cpp" />
     <ClCompile Include="GeneralGrid.cpp" />
+    <ClCompile Include="GPUVBO.cpp" />
     <ClCompile Include="Grid.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -170,6 +171,9 @@
       <FileType>CppCode</FileType>
     </CudaCompile>
     <ClCompile Include="STLPUtils.cpp" />
+    <CudaCompile Include="StreamlineParticleSystem.cu">
+      <FileType>CppCode</FileType>
+    </CudaCompile>
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureManager.cpp" />
@@ -211,6 +215,7 @@
     <ClInclude Include="EVSMShadowMapper.h" />
     <ClInclude Include="FreeRoamCamera.h" />
     <ClInclude Include="GeneralGrid.h" />
+    <ClInclude Include="GPUVBO.h" />
     <ClInclude Include="Grid.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -251,6 +256,7 @@
     <ClInclude Include="STLPDiagram.h" />
     <ClInclude Include="STLPSimulatorCUDA.h" />
     <ClInclude Include="STLPUtils.h" />
+    <ClInclude Include="StreamlineParticleSystem.h" />
     <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Timer.h" />

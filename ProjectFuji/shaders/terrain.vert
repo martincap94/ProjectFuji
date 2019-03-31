@@ -20,12 +20,12 @@ uniform mat4 u_LightSpaceMatrix;
 
 void main() {
 
-	vec3 T = normalize(a_Tangent);
-    vec3 B = normalize(a_Bitangent);
-    vec3 N = normalize(a_Normal);
+	vec3 T = normalize(vec3(u_Model * vec4(a_Tangent, 0.0)));
+    vec3 B = normalize(vec3(u_Model * vec4(a_Bitangent, 0.0)));
+    vec3 N = normalize(vec3(u_Model * vec4(a_Normal, 0.0)));
     v_TBN = mat3(T, B, N);
 
-	v_Normal = a_Normal;
+	v_Normal = normalize(vec3(u_Model * vec4(a_Normal, 0.0)));
 	v_FragPos = u_Model * a_Pos;
 
 	v_TexCoords = a_TexCoords;

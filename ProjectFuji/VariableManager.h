@@ -52,6 +52,11 @@ public:
 	float tau = 0.52f;			///< Default tau value
 
 	bool drawStreamlines = false;	///< Whether to draw streamlines - DRAWING STREAMLINES CURRENTLY NOT VIABLE
+	int maxNumStreamlines = 100;
+	int maxStreamlineLength = 1000;
+
+
+
 
 	int paused = 0;				///< Whether the simulation is paused
 	int usePointSprites = 1;	///< Whether to use point sprites for point visualization
@@ -117,6 +122,7 @@ public:
 	// LBM variables (new)
 	int useSubgridModel = 0;
 	int lbmUseExtendedCollisionStep = 0;
+	//int
 
 	glm::vec3 latticePosition;
 
@@ -173,6 +179,10 @@ public:
 
 	int prevToggleLBMState = GLFW_RELEASE;
 	int toggleLBMState = GLFW_KEY_L;
+
+
+	int projectionMode = eProjectionMode::PERSPECTIVE;
+	float fov = 90.0f;
 
 
 	//int show

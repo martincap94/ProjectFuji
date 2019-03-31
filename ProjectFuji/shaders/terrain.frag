@@ -65,7 +65,13 @@ uniform float u_ShadowBias;
 
 uniform bool u_ShadowOnly;
 
+
+uniform bool u_NormalsOnly;
+uniform int u_NormalsMode = 0;
+
+
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec4 materialContributions);
+vec3 calcNightAmbientLight(vec4 materialContributions, vec3 ambientColor);
 
 float calcShadowBasic(vec4 fragLightSpacePos);
 float calcShadow(vec4 fragLightSpacePos);
@@ -79,6 +85,10 @@ vec2 getTexCoords(int materialIdx);
 
 void main() {
 
+	//if (u_DirLight.direction.y > 0.0) {
+	//	fragColor = vec4(0.0);
+	//	return;
+	//}
 
 	//{
 	//	fragColor = vec4(v_Normal, 1.0);
@@ -110,40 +120,46 @@ void main() {
 
 	vec3 norm = materialContributions.r * firstNorm + materialContributions.g * secondNorm;
 
+	if (u_NormalsMode == 0) {
+		norm = mix(norm, texture(u_TerrainNormalMap, v_TexCoords).rgb, u_GlobalNormalMapMixingRatio);
+
+		norm = normalize(norm);
+		norm = normalize(norm * 2.0 - 1.0);
+		norm = normalize(v_TBN * norm);
+	} else {
+		norm = normalize(v_Normal);
+	}
 
 
-	norm = mix(norm, texture(u_TerrainNormalMap, v_TexCoords).rgb, u_GlobalNormalMapMixingRatio);
-
-	norm = normalize(norm);
-	norm = normalize(norm * 2.0 - 1.0);
-	norm = normalize(v_TBN * norm);
-
-	//{
-	//	fragColor = vec4(norm, 1.0);
-	//	return;
-	//}
+	if (u_NormalsOnly) {
+		fragColor = vec4(norm, 1.0);
+		return;
+	}
 	
-
-
 
 
 	vec3 viewDir = normalize(u_ViewPos - v_FragPos.xyz);
 	//vec3 viewDir = normalize(v_FragPos.xyz - u_ViewPos);
 
-
-	float shadow = calcShadow(v_LightSpacePos);
-
-	vec3 result;
-
-	if (u_ShadowOnly) {
-		result = vec3(shadow);
-	} else {
-		vec3 color = calcDirLight(u_DirLight, norm, viewDir, materialMap);
-		result = color * min(shadow + 0.2, 1.0);
-	}
-	fragColor = vec4(result, 1.0);
-
 	
+	//if (u_DirLight.direction.y > 0.0) {
+	//	fragColor = vec4(calcNightAmbientLight(materialMap, vec3(0.2)), 1.0);
+	//} else {
+
+		float shadow = calcShadow(v_LightSpacePos);
+
+		vec3 result;
+
+		if (u_ShadowOnly) {
+			result = vec3(shadow);
+		} else {
+			vec3 color = calcDirLight(u_DirLight, norm, viewDir, materialMap);
+			result = color * min(shadow + 0.2, 1.0);
+		}
+		fragColor = vec4(result, 1.0);
+
+	//}
+
 	float dist = distance(v_FragPos.xyz, u_ViewPos);
 
 
@@ -190,6 +206,14 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec4 materialContri
     
     return (diffuse + specular);
 }
+
+vec3 calcNightAmbientLight(vec4 materialContributions, vec3 ambientColor) {
+	vec3 matColor = materialContributions.r * texture(u_Materials[0].diffuse, getTexCoords(0)).rgb + materialContributions.g * texture(u_Materials[1].diffuse, getTexCoords(1)).rgb;
+
+	return matColor * ambientColor;
+
+}
+
 
 
 float calcShadowBasic(vec4 fragLightSpacePos) {

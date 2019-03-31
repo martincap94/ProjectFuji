@@ -45,6 +45,9 @@ public:
 	float **data;		///< The height map data array	
 	float **terrainData;
 
+	int showNormalsOnly = 0;
+	int normalsShaderMode = 0;
+
 	VariableManager *vars;
 
 
@@ -75,11 +78,15 @@ public:
 	/// Deletes the height map data.
 	~HeightMap();
 
+	void smoothHeights();
+
 	void initMaterials();
 	void initBuffers();
 	void initBuffersOld();
 
 	float getHeight(float x, float z, bool worldPosition = true);
+	float getWorldWidth();
+	float getWorldDepth();
 
 
 	/// Draws the height map.
