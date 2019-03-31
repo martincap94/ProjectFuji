@@ -63,7 +63,7 @@ public:
 	float prevAvgFPS;
 	float prevAvgDeltaTime;
 
-	UserInterface(GLFWwindow *window);
+	UserInterface(GLFWwindow *window, VariableManager *vars);
 	~UserInterface();
 
 	void draw();
@@ -87,12 +87,14 @@ private:
 		"#s", "#t", "#p", "#q"
 	};
 
+	const float leftSidebarBorderWidth = 2.0f;
+
+	float leftSidebarWidth;
+
 	//bool streamlinesAvailable = false;
 	bool streamlineInitMode = false;
 
 	int uiMode = 4;
-
-	bool showFormBoxMenu = false;
 
 
 	nk_context *ctx;
@@ -111,6 +113,10 @@ private:
 	void nk_property_vec3(glm::vec3 &target, float min, float max, float step, float pixStep, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
 	void nk_property_vec4(glm::vec4 &target);
 	void nk_property_color(glm::vec4 &target);
+
+	void constructLeftSidebar();
+	void constructRightSidebar();
+	void constructHorizontalBar();
 
 	void constructLBMTab();
 	void constructLightingTab();

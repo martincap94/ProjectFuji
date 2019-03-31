@@ -181,5 +181,8 @@ void reportGLErrors(const char *file, int line);
 
 #define CHECK_GL_ERRORS() ( reportGLErrors( __FILE__, __LINE__ ) )
 
+void reportUnimplementedFunction(const char *file, const char *function, int line);
+
+#define REPORT_NOT_IMPLEMENTED() ( reportUnimplementedFunction( __FILE__, __FUNCTION__, __LINE__ ) )
 
 float getRandFloat(float min, float max);

@@ -31,6 +31,8 @@ public:
 	virtual void processKeyboardMovement(eCameraMovementDirection direction, double deltaTime);
 	virtual void processKeyboardMovement(int glfwKey, double deltaTime);
 
+	void snapToGround();
+	void snapToGround(HeightMap *heightMap);
 
 	//void changeRotation(float yaw, float pitch);
 	virtual void processMouseScroll(double yoffset);

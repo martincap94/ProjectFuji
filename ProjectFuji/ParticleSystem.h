@@ -41,6 +41,8 @@ private:
 		glm::vec3 size = glm::vec3(100.0f);
 	};
 
+
+
 public:
 
 	std::vector<Emitter *> emitters;
@@ -61,6 +63,7 @@ public:
 	GLuint diagramParticlesVAO;
 	GLuint diagramParticleVerticesVBO;
 
+	bool editingFormBox = false;
 
 
 	// testing -> provide setters later
@@ -130,6 +133,8 @@ public:
 	void draw(const ShaderProgram &shader, glm::vec3 cameraPos);
 	void drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos);
 	void drawDiagramParticles(ShaderProgram *shader);
+
+	void drawHelperStructures();
 
 	void drawHarris_1st_pass(glm::vec3 lightPos);
 	void drawHarris_2nd_pass(glm::vec3 cameraPos);

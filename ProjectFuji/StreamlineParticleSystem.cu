@@ -200,8 +200,8 @@ void StreamlineParticleSystem::setPositionInVerticalLine() {
 
 	// quick testing
 	float yoffset = lbm->position.y;
-	float ystep = lbm->getWorldHeight() / (float)maxNumStreamlines;
-	float x = lbm->position.x + 1.0f;
+	float ystep = (lbm->getWorldHeight() - FLT_EPSILON) / (float)maxNumStreamlines;
+	float x = lbm->position.x + FLT_EPSILON;
 	float z = lbm->position.z + lbm->getWorldDepth() / 2.0f;
 
 	glBindBuffer(GL_ARRAY_BUFFER, streamlinesVBO);
@@ -209,4 +209,10 @@ void StreamlineParticleSystem::setPositionInVerticalLine() {
 		glm::vec3 pos(x, i * ystep + yoffset, z);
 		glBufferSubData(GL_ARRAY_BUFFER, i * maxStreamlineLength * sizeof(glm::vec3), sizeof(glm::vec3), glm::value_ptr(pos));
 	}
+}
+
+void StreamlineParticleSystem::setPositionCross() {
+
+
+
 }

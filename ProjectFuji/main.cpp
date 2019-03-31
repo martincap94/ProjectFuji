@@ -307,7 +307,7 @@ int runApp() {
 	overlayDiagramProjection = glm::ortho(0.0f - offset, 1.0f + offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
 
 
-	ui = new UserInterface(window);
+	ui = new UserInterface(window, &vars);
 	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -432,8 +432,10 @@ int runApp() {
 
 	Model treeModel("models/Tree.obj", &treeMat, ShaderManager::getShaderPtr("normals_instanced"));
 
-	grassModel.makeInstanced(vars.heightMap, 1000000, glm::vec2(0.2, 0.4), 4.0f, 3);
-	treeModel.makeInstanced(vars.heightMap, 400, glm::vec2(0.3, 0.5), 5.0f, 20);
+	Model unitboxModel("models/unitbox.fbx");
+
+	//grassModel.makeInstanced(vars.heightMap, 1000000, glm::vec2(0.2, 0.4), 4.0f, 3);
+	//treeModel.makeInstanced(vars.heightMap, 400, glm::vec2(0.3, 0.5), 5.0f, 20);
 
 	testModel.transform.position.x += 1.0f;
 
@@ -546,7 +548,6 @@ int runApp() {
 	ui->particleSystem = particleSystem;
 	ui->stlpDiagram = &stlpDiagram;
 	ui->stlpSimCUDA = stlpSimCUDA;
-	ui->vars = &vars;
 	ui->hosek = hosek;
 	ui->sps = streamlineParticleSystem;
 
@@ -900,6 +901,7 @@ int runApp() {
 			//glCullFace(GL_FRONT);
 			//stlpSim->heightMap->draw();
 			dirLight.draw();
+			particleSystem->drawHelperStructures();
 
 			lbm->draw();
 			//grid->draw(*singleColorShader);

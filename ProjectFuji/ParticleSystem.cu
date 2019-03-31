@@ -82,8 +82,10 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
 	disableAllEmitters();
 
+	//formBoxVisModel = new Model("models/unitbox.fbx");
+	formBoxVisShader = ShaderManager::getShaderPtr("singleColorModel");
 	formBoxVisModel = new Model("models/unitbox.fbx");
-	formBoxVisShader = ShaderManager::getShaderPtr("singleColor");
+
 
 }
 
@@ -302,9 +304,6 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 		emitters[i]->draw();
 	}
 
-	formBoxVisModel->transform.position = formBoxSettings.position;
-	formBoxVisModel->transform.scale = formBoxSettings.size;
-	formBoxVisModel->drawGeometry(formBoxVisShader);
 
 
 }
@@ -344,6 +343,16 @@ void ParticleSystem::drawDiagramParticles(ShaderProgram *shader) {
 		glEnable(GL_DEPTH_TEST);
 	}
 
+}
+
+void ParticleSystem::drawHelperStructures() {
+	if (editingFormBox) {
+		formBoxVisShader->use();
+		formBoxVisShader->setColor(glm::vec3(1.0f, 0.0f, 0.0f));
+		formBoxVisModel->transform.position = newFormBoxSettings.position;
+		formBoxVisModel->transform.scale = newFormBoxSettings.size;
+		formBoxVisModel->drawWireframe(formBoxVisShader);
+	}
 }
 
 void ParticleSystem::drawHarris_1st_pass(glm::vec3 lightPos) {

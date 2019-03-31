@@ -83,6 +83,14 @@ void FreeRoamCamera::processKeyboardMovement(int glfwKey, double deltaTime) {
 
 }
 
+void FreeRoamCamera::snapToGround() {
+	position.y = heightMap->getHeight(position.x, position.z) + playerHeight;
+}
+
+void FreeRoamCamera::snapToGround(HeightMap * heightMap) {
+	position.y = heightMap->getHeight(position.x, position.z) + playerHeight;
+}
+
 //void FreeRoamCamera::changeRotation(float yaw, float pitch) {
 //	this->yaw = yaw;
 //	this->pitch = pitch;
@@ -93,7 +101,7 @@ void FreeRoamCamera::processMouseScroll(double yoffset) {
 	if (yoffset > 0.0) {
 		yoffset *= 1.5;
 	}
-	float fineGrainControlMultiplier = glm::clamp(movementSpeed / 10.0f, 0.1f, 5.0f);
+	float fineGrainControlMultiplier = glm::clamp(movementSpeed / 10.0f, 0.1f, 500.0f);
 	movementSpeed += fineGrainControlMultiplier * (float)yoffset;
 	if (movementSpeed <= 0.1f) {
 		movementSpeed = 0.1f;

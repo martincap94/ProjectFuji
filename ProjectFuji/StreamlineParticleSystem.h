@@ -74,6 +74,7 @@ public:
 
 	void setPositionInHorizontalLine();
 	void setPositionInVerticalLine();
+	void setPositionCross();
 
 private:
 

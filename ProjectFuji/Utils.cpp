@@ -170,6 +170,10 @@ void reportGLErrors(const char * file, int line) {
 }
 
 
+void reportUnimplementedFunction(const char * file, const char * function, int line) {
+	printf("Function %s in file %s (on line %d) not implemented yet!\n", function, file, line);
+}
+
 float getRandFloat(float min, float max) {
 	return (min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min))));
 }

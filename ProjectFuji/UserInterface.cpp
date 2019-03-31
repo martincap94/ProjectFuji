@@ -18,6 +18,7 @@
 #include "CircleEmitter.h"
 #include "FreeRoamCamera.h"
 #include "StreamlineParticleSystem.h"
+#include "Utils.h"
 
 
 #define NK_IMPLEMENTATION
@@ -36,7 +37,7 @@
 
 using namespace std;
 
-UserInterface::UserInterface(GLFWwindow * window) {
+UserInterface::UserInterface(GLFWwindow *window, VariableManager *vars) : vars(vars) {
 	ctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
 
 
@@ -60,6 +61,8 @@ UserInterface::UserInterface(GLFWwindow * window) {
 	nkEditIcon = nk_image_id(editIcon->id);
 	nkSettingsIcon = nk_image_id(settingsIcon->id);
 
+	leftSidebarWidth = (float)vars->leftSidebarWidth + leftSidebarBorderWidth;
+
 }
 
 UserInterface::~UserInterface() {
@@ -73,24 +76,79 @@ void UserInterface::draw() {
 void UserInterface::constructUserInterface() {
 	nk_glfw3_new_frame();
 
-	
-
 	//ctx->style.window.padding = nk_vec2(10.0f, 10.0f);
 	ctx->style.window.padding = nk_vec2(0.2f, 0.2f);
 
-	stringstream ss;
 	textures = TextureManager::getTexturesMapPtr();
 
 	const struct nk_input *in = &ctx->input;
 	struct nk_rect bounds;
 
+	//ctx->style.window.border = 5.0f;
 
-	/* GUI */
-	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight, vars->leftSidebarWidth, vars->screenHeight - vars->debugTextureRes - vars->toolbarHeight),
+	//ctx->style.tab.rounding = 0.0f;
+	//ctx->style.button.rounding = 0.0f;
+	ctx->style.property.rounding = 0.0f;
+
+
+	constructLeftSidebar();
+	constructRightSidebar();
+	constructHorizontalBar();
+
+	if (vars->aboutWindowOpened) {
+
+
+		if (nk_begin(ctx, "About Window", nk_rect(vars->screenWidth / 2 - 250, vars->screenHeight / 2 - 250, 500, 500), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE)) {
+			nk_layout_row_dynamic(ctx, 20.0f, 1);
+
+			nk_label(ctx, "Orographic Cloud Simulator", NK_TEXT_CENTERED);
+			nk_label(ctx, "Author: Martin Cap", NK_TEXT_CENTERED);
+			nk_label(ctx, "Email: martincap94@gmail.com", NK_TEXT_CENTERED);
+
+
+		} else {
+			vars->aboutWindowOpened = false;
+		}
+		nk_end(ctx);
+	}
+
+
+}
+
+bool UserInterface::isAnyWindowHovered() {
+	return nk_window_is_any_hovered(ctx);
+}
+
+void UserInterface::nk_property_vec3(glm::vec3 & target) {
+
+	//nk_property_float(ctx, "#x", 0.0f, )
+
+}
+
+void UserInterface::nk_property_vec3(glm::vec3 & target, float min, float max, float step, float pixStep, std::string label, eVecNaming nidx) {
+	if (!label.empty()) {
+		nk_label(ctx, label.c_str(), NK_TEXT_CENTERED);
+	}
+
+	int idxOffset = nidx * 4;
+	for (int i = 0; i < 3; i++) {
+		nk_property_float(ctx, vecNames[i + idxOffset], min, &target[i], max, step, pixStep);
+	}
+}
+
+void UserInterface::nk_property_vec4(glm::vec4 & target) {
+	REPORT_NOT_IMPLEMENTED();
+}
+
+void UserInterface::nk_property_color(glm::vec4 & target) {
+
+}
+
+void UserInterface::constructLeftSidebar() {
+
+	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight, leftSidebarWidth, vars->screenHeight - vars->debugTextureRes - vars->toolbarHeight),
 				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
-
-
-		nk_layout_row_dynamic(ctx, 30, 2);
+		nk_layout_row_dynamic(ctx, 15, 4);
 		if (nk_button_label(ctx, "LBM")) {
 			uiMode = 0;
 		}
@@ -128,16 +186,14 @@ void UserInterface::constructUserInterface() {
 		} else if (uiMode == 6) {
 			constructLBMDebugTab();
 		}
-
-
-
-
 	}
-
-
-
 	nk_end(ctx);
 
+
+}
+
+void UserInterface::constructRightSidebar() {
+	stringstream ss;
 
 	if (nk_begin(ctx, "Debug Tab", nk_rect(vars->screenWidth - vars->rightSidebarWidth, vars->toolbarHeight, vars->rightSidebarWidth, /*vars->debugTabHeight*/vars->screenHeight - vars->toolbarHeight), NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
 
@@ -230,17 +286,13 @@ void UserInterface::constructUserInterface() {
 
 	}
 	nk_end(ctx);
+}
 
-
-
-
-
-
-
+void UserInterface::constructHorizontalBar() {
 
 	ctx->style.window.padding = nk_vec2(0, 0);
 
-	if (nk_begin(ctx, "test", nk_rect(0, 0, vars->screenWidth, vars->toolbarHeight), NK_WINDOW_NO_SCROLLBAR)) {
+	if (nk_begin(ctx, "HorizontalBar", nk_rect(0, 0, vars->screenWidth, vars->toolbarHeight), NK_WINDOW_NO_SCROLLBAR)) {
 
 		int numToolbarItems = 3;
 
@@ -329,74 +381,6 @@ void UserInterface::constructUserInterface() {
 		//nk_label(ctx, "View", NK_TEXT_CENTERED);
 	}
 	nk_end(ctx);
-
-
-	/*
-
-	static int show_group =  1;
-	if (show_group) {
-	nk_layout_row_dynamic(ctx, 100, 1);
-	int res = nk_group_begin(ctx, "Node", NK_WINDOW_CLOSABLE|NK_WINDOW_BORDER);
-	show_group = res != NK_WINDOW_CLOSED;
-	if (res && show_group) {
-	...
-	nk_group_end(ctx);
-	}
-	}
-	*/
-
-	if (vars->aboutWindowOpened) {
-
-
-		if (nk_begin(ctx, "About Window", nk_rect(vars->screenWidth / 2 - 250, vars->screenHeight / 2 - 250, 500, 500), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE)) {
-			nk_layout_row_dynamic(ctx, 20.0f, 1);
-
-			nk_label(ctx, "Orographic Cloud Simulator", NK_TEXT_CENTERED);
-			nk_label(ctx, "Author: Martin Cap", NK_TEXT_CENTERED);
-			nk_label(ctx, "Email: martincap94@gmail.com", NK_TEXT_CENTERED);
-
-
-		} else {
-			vars->aboutWindowOpened = false;
-		}
-		nk_end(ctx);
-
-
-	}
-
-	//nk_end(ctx);
-
-
-
-}
-
-bool UserInterface::isAnyWindowHovered() {
-	return nk_window_is_any_hovered(ctx);
-}
-
-void UserInterface::nk_property_vec3(glm::vec3 & target) {
-
-	//nk_property_float(ctx, "#x", 0.0f, )
-
-}
-
-void UserInterface::nk_property_vec3(glm::vec3 & target, float min, float max, float step, float pixStep, std::string label, eVecNaming nidx) {
-	if (!label.empty()) {
-		nk_label(ctx, label.c_str(), NK_TEXT_CENTERED);
-	}
-
-	int idxOffset = nidx * 4;
-	for (int i = 0; i < 3; i++) {
-		nk_property_float(ctx, vecNames[i + idxOffset], min, &target[i], max, step, pixStep);
-	}
-}
-
-void UserInterface::nk_property_vec4(glm::vec4 & target) {
-
-}
-
-void UserInterface::nk_property_color(glm::vec4 & target) {
-
 }
 
 void UserInterface::constructLBMTab() {
@@ -518,7 +502,13 @@ void UserInterface::constructLBMTab() {
 	if (vars->useFreeRoamCamera) {
 		FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
 		if (fcam) {
+			int wasWalking = fcam->walking;
 			nk_checkbox_label(ctx, "Walking", &fcam->walking);
+			if (!wasWalking && fcam->walking) {
+				fcam->snapToGround();
+				fcam->movementSpeed = 1.4f;
+			}
+
 			nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
 		}
 
@@ -908,9 +898,9 @@ void UserInterface::constructCloudVisualizationTab() {
 
 
 	if (nk_button_image(ctx, nkEditIcon)) {
-		showFormBoxMenu = true;
+		particleSystem->editingFormBox = true;
 	}
-	if (showFormBoxMenu) {
+	if (particleSystem->editingFormBox) {
 		//static struct nk_rect s = { 20, 100, 200, 200 }
 		if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Form Box Settings", 0, nk_rect(wpos.x, wpos.y, 200, 250))) {
 			nk_layout_row_dynamic(ctx, 15, 1);
@@ -921,23 +911,23 @@ void UserInterface::constructCloudVisualizationTab() {
 			if (nk_button_label(ctx, "Save & Apply")) {
 				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
 				particleSystem->formBox();
-				showFormBoxMenu = false;
+				particleSystem->editingFormBox = false;
 				nk_popup_close(ctx);
 			}
 			if (nk_button_label(ctx, "Save")) {
 				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
-				showFormBoxMenu = false;
+				particleSystem->editingFormBox = false;
 				nk_popup_close(ctx);
 			}
 			if (nk_button_label(ctx, "Discard")) {
 				particleSystem->newFormBoxSettings = particleSystem->formBoxSettings;
-				showFormBoxMenu = false;
+				particleSystem->editingFormBox = false;
 				nk_popup_close(ctx);
 			}
 
 			nk_popup_end(ctx);
 		} else {
-			showFormBoxMenu = false;
+			particleSystem->editingFormBox = false;
 		}
 	}
 	
