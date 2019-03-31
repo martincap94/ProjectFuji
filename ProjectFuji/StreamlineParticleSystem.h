@@ -63,6 +63,8 @@ public:
 	void initBuffers();
 	void initCUDA();
 
+	void tearDown();
+
 
 	void activate();
 	void deactivate();

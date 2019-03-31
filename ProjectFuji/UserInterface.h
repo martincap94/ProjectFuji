@@ -98,6 +98,7 @@ private:
 
 
 	nk_context *ctx;
+	struct nk_input *ctx_in;
 
 	std::map<std::string, Texture *> *textures; // general textures of the app
 

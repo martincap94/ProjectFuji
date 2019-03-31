@@ -24,12 +24,13 @@ StreamlineParticleSystem::~StreamlineParticleSystem() {
 	//if (streamlineVBOs) {
 	//	delete[] streamlineVBOs;
 	//}
-	if (currActiveVertices) {
-		delete[] currActiveVertices;
-	}
-	if (cudaStreamlinesVBO) {
-		CHECK_ERROR(cudaGraphicsUnregisterResource(cudaStreamlinesVBO));
-	}
+	tearDown();
+	//if (currActiveVertices) {
+	//	delete[] currActiveVertices;
+	//}
+	//if (cudaStreamlinesVBO) {
+	//	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaStreamlinesVBO));
+	//}
 }
 
 void StreamlineParticleSystem::draw() {
@@ -143,6 +144,23 @@ void StreamlineParticleSystem::initCUDA() {
 
 	CHECK_ERROR(cudaMalloc(&d_currActiveVertices, sizeof(int) * maxNumStreamlines));
 	CHECK_ERROR(cudaMemset(d_currActiveVertices, 0, sizeof(int) * maxNumStreamlines));
+}
+
+void StreamlineParticleSystem::tearDown() {
+	if (!initialized) {
+		return;
+	}
+	if (active) {
+		deactivate();
+	}
+
+	CHECK_ERROR(cudaFree(d_currActiveVertices));
+	glDeleteBuffers(1, &streamlinesVBO);
+	glDeleteVertexArrays(1, &streamlinesVAO);
+	delete[] currActiveVertices;
+
+	initialized = false;
+
 }
 
 void StreamlineParticleSystem::activate() {

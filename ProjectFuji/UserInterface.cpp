@@ -63,6 +63,8 @@ UserInterface::UserInterface(GLFWwindow *window, VariableManager *vars) : vars(v
 
 	leftSidebarWidth = (float)vars->leftSidebarWidth + leftSidebarBorderWidth;
 
+	ctx_in = &ctx->input;
+
 }
 
 UserInterface::~UserInterface() {
@@ -145,6 +147,8 @@ void UserInterface::nk_property_color(glm::vec4 & target) {
 }
 
 void UserInterface::constructLeftSidebar() {
+
+	ctx->style.window.border = leftSidebarBorderWidth;
 
 	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight, leftSidebarWidth, vars->screenHeight - vars->debugTextureRes - vars->toolbarHeight),
 				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
@@ -1135,7 +1139,7 @@ void UserInterface::constructDiagramControlsTab() {
 	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();
-		vars->run_harris_1st_pass_inNextFrame = 1; // DEBUG
+		//vars->run_harris_1st_pass_inNextFrame = 1; // DEBUG
 	}
 	if (nk_button_label(ctx, "Deactivate All Particles")) {
 		particleSystem->deactivateAllParticles();
@@ -1253,6 +1257,17 @@ void UserInterface::constructLBMDebugTab() {
 
 
 			nk_checkbox_label(ctx, "live line cleanup (DEBUG)", &sps->liveLineCleanup);
+
+			struct nk_rect bounds;
+
+			bounds = nk_widget_bounds(ctx);
+			if (nk_button_label(ctx, "Teardown")) {
+				sps->tearDown();
+			}
+			if (nk_input_is_mouse_hovering_rect(ctx_in, bounds)) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+				nk_tooltip(ctx, "Teardown current buffers - user can then create new streamline environment.");
+			}
 
 
 		} else if (streamlineInitMode) {

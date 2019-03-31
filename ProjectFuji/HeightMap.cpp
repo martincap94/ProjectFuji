@@ -114,9 +114,9 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 				//cout << b << endl;
 				//cout << endl;
 
-				valsR.insert(r);
-				valsG.insert(g);
-				valsB.insert(b);
+				//valsR.insert(r);
+				//valsG.insert(g);
+				//valsB.insert(b);
 
 				data[x][z] = (float)r * 0.6f + (float)g * 0.3f + (float)b * 0.1f;
 				data[x][z] /= (float)numeric_limits<img_type>().max();
