@@ -140,7 +140,7 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const G
 
 	glDeleteShader(vs);
 	glDeleteShader(fs);
-	if (gs) {
+	if (gsPath != nullptr) {
 		glDeleteShader(gs);
 	}
 

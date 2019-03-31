@@ -35,9 +35,9 @@ public:
 
 	GLuint streamlinesVBO;
 
-	struct cudaGraphicsResource *cudaStreamlinesVBO;
+	struct cudaGraphicsResource *cudaStreamlinesVBO = nullptr;
 	int *d_currActiveVertices; // counters for all streamlines
-	int *currActiveVertices;
+	int *currActiveVertices = nullptr;
 
 	//std::vector<GLuint> streamlineVBOs;
 	//GLuint *streamlineVBOs = nullptr;
@@ -66,6 +66,7 @@ public:
 
 	void activate();
 	void deactivate();
+	void reset();
 
 
 	void cleanupLines();

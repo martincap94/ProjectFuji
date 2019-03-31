@@ -19,26 +19,20 @@
 #include "FreeRoamCamera.h"
 #include "StreamlineParticleSystem.h"
 
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
-#define NK_INCLUDE_STANDARD_VARARGS
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
+
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL3_IMPLEMENTATION
-#define NK_KEYSTATE_BASED_INPUT
-#include <nuklear.h>
+#include <nuklear.h> // this is mandatory since we need the NK_IMPLEMENTATION
+
+
 #include "nuklear_glfw_gl3.h"
+
 
 #define INCLUDE_STYLE
 #ifdef INCLUDE_STYLE
 #include "nuklear/style.c"
 #endif
 
-#define MAX_VERTEX_BUFFER 512 * 1024
-#define MAX_ELEMENT_BUFFER 128 * 1024
 
 using namespace std;
 
@@ -59,6 +53,13 @@ UserInterface::UserInterface(GLFWwindow * window) {
 #ifdef INCLUDE_STYLE
 	set_style(ctx, THEME_MARTIN);
 #endif
+
+	editIcon = TextureManager::loadTexture("icons/edit.png");
+	settingsIcon = TextureManager::loadTexture("icons/settings.png");
+
+	nkEditIcon = nk_image_id(editIcon->id);
+	nkSettingsIcon = nk_image_id(settingsIcon->id);
+
 }
 
 UserInterface::~UserInterface() {
@@ -71,6 +72,8 @@ void UserInterface::draw() {
 
 void UserInterface::constructUserInterface() {
 	nk_glfw3_new_frame();
+
+	
 
 	//ctx->style.window.padding = nk_vec2(10.0f, 10.0f);
 	ctx->style.window.padding = nk_vec2(0.2f, 0.2f);
@@ -371,15 +374,28 @@ bool UserInterface::isAnyWindowHovered() {
 	return nk_window_is_any_hovered(ctx);
 }
 
-void UserInterface::uivec3(glm::vec3 & target) {
+void UserInterface::nk_property_vec3(glm::vec3 & target) {
+
+	//nk_property_float(ctx, "#x", 0.0f, )
 
 }
 
-void UserInterface::uivec4(glm::vec4 & target) {
+void UserInterface::nk_property_vec3(glm::vec3 & target, float min, float max, float step, float pixStep, std::string label, eVecNaming nidx) {
+	if (!label.empty()) {
+		nk_label(ctx, label.c_str(), NK_TEXT_CENTERED);
+	}
+
+	int idxOffset = nidx * 4;
+	for (int i = 0; i < 3; i++) {
+		nk_property_float(ctx, vecNames[i + idxOffset], min, &target[i], max, step, pixStep);
+	}
+}
+
+void UserInterface::nk_property_vec4(glm::vec4 & target) {
 
 }
 
-void UserInterface::uicolor(glm::vec4 & target) {
+void UserInterface::nk_property_color(glm::vec4 & target) {
 
 }
 
@@ -871,9 +887,65 @@ void UserInterface::constructCloudVisualizationTab() {
 	nk_checkbox_label(ctx, "Draw volume particles", &vars->renderVolumeParticlesDirectly);
 
 
+	float ratio_two[] = { vars->leftSidebarWidth - 20.0f,  15.0f };
+	//nk_layout_row_dynamic(ctx, 15, 2);
+
+	nk_layout_row(ctx, NK_STATIC, 15, 2, ratio_two);
+
+	// testing
+	float prevButtonRounding = ctx->style.button.rounding;
+	struct nk_vec2 prevButtonPadding = ctx->style.button.padding;
+
+	ctx->style.button.rounding = 0.0f;
+	ctx->style.button.padding = nk_vec2(0.0f, 0.0f);
 	if (nk_button_label(ctx, "Form BOX")) {
-		particleSystem->formBox(glm::vec3(20.0f), glm::vec3(20.0f));
+		particleSystem->formBox();
 	}
+
+	struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
+	wpos.x += nk_widget_size(ctx).x;
+	wpos.y -= nk_widget_size(ctx).y;
+
+
+	if (nk_button_image(ctx, nkEditIcon)) {
+		showFormBoxMenu = true;
+	}
+	if (showFormBoxMenu) {
+		//static struct nk_rect s = { 20, 100, 200, 200 }
+		if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Form Box Settings", 0, nk_rect(wpos.x, wpos.y, 200, 250))) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_label(ctx, "Form box settings", NK_TEXT_LEFT);
+			nk_property_vec3(particleSystem->newFormBoxSettings.position, -100000.0f, 100000.0f, 10.0f, 10.0f, "Position");
+			nk_property_vec3(particleSystem->newFormBoxSettings.size, 100.0f, 100000.0f, 10.0f, 10.0f, "Size");
+
+			if (nk_button_label(ctx, "Save & Apply")) {
+				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
+				particleSystem->formBox();
+				showFormBoxMenu = false;
+				nk_popup_close(ctx);
+			}
+			if (nk_button_label(ctx, "Save")) {
+				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
+				showFormBoxMenu = false;
+				nk_popup_close(ctx);
+			}
+			if (nk_button_label(ctx, "Discard")) {
+				particleSystem->newFormBoxSettings = particleSystem->formBoxSettings;
+				showFormBoxMenu = false;
+				nk_popup_close(ctx);
+			}
+
+			nk_popup_end(ctx);
+		} else {
+			showFormBoxMenu = false;
+		}
+	}
+	
+
+	ctx->style.button.rounding = prevButtonRounding;
+	ctx->style.button.padding = prevButtonPadding;
+
+	nk_layout_row_dynamic(ctx, 15, 1);
 
 
 	nk_property_float(ctx, "Shadow alpha (100x)", 0.01f, &particleRenderer->shadowAlpha100x, 100.0f, 0.01f, 0.01f);
@@ -1170,12 +1242,27 @@ void UserInterface::constructLBMDebugTab() {
 			if (nk_button_label(ctx, "set horizontal line")) {
 				sps->setPositionInHorizontalLine();
 			}
+			if (nk_button_label(ctx, "set vertical line")) {
+				sps->setPositionInVerticalLine();
+			}
+			
 
-			if (nk_button_label(ctx, "Activate streamlines")) {
-				sps->activate();
+			if (sps->active) {
+				if (nk_button_label(ctx, "Deactivate streamlines")) {
+					sps->deactivate();
+				}
+			} else {
+				if (nk_button_label(ctx, "Activate streamlines")) {
+					sps->activate();
+				}
 			}
 
-			nk_checkbox_label(ctx, "live line cleanup", &sps->liveLineCleanup);
+			if (nk_button_label(ctx, "Reset")) {
+				sps->reset();
+			}
+
+
+			nk_checkbox_label(ctx, "live line cleanup (DEBUG)", &sps->liveLineCleanup);
 
 
 		} else if (streamlineInitMode) {
@@ -1202,6 +1289,6 @@ void UserInterface::constructLBMDebugTab() {
 	void UserInterface::constructDebugTab() {
 	}
 
-	void UserInterface::uivec2(glm::vec2 & target) {
+	void UserInterface::nk_property_vec2(glm::vec2 & target) {
 
 	}

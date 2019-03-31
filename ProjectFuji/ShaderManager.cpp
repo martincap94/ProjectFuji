@@ -3,6 +3,8 @@
 #include <iostream>
 #include <map>
 
+#include "Utils.h"
+
 using namespace std;
 
 
@@ -36,15 +38,20 @@ namespace ShaderManager {
 			for (const auto& kv : shaders) {
 				kv.second->use();
 				kv.second->setupMaterialUniforms(false);
+				CHECK_GL_ERRORS();
 
 				// fog testing
 				if (vars) {
 					kv.second->setFogProperties(vars->fogIntensity, vars->fogMinDistance, vars->fogMaxDistance, vars->fogColor);
+					CHECK_GL_ERRORS();
+
 				} else {
 					cout << "oopsie" << endl;
-					kv.second->use();
+					//kv.second->use();
 					kv.second->setVec4("u_Fog.color", glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
 					kv.second->setFloat("u_Fog.minDistance", 20.0f);
+					CHECK_GL_ERRORS();
+
 				}
 			}
 		}
@@ -120,7 +127,9 @@ namespace ShaderManager {
 		}
 		cout << "Initializing ShaderManager..." << endl;
 		loadShaders();
+		CHECK_GL_ERRORS();
 		initShaders();
+		CHECK_GL_ERRORS();
 
 		initFlag = true;
 		return true;

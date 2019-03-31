@@ -82,6 +82,9 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
 	disableAllEmitters();
 
+	formBoxVisModel = new Model("models/unitbox.fbx");
+	formBoxVisShader = ShaderManager::getShaderPtr("singleColor");
+
 }
 
 
@@ -97,6 +100,10 @@ ParticleSystem::~ParticleSystem() {
 	}
 
 	cudaFree(d_numParticles);
+
+	if (formBoxVisModel) {
+		delete formBoxVisModel;
+	}
 
 }
 
@@ -286,6 +293,7 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 
 	glBindVertexArray(particlesVAO);
 
+
 	//glDrawArrays(GL_POINTS, 0, numActiveParticles);
 	glDrawElements(GL_POINTS, numActiveParticles, GL_UNSIGNED_INT, 0);
 
@@ -293,6 +301,10 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 	for (int i = 0; i < emitters.size(); i++) {
 		emitters[i]->draw();
 	}
+
+	formBoxVisModel->transform.position = formBoxSettings.position;
+	formBoxVisModel->transform.scale = formBoxSettings.size;
+	formBoxVisModel->drawGeometry(formBoxVisShader);
 
 
 }
@@ -673,6 +685,10 @@ void ParticleSystem::initParticlesOnTerrain() {
 
 void ParticleSystem::initParticlesAboveTerrain() {
 	cout << __FUNCTION__ << " not yet implemented!" << endl;
+}
+
+void ParticleSystem::formBox() {
+	formBox(formBoxSettings.position, formBoxSettings.size);
 }
 
 void ParticleSystem::formBox(glm::vec3 pos, glm::vec3 size) {

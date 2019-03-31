@@ -28,6 +28,7 @@ public:
 	virtual void draw();
 	virtual void draw(ShaderProgram *shader);
 	virtual void drawGeometry(ShaderProgram *shader);
+	virtual void drawWireframe(ShaderProgram *shader);
 
 	void makeInstanced(std::vector<Transform> &instanceTransforms);
 	void makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scaleModifier = glm::vec2(0.8, 1.2), float maxY = 1000.0f, int maxYTests = 0);

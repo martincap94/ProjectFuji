@@ -26,6 +26,7 @@
 #include "VariableManager.h"
 #include "STLPSimulatorCUDA.h"
 #include "ShaderProgram.h"
+#include "Model.h"
 
 
 class Emitter;
@@ -34,6 +35,12 @@ class CircleEmitter;
 class LBM;
 
 class ParticleSystem {
+private:
+	struct FormBoxSettings {
+		glm::vec3 position = glm::vec3(0.0f);
+		glm::vec3 size = glm::vec3(100.0f);
+	};
+
 public:
 
 	std::vector<Emitter *> emitters;
@@ -61,6 +68,8 @@ public:
 	GLuint particlesEBO;
 
 
+	FormBoxSettings newFormBoxSettings;
+	FormBoxSettings formBoxSettings;
 
 
 	LBM *lbm;
@@ -132,6 +141,7 @@ public:
 	void initParticlesOnTerrain();
 	void initParticlesAboveTerrain();
 
+	void formBox();
 	void formBox(glm::vec3 pos, glm::vec3 size);
 
 	void refreshParticlesOnTerrain();
@@ -153,6 +163,10 @@ public:
 
 
 private:
+
+	Model *formBoxVisModel;
+	ShaderProgram *formBoxVisShader;
+
 
 	ShaderProgram *harris_1st_pass_shader;
 	ShaderProgram *harris_2nd_pass_shader;

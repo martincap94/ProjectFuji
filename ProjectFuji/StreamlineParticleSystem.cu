@@ -27,8 +27,9 @@ StreamlineParticleSystem::~StreamlineParticleSystem() {
 	if (currActiveVertices) {
 		delete[] currActiveVertices;
 	}
-	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaStreamlinesVBO));
-
+	if (cudaStreamlinesVBO) {
+		CHECK_ERROR(cudaGraphicsUnregisterResource(cudaStreamlinesVBO));
+	}
 }
 
 void StreamlineParticleSystem::draw() {
@@ -159,12 +160,24 @@ void StreamlineParticleSystem::deactivate() {
 
 }
 
+void StreamlineParticleSystem::reset() {
+	// maybe this could work for both active and inactive particles (as online/offline reset)
+	CHECK_ERROR(cudaMemset(d_currActiveVertices, 0, sizeof(int) * maxNumStreamlines));
+	frameCounter = 0;
+
+
+
+}
+
 void StreamlineParticleSystem::cleanupLines() {
 	// copy back the amounts of vertices that create individual lines (so we can get rid off the unwanted lines)
 	CHECK_ERROR(cudaMemcpy(currActiveVertices, d_currActiveVertices, sizeof(int) * maxNumStreamlines, cudaMemcpyDeviceToHost));
 }
 
 void StreamlineParticleSystem::setPositionInHorizontalLine() {
+	if (active) {
+		reset();
+	}
 
 	// quick testing
 	float zoffset = lbm->position.z;
@@ -181,4 +194,19 @@ void StreamlineParticleSystem::setPositionInHorizontalLine() {
 }
 
 void StreamlineParticleSystem::setPositionInVerticalLine() {
+	if (active) {
+		reset();
+	}
+
+	// quick testing
+	float yoffset = lbm->position.y;
+	float ystep = lbm->getWorldHeight() / (float)maxNumStreamlines;
+	float x = lbm->position.x + 1.0f;
+	float z = lbm->position.z + lbm->getWorldDepth() / 2.0f;
+
+	glBindBuffer(GL_ARRAY_BUFFER, streamlinesVBO);
+	for (int i = 0; i < maxNumStreamlines; i++) {
+		glm::vec3 pos(x, i * ystep + yoffset, z);
+		glBufferSubData(GL_ARRAY_BUFFER, i * maxStreamlineLength * sizeof(glm::vec3), sizeof(glm::vec3), glm::value_ptr(pos));
+	}
 }

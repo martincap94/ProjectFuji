@@ -58,6 +58,13 @@ void Model::drawGeometry(ShaderProgram * shader) {
 	}
 }
 
+void Model::drawWireframe(ShaderProgram * shader) {
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	drawGeometry(shader);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+}
+
 void Model::makeInstanced(std::vector<Transform> &instanceTransforms) {
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].makeInstanced(instanceTransforms);
