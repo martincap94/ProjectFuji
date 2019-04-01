@@ -3285,6 +3285,13 @@ float LBM3D_1D_indices::getWorldDepth() {
 	return scale * latticeDepth;
 }
 
+void LBM3D_1D_indices::snapToGround() {
+	if (!heightMap) {
+		return;
+	}
+	position.y = heightMap->getHeight(position.x, position.z);
+}
+
 glm::mat4 LBM3D_1D_indices::getModelMatrix() {
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, position);

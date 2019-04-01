@@ -273,7 +273,13 @@ void ParticleRenderer::drawSlices() {
 
 	CHECK_GL_ERRORS();
 
+	//cout << "NUM ACTIVE PARTICLES = " << ps->numActiveParticles << endl;
+	//cout << "num slices = " << numSlices << endl;
+	//cout << "setting batchsize to " << (ps->numActiveParticles / numSlices) << endl;
+
 	batchSize = ps->numActiveParticles / numSlices;
+
+	//cout << "BATCH SIZE = " << batchSize << endl;
 
 	// clear light buffer
 	

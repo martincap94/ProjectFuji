@@ -1211,6 +1211,10 @@ void UserInterface::constructLBMDebugTab() {
 
 		nk_property_float(ctx, "scale", 1.0f, &lbm->scale, 1000.0f, 1.0f, 1.0f);
 
+		if (nk_button_label(ctx, "snap origin to ground")) {
+			lbm->snapToGround();
+		}
+
 		if (nk_button_label(ctx, "SAVE CHANGES")) {
 
 			//lbm->saveChanges(); // testing 

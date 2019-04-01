@@ -186,3 +186,6 @@ void reportUnimplementedFunction(const char *file, const char *function, int lin
 #define REPORT_NOT_IMPLEMENTED() ( reportUnimplementedFunction( __FILE__, __FUNCTION__, __LINE__ ) )
 
 float getRandFloat(float min, float max);
+
+
+//void snapToGround(glm::vec3 &targetPosition, HeightMap *heightMap);

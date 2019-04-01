@@ -242,6 +242,8 @@ public:
 	float getWorldHeight();
 	float getWorldDepth();
 
+	void snapToGround();
+
 	//float getWorld
 
 	glm::mat4 getModelMatrix();
