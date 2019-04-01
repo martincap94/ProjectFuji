@@ -14,7 +14,9 @@
 #include <glm\glm.hpp>
 #include <glad\glad.h>
 
+
 class ShaderProgram;
+class Model;
 
 /// Direction light for simple scene lighting.
 /**
@@ -74,10 +76,12 @@ public:
 
 
 	void draw();
-	void init();
 	void initBuffers();
 
 private:
+
+	Model *sunModel = nullptr;
+
 
 	GLuint VAO;
 	GLuint VBO;

@@ -36,6 +36,7 @@ void main() {
 
 	//fragColor = vec4(shadow, fragColor.a);
 	fragColor.xyz *= shadow * fragColor.w;
+	fragColor.a = clamp(fragColor.a, 0.0, 1.0);
 
 	
 

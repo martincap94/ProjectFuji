@@ -119,11 +119,12 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 	eyeViewMatrix = cam->getViewMatrix();
 
 	viewVec = glm::normalize(cam->front); // normalize just to be sure (camera front should always be normalized)
-	//lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
-	lightVec = glm::normalize(dirLight->position); // according to the Nvidia source code
+	lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
+	//lightVec = glm::normalize(dirLight->position); // according to the Nvidia source code
 
 	lightPosEye = eyeViewMatrix * glm::vec4(dirLight->position, 1.0f);
 
+	//cout << glm::dot(viewVec, lightVec) << endl;
 
 	if (glm::dot(viewVec, lightVec) > 0.0f) {
 		halfVec = glm::normalize(viewVec + lightVec);

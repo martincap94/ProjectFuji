@@ -604,10 +604,7 @@ void UserInterface::constructLightingTab() {
 	nk_label(ctx, "Lighting Controls", NK_TEXT_CENTERED);
 
 
-	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_property_float(ctx, "#x:", -100000.0f, &dirLight->position.x, 100000.0f, 100.0f, 100.0f);
-	nk_property_float(ctx, "#y:", -100000.0f, &dirLight->position.y, 100000.0f, 100.0f, 100.0f);
-	nk_property_float(ctx, "#z:", -100000.0f, &dirLight->position.z, 100000.0f, 100.0f, 100.0f);
+	constructDirLightPositionPanel();
 
 
 	nk_layout_row_dynamic(ctx, 15, 1);
@@ -812,10 +809,9 @@ void UserInterface::constructSkyTab() {
 	nk_label(ctx, "Sky", NK_TEXT_CENTERED);
 
 
+	constructDirLightPositionPanel();
+
 	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_property_float(ctx, "#x:", -1000.0f, &dirLight->position.x, 1000.0f, 1.0f, 1.0f);
-	nk_property_float(ctx, "#y:", -1000.0f, &dirLight->position.y, 1000.0f, 1.0f, 1.0f);
-	nk_property_float(ctx, "#z:", -1000.0f, &dirLight->position.z, 1000.0f, 1.0f, 1.0f);
 
 
 	nk_checkbox_label(ctx, "Skybox", &vars->drawSkybox);
@@ -863,11 +859,8 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_label(ctx, "Cloud Visualization", NK_TEXT_CENTERED);
 
+	constructDirLightPositionPanel();
 
-	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_property_float(ctx, "#x:", -1000.0f, &dirLight->position.x, 1000.0f, 1.0f, 1.0f);
-	nk_property_float(ctx, "#y:", -1000.0f, &dirLight->position.y, 1000.0f, 1.0f, 1.0f);
-	nk_property_float(ctx, "#z:", -1000.0f, &dirLight->position.z, 1000.0f, 1.0f, 1.0f);
 
 
 	nk_layout_row_dynamic(ctx, 15, 1);
@@ -1370,6 +1363,15 @@ void UserInterface::constructLBMDebugTab() {
 	}
 
 	void UserInterface::constructDebugTab() {
+	}
+
+	void UserInterface::constructDirLightPositionPanel() {
+		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_property_vec3(dirLight->position, -1000000.0f, 1000000.0f, 100.0f, 100.0f, "Sun position");
+		//nk_label(ctx, "Sun position", NK_TEXT_LEFT);
+		//nk_property_float(ctx, "#x:", -1000.0f, &dirLight->position.x, 1000.0f, 1.0f, 1.0f);
+		//nk_property_float(ctx, "#y:", -1000.0f, &dirLight->position.y, 1000.0f, 1.0f, 1.0f);
+		//nk_property_float(ctx, "#z:", -1000.0f, &dirLight->position.z, 1000.0f, 1.0f, 1.0f);
 	}
 
 	void UserInterface::nk_property_vec2(glm::vec2 & target) {

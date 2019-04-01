@@ -145,7 +145,7 @@ Camera2D *overlayDiagramCamera;
 STLPSimulatorCUDA *stlpSimCUDA;
 
 EVSMShadowMapper evsm;
-DirectionalLight dirLight;
+DirectionalLight *dirLight;
 
 
 float lastMouseX;
@@ -290,7 +290,7 @@ int runApp() {
 	CHECK_GL_ERRORS();
 
 	evsm.init();
-	dirLight.init();
+	dirLight = new DirectionalLight();
 	stlpDiagram.init(vars.soundingFile);
 
 
@@ -394,8 +394,8 @@ int runApp() {
 	camera->setLatticeDimensions(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
 	camera->movementSpeed = vars.cameraSpeed;
 
-	dirLight.focusPoint = glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, 0.0f, vars.heightMap->getWorldDepth() / 2.0f);
-	dirLight.color = glm::vec3(1.0f, 0.99f, 0.9f);
+	dirLight->focusPoint = glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, 0.0f, vars.heightMap->getWorldDepth() / 2.0f);
+	dirLight->color = glm::vec3(1.0f, 0.99f, 0.9f);
 	//particleSystemLBM->lbm = lbm;
 
 	// TO DO - cleanup this hack
@@ -442,7 +442,7 @@ int runApp() {
 	armoireModel.transform.position = glm::vec3(3000.0f, 0.0f, 8000.0f);
 	armoireModel.transform.scale = glm::vec3(1.0f);
 
-	dirLight.position = glm::vec3(10000.0f, 15000.0f, 20000.0f);
+	dirLight->position = glm::vec3(10000.0f, 15000.0f, 20000.0f);
 
 	testModel.snapToGround(vars.heightMap);
 	armoireModel.snapToGround(vars.heightMap);
@@ -450,7 +450,7 @@ int runApp() {
 
 
 
-	evsm.dirLight = &dirLight;
+	evsm.dirLight = dirLight;
 
 
 	refreshProjectionMatrix();
@@ -543,7 +543,7 @@ int runApp() {
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("imageTexture"), 1);
 
 	// Provisional settings
-	ui->dirLight = &dirLight;
+	ui->dirLight = dirLight;
 	ui->evsm = &evsm;
 	ui->lbm = lbm;
 	ui->particleRenderer = particleRenderer;
@@ -677,7 +677,7 @@ int runApp() {
 		reportGLErrors("D0");
 
 		ShaderManager::updateViewMatrixUniforms(view);
-		ShaderManager::updateDirectionalLightUniforms(dirLight);
+		ShaderManager::updateDirectionalLightUniforms(*dirLight);
 		ShaderManager::updateViewPositionUniforms(camera->position);
 		reportGLErrors("D1");
 
@@ -696,7 +696,7 @@ int runApp() {
 					glm::mat4 tmpView = glm::mat4(glm::mat3(view));
 					hosekShader->setViewMatrix(tmpView);
 					hosekShader->setProjectionMatrix(projection);
-					hosekShader->setVec3("u_SunDir", -dirLight.getDirection());
+					hosekShader->setVec3("u_SunDir", -dirLight->getDirection());
 					hosek->draw();
 
 
@@ -795,7 +795,7 @@ int runApp() {
 		} else if (mode == 3) {
 
 			if (hosek->liveRecalc) {
-				hosek->update(dirLight.getDirection());
+				hosek->update(dirLight->getDirection());
 			}
 
 			if (vars.stlpUseCUDA) {
@@ -821,7 +821,7 @@ int runApp() {
 
 
 			if (vars.simulateSun) {
-				dirLight.circularMotionStep(deltaTime);
+				dirLight->circularMotionStep(deltaTime);
 			}
 
 
@@ -858,7 +858,7 @@ int runApp() {
 			if (vars.run_harris_1st_pass_inNextFrame) {
 				evsm.preHarris_1st_pass();
 
-				particleSystem->drawHarris_1st_pass(dirLight.position);
+				particleSystem->drawHarris_1st_pass(dirLight->position);
 
 				evsm.postHarris_1st_pass();
 
@@ -902,7 +902,7 @@ int runApp() {
 
 			//glCullFace(GL_FRONT);
 			//stlpSim->heightMap->draw();
-			dirLight.draw();
+			dirLight->draw();
 			particleSystem->drawHelperStructures();
 
 			lbm->draw();
@@ -935,7 +935,7 @@ int runApp() {
 				///////////////////////////////////////////////////////////////			
 
 
-			particleRenderer->recalcVectors(camera, &dirLight);
+			particleRenderer->recalcVectors(camera, dirLight);
 			glm::vec3 sortVec = particleRenderer->getSortVec();
 
 			// NOW sort particles using the sort vector
@@ -946,7 +946,7 @@ int runApp() {
 			particleRenderer->postSceneRenderImage();
 
 
-			particleRenderer->render(particleSystem, &dirLight, camera);
+			particleRenderer->render(particleSystem, dirLight, camera);
 
 			/*
 							glDisable(GL_BLEND);
@@ -1011,6 +1011,7 @@ int runApp() {
 	delete diagramCamera;
 	delete overlayDiagramCamera;
 	delete orbitCamera;
+	delete dirLight;
 
 	delete skybox;
 

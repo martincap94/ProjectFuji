@@ -11,6 +11,10 @@ uniform mat4 u_LightSpaceMatrix;
 
 
 uniform vec3 u_CameraPos;
+uniform vec3 u_LightPos;
+
+uniform int u_Mode;
+
 uniform float u_WorldPointSize;
 
 const vec3 worldup = vec3(0.0, 1.0, 0.0);
@@ -25,9 +29,18 @@ void main() {
 
 	float tmpscale = u_WorldPointSize / 10.0;
 
-	//vec3 toCamera = normalize(u_CameraPos - pos);
-	vec3 right = normalize(vec3(goldNoise(pos.xy, pos.x), goldNoise(pos.xy, pos.y), goldNoise(pos.xy, pos.z))) * tmpscale;
-	vec3 up = normalize(cross(right, worldup)) * tmpscale;
+	vec3 right;
+	vec3 up;
+
+	if (u_Mode == 0) {
+		right = normalize(vec3(goldNoise(pos.xy, pos.x), goldNoise(pos.xy, pos.y), goldNoise(pos.xy, pos.z))) * tmpscale;
+		up = normalize(cross(right, worldup)) * tmpscale;
+	} else {
+		vec3 toLight = normalize(u_LightPos - pos);
+		right = normalize(cross(toLight, worldup)) * tmpscale;
+		up = normalize(cross(right, toLight)) * tmpscale;
+	}
+
 
 	gl_Position = VP * vec4(pos - right - up, 1.0);
 	g_TexCoords = vec2(0.0, 0.0);

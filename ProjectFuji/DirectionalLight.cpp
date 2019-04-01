@@ -3,6 +3,7 @@
 #include "DataStructures.h"
 #include "ShaderManager.h"
 #include "ShaderProgram.h"
+#include "Model.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
@@ -14,12 +15,19 @@ DirectionalLight::DirectionalLight() {
 	// setup some default projection matrix
 	//projectionMatrix = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 1000.0f);
 	//projectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 1.0f, 1000.0f);
+	//initBuffers();
+	shader = ShaderManager::getShaderPtr("singleColorModel");
 
+	sunModel = new Model("models/unitsphere.fbx");
+	sunModel->transform.scale = glm::vec3(100.0f);
 
 }
 
 
 DirectionalLight::~DirectionalLight() {
+	if (sunModel) {
+		delete sunModel;
+	}
 }
 
 glm::mat4 DirectionalLight::getViewMatrix() {
@@ -89,8 +97,14 @@ void DirectionalLight::draw() {
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, position);
 	shader->setModelMatrix(model);
+
+	/*
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
+	*/
+
+	model->transform.position = position;
+	model->drawGeometry(shader);
 
 
 	//shader->setVec3("u_Color", glm::vec3(0.5f, 1.0f, 0.7f));
@@ -104,10 +118,6 @@ void DirectionalLight::draw() {
 	//glDrawArrays(GL_LINES, 0, 24);
 }
 
-void DirectionalLight::init() {
-	initBuffers();
-	shader = ShaderManager::getShaderPtr("singleColorModel");
-}
 
 void DirectionalLight::initBuffers() {
 	glGenVertexArrays(1, &VAO);

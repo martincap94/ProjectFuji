@@ -131,6 +131,8 @@ private:
 	
 	void constructDebugTab();
 
+	void constructDirLightPositionPanel();
+
 
 };
 
