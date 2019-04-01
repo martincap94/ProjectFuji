@@ -24,24 +24,19 @@ void main() {
 	vec3 right = normalize(cross(toCamera, worldup)) * tmpscale;
 	vec3 up = normalize(cross(right, toCamera)) * tmpscale;
 
-	pos -= (right * 0.5);
-	gl_Position = VP * vec4(pos, 1.0);
+	gl_Position = VP * vec4(pos - right - up, 1.0);
 	g_TexCoords = vec2(0.0, 0.0);
 	EmitVertex();
 
-	pos += up;
-	gl_Position = VP * vec4(pos, 1.0);
+	gl_Position = VP * vec4(pos - right + up, 1.0);
 	g_TexCoords = vec2(0.0, 1.0);
 	EmitVertex();
 
-	pos -= up;
-	pos += right;
-	gl_Position = VP * vec4(pos, 1.0);
+	gl_Position = VP * vec4(pos + right - up, 1.0);
 	g_TexCoords = vec2(1.0, 0.0);
 	EmitVertex();
 
-	pos += up;
-	gl_Position = VP * vec4(pos, 1.0);
+	gl_Position = VP * vec4(pos + right + up, 1.0);
 	g_TexCoords = vec2(1.0, 1.0);
 	EmitVertex();
 

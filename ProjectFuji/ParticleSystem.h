@@ -37,7 +37,7 @@ class LBM;
 class ParticleSystem {
 private:
 	struct FormBoxSettings {
-		glm::vec3 position = glm::vec3(1000.0f, 2500.0f, 2000.0f);
+		glm::vec3 position = glm::vec3(1000.0f, 4500.0f, 2000.0f);
 		glm::vec3 size = glm::vec3(4000.0f, 1000.0f, 3000.0f);
 	};
 

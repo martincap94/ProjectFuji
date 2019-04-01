@@ -126,10 +126,6 @@ private:
 
 	void compositeResult();
 
-	void switchToExperimentalShaders();
-	void switchToDefaultShaders();
-
-
 
 };
 

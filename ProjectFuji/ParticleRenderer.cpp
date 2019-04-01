@@ -173,32 +173,30 @@ void ParticleRenderer::postSceneRenderImage() {
 }
 
 void ParticleRenderer::updateShaderSet() {
-	switch (shaderSet) {
-		case 0:
-			firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass");
-			secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass");
-			break;
-		case 1:
-			firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass_alt");
-			secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass_alt");
-			break;
-		case 2:
-			firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass_alt2");
-			secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass_alt2");
-			break;
-		default:
-			break;
+	if (shaderSet != prevShaderSet) {
+		switch (shaderSet) {
+			case 0:
+				shadowAlpha100x = 0.1f;
+				firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass");
+				secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass");
+				break;
+			case 1:
+				shadowAlpha100x = 10.0f;
+				firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass_alt");
+				secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass_alt");
+				break;
+			case 2:
+				shadowAlpha100x = 10.0f;
+				firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass_alt2");
+				secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass_alt2");
+				break;
+			default:
+				break;
+		}
+		prevShaderSet = shaderSet;
 	}
 }
 
-void ParticleRenderer::switchToExperimentalShaders() {
-	
-
-}
-
-void ParticleRenderer::switchToDefaultShaders() {
-
-}
 
 GLuint ParticleRenderer::createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format) {
 	GLuint texid;
