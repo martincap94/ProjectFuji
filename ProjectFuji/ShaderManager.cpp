@@ -115,10 +115,14 @@ namespace ShaderManager {
 			addShader("volume_1st_pass_alt", "volume_1st_pass_alt.vert", "volume_1st_pass_alt.frag", "volume_1st_pass_alt.geom");
 
 			// for different uniform settings
-			addShader("volume_1st_pass_alt2", "volume_1st_pass_alt.vert", "volume_1st_pass_alt.frag", "volume_1st_pass_alt.geom");
+			//addShader("volume_1st_pass_alt2", "volume_1st_pass_alt.vert", "volume_1st_pass_alt.frag", "volume_1st_pass_alt.geom");
 
 
-			//addShader("volume_2nd_pass_alt", "volume_2nd_pass_alt.vert", "volume_2nd_pass_alt.frag", "volume_2nd_pass_alt.geom");
+			addShader("volume_2nd_pass_alt", "volume_2nd_pass_alt.vert", "volume_2nd_pass_alt.frag", "volume_2nd_pass_alt.geom");
+
+
+			addShader("volume_1st_pass_alt2", "volume_1st_pass_alt2.vert", "volume_1st_pass_alt2.frag", "volume_1st_pass_alt2.geom");
+			addShader("volume_2nd_pass_alt2", "volume_2nd_pass_alt2.vert", "volume_2nd_pass_alt2.frag", "volume_2nd_pass_alt2.geom");
 
 			addShader("pass_thru", "pass_thru.vert", "pass_thru.frag");
 			addShader("visualize_normals", "visualize_normals.vert", "visualize_normals.frag", "visualize_normals.geom");

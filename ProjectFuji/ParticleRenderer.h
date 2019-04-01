@@ -37,7 +37,7 @@ public:
 	int numSlices = 256;
 	int numDisplayedSlices = numSlices;
 
-	int useExperimentalShaders = 0;
+	int shaderSet = 0;
 
 	int batchSize;
 
@@ -106,6 +106,7 @@ private:
 	GLuint lightTexture[2]; // for swapping as in the CUDA samples
 	GLuint lightDepthTexture;
 
+	int prevShaderSet = shaderSet;
 
 
 

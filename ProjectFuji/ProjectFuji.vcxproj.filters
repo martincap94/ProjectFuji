@@ -592,5 +592,23 @@
     <None Include="shaders\volume_1st_pass_alt.geom">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\volume_2nd_pass_alt2.geom">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_2nd_pass_alt2.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_2nd_pass_alt2.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_1st_pass_alt2.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_1st_pass_alt2.geom">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_1st_pass_alt2.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

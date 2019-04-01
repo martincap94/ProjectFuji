@@ -985,10 +985,8 @@ void UserInterface::constructCloudVisualizationTab() {
 		nk_combo_end(ctx);
 	}
 
-	if (nk_checkbox_label(ctx, "use experimental shaders", &particleRenderer->useExperimentalShaders)) {
-		particleRenderer->updateShaderSet();
-	}
-
+	nk_property_int(ctx, "Shader set", 0, &particleRenderer->shaderSet, 2, 1, 1);
+	particleRenderer->updateShaderSet();
 
 }
 

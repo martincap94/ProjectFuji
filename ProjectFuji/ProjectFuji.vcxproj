@@ -303,7 +303,13 @@
     <None Include="shaders\coloredParticle.vert" />
     <None Include="shaders\curve.frag" />
     <None Include="shaders\curve.vert" />
+    <None Include="shaders\volume_1st_pass_alt2.frag" />
+    <None Include="shaders\volume_1st_pass_alt2.geom" />
+    <None Include="shaders\volume_1st_pass_alt2.vert" />
     <None Include="shaders\volume_1st_pass_alt.geom" />
+    <None Include="shaders\volume_2nd_pass_alt2.frag" />
+    <None Include="shaders\volume_2nd_pass_alt2.geom" />
+    <None Include="shaders\volume_2nd_pass_alt2.vert" />
     <None Include="shaders\volume_2nd_pass_alt.geom" />
     <None Include="shaders\volume_1st_pass_alt.frag" />
     <None Include="shaders\volume_1st_pass_alt.vert" />

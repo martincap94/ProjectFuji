@@ -27,8 +27,7 @@ void main() {
 	v_LightSpacePos = u_LightSpaceMatrix /** inverse(u_View)*/ * a_Pos;
 	//gl_Position = v_LightSpacePos; // testing correctness
 
-	gl_Position = u_Projection * u_View * a_Pos;
-	gl_PointSize = pointScale;
+	gl_Position = a_Pos;
 	
 }
 
