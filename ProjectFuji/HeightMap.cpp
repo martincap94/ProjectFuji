@@ -260,6 +260,14 @@ void HeightMap::initMaterials() {
 
 	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
 	materials[0].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+
+	// load two other options
+	TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
+	TextureManager::loadTexture("textures/mossy-ground1-preview.png");
+
+	//materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/mossy-ground1-albedo.png");
+	//materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
+
 	materials[0].shininess = 2.0f;
 	materials[0].textureTiling = 8000.0f;
 

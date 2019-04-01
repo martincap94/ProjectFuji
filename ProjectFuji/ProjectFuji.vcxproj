@@ -88,6 +88,7 @@
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Actor.cpp" />
     <ClCompile Include="ArHosekSkyModel.c" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Camera2D.cpp" />
@@ -199,6 +200,7 @@
     <ClCompile Include="ShaderProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Actor.h" />
     <ClInclude Include="ArHosekSkyModel.h" />
     <ClInclude Include="ArHosekSkyModelData_CIEXYZ.h" />
     <ClInclude Include="ArHosekSkyModelData_RGB.h" />
@@ -301,6 +303,12 @@
     <None Include="shaders\coloredParticle.vert" />
     <None Include="shaders\curve.frag" />
     <None Include="shaders\curve.vert" />
+    <None Include="shaders\volume_1st_pass_alt.geom" />
+    <None Include="shaders\volume_2nd_pass_alt.geom" />
+    <None Include="shaders\volume_1st_pass_alt.frag" />
+    <None Include="shaders\volume_1st_pass_alt.vert" />
+    <None Include="shaders\volume_2nd_pass_alt.frag" />
+    <None Include="shaders\volume_2nd_pass_alt.vert" />
     <None Include="shaders\volume_2nd_pass.frag" />
     <None Include="shaders\volume_2nd_pass.vert" />
     <None Include="shaders\volume_1st_pass.frag" />

@@ -30,14 +30,14 @@ bool Texture::loadTexture(const char *path, bool clampEdges) {
 	filename = path;
 
 	stbi_set_flip_vertically_on_load(true);
-	unsigned short *data = stbi_load_16(path, &width, &height, &numChannels, NULL);
+	unsigned char *data = stbi_load(path, &width, &height, &numChannels, NULL);
 
 	bool retVal = true;
 	if (!data) {
 		std::cout << "Error loading texture at " << path << std::endl;
 		stbi_image_free(data);
 
-		data = stbi_load_16("textures/missing.png", &width, &height, &numChannels, NULL);
+		data = stbi_load("textures/missing.png", &width, &height, &numChannels, NULL);
 
 		retVal = false;
 	}
@@ -76,7 +76,7 @@ bool Texture::loadTexture(const char *path, bool clampEdges) {
 
 
 
-	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_SHORT, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

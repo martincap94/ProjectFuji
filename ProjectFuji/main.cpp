@@ -433,16 +433,19 @@ int runApp() {
 
 	Model unitboxModel("models/unitbox.fbx");
 
-	//grassModel.makeInstanced(vars.heightMap, 1000000, glm::vec2(0.2, 0.4), 4.0f, 3);
-	//treeModel.makeInstanced(vars.heightMap, 400, glm::vec2(0.3, 0.5), 5.0f, 20);
+	grassModel.makeInstanced(vars.heightMap, 1000000, glm::vec2(0.5f, 2.0f), 500.0f, 3, glm::vec2(3500.0f, 8500.0f), glm::vec2(1000.0f));
+	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
 
-	testModel.transform.position.x += 1.0f;
+	testModel.transform.position = glm::vec3(3500.0f, 0.0f, 8500.0f);
+	//testModel.transform.scale = glm::vec3(20.0f);
 
-
-	armoireModel.transform.position += glm::vec3(10.0f, 0.0f, 10.0f);
+	armoireModel.transform.position = glm::vec3(3000.0f, 0.0f, 8000.0f);
 	armoireModel.transform.scale = glm::vec3(1.0f);
 
 	dirLight.position = glm::vec3(10000.0f, 15000.0f, 20000.0f);
+
+	testModel.snapToGround(vars.heightMap);
+	armoireModel.snapToGround(vars.heightMap);
 
 
 

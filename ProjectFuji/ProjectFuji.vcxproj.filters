@@ -42,6 +42,7 @@
     <CudaCompile Include="ParticleSystem.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="StreamlineParticleSystem.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -200,8 +201,8 @@
     </ClCompile>
     <ClCompile Include="GridLBM.cpp" />
     <ClCompile Include="UserInterface.cpp" />
-    <ClCompile Include="StreamlineParticleSystem.cu" />
     <ClCompile Include="GPUVBO.cpp" />
+    <ClCompile Include="Actor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -370,6 +371,7 @@
     <ClInclude Include="UserInterface.h" />
     <ClInclude Include="StreamlineParticleSystem.h" />
     <ClInclude Include="GPUVBO.h" />
+    <ClInclude Include="Actor.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -570,6 +572,24 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\visualize_normals.geom">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_1st_pass_alt.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_1st_pass_alt.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_2nd_pass_alt.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_2nd_pass_alt.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_2nd_pass_alt.geom">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_1st_pass_alt.geom">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

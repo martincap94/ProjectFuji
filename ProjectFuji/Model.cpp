@@ -72,7 +72,12 @@ void Model::makeInstanced(std::vector<Transform> &instanceTransforms) {
 	instanced = true;
 }
 
-void Model::makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scaleModifier, float maxY, int maxYTests) {
+void Model::makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scaleModifier, float maxY, int maxYTests, glm::vec2 position, glm::vec2 areaSize) {
+
+	if (areaSize.x == 0.0f || areaSize.y == 0.0f) {
+		areaSize.x = heightMap->getWorldWidth();
+		areaSize.y = heightMap->getWorldDepth();
+	}
 
 	std::vector<Transform> instanceTransforms;
 	for (unsigned int i = 0; i < numInstances; i++) {
@@ -84,8 +89,8 @@ void Model::makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scal
 		int counter = 0;
 
 		do {
-			xPos = getRandFloat(0.0f, heightMap->width);
-			zPos = getRandFloat(0.0f, heightMap->height);
+			xPos = getRandFloat(position.x, position.x + areaSize.x);
+			zPos = getRandFloat(position.y, position.y + areaSize.y);
 			yPos = heightMap->getHeight(xPos, zPos);
 			counter++;
 		} while (yPos > maxY && counter < maxYTests);

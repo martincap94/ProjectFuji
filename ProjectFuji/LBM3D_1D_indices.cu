@@ -3289,7 +3289,14 @@ void LBM3D_1D_indices::snapToGround() {
 	if (!heightMap) {
 		return;
 	}
-	position.y = heightMap->getHeight(position.x, position.z);
+	float ww = getWorldWidth();
+	float wd = getWorldDepth();
+	float miny = heightMap->getHeight(position.x, position.z);
+	miny = min(miny, heightMap->getHeight(position.x + ww, position.z));
+	miny = min(miny, heightMap->getHeight(position.x + ww, position.z + wd));
+	miny = min(miny, heightMap->getHeight(position.x, position.z + wd));
+
+	position.y = miny;
 }
 
 glm::mat4 LBM3D_1D_indices::getModelMatrix() {
