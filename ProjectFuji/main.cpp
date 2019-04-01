@@ -342,8 +342,6 @@ int runApp() {
 	particleSystem = new ParticleSystem(&vars);
 	particleRenderer = new ParticleRenderer(&vars);
 
-	streamlineParticleSystem = new StreamlineParticleSystem(&vars);
-
 
 	glm::ivec3 latticeDim(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
 
@@ -401,8 +399,9 @@ int runApp() {
 	//particleSystemLBM->lbm = lbm;
 
 	// TO DO - cleanup this hack
+
+	streamlineParticleSystem = new StreamlineParticleSystem(&vars, lbm);
 	lbm->streamlineParticleSystem = streamlineParticleSystem;
-	streamlineParticleSystem->lbm = lbm;
 
 
 

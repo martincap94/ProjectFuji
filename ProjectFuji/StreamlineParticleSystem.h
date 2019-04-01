@@ -12,6 +12,19 @@ class VariableManager;
 
 // only for streamlines in LBM
 class StreamlineParticleSystem {
+
+private:
+	struct HorizontalParametersSettings {
+		float xOffset = 0.0f;
+		float yOffset = 0.5f;
+	};
+
+	struct VerticalParametersSettings {
+		float xOffset = 0.0f;
+		float zOffset = 0.5f;
+	};
+
+
 public:
 
 	VariableManager *vars = nullptr;
@@ -25,6 +38,13 @@ public:
 	// bools for UI
 	int visible = 1;
 	int liveLineCleanup = 1;
+
+	bool editingHorizontalParameters = false;
+	bool editingVerticalParameters = false;
+
+	HorizontalParametersSettings hParams;
+	VerticalParametersSettings vParams;
+
 
 	bool active = false;
 	bool initialized = false;
@@ -54,7 +74,7 @@ public:
 	//std::vector<glm::vec3> streamlineVertices;
 
 
-	StreamlineParticleSystem(VariableManager *vars);
+	StreamlineParticleSystem(VariableManager *vars, LBM3D_1D_indices *lbm);
 	~StreamlineParticleSystem();
 
 	void draw();
@@ -77,6 +97,10 @@ public:
 	void setPositionInHorizontalLine();
 	void setPositionInVerticalLine();
 	void setPositionCross();
+
+
+	//void centerHParamsYOffset();
+	//void centerVParamsZOffset();
 
 private:
 

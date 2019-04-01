@@ -88,6 +88,8 @@ private:
 	};
 
 	const float leftSidebarBorderWidth = 2.0f;
+	float leftSidebarEditButtonRatio[2];
+
 
 	float leftSidebarWidth;
 

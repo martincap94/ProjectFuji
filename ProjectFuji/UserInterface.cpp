@@ -65,6 +65,11 @@ UserInterface::UserInterface(GLFWwindow *window, VariableManager *vars) : vars(v
 
 	ctx_in = &ctx->input;
 
+	ctx->style.button.rounding = 0.0f;
+	ctx->style.button.image_padding = nk_vec2(0.0f, 0.0f);
+
+	leftSidebarEditButtonRatio[0] = leftSidebarWidth - 20.0f;
+	leftSidebarEditButtonRatio[1] = 15.0f;
 }
 
 UserInterface::~UserInterface() {
@@ -880,7 +885,7 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_checkbox_label(ctx, "Draw volume particles", &vars->renderVolumeParticlesDirectly);
 
-
+	//ctx->style.button.touch_padding
 	float ratio_two[] = { vars->leftSidebarWidth - 20.0f,  15.0f };
 	//nk_layout_row_dynamic(ctx, 15, 2);
 
@@ -1217,10 +1222,12 @@ void UserInterface::constructLBMDebugTab() {
 
 	}
 
+	nk_layout_row_dynamic(ctx, 30.0f, 1);
+	nk_label(ctx, "Streamlines", NK_TEXT_CENTERED);
+	
+	//nk_layout_row_dynamic(ctx, 200, 1); // wrapping row
 
-	nk_layout_row_dynamic(ctx, 200, 1); // wrapping row
-
-	if (nk_group_begin(ctx, "Streamlines", NK_WINDOW_BORDER)) {
+	//if (nk_group_begin(ctx, "Streamlines", NK_WINDOW_BORDER)) {
 
 		nk_layout_row_dynamic(ctx, 15, 1);
 
@@ -1233,12 +1240,75 @@ void UserInterface::constructLBMDebugTab() {
 		} else if (sps->initialized) {
 
 			nk_checkbox_label(ctx, "visible", &sps->visible);
+
+
+			nk_layout_row(ctx, NK_STATIC, 15, 2, leftSidebarEditButtonRatio);
+
 			if (nk_button_label(ctx, "set horizontal line")) {
 				sps->setPositionInHorizontalLine();
 			}
+			struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
+			wpos.x += nk_widget_size(ctx).x;
+			wpos.y -= nk_widget_size(ctx).y;
+
+			if (nk_button_image(ctx, nkEditIcon)) {
+				sps->editingHorizontalParameters = true;
+			}
+			if (sps->editingHorizontalParameters) {
+				if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Horizontal Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					nk_label(ctx, "Horizontal Line Params", NK_TEXT_LEFT);
+
+					nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->hParams.xOffset, 1.0f, 0.01f, 0.01f);
+					nk_property_float(ctx, "yOffset (ratio)", 0.0f, &sps->hParams.yOffset, 1.0f, 0.01f, 0.01f);
+
+					if (nk_button_label(ctx, "Save & Apply")) {
+						sps->setPositionInHorizontalLine();
+						sps->editingHorizontalParameters = false;
+						nk_popup_close(ctx);
+					}
+					if (nk_button_label(ctx, "Save")) {
+						sps->editingHorizontalParameters = false;
+						nk_popup_close(ctx);
+					}
+					nk_popup_end(ctx);
+				} else {
+					sps->editingHorizontalParameters = false;
+				}
+			}
+
 			if (nk_button_label(ctx, "set vertical line")) {
 				sps->setPositionInVerticalLine();
 			}
+			wpos = nk_widget_position(ctx); // this needs to be before the widget!
+			wpos.x += nk_widget_size(ctx).x;
+			wpos.y -= nk_widget_size(ctx).y;
+			if (nk_button_image(ctx, nkEditIcon)) {
+				sps->editingVerticalParameters = true;
+			}
+			if (sps->editingVerticalParameters) {
+				if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Vertical Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					nk_label(ctx, "Vertical Line Params", NK_TEXT_LEFT);
+
+					nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->vParams.xOffset, 1.0f, 0.01f, 0.01f);
+					nk_property_float(ctx, "zOffset (ratio)", 0.0f, &sps->vParams.zOffset, 1.0f, 0.01f, 0.01f);
+
+					if (nk_button_label(ctx, "Save & Apply")) {
+						sps->setPositionInVerticalLine();
+						sps->editingVerticalParameters = false;
+						nk_popup_close(ctx);
+					}
+					if (nk_button_label(ctx, "Save")) {
+						sps->editingVerticalParameters = false;
+						nk_popup_close(ctx);
+					}
+					nk_popup_end(ctx);
+				} else {
+					sps->editingVerticalParameters = false;
+				}
+			}
+			nk_layout_row_dynamic(ctx, 15.0f, 1);
 			
 
 			if (sps->active) {
@@ -1283,9 +1353,9 @@ void UserInterface::constructLBMDebugTab() {
 			}
 
 		}
-		nk_group_end(ctx);
+		//nk_group_end(ctx);
 
-	}
+	//}
 
 
 

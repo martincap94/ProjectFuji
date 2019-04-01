@@ -7,15 +7,19 @@
 #include "VariableManager.h"
 #include "ShaderManager.h"
 #include "CUDAUtils.cuh"
+#include "Utils.h"
 
 
-StreamlineParticleSystem::StreamlineParticleSystem(VariableManager *vars) : vars(vars) {
+StreamlineParticleSystem::StreamlineParticleSystem(VariableManager *vars, LBM3D_1D_indices *lbm) : vars(vars), lbm(lbm) {
 	
 	// preset default values but DO NOT initialize!
 	this->maxNumStreamlines = vars->maxNumStreamlines;
 	this->maxStreamlineLength = vars->maxStreamlineLength;
 
 	shader = ShaderManager::getShaderPtr("singleColor");
+
+	//centerHParamsYOffset();
+	//centerVParamsZOffset();
 
 }
 
@@ -193,15 +197,13 @@ void StreamlineParticleSystem::cleanupLines() {
 }
 
 void StreamlineParticleSystem::setPositionInHorizontalLine() {
-	if (active) {
-		reset();
-	}
+	reset();
 
 	// quick testing
 	float zoffset = lbm->position.z;
 	float zstep = lbm->getWorldDepth() / (float)maxNumStreamlines;
-	float x = lbm->position.x + 1.0f;
-	float y = lbm->position.y + lbm->getWorldHeight() / 2.0f; // TO DO - add LBM mid points (in LBM class)
+	float x = lbm->position.x + FLT_EPSILON + hParams.xOffset* lbm->getWorldWidth();
+	float y = lbm->position.y + hParams.yOffset * lbm->getWorldHeight();
 
 	glBindBuffer(GL_ARRAY_BUFFER, streamlinesVBO);
 	for (int i = 0; i < maxNumStreamlines; i++) {
@@ -212,15 +214,13 @@ void StreamlineParticleSystem::setPositionInHorizontalLine() {
 }
 
 void StreamlineParticleSystem::setPositionInVerticalLine() {
-	if (active) {
-		reset();
-	}
+	reset();
 
 	// quick testing
 	float yoffset = lbm->position.y;
-	float ystep = (lbm->getWorldHeight() - FLT_EPSILON) / (float)maxNumStreamlines;
-	float x = lbm->position.x + FLT_EPSILON;
-	float z = lbm->position.z + lbm->getWorldDepth() / 2.0f;
+	float ystep = lbm->getWorldHeight() / (float)maxNumStreamlines;
+	float x = lbm->position.x + FLT_EPSILON + vParams.xOffset * lbm->getWorldWidth();
+	float z = lbm->position.z + vParams.zOffset * lbm->getWorldDepth();
 
 	glBindBuffer(GL_ARRAY_BUFFER, streamlinesVBO);
 	for (int i = 0; i < maxNumStreamlines; i++) {
@@ -230,7 +230,13 @@ void StreamlineParticleSystem::setPositionInVerticalLine() {
 }
 
 void StreamlineParticleSystem::setPositionCross() {
-
-
-
+	REPORT_NOT_IMPLEMENTED();
 }
+
+//void StreamlineParticleSystem::centerHParamsYOffset() {
+//	hParams.yOffset = lbm->getWorldHeight() / 2.0f;
+//}
+//
+//void StreamlineParticleSystem::centerVParamsZOffset() {
+//	vParams.zOffset = lbm->getWorldDepth() / 2.0f;
+//}
