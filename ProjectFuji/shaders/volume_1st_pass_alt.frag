@@ -3,6 +3,7 @@
 
 layout (location = 0) out vec4 fragColor;
 
+in vec2 g_TexCoords;
 
 uniform sampler2D u_Texture;
 uniform vec4 u_Color;
@@ -13,8 +14,10 @@ uniform float u_ShadowAlpha = 0.005;
 
 void main(void) {
 
-	vec4 texColor = texture(u_Texture, gl_PointCoord);
-	fragColor = vec4(texColor.rgb * texColor.a, texColor.a) * u_Opacity;
-	fragColor.xyz *= u_ShadowAlpha;
+	fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+
+	vec4 texColor = texture(u_Texture, g_TexCoords);
+	fragColor = vec4(texColor.rgb, 1.0)/* * u_Opacity*/;
+	//fragColor.xyz *= u_ShadowAlpha;
 
 }

@@ -984,6 +984,12 @@ void UserInterface::constructCloudVisualizationTab() {
 		}
 		nk_combo_end(ctx);
 	}
+
+	if (nk_checkbox_label(ctx, "use experimental shaders", &particleRenderer->useExperimentalShaders)) {
+		particleRenderer->updateShaderSet();
+	}
+
+
 }
 
 
@@ -1263,8 +1269,8 @@ void UserInterface::constructLBMDebugTab() {
 					nk_layout_row_dynamic(ctx, 15, 1);
 					nk_label(ctx, "Horizontal Line Params", NK_TEXT_LEFT);
 
-					nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->hParams.xOffset, 1.0f, 0.01f, 0.01f);
-					nk_property_float(ctx, "yOffset (ratio)", 0.0f, &sps->hParams.yOffset, 1.0f, 0.01f, 0.01f);
+					nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->hParams.xOffset, 0.99f, 0.01f, 0.01f);
+					nk_property_float(ctx, "yOffset (ratio)", 0.0f, &sps->hParams.yOffset, 0.99f, 0.01f, 0.01f);
 
 					if (nk_button_label(ctx, "Save & Apply")) {
 						sps->setPositionInHorizontalLine();
@@ -1295,8 +1301,8 @@ void UserInterface::constructLBMDebugTab() {
 					nk_layout_row_dynamic(ctx, 15, 1);
 					nk_label(ctx, "Vertical Line Params", NK_TEXT_LEFT);
 
-					nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->vParams.xOffset, 1.0f, 0.01f, 0.01f);
-					nk_property_float(ctx, "zOffset (ratio)", 0.0f, &sps->vParams.zOffset, 1.0f, 0.01f, 0.01f);
+					nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->vParams.xOffset, 0.99f, 0.01f, 0.01f);
+					nk_property_float(ctx, "zOffset (ratio)", 0.0f, &sps->vParams.zOffset, 0.99f, 0.01f, 0.01f);
 
 					if (nk_button_label(ctx, "Save & Apply")) {
 						sps->setPositionInVerticalLine();

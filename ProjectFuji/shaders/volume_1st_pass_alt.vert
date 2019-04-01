@@ -16,18 +16,5 @@ uniform int u_Mode;
 
 
 void main(void) {
-	
-	float pointScale;
-	if (u_Mode == 0) {
-		float lightDist = distance(vec3(a_Pos), u_LightPos);
-		pointScale = u_WorldPointSize * 100.0 / lightDist;
-	} else {
-		float cameraDist = distance(vec3(a_Pos), u_CameraPos);
-		float pointScale = u_WorldPointSize * 100.0 / cameraDist;
-	}
-
-	gl_Position = u_Projection * u_View * a_Pos;
-	gl_PointSize = pointScale;
-
-
+	gl_Position = a_Pos;
 }

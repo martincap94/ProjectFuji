@@ -37,6 +37,8 @@ public:
 	int numSlices = 256;
 	int numDisplayedSlices = numSlices;
 
+	int useExperimentalShaders = 0;
+
 	int batchSize;
 
 	int downSample = 1;
@@ -79,6 +81,10 @@ public:
 	void postSceneRenderImage();
 
 
+	void updateShaderSet();
+
+
+
 private:
 
 	// Helper members so we do not have to send them through all the functions
@@ -118,6 +124,9 @@ private:
 	void drawPoints(int start, int count, bool sorted);
 
 	void compositeResult();
+
+	void switchToExperimentalShaders();
+	void switchToDefaultShaders();
 
 
 

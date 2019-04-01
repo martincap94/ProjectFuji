@@ -1,20 +1,50 @@
 #version 400 core
 
+layout (points) in;
+layout (triangle_strip) out;
+layout (max_vertices = 4) out;
 
-layout (location = 0) out vec4 fragColor;
+uniform mat4  u_View;
+uniform mat4  u_Projection;
 
+uniform vec3 u_CameraPos;
+uniform float u_WorldPointSize;
 
-uniform sampler2D u_Texture;
-uniform vec4 u_Color;
+const vec3 worldup = vec3(0.0, 1.0, 0.0);
 
-uniform float u_Opacity; // misleading (same name as in second pass even though they have completely different purpose)
-uniform float u_ShadowAlpha = 0.005;
+out vec2 g_TexCoords;
 
+void main() {
+	vec3 pos = gl_in[0].gl_Position.xyz;
+	mat4 VP = u_Projection * u_View;
 
-void main(void) {
+	vec3 toCamera = normalize(u_CameraPos - pos);
+	vec3 right = normalize(cross(toCamera, worldup)) * u_WorldPointSize;
+	vec3 up = normalize(cross(right, toCamera)) * u_WorldPointSize;
 
-	vec4 texColor = texture(u_Texture, gl_PointCoord);
-	fragColor = vec4(texColor.rgb * texColor.a, texColor.a) * u_Opacity;
-	fragColor.xyz *= u_ShadowAlpha;
+	pos -= (right * 0.5);
+	gl_Position = VP * vec4(pos, 1.0);
+	g_TexCoords = vec2(0.0, 0.0);
+	EmitVertex();
+
+	pos += up;
+	gl_Position = VP * vec4(pos, 1.0);
+	g_TexCoords = vec2(0.0, 1.0);
+	EmitVertex();
+
+	pos -= up;
+	pos += right;
+	gl_Position = VP * vec4(pos, 1.0);
+	g_TexCoords = vec2(1.0, 0.0);
+	EmitVertex();
+
+	pos += up;
+	gl_Position = VP * vec4(pos, 1.0);
+	g_TexCoords = vec2(1.0, 1.0);
+	EmitVertex();
+
+	EndPrimitive();
 
 }
+
+

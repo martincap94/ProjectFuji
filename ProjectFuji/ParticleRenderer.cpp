@@ -172,6 +172,24 @@ void ParticleRenderer::postSceneRenderImage() {
 
 }
 
+void ParticleRenderer::updateShaderSet() {
+	if (useExperimentalShaders) {
+		switchToExperimentalShaders();
+	} else {
+		switchToDefaultShaders();
+	}
+}
+
+void ParticleRenderer::switchToExperimentalShaders() {
+	firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass_alt");
+	secondPassShader = ShaderManager::getShaderPtr("volume_1st_pass_alt2");
+}
+
+void ParticleRenderer::switchToDefaultShaders() {
+	firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass");
+	secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass");
+}
+
 GLuint ParticleRenderer::createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format) {
 	GLuint texid;
 	glGenTextures(1, &texid);
