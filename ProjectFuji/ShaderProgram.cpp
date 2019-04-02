@@ -46,7 +46,7 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const G
 
 	glGetShaderiv(vs, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE) {
-		cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED" << endl;
+		cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED: " << vsPath << endl;
 		glGetShaderInfoLog(vs, 1024, NULL, infoLog);
 		cout << infoLog << endl;
 
@@ -67,7 +67,7 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const G
 
 	glGetShaderiv(fs, GL_COMPILE_STATUS, &result);
 	if (result == GL_FALSE) {
-		cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED" << endl;
+		cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED: " << fsPath << endl;
 		glGetShaderInfoLog(fs, 1024, NULL, infoLog);
 		cout << infoLog << endl;
 		/*GLint logLen;
@@ -104,7 +104,7 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const G
 
 		glGetShaderiv(gs, GL_COMPILE_STATUS, &result);
 		if (result == GL_FALSE) {
-			cerr << "ERROR::SHADER::GEOMETRY::COMPILATION_FAILED" << endl;
+			cerr << "ERROR::SHADER::GEOMETRY::COMPILATION_FAILED: " << gsPath << endl;
 			glGetShaderInfoLog(gs, 1024, NULL, infoLog);
 			cout << infoLog << endl;
 		}

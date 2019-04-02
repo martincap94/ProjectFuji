@@ -21,12 +21,16 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars) : vars(vars) {
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png"));
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png"));
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture3.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "cloud_particle_1024.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "cloud_particle_256.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture3_256.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture3.png")); // still the best looking I would say
 
 	spriteTexture = spriteTextures.back();
 
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "white.png"));
 
+	atlasSpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "cloud_atlas.png");
 
 }
 
@@ -51,12 +55,15 @@ void ParticleRenderer::clearLightFramebuffer(DirectionalLight * dirLight) {
 void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	shader->use();
 	shader->setInt("u_Texture", 0); // just to be sure
+	shader->setInt("u_AtlasTexture", 2);
+	shader->setBool("u_UseAtlasTexture", (bool)useAtlasTexture);
 	shader->setVec3("u_CameraPos", cam->position);
 	shader->setVec3("u_LightPos", dirLight->position);
 	shader->setFloat("u_WorldPointSize", ps->pointSize);
 	shader->setFloat("u_Opacity", vars->opacityMultiplier);
 	shader->setVec3("u_TintColor", vars->tintColor);
 	shader->setFloat("u_ShadowAlpha", shadowAlpha);
+	shader->setBool("u_ShowParticleTextureIdx", (bool)showParticleTextureIdx);
 }
 
 void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, Camera *cam) {
@@ -96,10 +103,13 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 	secondPassShader->setMat4fv("u_LightSpaceMatrix", lightSpaceMatrix);
 	secondPassShader->setInt("u_Mode", secondPassShaderMode);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
+	spriteTexture->use(0);
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
 
-
+	atlasSpriteTexture->use(2);
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(GL_TEXTURE_2D, atlasSpriteTexture->id);
 
 	drawSlices();
 
@@ -119,10 +129,37 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 	eyeViewMatrix = cam->getViewMatrix();
 
 	viewVec = glm::normalize(cam->front); // normalize just to be sure (camera front should always be normalized)
+	
+
+	lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
+
+	//viewVec.y = 0.0f;
+	//lightVec.y = 0.0f;
+	//viewVec = glm::normalize(viewVec);
+	//lightVec = glm::normalize(lightVec);
+
+
+	//cout << glm::dot(viewVec, lightVec) << endl;
+
+	if (glm::dot(viewVec, lightVec) > inversionThreshold) {
+		halfVec = glm::normalize(viewVec + lightVec);
+		if (forceHalfVecToFaceCam) {
+			halfVec.y = viewVec.y;
+			halfVec = glm::normalize(halfVec);
+		}
+		invertedView = false;
+	} else {
+		halfVec = glm::normalize(-viewVec + lightVec);
+		if (forceHalfVecToFaceCam) {
+			halfVec.y = -viewVec.y;
+			halfVec = glm::normalize(halfVec);
+		}
+		invertedView = true;
+	}
+
+	/*
 	lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
 	//lightVec = glm::normalize(dirLight->position); // according to the Nvidia source code
-
-	lightPosEye = eyeViewMatrix * glm::vec4(dirLight->position, 1.0f);
 
 	//cout << glm::dot(viewVec, lightVec) << endl;
 
@@ -133,6 +170,10 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 		halfVec = glm::normalize(-viewVec + lightVec);
 		invertedView = true;
 	}
+	*/
+
+	lightPosEye = eyeViewMatrix * glm::vec4(dirLight->position, 1.0f);
+
 
 	lightViewMatrix = dirLight->getViewMatrix();
 	lightProjectionMatrix = dirLight->getProjectionMatrix();

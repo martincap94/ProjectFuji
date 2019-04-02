@@ -562,9 +562,8 @@ int runApp() {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_PROGRAM_POINT_SIZE);
 		//glEnable(GL_CULL_FACE);
-
-		reportGLErrors("->>> LOOP START <<<-");
-
+		
+		CHECK_GL_ERRORS();
 
 		double currentFrameTime = glfwGetTime();
 		deltaTime = currentFrameTime - lastFrameTime;
@@ -604,7 +603,6 @@ int runApp() {
 			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 			view = overlayDiagramCamera->getViewMatrix();
 			ShaderManager::updatePVMatrixUniforms(overlayDiagramProjection, view);
-			reportGLErrors("B1");
 
 
 			GLint res = stlpDiagram.textureResolution;
@@ -612,34 +610,29 @@ int runApp() {
 			glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
 			glClear(GL_COLOR_BUFFER_BIT);
 			//glBindTextureUnit(0, stlpDiagram.diagramTexture);
-			reportGLErrors("B2");
 
 			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
-			reportGLErrors("B3");
 
 			stlpDiagram.drawText(*textShader);
 
 			particleSystem->drawDiagramParticles(curveShader);
 
-			reportGLErrors("B4");
 
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stlpDiagram.diagramFramebuffer);
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
 
-			reportGLErrors("B5");
 
 			//glDrawBuffer(GL_BACK);
-			reportGLErrors("B6");
 
 
 			glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-			reportGLErrors("B7");
 
 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-			reportGLErrors("B8");
+
+			CHECK_GL_ERRORS();
 
 		}
 
@@ -647,7 +640,6 @@ int runApp() {
 		glViewport(0, 0, vars.screenWidth, vars.screenHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		//glClear(GL_COLOR_BUFFER_BIT);
-		reportGLErrors("B");
 
 
 
@@ -668,23 +660,17 @@ int runApp() {
 		}
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		reportGLErrors("C");
-
 		// UPDATE SHADER VIEW MATRICES
 
 		view = camera->getViewMatrix();
 
-		reportGLErrors("D0");
-
 		ShaderManager::updateViewMatrixUniforms(view);
 		ShaderManager::updateDirectionalLightUniforms(*dirLight);
 		ShaderManager::updateViewPositionUniforms(camera->position);
-		reportGLErrors("D1");
 
 		//dirLightOnlyShader->use();
 		//dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
 
-		reportGLErrors("D2");
 
 		if (vars.drawSkybox) {
 			projection = glm::perspective(glm::radians(vars.fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
@@ -712,7 +698,8 @@ int runApp() {
 
 		refreshProjectionMatrix();
 
-		reportGLErrors("D");
+		CHECK_GL_ERRORS();
+
 
 
 
@@ -903,13 +890,16 @@ int runApp() {
 			//glCullFace(GL_FRONT);
 			//stlpSim->heightMap->draw();
 			dirLight->draw();
-			particleSystem->drawHelperStructures();
 
-			lbm->draw();
-			//grid->draw(*singleColorShader);
-			gGrid.draw(*unlitColorShader);
+			if (!vars.renderMode) {
+				particleSystem->drawHelperStructures();
 
-			streamlineParticleSystem->draw();
+				lbm->draw();
+				//grid->draw(*singleColorShader);
+				gGrid.draw(*unlitColorShader);
+
+				streamlineParticleSystem->draw();
+			}
 
 
 			if (!particleRenderer->compositeResultToFramebuffer) {
@@ -925,8 +915,10 @@ int runApp() {
 
 				}
 			}
-			stlpSimCUDA->draw(camera->position);
 
+			if (!vars.renderMode) {
+				stlpSimCUDA->draw(camera->position);
+			}
 
 
 			//if (vars.renderVolumeParticles) {
@@ -969,33 +961,19 @@ int runApp() {
 
 
 		CHECK_GL_ERRORS();
-		reportGLErrors("E");
 
-
-		// DRAW SCENE
-		/*grid->draw(*singleColorShader);
-		lbm->draw(*singleColorShader);
-
-		if (usePointSprites) {
-			particleSystem->draw(*pointSpriteTestShader, useCUDA);
-		} else if (lbm->visualizeVelocity) {
-			particleSystem->draw(*coloredParticleShader, useCUDA);
-		} else {
-			particleSystem->draw(*singleColorShader, useCUDA);
-		}
-		gGrid.draw(*unlitColorShader);*/
 
 		// Render the user interface
-		if (!vars.hideUI) {
-			ui->draw();
-			//nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
-		}
+
+		ui->draw();
+		//nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+		
 
 		lbm->recalculateVariables(); // recalculate variables based on values set in the user interface
 
 		glfwSwapBuffers(window);
 
-		reportGLErrors("->>> LOOP END <<<-");
+		CHECK_GL_ERRORS();
 
 	}
 

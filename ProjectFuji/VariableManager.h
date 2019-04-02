@@ -184,6 +184,8 @@ public:
 	int projectionMode = eProjectionMode::PERSPECTIVE;
 	float fov = 90.0f;
 
+	int renderMode = 0; // disables rendering of all helper visualization structures (boxes, vectors, etc.)
+
 
 	//int show
 

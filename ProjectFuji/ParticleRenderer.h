@@ -57,8 +57,16 @@ public:
 	float shadowAlpha100x = 0.5f;
 	float shadowAlpha = shadowAlpha100x * 0.01f;
 
+	int forceHalfVecToFaceCam = 0;
+	int showParticleTextureIdx = 0;
+	int useAtlasTexture = 0;
+
+	float inversionThreshold = -0.5f;
+
 
 	Texture *spriteTexture;
+	Texture *atlasSpriteTexture;
+
 	std::vector<Texture *> spriteTextures;
 
 

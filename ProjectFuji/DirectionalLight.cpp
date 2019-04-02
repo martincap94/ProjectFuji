@@ -103,8 +103,8 @@ void DirectionalLight::draw() {
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	*/
 
-	model->transform.position = position;
-	model->drawGeometry(shader);
+	sunModel->transform.position = position;
+	sunModel->drawGeometry(shader);
 
 
 	//shader->setVec3("u_Color", glm::vec3(0.5f, 1.0f, 0.7f));

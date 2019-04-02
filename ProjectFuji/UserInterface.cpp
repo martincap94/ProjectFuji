@@ -81,6 +81,10 @@ void UserInterface::draw() {
 
 
 void UserInterface::constructUserInterface() {
+	if (vars->hideUI) {
+		return;
+	}
+
 	nk_glfw3_new_frame();
 
 	//ctx->style.window.padding = nk_vec2(10.0f, 10.0f);
@@ -97,9 +101,9 @@ void UserInterface::constructUserInterface() {
 	//ctx->style.button.rounding = 0.0f;
 	ctx->style.property.rounding = 0.0f;
 
-
 	constructLeftSidebar();
 	constructRightSidebar();
+	
 	constructHorizontalBar();
 
 	if (vars->aboutWindowOpened) {
@@ -151,7 +155,22 @@ void UserInterface::nk_property_color(glm::vec4 & target) {
 
 }
 
+void UserInterface::nk_value_vec3(const glm::vec3 & target, std::string label, eVecNaming namingConvention) {
+	if (!label.empty()) {
+		nk_label(ctx, label.c_str(), NK_TEXT_CENTERED);
+	}
+	nk_layout_row_dynamic(ctx, 15, 3);
+
+	int idxOffset = namingConvention * 4;
+	for (int i = 0; i < 3; i++) {
+		nk_value_float(ctx, vecNames[i + idxOffset], target[i]);
+	}
+	nk_layout_row_dynamic(ctx, 15, 1);
+
+}
+
 void UserInterface::constructLeftSidebar() {
+
 
 	ctx->style.window.border = leftSidebarBorderWidth;
 
@@ -338,6 +357,10 @@ void UserInterface::constructHorizontalBar() {
 		//nk_label(ctx, "View", NK_TEXT_CENTERED);
 		if (nk_menu_begin_label(ctx, "View", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
 			nk_layout_row_dynamic(ctx, 25, 1);
+
+			nk_checkbox_label(ctx, "Render Mode", &vars->renderMode);
+
+
 			//nk_button_label(ctx, "Debug Window");
 			if (nk_menu_item_label(ctx, "Debug Window", NK_TEXT_CENTERED)) {
 				cout << "opening debug window" << endl;
@@ -381,6 +404,13 @@ void UserInterface::constructHorizontalBar() {
 			nk_menu_end(ctx);
 		}
 
+		nk_layout_row_push(ctx, 120);
+		if (nk_menu_begin_label(ctx, "Favorites", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
+			nk_layout_row_dynamic(ctx, 25, 1);
+
+
+			nk_menu_end(ctx);
+		}
 		//nk_label(ctx, "About", NK_TEXT_CENTERED);
 
 		//nk_layout_row_push(ctx, 120);
@@ -878,75 +908,21 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_checkbox_label(ctx, "Draw volume particles", &vars->renderVolumeParticlesDirectly);
 
-	//ctx->style.button.touch_padding
-	float ratio_two[] = { vars->leftSidebarWidth - 20.0f,  15.0f };
-	//nk_layout_row_dynamic(ctx, 15, 2);
-
-	nk_layout_row(ctx, NK_STATIC, 15, 2, ratio_two);
-
-	// testing
-	float prevButtonRounding = ctx->style.button.rounding;
-	struct nk_vec2 prevButtonPadding = ctx->style.button.padding;
-
-	ctx->style.button.rounding = 0.0f;
-	ctx->style.button.padding = nk_vec2(0.0f, 0.0f);
-	if (nk_button_label(ctx, "Form BOX")) {
-		particleSystem->formBox();
-	}
-
-	struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
-	wpos.x += nk_widget_size(ctx).x;
-	wpos.y -= nk_widget_size(ctx).y;
-
-
-	if (nk_button_image(ctx, nkEditIcon)) {
-		particleSystem->editingFormBox = true;
-	}
-	if (particleSystem->editingFormBox) {
-		//static struct nk_rect s = { 20, 100, 200, 200 }
-		if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Form Box Settings", 0, nk_rect(wpos.x, wpos.y, 200, 250))) {
-			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_label(ctx, "Form box settings", NK_TEXT_LEFT);
-			nk_property_vec3(particleSystem->newFormBoxSettings.position, -100000.0f, 100000.0f, 10.0f, 10.0f, "Position");
-			nk_property_vec3(particleSystem->newFormBoxSettings.size, 100.0f, 100000.0f, 10.0f, 10.0f, "Size");
-
-			if (nk_button_label(ctx, "Save & Apply")) {
-				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
-				particleSystem->formBox();
-				particleSystem->editingFormBox = false;
-				nk_popup_close(ctx);
-			}
-			if (nk_button_label(ctx, "Save")) {
-				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
-				particleSystem->editingFormBox = false;
-				nk_popup_close(ctx);
-			}
-			if (nk_button_label(ctx, "Discard")) {
-				particleSystem->newFormBoxSettings = particleSystem->formBoxSettings;
-				particleSystem->editingFormBox = false;
-				nk_popup_close(ctx);
-			}
-
-			nk_popup_end(ctx);
-		} else {
-			particleSystem->editingFormBox = false;
-		}
-	}
-	
-
-	ctx->style.button.rounding = prevButtonRounding;
-	ctx->style.button.padding = prevButtonPadding;
-
-	nk_layout_row_dynamic(ctx, 15, 1);
+	constructFormBoxButtonPanel();
 
 
 	nk_property_float(ctx, "Shadow alpha (100x)", 0.01f, &particleRenderer->shadowAlpha100x, 100.0f, 0.01f, 0.01f);
 
 
 
+	nk_value_vec3(particleRenderer->lightVec, "Light vector");
+	nk_value_vec3(particleRenderer->viewVec, "View vector");
+	nk_value_float(ctx, "Dot product", glm::dot(particleRenderer->viewVec, particleRenderer->lightVec));
+	nk_property_float(ctx, "Inversion threshold", -1.0f, &particleRenderer->inversionThreshold, 1.0f, 0.01f, 0.01f);
 	nk_value_bool(ctx, "Inverted rendering", particleRenderer->invertedView);
+	nk_value_vec3(particleRenderer->halfVec, "Half vector");
 
-
+	nk_checkbox_label(ctx, "Half vector always faces camera", &particleRenderer->forceHalfVecToFaceCam);
 
 
 	nk_property_float(ctx, "Point size", 0.1f, &stlpSimCUDA->pointSize, 100000.0f, 0.1f, 0.1f);
@@ -980,6 +956,9 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_property_int(ctx, "Shader set", 0, &particleRenderer->shaderSet, 2, 1, 1);
 	particleRenderer->updateShaderSet();
+
+	nk_checkbox_label(ctx, "Show particle texture idx", &particleRenderer->showParticleTextureIdx);
+	nk_checkbox_label(ctx, "Use atlas texture", &particleRenderer->useAtlasTexture);
 
 }
 
@@ -1372,6 +1351,70 @@ void UserInterface::constructLBMDebugTab() {
 		//nk_property_float(ctx, "#x:", -1000.0f, &dirLight->position.x, 1000.0f, 1.0f, 1.0f);
 		//nk_property_float(ctx, "#y:", -1000.0f, &dirLight->position.y, 1000.0f, 1.0f, 1.0f);
 		//nk_property_float(ctx, "#z:", -1000.0f, &dirLight->position.z, 1000.0f, 1.0f, 1.0f);
+	}
+
+	void UserInterface::constructFormBoxButtonPanel() {
+
+		//ctx->style.button.touch_padding
+		float ratio_two[] = { vars->leftSidebarWidth - 20.0f,  15.0f };
+		//nk_layout_row_dynamic(ctx, 15, 2);
+
+		nk_layout_row(ctx, NK_STATIC, 15, 2, ratio_two);
+
+		// testing
+		float prevButtonRounding = ctx->style.button.rounding;
+		struct nk_vec2 prevButtonPadding = ctx->style.button.padding;
+
+		ctx->style.button.rounding = 0.0f;
+		ctx->style.button.padding = nk_vec2(0.0f, 0.0f);
+		if (nk_button_label(ctx, "Form BOX")) {
+			particleSystem->formBox();
+		}
+
+		struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
+		wpos.x += nk_widget_size(ctx).x;
+		wpos.y -= nk_widget_size(ctx).y;
+
+
+		if (nk_button_image(ctx, nkEditIcon)) {
+			particleSystem->editingFormBox = true;
+		}
+		if (particleSystem->editingFormBox) {
+			//static struct nk_rect s = { 20, 100, 200, 200 }
+			if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Form Box Settings", 0, nk_rect(wpos.x, wpos.y, 200, 250))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+				nk_label(ctx, "Form box settings", NK_TEXT_LEFT);
+				nk_property_vec3(particleSystem->newFormBoxSettings.position, -100000.0f, 100000.0f, 10.0f, 10.0f, "Position");
+				nk_property_vec3(particleSystem->newFormBoxSettings.size, 100.0f, 100000.0f, 10.0f, 10.0f, "Size");
+
+				if (nk_button_label(ctx, "Save & Apply")) {
+					particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
+					particleSystem->formBox();
+					particleSystem->editingFormBox = false;
+					nk_popup_close(ctx);
+				}
+				if (nk_button_label(ctx, "Save")) {
+					particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
+					particleSystem->editingFormBox = false;
+					nk_popup_close(ctx);
+				}
+				if (nk_button_label(ctx, "Discard")) {
+					particleSystem->newFormBoxSettings = particleSystem->formBoxSettings;
+					particleSystem->editingFormBox = false;
+					nk_popup_close(ctx);
+				}
+
+				nk_popup_end(ctx);
+			} else {
+				particleSystem->editingFormBox = false;
+			}
+		}
+
+
+		ctx->style.button.rounding = prevButtonRounding;
+		ctx->style.button.padding = prevButtonPadding;
+
+		nk_layout_row_dynamic(ctx, 15, 1);
 	}
 
 	void UserInterface::nk_property_vec2(glm::vec2 & target) {

@@ -117,6 +117,8 @@ private:
 	void nk_property_vec4(glm::vec4 &target);
 	void nk_property_color(glm::vec4 &target);
 
+	void nk_value_vec3(const glm::vec3 &target, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
+
 	void constructLeftSidebar();
 	void constructRightSidebar();
 	void constructHorizontalBar();
@@ -132,6 +134,7 @@ private:
 	void constructDebugTab();
 
 	void constructDirLightPositionPanel();
+	void constructFormBoxButtonPanel();
 
 
 };
