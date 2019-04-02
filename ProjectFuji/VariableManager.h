@@ -88,7 +88,9 @@ public:
 	string soundingFile;		///< Name of the sounding file to be loaded
 
 
-	int showCloudShadows = 0;
+	int cloudsCastShadows = 1;
+	float cloudCastShadowAlphaMultiplier = 0.01f;
+
 
 	int dividePrevVelocity = 0;
 	float prevVelocityDivisor = 100.1f;

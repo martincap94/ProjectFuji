@@ -443,6 +443,10 @@ void ParticleRenderer::drawPointSprites(ShaderProgram * shader, int start, int c
 		shader->setInt("u_ShadowTexture", 1);
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, lightTexture[0]);
+
+		// TESTING - this is for cloud shadow rendering on the terrain!
+		glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_CLOUD_SHADOW_MAP);
+		glBindTexture(GL_TEXTURE_2D, lightTexture[0]);
 	}
 
 	drawPoints(start, count, true);

@@ -935,8 +935,13 @@ void UserInterface::constructCloudVisualizationTab() {
 	nk_property_int(ctx, "Shader set", 0, &particleRenderer->shaderSet, 2, 1, 1);
 	particleRenderer->updateShaderSet();
 
+	nk_checkbox_label(ctx, "cloud shadows", &vars->cloudsCastShadows);
+
+	nk_property_float(ctx, "cast shadow alpha multiplier", 0.0f, &vars->cloudCastShadowAlphaMultiplier, 1.0f, 0.01f, 0.01f);
+
 	nk_checkbox_label(ctx, "Show particle texture idx", &particleRenderer->showParticleTextureIdx);
 	nk_checkbox_label(ctx, "Use atlas texture", &particleRenderer->useAtlasTexture);
+
 
 }
 
@@ -1046,8 +1051,6 @@ void UserInterface::constructDiagramControlsTab() {
 	particleSystem->pointSize = stlpSimCUDA->pointSize;
 	//nk_property_float(ctx, "Point size (CUDA)", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
 
-	nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars->opacityMultiplier, 10.0f, 0.01f, 0.01f);
-	nk_checkbox_label(ctx, "Show Cloud Shadows", &vars->showCloudShadows);
 
 	struct nk_colorf tintColor;
 	tintColor.r = vars->tintColor.x;
@@ -1343,6 +1346,9 @@ void UserInterface::constructLBMDebugTab() {
 			constructWalkingPanel();
 
 			constructDirLightPositionPanel();
+
+			// temporary
+			nk_checkbox_label(ctx, "cloud shadows", &vars->cloudsCastShadows);
 
 
 			nk_menu_end(ctx);

@@ -916,6 +916,11 @@ void HeightMap::draw(ShaderProgram *shader) {
 	glBindTextureUnit(12, materialMap->id);
 
 
+	shader->setInt("u_CloudShadowTexture", TEXTURE_UNIT_CLOUD_SHADOW_MAP);
+	shader->setBool("u_CloudsCastShadows", (bool)vars->cloudsCastShadows);
+	shader->setFloat("u_CloudCastShadowAlphaMultiplier", vars->cloudCastShadowAlphaMultiplier);
+
+
 	/*
 	shader->setInt("u_NumActiveMaterials", 2);
 

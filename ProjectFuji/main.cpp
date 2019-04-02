@@ -820,9 +820,9 @@ int runApp() {
 			vars.heightMap->drawGeometry(evsm.firstPassShaders[0]);
 			//stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
 
-			if (vars.showCloudShadows) {
-				particleSystem->drawGeometry(evsm.firstPassShaders[0], camera->position);
-			}
+			//if (vars.cloudsCastShadows) {
+			//	particleSystem->drawGeometry(evsm.firstPassShaders[0], camera->position);
+			//}
 			//testMesh.draw(evsm.firstPassShader);
 			testModel.drawGeometry(evsm.firstPassShaders[0]);
 			//grassModel.drawGeometry(evsm.firstPassShaders[0]);

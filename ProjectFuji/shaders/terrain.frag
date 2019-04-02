@@ -48,6 +48,10 @@ uniform Fog u_Fog;
 uniform vec3 u_ViewPos;
 
 uniform sampler2D u_DepthMapTexture;
+uniform sampler2D u_CloudShadowTexture; // texture unit: TEXTURE_UNIT_CLOUD_SHADOW_MAP
+
+uniform bool u_CloudsCastShadows;
+uniform float u_CloudCastShadowAlphaMultiplier;
 
 uniform sampler2D u_TerrainNormalMap;
 uniform float u_GlobalNormalMapMixingRatio;
@@ -156,7 +160,29 @@ void main() {
 			vec3 color = calcDirLight(u_DirLight, norm, viewDir, materialMap);
 			result = color * min(shadow + 0.2, 1.0);
 		}
+
+
+
+
+		if (u_CloudsCastShadows) {
+
+			vec3 projCoords = v_LightSpacePos.xyz / v_LightSpacePos.w; // this is already computed elsewhere -> merge if this is to be used
+			projCoords = projCoords * 0.5 + vec3(0.5);
+
+			vec3 cloudShadow = vec3(1.0);
+			vec4 cloudShadowVals =  texture(u_CloudShadowTexture, projCoords.xy);
+
+			cloudShadow -= min(cloudShadowVals.xyz + cloudShadowVals.a * u_CloudCastShadowAlphaMultiplier, 1.0); // testing out ideas
+			//cloudShadow -= cloudShadowVals.xyz; // simple
+
+			result *= cloudShadow;
+
+		}
+
+
 		fragColor = vec4(result, 1.0);
+
+
 
 	//}
 
