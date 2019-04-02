@@ -17,7 +17,7 @@
 
 __constant__ int d_const_numProfiles;
 __constant__ float d_const_P0;
-__constant__ float d_const_delta_t;
+//__constant__ float d_const_delta_t;
 
 __constant__ float d_const_groundHeight;
 __constant__ float d_const_boxTopHeight;
@@ -142,7 +142,7 @@ __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int num
 
 
 
-__global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float *verticalVelocities, int *profileIndices, /*float *particlePressures, */glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles, glm::vec2 *diagramParticleVertices) {
+__global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float delta_t, float *verticalVelocities, int *profileIndices, /*float *particlePressures, */glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles, glm::vec2 *diagramParticleVertices) {
 
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 
@@ -177,8 +177,8 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
 
-			verticalVelocities[idx] = verticalVelocities[idx] + a * d_const_delta_t;
-			float deltaY = verticalVelocities[idx] * d_const_delta_t + 0.5f * a * d_const_delta_t * d_const_delta_t;
+			verticalVelocities[idx] = verticalVelocities[idx] + a * delta_t;
+			float deltaY = verticalVelocities[idx] * delta_t + 0.5f * a * delta_t * delta_t;
 
 			//mapFromSimulationBox_dev(particleVertices[idx].y);
 
@@ -208,8 +208,8 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
 
-			verticalVelocities[idx] = verticalVelocities[idx] + a * d_const_delta_t;
-			float deltaY = verticalVelocities[idx] * d_const_delta_t + 0.5f * a * d_const_delta_t * d_const_delta_t;
+			verticalVelocities[idx] = verticalVelocities[idx] + a * delta_t;
+			float deltaY = verticalVelocities[idx] * delta_t + 0.5f * a * delta_t * delta_t;
 
 			
 
@@ -391,7 +391,7 @@ void STLPSimulatorCUDA::initCUDA() {
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_P0, &stlpDiagram->P0, sizeof(float)));
-	CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
+	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_boxTopHeight, &boxTopHeight, sizeof(float)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_groundHeight, &groundHeight, sizeof(float)));
@@ -516,7 +516,7 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_P0, &stlpDiagram->P0, sizeof(float)));
-	CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
+	//CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_boxTopHeight, &boxTopHeight, sizeof(float)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_groundHeight, &groundHeight, sizeof(float)));
@@ -634,7 +634,7 @@ void STLPSimulatorCUDA::doStep() {
 	// FIX d_ VALUES HERE!!! (use the ones from ParticleSystem)
 	//simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numParticles, particleSystem->d_verticalVelocities, particleSystem->d_profileIndices, particleSystem->d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
 
-	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, /*particleSystem->d_particlePressures,*/ d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO);
+	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, delta_t, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, /*particleSystem->d_particlePressures,*/ d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO);
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
@@ -662,9 +662,9 @@ void STLPSimulatorCUDA::doStep() {
 
 }
 
-void STLPSimulatorCUDA::updateGPU_delta_t() {
-	CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
-}
+//void STLPSimulatorCUDA::updateGPU_delta_t() {
+//	CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
+//}
 
 void STLPSimulatorCUDA::resetSimulation() {
 }

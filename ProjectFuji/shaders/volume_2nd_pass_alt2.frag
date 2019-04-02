@@ -54,7 +54,7 @@ void main() {
 
 	vec3 projCoords = g_LightSpacePos.xyz / g_LightSpacePos.w;
 	projCoords = projCoords * 0.5 + vec3(0.5);
-	vec3 shadow = vec3(1.0) - texture(u_ShadowTexture, projCoords.xy).xyz;
+	vec3 shadow = clamp(vec3(1.0) - texture(u_ShadowTexture, projCoords.xy).xyz, 0.0, 1.0);
 
 	//fragColor = vec4(shadow, fragColor.a);
 

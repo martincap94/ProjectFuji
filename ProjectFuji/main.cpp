@@ -1086,6 +1086,8 @@ void processInput(GLFWwindow* window) {
 	} else {
 		vars.prevHideUIKeyState = GLFW_RELEASE;
 	}
+
+	// Toggle LBM
 	if (glfwGetKey(window, vars.toggleLBMState) == GLFW_PRESS) {
 		if (vars.prevToggleLBMState == GLFW_RELEASE) {
 			vars.applyLBM = abs(vars.applyLBM - 1);
@@ -1093,6 +1095,17 @@ void processInput(GLFWwindow* window) {
 		vars.prevToggleLBMState = GLFW_PRESS;
 	} else {
 		vars.prevToggleLBMState = GLFW_RELEASE;
+	}
+
+
+	// Toggle STLP
+	if (glfwGetKey(window, vars.toggleSTLPState) == GLFW_PRESS) {
+		if (vars.prevToggleSTLPState == GLFW_RELEASE) {
+			vars.applySTLP = abs(vars.applySTLP - 1);
+		}
+		vars.prevToggleSTLPState = GLFW_PRESS;
+	} else {
+		vars.prevToggleSTLPState = GLFW_RELEASE;
 	}
 
 

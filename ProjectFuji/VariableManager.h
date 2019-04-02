@@ -177,8 +177,13 @@ public:
 	int hideUIKey = GLFW_KEY_F;
 	int hideUI = 0;
 
+
+
 	int prevToggleLBMState = GLFW_RELEASE;
 	int toggleLBMState = GLFW_KEY_L;
+
+	int prevToggleSTLPState = GLFW_RELEASE;
+	int toggleSTLPState = GLFW_KEY_K;
 
 
 	int projectionMode = eProjectionMode::PERSPECTIVE;

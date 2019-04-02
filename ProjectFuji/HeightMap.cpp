@@ -179,8 +179,8 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 	//exit(EXIT_FAILURE); // TESTING!!!
 
 
-	//smoothHeights();
-	//smoothHeights();
+	smoothHeights();
+	smoothHeights();
 	//smoothHeights();
 
 	//smoothHeights();

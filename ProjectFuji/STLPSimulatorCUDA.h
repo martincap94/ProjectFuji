@@ -103,7 +103,7 @@ public:
 	/// Does single step of the simulation.
 	void doStep();
 
-	void updateGPU_delta_t();
+	//void updateGPU_delta_t();
 
 	void resetSimulation();
 

@@ -132,9 +132,15 @@ private:
 	void constructLBMDebugTab();
 	
 	void constructDebugTab();
+	void constructFavoritesMenu();
 
 	void constructDirLightPositionPanel();
 	void constructFormBoxButtonPanel();
+
+
+	// small quick functions
+	void constructTauProperty();
+	void constructWalkingPanel();
 
 
 };

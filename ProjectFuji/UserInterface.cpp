@@ -403,14 +403,7 @@ void UserInterface::constructHorizontalBar() {
 
 			nk_menu_end(ctx);
 		}
-
-		nk_layout_row_push(ctx, 120);
-		if (nk_menu_begin_label(ctx, "Favorites", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
-			nk_layout_row_dynamic(ctx, 25, 1);
-
-
-			nk_menu_end(ctx);
-		}
+		constructFavoritesMenu();
 		//nk_label(ctx, "About", NK_TEXT_CENTERED);
 
 		//nk_layout_row_push(ctx, 120);
@@ -447,9 +440,8 @@ void UserInterface::constructLBMTab() {
 		lbm->refreshHeightMap();
 	}
 
+	constructTauProperty();
 
-
-	nk_property_float(ctx, "Tau:", 0.5005f, &lbm->tau, 10.0f, 0.005f, 0.005f);
 
 	/*int mirrorSidesPrev = lbm->mirrorSides;
 	nk_layout_row_dynamic(ctx, 15, 1);
@@ -538,21 +530,7 @@ void UserInterface::constructLBMTab() {
 	//int useFreeRoamCameraPrev = vars->useFreeRoamCamera;
 	nk_checkbox_label(ctx, "Use freeroam camera", &vars->useFreeRoamCamera);
 
-	if (vars->useFreeRoamCamera) {
-		FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
-		if (fcam) {
-			int wasWalking = fcam->walking;
-			nk_checkbox_label(ctx, "Walking", &fcam->walking);
-			if (!wasWalking && fcam->walking) {
-				fcam->snapToGround();
-				fcam->movementSpeed = 1.4f;
-			}
-
-			nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
-		}
-
-
-	}
+	constructWalkingPanel();
 
 
 
@@ -1019,10 +997,12 @@ void UserInterface::constructDiagramControlsTab() {
 
 	float delta_t_prev = stlpSimCUDA->delta_t;
 	nk_property_float(ctx, "delta t", 0.001f, &stlpSimCUDA->delta_t, 100.0f, 0.001f, 0.001f);
-	if (stlpSimCUDA->delta_t != delta_t_prev) {
-		//stlpSimCUDA->delta_t = stlpSim->delta_t;
-		stlpSimCUDA->updateGPU_delta_t();
-	}
+	nk_property_float(ctx, "delta t (quick)", 0.1f, &stlpSimCUDA->delta_t, 100.0f, 0.1f, 0.1f);
+
+	//if (stlpSimCUDA->delta_t != delta_t_prev) {
+	//	//stlpSimCUDA->delta_t = stlpSim->delta_t;
+	//	stlpSimCUDA->updateGPU_delta_t();
+	//}
 
 	nk_property_int(ctx, "number of profiles", 2, &stlpDiagram->numProfiles, 100, 1, 1.0f); // somewhere bug when only one profile -> FIX!
 
@@ -1210,6 +1190,8 @@ void UserInterface::constructLBMDebugTab() {
 	//if (nk_group_begin(ctx, "Streamlines", NK_WINDOW_BORDER)) {
 
 		nk_layout_row_dynamic(ctx, 15, 1);
+		constructTauProperty();
+
 
 		if (!sps->initialized && !streamlineInitMode) {
 			if (nk_button_label(ctx, "Use streamlines")) {
@@ -1344,6 +1326,29 @@ void UserInterface::constructLBMDebugTab() {
 	void UserInterface::constructDebugTab() {
 	}
 
+	void UserInterface::constructFavoritesMenu() {
+		nk_layout_row_push(ctx, 120);
+		if (nk_menu_begin_label(ctx, "Favorites", NK_TEXT_CENTERED, nk_vec2(300, 250))) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+
+			constructTauProperty();
+			if (nk_button_label(ctx, "Form BOX")) {
+				particleSystem->formBox();
+			}
+
+			nk_checkbox_label(ctx, "Apply LBM", &vars->applyLBM);
+			nk_checkbox_label(ctx, "Apply STLP", &vars->applySTLP);
+			nk_property_float(ctx, "delta t (quick)", 0.1f, &stlpSimCUDA->delta_t, 100.0f, 0.1f, 0.1f);
+
+			constructWalkingPanel();
+
+			constructDirLightPositionPanel();
+
+
+			nk_menu_end(ctx);
+		}
+	}
+
 	void UserInterface::constructDirLightPositionPanel() {
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_property_vec3(dirLight->position, -1000000.0f, 1000000.0f, 100.0f, 100.0f, "Sun position");
@@ -1415,6 +1420,26 @@ void UserInterface::constructLBMDebugTab() {
 		ctx->style.button.padding = prevButtonPadding;
 
 		nk_layout_row_dynamic(ctx, 15, 1);
+	}
+
+	void UserInterface::constructTauProperty() {
+		nk_property_float(ctx, "Tau:", 0.5005f, &lbm->tau, 10.0f, 0.005f, 0.005f);
+	}
+
+	void UserInterface::constructWalkingPanel() {
+		if (vars->useFreeRoamCamera) {
+			FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
+			if (fcam) {
+				int wasWalking = fcam->walking;
+				nk_checkbox_label(ctx, "Walking", &fcam->walking);
+				if (!wasWalking && fcam->walking) {
+					fcam->snapToGround();
+					fcam->movementSpeed = 1.4f;
+				}
+
+				nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
+			}
+		}
 	}
 
 	void UserInterface::nk_property_vec2(glm::vec2 & target) {
