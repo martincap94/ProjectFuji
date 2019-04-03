@@ -126,7 +126,9 @@ __device__ float getMappedFromSimulationBox_dev(float val) {
 
 
 __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int numCurveVertices, float normP) {
-	// naively search for correct interval - better solutions are: binary search and direct indexation using (non-normalized) pressure - needs better design
+#define USE_BINARY_ISOBAR_INTERSECTION_SEARCH
+#ifndef USE_BINARY_ISOBAR_INTERSECTION_SEARCH
+	// naively search for correct interval - TO DO better solutions are: binary search and direct indexation using (non-normalized) pressure - needs better design
 	for (int i = 0; i < numCurveVertices - 1; i += 1) {
 		if (curveVertices[i + 1].y > normP) {
 			continue;
@@ -137,7 +139,39 @@ __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int num
 			return glm::vec2(normalizedTemperature, normP);
 		}
 	}
+#else
+	// clamp to max values - the previous (naive search) interpolates the top-most and bottom-most edges (even beyond the curve)
+	if (normP >= curveVertices[0].y) {
+		return curveVertices[0];
+	} else if (normP <= curveVertices[numCurveVertices - 1].y) {
+		return curveVertices[numCurveVertices - 1];
+	}
+
+	int left = 0; // largest normP here
+	int right = numCurveVertices - 1; // smallest normP here
+	int curr;
+	while (left <= right) {
+		curr = (left + right) / 2;
+		if (curveVertices[curr].y > normP) {
+			left = curr + 1;
+		} else if (curveVertices[curr].y < normP) {
+			right = curr - 1;
+		} else {
+			return curveVertices[curr]; // no need to interpolate since the values match (the particle lies on an isobar that goes through the curve vertex)
+		}
+	}
+	// left will now hold index to the vertex above (in the curve) normP (normalized pressure at curveVertices[left] is smaller than normP)
+	// right is the opposite
+
+	float t = (normP - curveVertices[left].y) / (curveVertices[right].y - curveVertices[left].y);
+	float normalizedTemperature = t * curveVertices[right].x + (1.0f - t) * curveVertices[left].x;
+	return glm::vec2(normalizedTemperature, normP);
+
+
+#endif
+
 	return glm::vec2();
+
 }
 
 
