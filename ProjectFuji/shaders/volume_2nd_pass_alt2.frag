@@ -124,7 +124,7 @@ void main() {
 				fragColor.xyz *= (1.0 + henyeyGreenstein * length(shadow));
 
 			} else {
-				fragColor.xyz *= vec3(1.0 + henyeyGreenstein) * shadow;
+				fragColor.xyz *= vec3(1.0) + shadow * henyeyGreenstein;
 
 			}
 
