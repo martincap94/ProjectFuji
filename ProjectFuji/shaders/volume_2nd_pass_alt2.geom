@@ -23,6 +23,7 @@ const vec3 worldup = vec3(0.0, 1.0, 0.0);
 
 out vec2 g_TexCoords;
 out vec3 g_LightSpacePos;
+out vec3 g_WorldSpacePos;
 
 float goldNoise(in vec2 coordinate, in float seed);
 
@@ -69,24 +70,28 @@ void main() {
 			texOffset += vec2(0.5, 0.5);
 		}
 		vec4 tmppos = vec4(pos - right - up, 1.0);
+		g_WorldSpacePos = tmppos.xyz;
 		gl_Position = VP * tmppos;
 		g_LightSpacePos = vec3(u_LightSpaceMatrix * tmppos);
 		g_TexCoords = texOffset;
 		EmitVertex();
 
 		tmppos = vec4(pos - right + up, 1.0);
+		g_WorldSpacePos = tmppos.xyz;
 		gl_Position = VP * tmppos;
 		g_LightSpacePos = vec3(u_LightSpaceMatrix * tmppos);
 		g_TexCoords = vec2(0.0, 0.5) + texOffset;
 		EmitVertex();
 
 		tmppos = vec4(pos + right - up, 1.0);
+		g_WorldSpacePos = tmppos.xyz;
 		gl_Position = VP * tmppos;
 		g_LightSpacePos = vec3(u_LightSpaceMatrix * tmppos);
 		g_TexCoords = vec2(0.5, 0.0) + texOffset;
 		EmitVertex();
 
 		tmppos = vec4(pos + right + up, 1.0);
+		g_WorldSpacePos = tmppos.xyz;
 		gl_Position = VP * tmppos;
 		g_LightSpacePos = vec3(u_LightSpaceMatrix * tmppos);
 		g_TexCoords = vec2(0.5, 0.5) + texOffset;
@@ -96,23 +101,27 @@ void main() {
 
 		vec4 tmppos = vec4(pos - right - up, 1.0);
 		gl_Position = VP * tmppos;
+		g_WorldSpacePos = tmppos.xyz;
 		g_LightSpacePos = vec3(u_LightSpaceMatrix * tmppos);
 		g_TexCoords = vec2(0.0, 0.0);
 		EmitVertex();
 
 		tmppos = vec4(pos - right + up, 1.0);
 		gl_Position = VP * tmppos;
+		g_WorldSpacePos = tmppos.xyz;
 		g_LightSpacePos = vec3(u_LightSpaceMatrix * tmppos);
 		g_TexCoords = vec2(0.0, 1.0);
 		EmitVertex();
 
 		tmppos = vec4(pos + right - up, 1.0);
+		g_WorldSpacePos = tmppos.xyz;
 		gl_Position = VP * tmppos;
 		g_LightSpacePos = vec3(u_LightSpaceMatrix * tmppos);
 		g_TexCoords = vec2(1.0, 0.0);
 		EmitVertex();
 
 		tmppos = vec4(pos + right + up, 1.0);
+		g_WorldSpacePos = tmppos.xyz;
 		gl_Position = VP * tmppos;
 		g_LightSpacePos = vec3(u_LightSpaceMatrix * tmppos);
 		g_TexCoords = vec2(1.0, 1.0);

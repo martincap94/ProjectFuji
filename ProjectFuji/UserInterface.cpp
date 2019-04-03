@@ -939,6 +939,11 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_property_float(ctx, "cast shadow alpha multiplier", 0.0f, &vars->cloudCastShadowAlphaMultiplier, 1.0f, 0.01f, 0.01f);
 
+	nk_property_int(ctx, "phase function", 0, &particleRenderer->phaseFunction, 5, 1, 1);
+	if (particleRenderer->phaseFunction >= 2) {
+		nk_property_float(ctx, "symmetry parameter", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.10f, 0.01f);
+	}
+
 	nk_checkbox_label(ctx, "Show particle texture idx", &particleRenderer->showParticleTextureIdx);
 	nk_checkbox_label(ctx, "Use atlas texture", &particleRenderer->useAtlasTexture);
 

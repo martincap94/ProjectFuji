@@ -28,6 +28,16 @@ uniform mat4 u_ShadowMatrix;
 
 uniform int u_Mode = 0;
 
+// phase function info
+uniform vec3 u_CameraPos;
+uniform vec3 u_LightPos;
+in vec3 g_WorldSpacePos;
+
+uniform int u_PhaseFunction = 0;
+uniform float u_SymmetryParameter;
+
+#define PI 3.1415926538
+
 void main() {
 
 	if (u_ShowParticleTextureIdx) {
@@ -60,6 +70,73 @@ void main() {
 
 	fragColor.w *= u_Opacity;
 	fragColor.xyz *= shadow * fragColor.w;
+
+
+	// Rayleigh scattering
+	if (u_PhaseFunction != 0) {
+
+		vec3 sunToParticle = normalize(g_WorldSpacePos - u_LightPos);
+		vec3 particleToCamera = normalize(u_CameraPos - g_WorldSpacePos);
+		float cosphi = dot(sunToParticle, particleToCamera);
+
+		
+		if (u_PhaseFunction == 1) {
+
+			float rayleighPhase = 3.0 / (16.0 * PI) * (1.0 + cosphi * cosphi);
+
+			// playing around with ideas
+			/*
+			if (length(shadow) > 1.0 && cosphi > 0.0) {
+				fragColor.xyz *= vec3(rayleighPhase * 2.0 + 1.0);
+				//fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+				return;
+			}
+			*/
+
+
+			fragColor.xyz *= vec3(rayleighPhase * 2.0 + 1.0);
+			return;
+
+
+			/*
+			if (u_PhaseFunction == 2) {
+				fragColor.xyz *= rayleighPhase;
+			} else if (u_PhaseFunction == 3) {
+				fragColor = vec4(vec3(rayleighPhase), 1.0);
+			} else if (u_PhaseFunction == 4) {
+				fragColor.xyz += vec3(rayleighPhase / 100.0);
+			}
+			*/
+		} else if (u_PhaseFunction >= 2) {
+			
+			float henyeyGreenstein = 1.0 / (4.0 * PI);
+
+			float rightSide = (1.0 - u_SymmetryParameter * u_SymmetryParameter) / pow((1.0 - 2.0 * u_SymmetryParameter * cosphi + u_SymmetryParameter * u_SymmetryParameter), 3.0 / 2.0);
+			//rightSide = pow(rightSide, 3.0 / 2.0); // incorrect pow!
+			henyeyGreenstein *= rightSide;
+
+			if (u_PhaseFunction == 2) {
+				fragColor = vec4(vec3(henyeyGreenstein), 1.0);
+			} else if (u_PhaseFunction == 3) {
+				fragColor.xyz *= (1.0 + henyeyGreenstein);
+			} else if (u_PhaseFunction == 4) {
+				
+				fragColor.xyz *= (1.0 + henyeyGreenstein * length(shadow));
+
+			} else {
+				fragColor.xyz *= vec3(1.0 + henyeyGreenstein) * shadow;
+
+			}
+
+		}
+
+
+
+
+	}
+
+
+
 
 	
 

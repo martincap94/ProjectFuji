@@ -37,7 +37,7 @@ public:
 	int numSlices = 256;
 	int numDisplayedSlices = numSlices;
 
-	int shaderSet = 0;
+	int shaderSet = 2;
 
 	int batchSize;
 
@@ -62,6 +62,9 @@ public:
 	int useAtlasTexture = 0;
 
 	float inversionThreshold = -0.5f;
+
+	int phaseFunction = 0;
+	float symmetryParameter = 0.5f; // for Henyey-Greenstein phase function (only)
 
 
 	Texture *spriteTexture;
@@ -114,7 +117,7 @@ private:
 	GLuint lightTexture[2]; // for swapping as in the CUDA samples
 	GLuint lightDepthTexture;
 
-	int prevShaderSet = shaderSet;
+	int prevShaderSet = -1; // so shader set update in constructor is performed (the function checks whether we are changing shader set)
 
 
 

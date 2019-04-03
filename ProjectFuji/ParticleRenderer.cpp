@@ -14,8 +14,13 @@ using namespace std;
 ParticleRenderer::ParticleRenderer(VariableManager * vars) : vars(vars) {
 	initFramebuffers();
 
+	/*
 	firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass");
 	secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass");
+	*/
+	updateShaderSet();
+
+
 	passThruShader = ShaderManager::getShaderPtr("pass_thru");
 
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png"));
@@ -64,6 +69,9 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	shader->setVec3("u_TintColor", vars->tintColor);
 	shader->setFloat("u_ShadowAlpha", shadowAlpha);
 	shader->setBool("u_ShowParticleTextureIdx", (bool)showParticleTextureIdx);
+	shader->setInt("u_PhaseFunction", phaseFunction);
+	shader->setFloat("u_SymmetryParameter", symmetryParameter);
+
 }
 
 void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, Camera *cam) {
