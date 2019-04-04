@@ -80,7 +80,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 			int numChannels;
 
-			stbi_set_flip_vertically_on_load(true);
+			stbi_set_flip_vertically_on_load(false);
 			imageData = stbi_load_16((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
 
 
@@ -110,7 +110,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 			cout << "Width: " << width << ", height: " << height << endl;
 			cout << (float)numeric_limits<unsigned short>().max() << endl;
 
-			for (int z = height - 1; z >= 0; z--) {
+			for (int z = 0; z < height; z++) {
 				for (int x = 0; x < width; x++) {
 					unsigned short *pixel = imageData + (x * height + z) * numChannels;
 					unsigned short val = pixel[0];
@@ -138,7 +138,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 			int numChannels;
 
-			stbi_set_flip_vertically_on_load(true);
+			stbi_set_flip_vertically_on_load(false);
 			imageData = stbi_load((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
 
 
@@ -170,7 +170,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 			cout << "Width: " << width << ", height: " << height << endl;
 			cout << (float)numeric_limits<img_type>().max() << endl;
 
-			for (int z = height - 1; z >= 0; z--) {
+			for (int z = 0; z < height; z++) {
 				for (int x = 0; x < width; x++) {
 					img_type *pixel = imageData + (x * height + z) * numChannels;
 					img_type r = pixel[0];
@@ -366,8 +366,11 @@ void HeightMap::initMaterials() {
 
 	CHECK_GL_ERRORS();
 
-	terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
-	materialMap = new Texture("textures/1200x800_materialMap.png");
+	terrainNormalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
+	materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
+
+	//terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
+	//materialMap = new Texture("textures/1200x800_materialMap.png");
 
 
 
@@ -430,10 +433,11 @@ float HeightMap::getHeight(float x, float z, bool worldPosition) {
 	if (worldPosition) {
 		x += vars->terrainXOffset;
 		z += vars->terrainZOffset;
+
+		x /= vars->texelWorldSize;
+		z /= vars->texelWorldSize;
 	}
 
-	x /= vars->texelWorldSize;
-	z /= vars->texelWorldSize;
 
 
 	int leftx = (int)x;

@@ -30,6 +30,10 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars) : vars(vars) {
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "cloud_particle_256.png"));
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture3_256.png"));
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture3.png")); // still the best looking I would say
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture4.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture5.png"));
+	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture6.png"));
+
 
 	spriteTexture = spriteTextures.back();
 

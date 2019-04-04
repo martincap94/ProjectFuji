@@ -2,7 +2,7 @@
 
 #include "Emitter.h"
 
-class PositionalEmitter : public Emitter{
+class PositionalEmitter : public Emitter {
 public:
 
 	glm::vec3 position;
@@ -12,9 +12,6 @@ public:
 	float xWiggleRange = 0.5f;
 	float zWiggleRange = 0.5f;
 
-
-
-	PositionalEmitter(ParticleSystem *owner);
 	PositionalEmitter(ParticleSystem *owner, glm::vec3 position = glm::vec3(0.0f));
 	~PositionalEmitter();
 

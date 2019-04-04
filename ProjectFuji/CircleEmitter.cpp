@@ -27,17 +27,8 @@ CircleEmitter::~CircleEmitter() {
 }
 
 void CircleEmitter::emitParticle() {
-	if (!enabled) {
-		return;
-	}
-	if (!owner) {
-		cerr << "Emitter has no owning ParticleSystem! No emission will be done!" << endl;
-		return;
-	}
-	if (owner->numActiveParticles >= owner->numParticles) {
-		//cout << "Max active particles reached." << endl;
-		return;
-	}
+
+	preEmitCheck();
 
 
 	// testing generation in circle

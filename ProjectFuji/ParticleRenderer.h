@@ -31,7 +31,7 @@ public:
 
 	bool invertedView = false;
 
-	int lightBufferResolution = 512;
+	int lightBufferResolution = 1024;
 
 	int maxNumSlices = 4096;
 	int numSlices = 256;

@@ -158,6 +158,7 @@ public:
 	void enableAllEmitters();
 	void disableAllEmitters();
 	
+	void pushParticleToEmit(Particle p);
 
 	///// Initializes particle positions for 3D simulation.
 	//void initParticlePositions(int width, int height, int depth, const HeightMap *hm);

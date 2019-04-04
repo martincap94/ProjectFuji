@@ -10,7 +10,10 @@
 #include "CUDAUtils.cuh"
 
 #include "Emitter.h"
+#include "PositionalEmitter.h"
 #include "CircleEmitter.h"
+#include "CDFEmitter.h"
+
 #include "TextureManager.h"
 
 #include <thrust\sort.h>
@@ -79,12 +82,14 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
 	emitters.push_back(new CircleEmitter(this, glm::vec3(40.0f, 0.0f, 40.0f), 20.0f, true));
 	emitters.push_back(new CircleEmitter(this, glm::vec3(20.0f), 10.0f, true));
+	emitters.push_back(new CDFEmitter(this, "textures/cdf.png"));
 
 	disableAllEmitters();
 
 	//formBoxVisModel = new Model("models/unitbox.fbx");
 	formBoxVisShader = ShaderManager::getShaderPtr("singleColorModel");
 	formBoxVisModel = new Model("models/unitbox.fbx");
+
 
 
 }
@@ -209,6 +214,7 @@ void ParticleSystem::emitParticles() {
 	}
 
 
+	//cout << "num particles to upload = " << particleVerticesToEmit.size() << endl;
 
 	// upload the data to VBOs and CUDA memory
 
@@ -870,6 +876,14 @@ void ParticleSystem::disableAllEmitters() {
 	for (int i = 0; i < emitters.size(); i++) {
 		emitters[i]->enabled = false;
 	}
+}
+
+void ParticleSystem::pushParticleToEmit(Particle p) {
+	particleVerticesToEmit.push_back(p.position);
+	particleProfilesToEmit.push_back(p.profileIndex);
+	verticalVelocitiesToEmit.push_back(p.velocity.y);
+	numActiveParticles++; // each emitter already checks if numActiveParticles < numParticles, no need to check once more
+
 }
 
 

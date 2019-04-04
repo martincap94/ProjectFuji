@@ -19,7 +19,7 @@ public:
 	ShaderProgram *shader;
 
 	random_device rd;
-	mt19937 mt;
+	mt19937_64 mt;
 	uniform_real_distribution<float> dist;
 	uniform_real_distribution<float> distRange;
 
@@ -34,6 +34,7 @@ public:
 	Emitter(ParticleSystem *owner);
 	~Emitter();
 
+	__inline__ virtual void preEmitCheck();
 	virtual void emitParticle() = 0;
 	virtual void emitParticles();
 	virtual void emitParticles(int numParticles);
