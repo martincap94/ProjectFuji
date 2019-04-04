@@ -379,18 +379,26 @@ void HeightMap::initCDF() {
 	// testing basic CPU implementation of the algorithm
 	
 
-	float *img = new float[width * height];
+	float *img = new float[width * height]();
+	float maxSum = 0.0f;
+
 
 	for (int z = 0; z < height; z++) {
 
-		float currsum = 0.0f;
+		float currSum = 0.0f;
 		for (int x = 0; x < width; x++) {
-			currsum += cdf[x][z];
-			cdfres[x][z] = currsum;
+			currSum += cdf[x][z];
+			cdfres[x][z] = currSum;
 
-			img[x + z * width] = currsum;
-
+			img[x + z * width] = currSum;
 		}
+		if (currSum > maxSum) {
+			maxSum = currSum;
+		}
+	}
+
+	for (int i = 0; i < width * height; i++) {
+		img[i] /= maxSum;
 	}
 
 
@@ -400,7 +408,7 @@ void HeightMap::initCDF() {
 
 	glGenTextures(1, &texId);
 	glBindTexture(GL_TEXTURE_2D, texId);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, height, 0, GL_RED, GL_FLOAT, img);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, img);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

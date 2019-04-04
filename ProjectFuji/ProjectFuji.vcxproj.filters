@@ -203,6 +203,8 @@
     <ClCompile Include="UserInterface.cpp" />
     <ClCompile Include="GPUVBO.cpp" />
     <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="PositionalEmitter.cpp" />
+    <ClCompile Include="CDFEmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -372,6 +374,8 @@
     <ClInclude Include="StreamlineParticleSystem.h" />
     <ClInclude Include="GPUVBO.h" />
     <ClInclude Include="Actor.h" />
+    <ClInclude Include="PositionalEmitter.h" />
+    <ClInclude Include="CDFEmitter.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

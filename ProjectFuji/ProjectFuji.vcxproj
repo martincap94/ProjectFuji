@@ -94,6 +94,7 @@
     <ClCompile Include="Camera2D.cpp" />
     <ClCompile Include="CircleEmitter.cpp" />
     <ClCompile Include="Curve.cpp" />
+    <ClCompile Include="CDFEmitter.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Emitter.cpp" />
     <ClCompile Include="EVSMShadowMapper.cpp" />
@@ -161,6 +162,7 @@
       <FileType>CppCode</FileType>
     </CudaCompile>
     <ClCompile Include="ParticleRenderer.cpp" />
+    <ClCompile Include="PositionalEmitter.cpp" />
     <ClCompile Include="ppmImage.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
@@ -212,6 +214,7 @@
     <ClInclude Include="CommonEnums.h" />
     <ClInclude Include="Cubemap.h" />
     <ClInclude Include="Curve.h" />
+    <ClInclude Include="CDFEmitter.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Emitter.h" />
     <ClInclude Include="EVSMShadowMapper.h" />
@@ -249,6 +252,7 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleRenderer.h" />
     <ClInclude Include="ParticleSystem.h" />
+    <ClInclude Include="PositionalEmitter.h" />
     <ClInclude Include="ppmImage.h" />
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="ShaderManager.h" />

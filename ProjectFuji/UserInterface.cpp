@@ -19,6 +19,7 @@
 #include "FreeRoamCamera.h"
 #include "StreamlineParticleSystem.h"
 #include "Utils.h"
+#include "PositionalEmitter.h"
 
 
 #define NK_IMPLEMENTATION
@@ -1083,23 +1084,26 @@ void UserInterface::constructDiagramControlsTab() {
 			nk_layout_row_static(ctx, 15, 200, 1);
 			nk_checkbox_label(ctx, "#enabled", &e->enabled);
 			nk_checkbox_label(ctx, "#visible", &e->visible);
-			nk_checkbox_label(ctx, "#wiggle", &e->wiggle);
-			nk_property_float(ctx, "#x wiggle", 0.1f, &e->xWiggleRange, 10.0f, 0.1f, 0.1f);
-			nk_property_float(ctx, "#z wiggle", 0.1f, &e->zWiggleRange, 10.0f, 0.1f, 0.1f);
 
-
-			nk_property_float(ctx, "#x", -1000.0f, &e->position.x, 1000.0f, 1.0f, 1.0f);
-			//nk_property_float(ctx, "#y", -1000.0f, &e->position.y, 1000.0f, 1.0f, 1.0f);
-			nk_property_float(ctx, "#z", -1000.0f, &e->position.z, 1000.0f, 1.0f, 1.0f);
-
-			//nk_property_variant_int()
 			nk_property_int(ctx, "#emit per step", 0, &e->numParticlesToEmitPerStep, 10000, 10, 10);
 
-			CircleEmitter *ce = dynamic_cast<CircleEmitter *>(e);
-			if (ce) {
-				nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
-			}
+			PositionalEmitter *pe = dynamic_cast<PositionalEmitter *>(e);
+			if (pe) {
 
+				nk_checkbox_label(ctx, "#wiggle", &pe->wiggle);
+				nk_property_float(ctx, "#x wiggle", 0.1f, &pe->xWiggleRange, 10.0f, 0.1f, 0.1f);
+				nk_property_float(ctx, "#z wiggle", 0.1f, &pe->zWiggleRange, 10.0f, 0.1f, 0.1f);
+
+				nk_property_float(ctx, "#x", -1000.0f, &pe->position.x, 1000.0f, 1.0f, 1.0f);
+				//nk_property_float(ctx, "#y", -1000.0f, &pe->position.y, 1000.0f, 1.0f, 1.0f);
+				nk_property_float(ctx, "#z", -1000.0f, &pe->position.z, 1000.0f, 1.0f, 1.0f);
+
+
+				CircleEmitter *ce = dynamic_cast<CircleEmitter *>(pe);
+				if (ce) {
+					nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
+				}
+			}
 
 			nk_tree_pop(ctx);
 			//particleSystem->emitters[i]

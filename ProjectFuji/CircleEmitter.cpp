@@ -9,7 +9,7 @@
 
 using namespace std;
 
-CircleEmitter::CircleEmitter(ParticleSystem * owner, glm::vec3 position, float radius, bool projectOntoTerrain) : Emitter(owner, position), radius(radius), projectOntoTerrain(projectOntoTerrain) {
+CircleEmitter::CircleEmitter(ParticleSystem * owner, glm::vec3 position, float radius, bool projectOntoTerrain) : PositionalEmitter(owner, position), radius(radius), projectOntoTerrain(projectOntoTerrain) {
 
 	if (projectOntoTerrain && !heightMap) {
 		cerr << "Project onto terrain is set to true but no heightMap was set! Project onto terrain will be turned off." << endl;

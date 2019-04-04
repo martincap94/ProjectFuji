@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Emitter.h"
+//#include "Emitter.h"
+#include "PositionalEmitter.h"
 #include "ParticleSystem.h"
 
 //#include <random>
 
-class CircleEmitter : public Emitter {
+class CircleEmitter : public PositionalEmitter {
 public:
 
 	bool projectOntoTerrain;

@@ -4,16 +4,14 @@
 
 
 Emitter::Emitter(ParticleSystem *owner) : owner(owner) {
-}
-
-
-Emitter::Emitter(ParticleSystem * owner, glm::vec3 position) : owner(owner), position(position) {
 	mt = mt19937(rd());
 	dist = uniform_real_distribution<float>(0.0f, 1.0f);
 	distRange = uniform_real_distribution<float>(-1.0f, 1.0f);
 	heightMap = owner->heightMap;
-	prevPosition = position;
 }
+
+
+
 
 Emitter::~Emitter() {
 }
@@ -30,12 +28,12 @@ void Emitter::emitParticles(int numParticles) {
 	}
 }
 
-void Emitter::wigglePosition() {
-
-	position.x += distRange(mt) * xWiggleRange;
-	position.z += distRange(mt) * zWiggleRange;
-
-}
+//void Emitter::wigglePosition() {
+//
+//	position.x += distRange(mt) * xWiggleRange;
+//	position.z += distRange(mt) * zWiggleRange;
+//
+//}
 
 //void Emitter::draw() {
 //}
