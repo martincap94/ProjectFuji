@@ -68,73 +68,143 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 	typedef unsigned char img_type;
 
 	cout << "Creating Terrain..." << endl;
-	img_type *imageData = nullptr;
 	bool useStb = true;
 	if (useStb) {
-		int numChannels;
 
-		stbi_set_flip_vertically_on_load(true);
-		imageData = stbi_load((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
-
-
-		if (!imageData) {
-			cout << "Error loading texture at " << (SCENES_DIR + vars->sceneFilename) << endl;
-			stbi_image_free(imageData);
-			exit(EXIT_FAILURE);
-		}
-
-		data = new float*[width]();
-		for (int i = 0; i < width; i++) {
-			data[i] = new float[height]();
-		}
-
-		terrainWidth = width;
-		terrainDepth = height;
-		set<img_type> valsR;
-		set<img_type> valsG;
-		set<img_type> valsB;
+		bool useGrayscale = true;
+		if (useGrayscale) {
 
 
-		cout << "Width: " << width << ", height: " << height << endl;
-		cout << (float)numeric_limits<img_type>().max() << endl;
+			unsigned short *imageData = nullptr;
 
-		for (int z = height - 1; z >= 0; z--) {
-			for (int x = 0; x < width; x++) {
-				img_type *pixel = imageData + (x * height + z) * numChannels;
-				img_type r = pixel[0];
-				img_type g = pixel[1];
-				img_type b = pixel[2];
-				img_type a = 0xff;
-				if (numChannels >= 4) {
-					a = pixel[3];
+
+			int numChannels;
+
+			stbi_set_flip_vertically_on_load(true);
+			imageData = stbi_load_16((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
+
+
+			if (!imageData) {
+				cout << "Error loading texture at " << (SCENES_DIR + vars->sceneFilename) << endl;
+				stbi_image_free(imageData);
+				exit(EXIT_FAILURE);
+			}
+
+			data = new float*[width]();
+			for (int i = 0; i < width; i++) {
+				data[i] = new float[height]();
+			}
+
+			terrainWidth = width;
+			terrainDepth = height;
+
+
+
+
+			cout << "number of channels = " << numChannels << endl;
+
+			cout << "Width: " << width << ", height: " << height << endl;
+			cout << (float)numeric_limits<unsigned short>().max() << endl;
+
+			for (int z = height - 1; z >= 0; z--) {
+				for (int x = 0; x < width; x++) {
+					unsigned short *pixel = imageData + (x * height + z) * numChannels;
+					unsigned short val = pixel[0];
+					unsigned short a = 0xff;
+					if (numChannels >= 1) {
+						a = pixel[1];
+					}
+
+					data[x][z] = (float)val;
+					data[x][z] /= (float)numeric_limits<unsigned short>().max();
+					rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
 				}
+			}
 
-				//cout << r << endl;
-				//cout << g << endl;
-				//cout << b << endl;
-				//cout << endl;
+			if (imageData != nullptr) {
+				stbi_image_free(imageData);
+			}
 
-				//valsR.insert(r);
-				//valsG.insert(g);
-				//valsB.insert(b);
 
-				data[x][z] = (float)r * 0.6f + (float)g * 0.3f + (float)b * 0.1f;
-				data[x][z] /= (float)numeric_limits<img_type>().max();
-				//cout << "height before mapping: " << data[x][z] << endl;
-				rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
-				//cout << "after mapping: " << data[x][z] << endl;
-				//data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
+		} else {
+
+			img_type *imageData = nullptr;
+
+
+			int numChannels;
+
+			stbi_set_flip_vertically_on_load(true);
+			imageData = stbi_load((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
+
+
+			if (!imageData) {
+				cout << "Error loading texture at " << (SCENES_DIR + vars->sceneFilename) << endl;
+				stbi_image_free(imageData);
+				exit(EXIT_FAILURE);
+			}
+
+			data = new float*[width]();
+			for (int i = 0; i < width; i++) {
+				data[i] = new float[height]();
+			}
+
+			terrainWidth = width;
+			terrainDepth = height;
+
+
+
+
+			cout << "number of channels = " << numChannels << endl;
+
+
+			set<img_type> valsR;
+			set<img_type> valsG;
+			set<img_type> valsB;
+
+
+			cout << "Width: " << width << ", height: " << height << endl;
+			cout << (float)numeric_limits<img_type>().max() << endl;
+
+			for (int z = height - 1; z >= 0; z--) {
+				for (int x = 0; x < width; x++) {
+					img_type *pixel = imageData + (x * height + z) * numChannels;
+					img_type r = pixel[0];
+					img_type g = pixel[1];
+					img_type b = pixel[2];
+					img_type a = 0xff;
+					if (numChannels >= 4) {
+						a = pixel[3];
+					}
+
+					//cout << r << endl;
+					//cout << g << endl;
+					//cout << b << endl;
+					//cout << endl;
+
+					//valsR.insert(r);
+					//valsG.insert(g);
+					//valsB.insert(b);
+
+					data[x][z] = (float)r * 0.6f + (float)g * 0.3f + (float)b * 0.1f;
+					data[x][z] /= (float)numeric_limits<img_type>().max();
+					//cout << "height before mapping: " << data[x][z] << endl;
+					rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+					//cout << "after mapping: " << data[x][z] << endl;
+					//data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
+				}
+			}
+			cout << "VALS R size: " << valsR.size() << endl;
+			cout << "VALS G size: " << valsG.size() << endl;
+			cout << "VALS B size: " << valsB.size() << endl;
+
+			//for (const auto &i : valsR) {
+			//	cout << i << endl;
+			//}
+
+			if (imageData != nullptr) {
+				stbi_image_free(imageData);
 			}
 		}
-		cout << "VALS R size: " << valsR.size() << endl;
-		cout << "VALS G size: " << valsG.size() << endl;
-		cout << "VALS B size: " << valsB.size() << endl;
-
-		//for (const auto &i : valsR) {
-		//	cout << i << endl;
-		//}
-
-
 
 	} else {
 
@@ -179,8 +249,8 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 	//exit(EXIT_FAILURE); // TESTING!!!
 
 
-	smoothHeights();
-	smoothHeights();
+	//smoothHeights();
+	//smoothHeights();
 	//smoothHeights();
 
 	//smoothHeights();
@@ -194,10 +264,8 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 	initMaterials();
 
-	if (imageData != nullptr) {
-		stbi_image_free(imageData);
-	}
 
+	initCDF();
 }
 
 // this can be easily parallelized on GPU
@@ -814,6 +882,15 @@ void HeightMap::initBuffersOld() {
 	glBindVertexArray(0);
 
 }
+
+void HeightMap::initCDF() {
+
+
+
+}
+
+
+
 
 float HeightMap::getHeight(float x, float z, bool worldPosition) {
 
