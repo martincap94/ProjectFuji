@@ -91,8 +91,12 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 			}
 
 			data = new float*[width]();
+			cdf = new float*[width](); // just testing, this needs to be much more general
+			cdfres = new float*[width]();
 			for (int i = 0; i < width; i++) {
 				data[i] = new float[height]();
+				cdf[i] = new float[height](); 
+				cdfres[i] = new float[height]();
 			}
 
 			terrainWidth = width;
@@ -117,6 +121,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 					data[x][z] = (float)val;
 					data[x][z] /= (float)numeric_limits<unsigned short>().max();
+					cdf[x][z] = data[x][z]; // [0,1] values of probability
 					rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
 				}
 			}
@@ -314,8 +319,12 @@ HeightMap::~HeightMap() {
 	cout << "Deleting heightmap..." << endl;
 	for (int i = 0; i < width; i++) {
 		delete[] data[i];
+		delete[] cdf[i];
+		delete[] cdfres[i];
 	}
 	delete[] data;
+	delete[] cdf;
+	delete[] cdfres;
 }
 
 void HeightMap::initMaterials() {
@@ -364,6 +373,311 @@ void HeightMap::initMaterials() {
 
 }
 
+
+void HeightMap::initCDF() {
+
+	// testing basic CPU implementation of the algorithm
+	
+
+	float *img = new float[width * height];
+
+	for (int z = 0; z < height; z++) {
+
+		float currsum = 0.0f;
+		for (int x = 0; x < width; x++) {
+			currsum += cdf[x][z];
+			cdfres[x][z] = currsum;
+
+			img[x + z * width] = currsum;
+
+		}
+	}
+
+
+
+
+	GLuint texId;
+
+	glGenTextures(1, &texId);
+	glBindTexture(GL_TEXTURE_2D, texId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, width, height, 0, GL_RED, GL_FLOAT, img);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	TextureManager::pushCustomTexture(texId, width, height, 1, "test cdf");
+
+	delete[] img;
+
+	CHECK_GL_ERRORS();
+
+
+}
+
+
+
+
+float HeightMap::getHeight(float x, float z, bool worldPosition) {
+
+	if (worldPosition) {
+		x += vars->terrainXOffset;
+		z += vars->terrainZOffset;
+	}
+
+	x /= vars->texelWorldSize;
+	z /= vars->texelWorldSize;
+
+
+	int leftx = (int)x;
+	int rightx = leftx + 1;
+	int leftz = (int)z;
+	int rightz = leftz + 1;
+
+	// clamp to edges
+	leftx = glm::clamp(leftx, 0, width - 1);
+	rightx = glm::clamp(rightx, 0, width - 1);
+	leftz = glm::clamp(leftz, 0, height - 1);
+	rightz = glm::clamp(rightz, 0, height - 1);
+
+
+	float xRatio = x - leftx;
+	float zRatio = z - leftz;
+
+	float y1 = data[leftx][leftz];
+	float y2 = data[leftx][rightz];
+	float y3 = data[rightx][leftz];
+	float y4 = data[rightx][rightz];
+
+	float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
+	float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
+
+	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
+
+	return y;
+
+}
+
+float HeightMap::getWorldWidth() {
+	return width * vars->texelWorldSize;
+}
+
+float HeightMap::getWorldDepth() {
+	return height * vars->texelWorldSize;
+}
+
+void HeightMap::draw() {
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	//glUseProgram(shader->id);
+	//glBindVertexArray(VAO);
+	//glDrawArrays(GL_TRIANGLES, 0, numPoints);
+	draw(shader);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+}
+
+void HeightMap::draw(ShaderProgram *shader) {
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	shader->use();
+
+
+	// Set texture uniforms for unknown shader
+	if (shader != this->shader) {
+		for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+			materials[i].setTextureUniformsMultiple(shader, i);
+		}
+		shader->setInt("u_TerrainNormalMap", 11);
+		shader->setInt("u_MaterialMap", 12);
+		shader->setFloat("u_UVRatio", (float)width / (float)height);
+	}
+
+
+
+	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+		materials[i].useMultiple(shader, i);
+	}
+
+
+	shader->setInt("u_TestDiffuse", 9);
+	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
+
+	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
+
+	shader->setBool("u_NormalsOnly", (bool)showNormalsOnly);
+	shader->setInt("u_NormalsMode", normalsShaderMode);
+
+	glm::mat4 modelMatrix(1.0f);
+	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
+	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
+	shader->setModelMatrix(modelMatrix);
+
+
+	glBindTextureUnit(11, terrainNormalMap->id);
+	glBindTextureUnit(12, materialMap->id);
+
+
+	// TO DO - Make this global for multiple shaders
+	shader->setInt("u_CloudShadowTexture", TEXTURE_UNIT_CLOUD_SHADOW_MAP);
+	shader->setBool("u_CloudsCastShadows", (bool)vars->cloudsCastShadows);
+	shader->setFloat("u_CloudCastShadowAlphaMultiplier", vars->cloudCastShadowAlphaMultiplier);
+
+
+	/*
+	shader->setInt("u_NumActiveMaterials", 2);
+
+	shader->setInt("u_Materials[0].diffuse", 0);
+	shader->setInt("u_Materials[0].specular", 1);
+	shader->setInt("u_Materials[0].normalMap", 2);
+	shader->setInt("u_TestDiffuse", 6);
+	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
+
+	shader->setFloat("u_Materials[0].shininess", 2.0f);
+	shader->setFloat("u_Materials[0].tiling", vars->terrainTextureTiling);
+
+	shader->setInt("u_Materials[1].diffuse", 3);
+	shader->setInt("u_Materials[1].specular", 4);
+	shader->setInt("u_Materials[1].normalMap", 5);
+
+	shader->setFloat("u_Materials[1].shininess", 2.0f);
+	shader->setFloat("u_Materials[1].tiling", vars->terrainTextureTiling);
+
+
+	shader->setInt("u_TerrainNormalMap", 11);
+	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
+
+
+	shader->setInt("u_MaterialMap", 12);
+
+	shader->setFloat("u_UVRatio", (float)width / (float)height);
+
+
+	glBindTextureUnit(0, diffuseTexture->id);
+	glBindTextureUnit(2, normalMap->id);
+
+	glBindTextureUnit(3, secondDiffuseTexture->id);
+	glBindTextureUnit(5, secondNormalMap->id);
+
+	glBindTextureUnit(6, testDiffuse->id);
+
+	glBindTextureUnit(11, terrainNormalMap->id);
+	glBindTextureUnit(12, materialMap->id);
+	*/
+
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, numPoints);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+}
+
+void HeightMap::drawGeometry(ShaderProgram * shader) {
+	shader->use();
+
+	shader->setModelMatrix(glm::mat4(1.0f));
+	shader->setBool("u_IsInstanced", false);
+
+
+	glm::mat4 modelMatrix(1.0f);
+	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
+	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
+
+	shader->setModelMatrix(modelMatrix);
+
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, numPoints);
+}
+
+// Based on: https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap
+glm::vec3 HeightMap::computeNormal(int x, int z) {
+	int offset = 1;
+
+	int xLeft = x - offset;
+	int xRight = x + offset;
+	int zBottom = z + offset;
+	int zTop = z - offset;
+
+	if (xLeft < 0) {
+		xLeft = 0;
+	}
+	if (xRight > width - 1) {
+		xRight = width - 1;
+	}
+	if (zBottom > height - 1) {
+		zBottom = height - 1;
+	}
+	if (zTop < 0) {
+		zTop = 0;
+	}
+	float hLeft = data[xLeft][z];
+	float hRight = data[xRight][z];
+	float hBottom = data[x][zBottom];
+	float hTop = data[x][zTop];
+
+	//rangeToRange(hLeft, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+	//rangeToRange(hLeft, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
+	//rangeToRange(hRight, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
+	//rangeToRange(hBottom, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
+	//rangeToRange(hTop, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
+
+	//cout << "hLeft = " << hLeft << endl;
+
+	glm::vec3 normal;
+	normal.x = (hLeft - hRight) / vars->texelWorldSize;
+	//normal.x = (hLeft - hRight);
+	//normal.y = hBottom - hTop;
+	//normal.z = -2.0f;
+	normal.y = 2.0f/* * vars->texelWorldSize * 10.0f*/;
+	//rangeToRange(normal.y, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+	normal.z = (hTop - hBottom) / vars->texelWorldSize;
+	//normal.z = (hTop - hBottom);
+
+
+	return glm::normalize(normal);
+
+	/*
+
+	int offset = 1;
+
+	int xLeft = x - offset;
+	int xRight = x + offset;
+	int zBottom = z + offset;
+	int zTop = z - offset;
+
+	if (xLeft < 0) {
+		xLeft = 0;
+	}
+	if (xRight > width - 1) {
+		xRight = width - 1;
+	}
+	if (zBottom > height - 1) {
+		zBottom = height - 1;
+	}
+	if (zTop < 0) {
+		zTop = 0;
+	}
+	float hLeft = data[xLeft][z];
+	float hRight = data[xRight][z];
+	float hBottom = data[x][zBottom];
+	float hTop = data[x][zTop];
+
+	glm::vec3 normal;
+	normal.x = hLeft - hRight;
+	//normal.y = hBottom - hTop;
+	//normal.z = -2.0f;
+	normal.y = 2.0f;
+	normal.z = hTop - hBottom;
+
+	return glm::normalize(normal);
+	*/
+}
+
+
+
+
+
+
 void HeightMap::initBuffers() {
 
 	vector<glm::vec3> vertices;
@@ -395,7 +709,7 @@ void HeightMap::initBuffers() {
 		for (int x = 0; x < terrainWidth - 1; x++) {
 
 
-			
+
 			float tws = vars->texelWorldSize;
 			glm::vec3 p1(x * tws, data[x][z], z * tws);
 			glm::vec3 p2((x + 1) * tws, data[x + 1][z], z * tws);
@@ -445,10 +759,10 @@ void HeightMap::initBuffers() {
 			texCoords.push_back(glm::vec2(p1i.x / terrainWidth, p1i.z / terrainDepth));
 
 			numPoints += 6;
-			
 
 
-			
+
+
 			/*
 
 			glm::vec3 p1(x, data[x][z], z);
@@ -470,79 +784,79 @@ void HeightMap::initBuffers() {
 			if (true) {
 
 
-				vertices.push_back(p1);
+			vertices.push_back(p1);
 
-				normals.push_back(normalP1);
-				//normals.push_back(n1);
+			normals.push_back(normalP1);
+			//normals.push_back(n1);
 
-				texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
-				//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
+			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 
-				vertices.push_back(p2);
-				normals.push_back(normalP2);
-				//normals.push_back(n1);
+			vertices.push_back(p2);
+			normals.push_back(normalP2);
+			//normals.push_back(n1);
 
-				texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
-				//texCoords.push_back(glm::vec2(p2.x, p2.z) / den);
+			texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
+			//texCoords.push_back(glm::vec2(p2.x, p2.z) / den);
 
-				vertices.push_back(p3);
-				normals.push_back(normalP3);
-				//normals.push_back(n1);
+			vertices.push_back(p3);
+			normals.push_back(normalP3);
+			//normals.push_back(n1);
 
-				texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
-				//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
 
-				vertices.push_back(p3);
-				normals.push_back(normalP3);
-				//normals.push_back(n2);
+			vertices.push_back(p3);
+			normals.push_back(normalP3);
+			//normals.push_back(n2);
 
-				texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
-				//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
+			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
 
-				vertices.push_back(p4);
-				normals.push_back(normalP4);
-				//normals.push_back(n2);
+			vertices.push_back(p4);
+			normals.push_back(normalP4);
+			//normals.push_back(n2);
 
-				texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
-				//texCoords.push_back(glm::vec2(p4.x, p4.z) / den);
+			texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
+			//texCoords.push_back(glm::vec2(p4.x, p4.z) / den);
 
-				vertices.push_back(p1);
-				normals.push_back(normalP1);
-				//normals.push_back(n2);
+			vertices.push_back(p1);
+			normals.push_back(normalP1);
+			//normals.push_back(n2);
 
-				texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
-				//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
+			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 			} else {
 
-				vertices.push_back(p1);
-				normals.push_back(n1);
-				texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+			vertices.push_back(p1);
+			normals.push_back(n1);
+			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
 
-				vertices.push_back(p2);
-				normals.push_back(n1);
-				texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
+			vertices.push_back(p2);
+			normals.push_back(n1);
+			texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
 
-				vertices.push_back(p3);
-				normals.push_back(n1);
-				texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+			vertices.push_back(p3);
+			normals.push_back(n1);
+			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
 
-				vertices.push_back(p3);
-				normals.push_back(n2);
-				texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+			vertices.push_back(p3);
+			normals.push_back(n2);
+			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
 
-				vertices.push_back(p4);
-				normals.push_back(n2);
-				texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
+			vertices.push_back(p4);
+			normals.push_back(n2);
+			texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
 
-				vertices.push_back(p1);
-				normals.push_back(n2);
-				texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+			vertices.push_back(p1);
+			normals.push_back(n2);
+			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
 			}
 
 			numPoints += 6;
 			*/
-			
-			
+
+
 
 		}
 	}
@@ -810,7 +1124,7 @@ void HeightMap::initBuffersOld() {
 			}
 			numPoints += 6;
 
-			
+
 
 			/*
 			triangles.push_back(p1);
@@ -883,267 +1197,5 @@ void HeightMap::initBuffersOld() {
 
 }
 
-void HeightMap::initCDF() {
 
 
-
-}
-
-
-
-
-float HeightMap::getHeight(float x, float z, bool worldPosition) {
-
-	if (worldPosition) {
-		x += vars->terrainXOffset;
-		z += vars->terrainZOffset;
-	}
-
-	x /= vars->texelWorldSize;
-	z /= vars->texelWorldSize;
-
-
-	int leftx = (int)x;
-	int rightx = leftx + 1;
-	int leftz = (int)z;
-	int rightz = leftz + 1;
-
-	// clamp to edges
-	leftx = glm::clamp(leftx, 0, width - 1);
-	rightx = glm::clamp(rightx, 0, width - 1);
-	leftz = glm::clamp(leftz, 0, height - 1);
-	rightz = glm::clamp(rightz, 0, height - 1);
-
-
-	float xRatio = x - leftx;
-	float zRatio = z - leftz;
-
-	float y1 = data[leftx][leftz];
-	float y2 = data[leftx][rightz];
-	float y3 = data[rightx][leftz];
-	float y4 = data[rightx][rightz];
-
-	float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
-	float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
-
-	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
-
-	return y;
-
-}
-
-float HeightMap::getWorldWidth() {
-	return width * vars->texelWorldSize;
-}
-
-float HeightMap::getWorldDepth() {
-	return height * vars->texelWorldSize;
-}
-
-void HeightMap::draw() {
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	//glUseProgram(shader->id);
-	//glBindVertexArray(VAO);
-	//glDrawArrays(GL_TRIANGLES, 0, numPoints);
-	draw(shader);
-
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-}
-
-void HeightMap::draw(ShaderProgram *shader) {
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	shader->use();
-
-
-	// Set texture uniforms for unknown shader
-	if (shader != this->shader) {
-		for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
-			materials[i].setTextureUniformsMultiple(shader, i);
-		}
-		shader->setInt("u_TerrainNormalMap", 11);
-		shader->setInt("u_MaterialMap", 12);
-		shader->setFloat("u_UVRatio", (float)width / (float)height);
-	}
-
-
-
-	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
-		materials[i].useMultiple(shader, i);
-	}
-
-
-	shader->setInt("u_TestDiffuse", 9);
-	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
-
-	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
-
-	shader->setBool("u_NormalsOnly", (bool)showNormalsOnly);
-	shader->setInt("u_NormalsMode", normalsShaderMode);
-
-	glm::mat4 modelMatrix(1.0f);
-	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
-	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
-	shader->setModelMatrix(modelMatrix);
-
-
-	glBindTextureUnit(11, terrainNormalMap->id);
-	glBindTextureUnit(12, materialMap->id);
-
-
-	// TO DO - Make this global for multiple shaders
-	shader->setInt("u_CloudShadowTexture", TEXTURE_UNIT_CLOUD_SHADOW_MAP);
-	shader->setBool("u_CloudsCastShadows", (bool)vars->cloudsCastShadows);
-	shader->setFloat("u_CloudCastShadowAlphaMultiplier", vars->cloudCastShadowAlphaMultiplier);
-
-
-	/*
-	shader->setInt("u_NumActiveMaterials", 2);
-
-	shader->setInt("u_Materials[0].diffuse", 0);
-	shader->setInt("u_Materials[0].specular", 1);
-	shader->setInt("u_Materials[0].normalMap", 2);
-	shader->setInt("u_TestDiffuse", 6);
-	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
-
-	shader->setFloat("u_Materials[0].shininess", 2.0f);
-	shader->setFloat("u_Materials[0].tiling", vars->terrainTextureTiling);
-
-	shader->setInt("u_Materials[1].diffuse", 3);
-	shader->setInt("u_Materials[1].specular", 4);
-	shader->setInt("u_Materials[1].normalMap", 5);
-
-	shader->setFloat("u_Materials[1].shininess", 2.0f);
-	shader->setFloat("u_Materials[1].tiling", vars->terrainTextureTiling);
-
-
-	shader->setInt("u_TerrainNormalMap", 11);
-	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
-
-
-	shader->setInt("u_MaterialMap", 12);
-
-	shader->setFloat("u_UVRatio", (float)width / (float)height);
-
-
-	glBindTextureUnit(0, diffuseTexture->id);
-	glBindTextureUnit(2, normalMap->id);
-
-	glBindTextureUnit(3, secondDiffuseTexture->id);
-	glBindTextureUnit(5, secondNormalMap->id);
-
-	glBindTextureUnit(6, testDiffuse->id);
-
-	glBindTextureUnit(11, terrainNormalMap->id);
-	glBindTextureUnit(12, materialMap->id);
-	*/
-
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, numPoints);
-
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-}
-
-void HeightMap::drawGeometry(ShaderProgram * shader) {
-	shader->use();
-
-	shader->setModelMatrix(glm::mat4(1.0f));
-	shader->setBool("u_IsInstanced", false);
-
-
-	glm::mat4 modelMatrix(1.0f);
-	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
-	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
-
-	shader->setModelMatrix(modelMatrix);
-
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, numPoints);
-}
-
-// Based on: https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap
-glm::vec3 HeightMap::computeNormal(int x, int z) {
-	int offset = 1;
-
-	int xLeft = x - offset;
-	int xRight = x + offset;
-	int zBottom = z + offset;
-	int zTop = z - offset;
-
-	if (xLeft < 0) {
-		xLeft = 0;
-	}
-	if (xRight > width - 1) {
-		xRight = width - 1;
-	}
-	if (zBottom > height - 1) {
-		zBottom = height - 1;
-	}
-	if (zTop < 0) {
-		zTop = 0;
-	}
-	float hLeft = data[xLeft][z];
-	float hRight = data[xRight][z];
-	float hBottom = data[x][zBottom];
-	float hTop = data[x][zTop];
-
-	//rangeToRange(hLeft, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
-	//rangeToRange(hLeft, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
-	//rangeToRange(hRight, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
-	//rangeToRange(hBottom, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
-	//rangeToRange(hTop, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
-
-	//cout << "hLeft = " << hLeft << endl;
-
-	glm::vec3 normal;
-	normal.x = (hLeft - hRight) / vars->texelWorldSize;
-	//normal.x = (hLeft - hRight);
-	//normal.y = hBottom - hTop;
-	//normal.z = -2.0f;
-	normal.y = 2.0f/* * vars->texelWorldSize * 10.0f*/;
-	//rangeToRange(normal.y, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
-	normal.z = (hTop - hBottom) / vars->texelWorldSize;
-	//normal.z = (hTop - hBottom);
-
-
-	return glm::normalize(normal);
-
-	/*
-
-	int offset = 1;
-
-	int xLeft = x - offset;
-	int xRight = x + offset;
-	int zBottom = z + offset;
-	int zTop = z - offset;
-
-	if (xLeft < 0) {
-		xLeft = 0;
-	}
-	if (xRight > width - 1) {
-		xRight = width - 1;
-	}
-	if (zBottom > height - 1) {
-		zBottom = height - 1;
-	}
-	if (zTop < 0) {
-		zTop = 0;
-	}
-	float hLeft = data[xLeft][z];
-	float hRight = data[xRight][z];
-	float hBottom = data[x][zBottom];
-	float hTop = data[x][zTop];
-
-	glm::vec3 normal;
-	normal.x = hLeft - hRight;
-	//normal.y = hBottom - hTop;
-	//normal.z = -2.0f;
-	normal.y = 2.0f;
-	normal.z = hTop - hBottom;
-
-	return glm::normalize(normal);
-	*/
-}

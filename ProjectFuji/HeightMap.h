@@ -58,7 +58,7 @@ public:
 
 
 	float **cdf; // testing only!
-
+	float **cdfres;
 
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)
 	//ShaderProgram *wireframeShader;
