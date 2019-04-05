@@ -82,8 +82,8 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
 	//secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
 
-	emitters.push_back(new CircleEmitter(this, glm::vec3(40.0f, 0.0f, 40.0f), 20.0f, true));
-	emitters.push_back(new CircleEmitter(this, glm::vec3(20.0f), 10.0f, true));
+	emitters.push_back(new CircleEmitter(this, glm::vec3(4000.0f, 0.0f, 4000.0f), 2000.0f, true));
+	//emitters.push_back(new CircleEmitter(this, glm::vec3(20.0f), 10.0f, true));
 	emitters.push_back(new CDFEmitterCUDA(this, "textures/cdf2.png"));
 
 	disableAllEmitters();
@@ -366,6 +366,13 @@ void ParticleSystem::drawHelperStructures() {
 		formBoxVisModel->transform.scale = newFormBoxSettings.size;
 		formBoxVisModel->drawWireframe(formBoxVisShader);
 	}
+
+
+	for (int i = 0; i < emitters.size(); i++) {
+		emitters[i]->draw();
+	}
+
+
 }
 
 void ParticleSystem::drawHarris_1st_pass(glm::vec3 lightPos) {

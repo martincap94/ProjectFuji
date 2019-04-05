@@ -12,15 +12,13 @@ public:
 	bool projectOntoTerrain;
 	float radius;
 
-	int numVisPoints = 36;
+	int numVisPoints = 120;
 
 
-	CircleEmitter(ParticleSystem *owner, glm::vec3 position = glm::vec3(0.0f), float radius = 1.0f, bool projectOntoTerrain = false);
+	CircleEmitter(ParticleSystem *owner, glm::vec3 position = glm::vec3(0.0f), float radius = 1000.0f, bool projectOntoTerrain = true);
 	~CircleEmitter();
 
 	virtual void emitParticle();
-	//virtual void emitParticles();
-	//virtual void emitParticles(int numParticles);
 
 	virtual void update();
 	virtual void draw();
