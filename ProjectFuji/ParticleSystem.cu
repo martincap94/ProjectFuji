@@ -240,7 +240,7 @@ void ParticleSystem::emitParticles() {
 
 }
 
-
+// NOT USED ANYMORE
 void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 
 	

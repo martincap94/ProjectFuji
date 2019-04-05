@@ -72,6 +72,7 @@ uniform bool u_ShadowOnly;
 
 uniform bool u_NormalsOnly;
 uniform int u_NormalsMode = 0;
+uniform bool u_VisualizeTextureMode;
 
 
 vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec4 materialContributions);
@@ -115,6 +116,14 @@ void main() {
 	vec3 norm = mix(texture(u_Materials[0].normalMap, v_TexCoords * u_Materials[0].tiling).rgb, texture(u_TerrainNormalMap, v_TexCoords).rgb, u_GlobalNormalMapMixingRatio);
 
 	*/
+
+	if (u_VisualizeTextureMode) {
+		
+		fragColor = texture(u_MaterialMap, v_TexCoords);
+
+		return;
+	}
+
 
 	vec3 firstNorm = texture(u_Materials[0].normalMap, getTexCoords(0)).rgb;
 	vec3 secondNorm = texture(u_Materials[1].normalMap, getTexCoords(1)).rgb;

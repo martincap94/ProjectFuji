@@ -142,6 +142,8 @@ private:
 	void constructTauProperty();
 	void constructWalkingPanel();
 
+	std::string tryGetTextureFilename(Texture *tex);
+
 
 };
 

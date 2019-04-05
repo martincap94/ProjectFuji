@@ -795,8 +795,6 @@ int runApp() {
 				//particleSystem->update();
 				particleSystem->doStep();
 
-				//particleSystem->
-
 				if (vars.applySTLP) {
 					if (totalFrameCounter % vars.stlpStepFrame == 0) {
 						stlpSimCUDA->doStep();

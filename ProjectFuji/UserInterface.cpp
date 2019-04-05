@@ -727,6 +727,21 @@ void UserInterface::constructTerrainTab() {
 	nk_checkbox_label(ctx, "Draw trees", &vars->drawTrees);
 	nk_checkbox_label(ctx, "Visualize normals", &vars->visualizeTerrainNormals);
 	nk_property_float(ctx, "Nrm mixing ratio: ", 0.0f, &vars->globalNormalMapMixingRatio, 1.0f, 0.01f, 0.01f);
+	nk_checkbox_label(ctx, "Visualize texture", &vars->heightMap->visualizeTextureMode);
+
+	if (nk_combo_begin_label(ctx, tryGetTextureFilename(vars->heightMap->visTexture).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+		nk_layout_row_dynamic(ctx, 15, 1);
+		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+			vars->heightMap->visTexture = nullptr;
+		}
+		for (const auto& kv : *textures) {
+			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+				vars->heightMap->visTexture = kv.second;
+			}
+		}
+		nk_combo_end(ctx);
+	}
+
 
 	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
 
@@ -1454,6 +1469,14 @@ void UserInterface::constructLBMDebugTab() {
 
 				nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
 			}
+		}
+	}
+
+	std::string UserInterface::tryGetTextureFilename(Texture * tex) {
+		if (tex == nullptr) {
+			return "NONE";
+		} else {
+			return tex->filename;
 		}
 	}
 

@@ -1,5 +1,14 @@
 #include "CDFEmitterCUDA.h"
 
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+
+#include <thrust/binary_search.h>
+#include <thrust/execution_policy.h>
+#include <thrust/device_ptr.h>
+
+
+#include "CUDAUtils.cuh"
 #include "ParticleSystem.h"
 #include "TextureManager.h"
 #include "Utils.h"
@@ -8,13 +17,16 @@
 
 using namespace std;
 
+//#define THRUST_BIN_SEARCH // much slower than regular CPU version
+
+
 // expects path to 16-bit grayscale png
 CDFEmitterCUDA::CDFEmitterCUDA(ParticleSystem *owner, string probabilityTexturePath) : Emitter(owner) {
 
 	//std::uniform_int_distribution<unsigned long long int> idist;
 
-	stbi_set_flip_vertically_on_load(false);
-
+	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flo
 
 	unsigned short *imageData = stbi_load_16(probabilityTexturePath.c_str(), &width, &height, &numChannels, NULL);
 	if (!imageData) {
@@ -24,27 +36,27 @@ CDFEmitterCUDA::CDFEmitterCUDA(ParticleSystem *owner, string probabilityTextureP
 	}
 
 	sums = new float[width * height]();
+	//arr = new float[width * height]();
 	float *fimgData = new float[width * height]();
 
 	float currSum = 0;
+	float maxIntensity = (float)numeric_limits<unsigned short>().max();
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			unsigned short *pixel = imageData + (x + y * width) * numChannels;
 			unsigned short val = pixel[0];
 			currSum += (float)val;
+			fimgData[x + y * width] = (float)val / maxIntensity;
 			sums[x + y * width] = currSum; // simple sequential inclusive scan (sequential prefix sum)
 		}
 	}
 	maxTotalSum = currSum;
 
-	cout << "Max total sum = " << maxTotalSum << endl;
+	//cout << "Max total sum = " << maxTotalSum << endl;
 
 	firstdist = uniform_real_distribution<float>(1, maxTotalSum);
 
-	for (int i = 0; i < width * height; i++) {
-		fimgData[i] = sums[i] / maxTotalSum;
-	}
 
 
 
@@ -70,12 +82,14 @@ CDFEmitterCUDA::CDFEmitterCUDA(ParticleSystem *owner, string probabilityTextureP
 		stbi_image_free(imageData);
 	}
 
+	initCUDA();
 
 }
 
 
 CDFEmitterCUDA::~CDFEmitterCUDA() {
 	delete[] sums;
+	CHECK_ERROR(cudaFree(d_sums));
 }
 
 void CDFEmitterCUDA::emitParticle() {
@@ -94,6 +108,12 @@ void CDFEmitterCUDA::emitParticle() {
 	float randVal = firstdist(mt);
 
 	int idx;
+
+#ifdef THRUST_BIN_SEARCH // much slower than CPU version
+	thrust::device_ptr<float> dev_ptr = thrust::device_pointer_cast(d_sums);
+	idx = thrust::distance(d_sums, thrust::lower_bound(thrust::device, d_sums, d_sums + width * height, randVal));
+#else
+
 	while (left <= right) {
 		idx = (left + right) / 2;
 		if (randVal <= sums[idx]) {
@@ -103,6 +123,9 @@ void CDFEmitterCUDA::emitParticle() {
 		}
 	}
 	idx = left;
+#endif
+	//cout << "idx = " << idx << endl;
+
 
 	selectedRow = idx / width;
 	selectedCol = idx % width;
@@ -144,4 +167,9 @@ void CDFEmitterCUDA::draw(ShaderProgram * shader) {
 }
 
 void CDFEmitterCUDA::initBuffers() {
+}
+
+void CDFEmitterCUDA::initCUDA() {
+	CHECK_ERROR(cudaMalloc((void**)&d_sums, sizeof(float) * width * height));
+	CHECK_ERROR(cudaMemcpy(d_sums, sums, sizeof(float) * width * height, cudaMemcpyHostToDevice));
 }

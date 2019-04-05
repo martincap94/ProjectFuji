@@ -80,7 +80,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 			int numChannels;
 
-			stbi_set_flip_vertically_on_load(false);
+			stbi_set_flip_vertically_on_load(true);
 			imageData = stbi_load_16((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
 
 
@@ -138,7 +138,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 			int numChannels;
 
-			stbi_set_flip_vertically_on_load(false);
+			stbi_set_flip_vertically_on_load(true);
 			imageData = stbi_load((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
 
 
@@ -368,6 +368,7 @@ void HeightMap::initMaterials() {
 
 	terrainNormalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
 	materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
+	visTexture = materialMap;
 
 	//terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
 	//materialMap = new Texture("textures/1200x800_materialMap.png");
@@ -527,7 +528,6 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 
 	glBindTextureUnit(11, terrainNormalMap->id);
-	glBindTextureUnit(12, materialMap->id);
 
 
 	// TO DO - Make this global for multiple shaders
@@ -535,47 +535,16 @@ void HeightMap::draw(ShaderProgram *shader) {
 	shader->setBool("u_CloudsCastShadows", (bool)vars->cloudsCastShadows);
 	shader->setFloat("u_CloudCastShadowAlphaMultiplier", vars->cloudCastShadowAlphaMultiplier);
 
-
-	/*
-	shader->setInt("u_NumActiveMaterials", 2);
-
-	shader->setInt("u_Materials[0].diffuse", 0);
-	shader->setInt("u_Materials[0].specular", 1);
-	shader->setInt("u_Materials[0].normalMap", 2);
-	shader->setInt("u_TestDiffuse", 6);
-	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
-
-	shader->setFloat("u_Materials[0].shininess", 2.0f);
-	shader->setFloat("u_Materials[0].tiling", vars->terrainTextureTiling);
-
-	shader->setInt("u_Materials[1].diffuse", 3);
-	shader->setInt("u_Materials[1].specular", 4);
-	shader->setInt("u_Materials[1].normalMap", 5);
-
-	shader->setFloat("u_Materials[1].shininess", 2.0f);
-	shader->setFloat("u_Materials[1].tiling", vars->terrainTextureTiling);
+	if (visualizeTextureMode && visTexture) {
+		shader->setBool("u_VisualizeTextureMode", true);
+		glBindTextureUnit(12, visTexture->id);
+	} else {
+		shader->setBool("u_VisualizeTextureMode", false);
+		glBindTextureUnit(12, materialMap->id);
+	}
 
 
-	shader->setInt("u_TerrainNormalMap", 11);
-	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
 
-
-	shader->setInt("u_MaterialMap", 12);
-
-	shader->setFloat("u_UVRatio", (float)width / (float)height);
-
-
-	glBindTextureUnit(0, diffuseTexture->id);
-	glBindTextureUnit(2, normalMap->id);
-
-	glBindTextureUnit(3, secondDiffuseTexture->id);
-	glBindTextureUnit(5, secondNormalMap->id);
-
-	glBindTextureUnit(6, testDiffuse->id);
-
-	glBindTextureUnit(11, terrainNormalMap->id);
-	glBindTextureUnit(12, materialMap->id);
-	*/
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, numPoints);
@@ -748,27 +717,27 @@ void HeightMap::initBuffers() {
 
 			vertices.push_back(p1);
 			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1i.x / terrainWidth, p1i.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p1i.z / terrainWidth, p1i.x / terrainDepth));
 
 			vertices.push_back(p2);
 			normals.push_back(normalP2);
-			texCoords.push_back(glm::vec2(p2i.x / terrainWidth, p2i.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p2i.z / terrainWidth, p2i.x / terrainDepth));
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3i.x / terrainWidth, p3i.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p3i.z / terrainWidth, p3i.x / terrainDepth));
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3i.x / terrainWidth, p3i.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p3i.z / terrainWidth, p3i.x / terrainDepth));
 
 			vertices.push_back(p4);
 			normals.push_back(normalP4);
-			texCoords.push_back(glm::vec2(p4i.x / terrainWidth, p4i.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p4i.z / terrainWidth, p4i.x / terrainDepth));
 
 			vertices.push_back(p1);
 			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1i.x / terrainWidth, p1i.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p1i.z / terrainWidth, p1i.x / terrainDepth));
 
 			numPoints += 6;
 

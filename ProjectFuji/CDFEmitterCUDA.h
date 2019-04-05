@@ -7,11 +7,11 @@
 class CDFEmitterCUDA : public Emitter {
 public:
 
+	float *arr = nullptr;
 	float *sums = nullptr;
 	float maxTotalSum = 0;
 
 	int width;
-	int ewidth; // extended width
 	int height;
 	int numChannels;
 
@@ -27,5 +27,13 @@ public:
 	virtual void draw();
 	virtual void draw(ShaderProgram *shader);
 	virtual void initBuffers();
+	
+protected:
+	
+	float *d_sums;
+
+
+	virtual void initCUDA();
+
 };
 

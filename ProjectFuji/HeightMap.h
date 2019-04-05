@@ -56,6 +56,9 @@ public:
 	Texture *terrainNormalMap;
 	Texture *materialMap;
 
+	int visualizeTextureMode = 0;
+	Texture *visTexture = nullptr;
+
 
 	float **cdf; // testing only!
 	float **cdfres;

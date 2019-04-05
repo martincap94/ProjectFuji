@@ -205,7 +205,7 @@
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="PositionalEmitter.cpp" />
     <ClCompile Include="CDFEmitter.cpp" />
-    <ClCompile Include="CDFEmitterCUDA.cpp" />
+    <ClCompile Include="CDFEmitterCUDA.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">

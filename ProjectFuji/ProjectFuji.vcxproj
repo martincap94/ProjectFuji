@@ -95,7 +95,9 @@
     <ClCompile Include="CircleEmitter.cpp" />
     <ClCompile Include="Curve.cpp" />
     <ClCompile Include="CDFEmitter.cpp" />
-    <ClCompile Include="CDFEmitterCUDA.cpp" />
+    <CudaCompile Include="CDFEmitterCUDA.cu">
+      <FileType>CppCode</FileType>
+    </CudaCompile>
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Emitter.cpp" />
     <ClCompile Include="EVSMShadowMapper.cpp" />
