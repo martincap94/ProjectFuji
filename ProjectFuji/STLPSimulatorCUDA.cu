@@ -176,7 +176,7 @@ __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int num
 
 
 
-__global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float delta_t, float *verticalVelocities, int *profileIndices, /*float *particlePressures, */glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles, glm::vec2 *diagramParticleVertices) {
+__global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float delta_t, float *verticalVelocities, int *profileIndices, /*float *particlePressures, */glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles, glm::vec2 *diagramParticleVertices, bool dividePrevVelocity, float prevVelocityDivisor) {
 
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 
@@ -210,7 +210,9 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
-
+			if (dividePrevVelocity) {
+				verticalVelocities[idx] /= prevVelocityDivisor;
+			}
 			verticalVelocities[idx] = verticalVelocities[idx] + a * delta_t;
 			float deltaY = verticalVelocities[idx] * delta_t + 0.5f * a * delta_t * delta_t;
 
@@ -241,7 +243,9 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 			float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
 
-
+			if (dividePrevVelocity) {
+				verticalVelocities[idx] /= prevVelocityDivisor;
+			}
 			verticalVelocities[idx] = verticalVelocities[idx] + a * delta_t;
 			float deltaY = verticalVelocities[idx] * delta_t + 0.5f * a * delta_t * delta_t;
 
@@ -668,7 +672,8 @@ void STLPSimulatorCUDA::doStep() {
 	// FIX d_ VALUES HERE!!! (use the ones from ParticleSystem)
 	//simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numParticles, particleSystem->d_verticalVelocities, particleSystem->d_profileIndices, particleSystem->d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
 
-	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, delta_t, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, /*particleSystem->d_particlePressures,*/ d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO);
+
+	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, delta_t, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, /*particleSystem->d_particlePressures,*/ d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO, vars->dividePrevVelocity, vars->prevVelocityDivisor * 0.01f);
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
