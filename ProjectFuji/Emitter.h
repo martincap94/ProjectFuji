@@ -34,7 +34,7 @@ public:
 	Emitter(ParticleSystem *owner);
 	~Emitter();
 
-	__inline__ virtual void preEmitCheck();
+	__inline__ virtual bool canEmitParticle();
 	virtual void emitParticle() = 0;
 	virtual void emitParticles();
 	virtual void emitParticles(int numParticles);

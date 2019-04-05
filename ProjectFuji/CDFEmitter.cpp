@@ -124,7 +124,10 @@ CDFEmitter::~CDFEmitter() {
 
 void CDFEmitter::emitParticle() {
 
-	preEmitCheck();
+	if (!canEmitParticle()) {
+		return;
+	}
+
 
 	int selectedRow = height - 1;
 	int selectedCol = width - 1;

@@ -16,10 +16,8 @@ Emitter::Emitter(ParticleSystem *owner) : owner(owner) {
 Emitter::~Emitter() {
 }
 
-void Emitter::preEmitCheck() {
-	if (owner->numActiveParticles >= owner->numParticles) {
-		return;
-	}
+bool Emitter::canEmitParticle() {
+	return (owner->numActiveParticles < owner->numParticles);
 }
 
 

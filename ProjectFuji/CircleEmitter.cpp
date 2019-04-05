@@ -28,7 +28,9 @@ CircleEmitter::~CircleEmitter() {
 
 void CircleEmitter::emitParticle() {
 
-	preEmitCheck();
+	if (!canEmitParticle()) {
+		return;
+	}
 
 
 	// testing generation in circle

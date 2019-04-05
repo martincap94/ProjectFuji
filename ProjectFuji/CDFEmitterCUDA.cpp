@@ -80,7 +80,9 @@ CDFEmitterCUDA::~CDFEmitterCUDA() {
 
 void CDFEmitterCUDA::emitParticle() {
 
-	preEmitCheck();
+	if (!canEmitParticle()) {
+		return;
+	}
 
 	int selectedRow = height - 1;
 	int selectedCol = width - 1;
@@ -109,7 +111,7 @@ void CDFEmitterCUDA::emitParticle() {
 	Particle p;
 	glm::vec3 pos;
 
-	p.profileIndex = 1;
+	p.profileIndex = rand() % (owner->stlpSim->stlpDiagram->numProfiles - 1);
 	p.velocity = glm::vec3(0.0f);
 
 	//cout << pos.x << ", " << pos.y << ", " << pos.z << endl;

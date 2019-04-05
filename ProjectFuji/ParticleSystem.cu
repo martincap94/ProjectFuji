@@ -224,7 +224,12 @@ void ParticleSystem::emitParticles() {
 
 	glNamedBufferSubData(particleProfilesVBO, sizeof(int) * prevNumActiveParticles, sizeof(int) * particleProfilesToEmit.size(), particleProfilesToEmit.data());
 
-	CHECK_ERROR(cudaMemcpy(d_verticalVelocities + prevNumActiveParticles, verticalVelocitiesToEmit.data(), (numActiveParticles - prevNumActiveParticles) * sizeof(float), cudaMemcpyHostToDevice));
+	//cout << verticalVelocitiesToEmit.size() << endl;
+	//cout << " | prevNumActiveParticles = " << prevNumActiveParticles << endl;
+	//cout << " | numActiveParticles     = " << numActiveParticles << endl;
+	//cout << " | active - prevActive    = " << (numActiveParticles - prevNumActiveParticles) << endl;
+
+	CHECK_ERROR(cudaMemcpy(d_verticalVelocities + prevNumActiveParticles, verticalVelocitiesToEmit.data(), verticalVelocitiesToEmit.size() * sizeof(float), cudaMemcpyHostToDevice));
 
 
 	// clear the temporary emitted particle structures
