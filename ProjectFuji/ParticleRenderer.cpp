@@ -357,7 +357,7 @@ void ParticleRenderer::drawSlices() {
 	//cout << "num slices = " << numSlices << endl;
 	//cout << "setting batchsize to " << (ps->numActiveParticles / numSlices) << endl;
 
-	batchSize = ps->numActiveParticles / numSlices;
+	batchSize = ceil((float)ps->numActiveParticles / (float)numSlices);
 
 	//cout << "BATCH SIZE = " << batchSize << endl;
 
@@ -470,10 +470,17 @@ void ParticleRenderer::drawPointSprites(ShaderProgram * shader, int start, int c
 }
 
 void ParticleRenderer::drawPoints(int start, int count, bool sorted) {
+	if (start > ps->numActiveParticles) {
+		return;
+	}
 
 	glBindVertexArray(ps->particlesVAO);
 
 	// they have positions, colors (each particle has a color?) and velocities -> use vertex attribute arrays
+
+	if (start + count > ps->numActiveParticles) {
+		count = ps->numActiveParticles - start;
+	}
 
 	if (sorted) {
 		glDrawElements(GL_POINTS, count, GL_UNSIGNED_INT, (void*)(start * sizeof(unsigned int)));

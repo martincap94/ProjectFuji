@@ -95,6 +95,7 @@
     <ClCompile Include="CircleEmitter.cpp" />
     <ClCompile Include="Curve.cpp" />
     <ClCompile Include="CDFEmitter.cpp" />
+    <ClCompile Include="CDFEmitterCUDA.cpp" />
     <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Emitter.cpp" />
     <ClCompile Include="EVSMShadowMapper.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="Cubemap.h" />
     <ClInclude Include="Curve.h" />
     <ClInclude Include="CDFEmitter.h" />
+    <ClInclude Include="CDFEmitterCUDA.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Emitter.h" />
     <ClInclude Include="EVSMShadowMapper.h" />
