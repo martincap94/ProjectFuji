@@ -8,6 +8,8 @@
 
 using namespace std;
 
+//#define CDF_2D
+
 // expects path to 16-bit grayscale png
 CDFEmitter::CDFEmitter(ParticleSystem *owner, string probabilityTexturePath) : Emitter(owner) {
 
@@ -23,11 +25,13 @@ CDFEmitter::CDFEmitter(ParticleSystem *owner, string probabilityTexturePath) : E
 		return;
 	}
 
+
+#ifdef CDF_2D
 	sums = new unsigned long long int[(width + 1) * height]();
 	float *fimgData = new float[width * height]();
 	ewidth = width + 1;
 
-	unsigned int maxSumFound = 0; // used for normalizing the data for texture visualization (GL_FLOAT)
+	unsigned long long int maxSumFound = 0; // used for normalizing the data for texture visualization (GL_FLOAT)
 	unsigned long long int currSum = 0;
 
 	for (int y = 0; y < height; y++) {
@@ -55,13 +59,38 @@ CDFEmitter::CDFEmitter(ParticleSystem *owner, string probabilityTexturePath) : E
 
 	firstdist = uniform_int_distribution<unsigned long long int>(1, maxTotalSum);
 
-
-
-
 	float fmaxSumFound = (float)maxSumFound;
 	for (int i = 0; i < width * height; i++) {
 		fimgData[i] /= fmaxSumFound;
 	}
+#else
+	sums = new unsigned long long int[width * height]();
+	float *fimgData = new float[width * height]();
+
+	unsigned long long int currSum = 0;
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			unsigned short *pixel = imageData + (x + y * width) * numChannels;
+			unsigned short val = pixel[0];
+			currSum += val;
+			sums[x + y * width] = currSum; // simple sequential inclusive scan (sequential prefix sum)
+		}
+	}
+	maxTotalSum = currSum;
+
+	cout << "Max total sum = " << maxTotalSum << endl;
+
+	firstdist = uniform_int_distribution<unsigned long long int>(1, maxTotalSum);
+
+	for (int i = 0; i < width * height; i++) {
+		fimgData[i] = ((float)sums[i] / (float)maxTotalSum);
+		//cout << fimgData[i] << ", ";
+ 	}
+
+
+
+#endif
 
 
 	GLuint texId;
@@ -97,12 +126,18 @@ void CDFEmitter::emitParticle() {
 
 	preEmitCheck();
 
+	int selectedRow = height - 1;
+	int selectedCol = width - 1;
+
+
+
+#ifdef CDF_2D
+
 	unsigned long long int randVal = firstdist(mt);
 
 	//cout << "randVal for COL = " << randVal << endl;
 
 	// find row
-	int selectedRow = height - 1;
 	for (int y = 0; y < height; y++) {
 		if (randVal <= sums[width + y * ewidth]) {
 			selectedRow = y; // we cannot get zero since it cannot hold that 0 < 0
@@ -118,7 +153,6 @@ void CDFEmitter::emitParticle() {
 
 	//cout << "randVal for ROW = " <<  randVal << endl;
 
-	int selectedCol = width - 1;
 	for (int x = 0; x < width; x++) {
 		//cout << " | comp: " << randVal << " < " << sums[x + selectedRow * ewidth] << endl;
 		if (randVal <= sums[x + selectedRow * ewidth]) {
@@ -128,6 +162,30 @@ void CDFEmitter::emitParticle() {
 	}
 
 	//cout << "row = " << selectedRow << ", col = " << selectedCol << endl;
+#else
+
+
+	int left = 0;
+	int right = width * height - 1;
+
+	unsigned long long int randVal = firstdist(mt);
+
+	int idx;
+	while (left <= right) {
+		idx = (left + right) / 2;
+		if (randVal <= sums[idx]) {
+			right = idx - 1;
+		} else {
+			left = idx + 1;
+		}
+	}
+	idx = left;
+
+	selectedRow = idx / width;
+	selectedCol = idx % width;
+
+
+#endif
 
 	Particle p;
 	glm::vec3 pos(selectedRow, 0.0f, selectedCol);

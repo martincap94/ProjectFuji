@@ -82,7 +82,7 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
 	emitters.push_back(new CircleEmitter(this, glm::vec3(40.0f, 0.0f, 40.0f), 20.0f, true));
 	emitters.push_back(new CircleEmitter(this, glm::vec3(20.0f), 10.0f, true));
-	emitters.push_back(new CDFEmitter(this, "textures/cdf.png"));
+	emitters.push_back(new CDFEmitter(this, "textures/cdf2.png"));
 
 	disableAllEmitters();
 
