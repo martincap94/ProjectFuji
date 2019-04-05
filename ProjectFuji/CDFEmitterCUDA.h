@@ -30,6 +30,8 @@ public:
 	
 protected:
 	
+	float *d_arr; 
+	// since we want to change the original array, we cannot do the prefix sum (scan) in-place
 	float *d_sums;
 
 

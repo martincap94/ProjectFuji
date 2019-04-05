@@ -44,6 +44,7 @@ public:
 	int latticeWidth = 100;		///< Default lattice width
 	int latticeHeight = 100;	///< Default lattice height
 	int latticeDepth = 100;		///< Defailt lattice depth
+	float latticeScale = 100.0f;
 
 	int terrainXOffset = 0;
 	int terrainZOffset = 0;

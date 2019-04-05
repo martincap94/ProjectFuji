@@ -36,7 +36,7 @@ CDFEmitterCUDA::CDFEmitterCUDA(ParticleSystem *owner, string probabilityTextureP
 	}
 
 	sums = new float[width * height]();
-	//arr = new float[width * height]();
+	arr = new float[width * height]();
 	float *fimgData = new float[width * height]();
 
 	float currSum = 0;
@@ -49,6 +49,7 @@ CDFEmitterCUDA::CDFEmitterCUDA(ParticleSystem *owner, string probabilityTextureP
 			currSum += (float)val;
 			fimgData[x + y * width] = (float)val / maxIntensity;
 			sums[x + y * width] = currSum; // simple sequential inclusive scan (sequential prefix sum)
+			arr[x + y * width] = (float)val;
 		}
 	}
 	maxTotalSum = currSum;
@@ -170,6 +171,34 @@ void CDFEmitterCUDA::initBuffers() {
 }
 
 void CDFEmitterCUDA::initCUDA() {
-	CHECK_ERROR(cudaMalloc((void**)&d_sums, sizeof(float) * width * height));
-	CHECK_ERROR(cudaMemcpy(d_sums, sums, sizeof(float) * width * height, cudaMemcpyHostToDevice));
+
+	size_t bsize = sizeof(float) * width * height;
+	CHECK_ERROR(cudaMalloc((void**)&d_sums, bsize));
+	CHECK_ERROR(cudaMalloc((void**)&d_arr, bsize));
+
+	/*
+	// testing
+	float maxIntensity = (float)numeric_limits<unsigned short>().max();
+	for (int x = 10; x < 100; x++) {
+		for (int y = 10; y < 100; y++) {
+			arr[x + y * width] = maxIntensity;
+		}
+	}
+	*/
+
+
+	CHECK_ERROR(cudaMemcpy(d_sums, sums, bsize, cudaMemcpyHostToDevice));
+	CHECK_ERROR(cudaMemcpy(d_arr, arr, bsize, cudaMemcpyHostToDevice));
+
+
+	// now let's test the prefix sum scan from Thrust
+	thrust::inclusive_scan(thrust::device, d_arr, d_arr + width * height, d_sums);
+
+
+	CHECK_ERROR(cudaMemcpy(sums, d_sums, bsize, cudaMemcpyDeviceToHost));
+
+
+
+
+
 }

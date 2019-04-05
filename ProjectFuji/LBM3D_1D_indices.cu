@@ -2277,6 +2277,7 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string
 	latticeWidth = vars->latticeWidth;
 	latticeHeight = vars->latticeHeight;
 	latticeDepth = vars->latticeDepth;
+	scale = vars->latticeScale;
 
 	//latticeWidth = heightMap->width;
 	//latticeDepth = heightMap->height;

@@ -289,6 +289,8 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveFloatParam(texelWorldSize, val);
 	} else if (param == "terrain_height_range") {
 		saveVec2Param(terrainHeightRange, val);
+	} else if (param == "lattice_scale") {
+		saveFloatParam(latticeScale, val);
 	}
 
 }
