@@ -616,5 +616,8 @@
     <None Include="shaders\volume_1st_pass_alt2.frag">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\blur_basic.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

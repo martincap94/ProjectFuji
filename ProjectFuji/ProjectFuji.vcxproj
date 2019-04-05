@@ -302,6 +302,7 @@
     <Text Include="config.ini" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\blur_basic.frag" />
     <None Include="shaders\visualize_normals.geom" />
     <None Include="shaders\visualize_normals.frag" />
     <None Include="shaders\visualize_normals.vert" />

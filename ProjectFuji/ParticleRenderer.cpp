@@ -22,6 +22,7 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars) : vars(vars) {
 
 
 	passThruShader = ShaderManager::getShaderPtr("pass_thru");
+	blurShader = ShaderManager::getShaderPtr("blur_basic");
 
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png"));
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png"));
@@ -124,6 +125,7 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 	//glBindTexture(GL_TEXTURE_2D, atlasSpriteTexture->id);
 
 	drawSlices();
+
 
 	if (compositeResultToFramebuffer) {
 		compositeResult();
@@ -353,6 +355,8 @@ void ParticleRenderer::drawSlices() {
 
 	CHECK_GL_ERRORS();
 
+	srcLightTexture = 0;
+
 	//cout << "NUM ACTIVE PARTICLES = " << ps->numActiveParticles << endl;
 	//cout << "num slices = " << numSlices << endl;
 	//cout << "setting batchsize to " << (ps->numActiveParticles / numSlices) << endl;
@@ -364,6 +368,7 @@ void ParticleRenderer::drawSlices() {
 	// clear light buffer
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[srcLightTexture], 0);
 	glClearColor(1.0f - dirLight->color.x, 1.0f - dirLight->color.y, 1.0f - dirLight->color.z, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -382,6 +387,11 @@ void ParticleRenderer::drawSlices() {
 		drawSlice(i);
 		CHECK_GL_ERRORS();
 		drawSliceLightView(i);
+		CHECK_GL_ERRORS();
+
+		if (useBlurPass) {
+			blurLightTexture();
+		}
 		CHECK_GL_ERRORS();
 	}
 
@@ -454,11 +464,11 @@ void ParticleRenderer::drawPointSprites(ShaderProgram * shader, int start, int c
 	if (shadowed) {
 		shader->setInt("u_ShadowTexture", 1);
 		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, lightTexture[0]);
+		glBindTexture(GL_TEXTURE_2D, lightTexture[srcLightTexture]);
 
 		// TESTING - this is for cloud shadow rendering on the terrain!
 		glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_CLOUD_SHADOW_MAP);
-		glBindTexture(GL_TEXTURE_2D, lightTexture[0]);
+		glBindTexture(GL_TEXTURE_2D, lightTexture[srcLightTexture]);
 	}
 
 	drawPoints(start, count, true);
@@ -514,6 +524,75 @@ void ParticleRenderer::compositeResult() {
 
 	glDisable(GL_BLEND);
 
+
+}
+
+void ParticleRenderer::blurLightTexture() {
+
+	GLuint pid = blurShader->id;
+	blurShader->use();
+
+	glDisable(GL_DEPTH_TEST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[1 - srcLightTexture], 0);
+
+	//glClear(GL_COLOR_BUFFER_BIT);
+
+	glViewport(0, 0, lightBufferResolution, lightBufferResolution);
+
+
+	glUniform2f(glGetUniformLocation(pid, "u_TexelSize"), 1.0f / (float)lightBufferResolution, 1.0f / (float)lightBufferResolution);
+	glBindTextureUnit(0, lightTexture[srcLightTexture]);
+
+	glUniform1i(glGetUniformLocation(pid, "u_InputTexture"), 0);
+
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glBindVertexArray(0);
+
+	srcLightTexture = 1 - srcLightTexture;
+
+
+
+	/*
+
+	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[1], 0);
+
+	//glClear(GL_COLOR_BUFFER_BIT);
+
+	glViewport(0, 0, lightBufferResolution, lightBufferResolution);
+
+
+	glUniform2f(glGetUniformLocation(pid, "u_TexelSize"), 1.0f / lightBufferResolution, 0.0f);
+	glBindTextureUnit(0, lightTexture[0]);
+
+	glUniform1i(glGetUniformLocation(pid, "u_InputTexture"), 0);
+
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[0], 0);
+	//glClear(GL_COLOR_BUFFER_BIT);
+
+	glUniform2f(glGetUniformLocation(pid, "u_TexelSize"), 0.0f, 1.0f / lightBufferResolution);
+	glBindTextureUnit(0, lightTexture[1]);
+
+	glUniform1i(glGetUniformLocation(pid, "u_InputTexture"), 0);
+
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glBindVertexArray(0);
+
+
+	*/
+
+
+	glEnable(GL_DEPTH_TEST);
+	
 
 }
 

@@ -13,11 +13,8 @@ uniform float u_ShadowAlpha = 0.005;
 
 
 void main(void) {
-
-	fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-
 	vec4 texColor = texture(u_Texture, g_TexCoords);
 	fragColor = vec4(texColor.rgb * texColor.a, texColor.a) * u_Opacity;
 	fragColor.xyz *= u_ShadowAlpha;
-
+	//fragColor = clamp(fragColor, 0.0, 1.0);
 }

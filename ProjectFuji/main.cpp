@@ -59,7 +59,6 @@
 #include "CircleEmitter.h"
 #include "TextureManager.h"
 #include "OverlayTexture.h"
-#include "HarrisCloudVisualizer.h"
 #include "ParticleRenderer.h"
 #include "UIConfig.h"
 #include "StreamlineParticleSystem.h"
@@ -166,6 +165,7 @@ double lastFrameTime;		///< Duration of the last frame
 
 glm::mat4 view;				///< View matrix
 glm::mat4 projection;		///< Projection matrix
+glm::mat4 prevProjection; // for s
 glm::mat4 viewportProjection;
 glm::mat4 diagramProjection;
 glm::mat4 overlayDiagramProjection;
@@ -840,17 +840,6 @@ int runApp() {
 
 			//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
-
-			// HARRIS
-			if (vars.run_harris_1st_pass_inNextFrame) {
-				evsm.preHarris_1st_pass();
-
-				particleSystem->drawHarris_1st_pass(dirLight->position);
-
-				evsm.postHarris_1st_pass();
-
-				vars.run_harris_1st_pass_inNextFrame = 0;
-			}
 
 
 

@@ -22,6 +22,9 @@ public:
 	glm::mat4 lightProjectionMatrix;
 	glm::mat4 lightViewMatrix;
 
+	glm::mat4 lightSpaceMatrix;
+	glm::mat4 prevLightSpaceMatrix;
+
 	int shadowOnly = 0;
 
 	DirectionalLight *dirLight = nullptr;
@@ -36,8 +39,6 @@ public:
 
 	void postFirstPass();
 
-	void preHarris_1st_pass();
-	void postHarris_1st_pass();
 
 	void preSecondPass(int screenWidth, int screenHeight);
 
@@ -64,7 +65,6 @@ public:
 	GLuint depthMapTexture;
 	GLuint zBufferTexture;
 	GLuint depthMapFramebuffer;
-	GLuint harrisFramebuffer;
 
 	GLuint firstPassBlurTexture;
 	GLuint firstPassBlurFramebuffer;
@@ -72,7 +72,6 @@ public:
 	GLuint secondPassBlurTexture;
 	GLuint secondPassBlurFramebuffer;
 
-	GLuint harrisTexture;
 
 
 	GLuint quadVAO;

@@ -963,6 +963,7 @@ void UserInterface::constructCloudVisualizationTab() {
 	nk_checkbox_label(ctx, "Show particle texture idx", &particleRenderer->showParticleTextureIdx);
 	nk_checkbox_label(ctx, "Use atlas texture", &particleRenderer->useAtlasTexture);
 
+	nk_checkbox_label(ctx, "Blur light texture", &particleRenderer->useBlurPass);
 
 }
 

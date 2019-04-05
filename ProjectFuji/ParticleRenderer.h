@@ -37,6 +37,8 @@ public:
 	int numSlices = 256;
 	int numDisplayedSlices = numSlices;
 
+	int srcLightTexture = 0;
+
 	int shaderSet = 2;
 
 	int batchSize;
@@ -46,6 +48,8 @@ public:
 	int imageHeight;
 
 	int compositeResultToFramebuffer = 1;
+
+	int useBlurPass = 0;
 
 	// for easier testing
 	int firstPassShaderMode = 0;
@@ -108,6 +112,7 @@ private:
 	ShaderProgram *firstPassShader;
 	ShaderProgram *secondPassShader;
 	ShaderProgram *passThruShader;
+	ShaderProgram *blurShader;
 
 	GLuint imageFramebuffer;
 	GLuint imageTexture;
@@ -136,6 +141,8 @@ private:
 	void drawPoints(int start, int count, bool sorted);
 
 	void compositeResult();
+
+	void blurLightTexture();
 
 
 };

@@ -9,6 +9,7 @@ layout (location = 4) in vec3 a_Bitangent;
 out vec4 v_FragPos;
 out vec3 v_Normal;
 out vec4 v_LightSpacePos;
+out vec4 v_PrevLightSpacePos;
 out vec2 v_TexCoords;
 
 out mat3 v_TBN;
@@ -17,6 +18,7 @@ uniform mat4 u_Model;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 uniform mat4 u_LightSpaceMatrix;
+uniform mat4 u_PrevLightSpaceMatrix;
 
 void main() {
 
@@ -31,6 +33,7 @@ void main() {
 	v_TexCoords = a_TexCoords;
 
 	v_LightSpacePos = u_LightSpaceMatrix * v_FragPos;
+	v_PrevLightSpacePos = u_PrevLightSpaceMatrix * v_FragPos;
 
 	gl_Position = u_Projection * u_View * v_FragPos;
 }

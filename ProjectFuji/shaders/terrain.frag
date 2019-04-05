@@ -5,6 +5,7 @@ out vec4 fragColor;
 in vec4 v_FragPos;
 in vec3 v_Normal;
 in vec4 v_LightSpacePos;
+in vec4 v_PrevLightSpacePos;
 in vec2 v_TexCoords;
 
 in mat3 v_TBN;
@@ -175,7 +176,7 @@ void main() {
 
 		if (u_CloudsCastShadows) {
 
-			vec3 projCoords = v_LightSpacePos.xyz / v_LightSpacePos.w; // this is already computed elsewhere -> merge if this is to be used
+			vec3 projCoords = v_PrevLightSpacePos.xyz / v_PrevLightSpacePos.w;
 			projCoords = projCoords * 0.5 + vec3(0.5);
 
 			vec3 cloudShadow = vec3(1.0);
