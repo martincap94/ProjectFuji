@@ -136,6 +136,9 @@ public:
 	int hosekSkybox = 1;
 
 
+	int terrainPickerMode = 0;
+
+
 
 	enum eFogMode {
 		LINEAR = 0,

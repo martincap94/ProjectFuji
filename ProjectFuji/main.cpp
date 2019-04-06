@@ -62,6 +62,7 @@
 #include "ParticleRenderer.h"
 #include "UIConfig.h"
 #include "StreamlineParticleSystem.h"
+#include "TerrainPicker.h"
 
 //#include "ArHosekSkyModel.h"
 //#include "ArHosekSkyModel.c"
@@ -131,6 +132,7 @@ StreamlineParticleSystem *streamlineParticleSystem;
 
 UserInterface *ui;
 
+TerrainPicker *tPicker;
 //HeightMap *heightMap;
 
 //Timer timer;
@@ -333,6 +335,7 @@ int runApp() {
 	visualizeNormalsShader = ShaderManager::getShaderPtr("visualize_normals");
 
 	vars.heightMap = new HeightMap(&vars/*, vars.sceneFilename, vars.latticeHeight*/);
+	tPicker = new TerrainPicker(&vars);
 	//vars.heightMap->vars = &vars;
 
 	//struct nk_colorf particlesColor;
@@ -846,9 +849,9 @@ int runApp() {
 			evsm.preSecondPass(vars.screenWidth, vars.screenHeight);
 			CHECK_GL_ERRORS();
 
-			//stlpSim->heightMap->draw(evsm.secondPassShader);
-			//vars.heightMap->draw(evsm.secondPassShader);
+
 			vars.heightMap->draw();
+			tPicker->drawTerrain(vars.heightMap);
 
 			if (vars.visualizeTerrainNormals) {
 				vars.heightMap->drawGeometry(visualizeNormalsShader);
@@ -979,6 +982,7 @@ int runApp() {
 	delete overlayDiagramCamera;
 	delete orbitCamera;
 	delete dirLight;
+	delete tPicker;
 
 	delete skybox;
 
@@ -1163,7 +1167,7 @@ void processInput(GLFWwindow* window) {
 	}
 
 
-	if (mouseDown) {
+	if (mouseDown && mode < 2) {
 		//cout << "mouse down" << endl;
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
@@ -1198,28 +1202,41 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		1) nk_item_is_any_active (suggested by Vurtun)
 		2) nk_window_is_any_hovered
 	*/
-	if (ui->isAnyWindowHovered() || mode >= 2) {
+	if (ui->isAnyWindowHovered()) {
 		//cout << "Mouse callback not valid, hovering over Nuklear window/widget." << endl;
 		return;
 	}
 
+
+
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
-		//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
-		//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
-		//Z_ndc = 2.0 * depth - 1.0;
-		xpos = xpos * 2.0f / (float)vars.screenWidth - 1.0f;
-		ypos = vars.screenHeight - ypos;
-		ypos = ypos * 2.0f / (float)vars.screenHeight - 1.0f;
 
-		glm::vec4 mouseCoords(xpos, ypos, 0.0f, 1.0f);
-		mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
-		//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
+		if (mode < 2) {
+			//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
-		stlpDiagram.findClosestSoundingPoint(mouseCoords);
+			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
+			//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
+			//Z_ndc = 2.0 * depth - 1.0;
+			xpos = xpos * 2.0f / (float)vars.screenWidth - 1.0f;
+			ypos = vars.screenHeight - ypos;
+			ypos = ypos * 2.0f / (float)vars.screenHeight - 1.0f;
+
+			glm::vec4 mouseCoords(xpos, ypos, 0.0f, 1.0f);
+			mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
+			//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
+
+			stlpDiagram.findClosestSoundingPoint(mouseCoords);
+		} else {
+			cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
+
+			tPicker->getPixelData(xpos, vars.screenHeight - ypos);
+
+
+
+		}
 
 		mouseDown = true;
 	} else if (action == GLFW_RELEASE) {
