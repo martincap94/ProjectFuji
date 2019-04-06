@@ -26,6 +26,7 @@ void main() {
 	//return;
 	vec3 sunDir = normalize(u_SunDir);
 	float cosTheta = viewVec.y;
+
 	float cosGamma = dot(viewVec, sunDir);
 	float gamma = acos(cosGamma);
 
@@ -56,8 +57,8 @@ vec3 hosekWilkie(float cosTheta, float gamma, float cosGamma) {
 	vec3 H = u_Params[7];
 	vec3 I = u_Params[8];
 	//vec3 Z = u_Params[9];
-	vec3 chi = (1 + cosGamma * cosGamma) / pow(1 + H * H - 2 * cosGamma * H, vec3(1.5));
-    return (1 + A * exp(B / (cosTheta + u_HorizonOffset))) * (C + D * exp(E * gamma) + F * (cosGamma * cosGamma) + G * chi + I * sqrt(cosTheta));
+	vec3 chi = (1.0 + cosGamma * cosGamma) / pow(1.0 + H * H - 2.0 * cosGamma * H, vec3(1.5));
+    return (1.0 + A * exp(B / (cosTheta + u_HorizonOffset))) * (C + D * exp(E * gamma) + F * (cosGamma * cosGamma) + G * chi + I * sqrt(cosTheta));
 }
 
 

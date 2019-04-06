@@ -175,8 +175,8 @@ void UserInterface::constructLeftSidebar() {
 
 	ctx->style.window.border = leftSidebarBorderWidth;
 
-	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight, leftSidebarWidth, vars->screenHeight - vars->debugTextureRes - vars->toolbarHeight),
-				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
+	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight, leftSidebarWidth + 20.0f, vars->screenHeight - vars->debugTextureRes - vars->toolbarHeight),
+				 NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
 		nk_layout_row_dynamic(ctx, 15, 4);
 		if (nk_button_label(ctx, "LBM")) {
 			uiMode = 0;
@@ -842,11 +842,11 @@ void UserInterface::constructSkyTab() {
 	nk_checkbox_label(ctx, "Hosek", &vars->hosekSkybox);
 
 
-	nk_property_float(ctx, "Turbidity", 1.0f, &hosek->turbidity, 10.0f, 0.1f, 0.1f);
-	nk_property_float(ctx, "Albedo", 0.0f, &hosek->albedo, 1.0f, 0.01f, 0.01f);
+	nk_property_double(ctx, "Turbidity", 1.0, &hosek->turbidity, 10.0, 0.1, 0.1);
+	nk_property_double(ctx, "Albedo", 0.0, &hosek->albedo, 1.0, 0.01, 0.01);
 
 
-	nk_property_float(ctx, "Horizon Offset", 0.001f, &hosek->horizonOffset, 10.0f, 0.001f, 0.001f);
+	nk_property_double(ctx, "Horizon Offset", 0.001, &hosek->horizonOffset, 10.0, 0.001, 0.001);
 
 
 	nk_checkbox_label(ctx, "Recalculate Live", &hosek->liveRecalc);
@@ -865,7 +865,8 @@ void UserInterface::constructSkyTab() {
 	nk_value_float(ctx, "Eta", hosek->eta);
 	nk_value_float(ctx, "Eta (degrees)", hosek->getElevationDegrees());
 
-
+	nk_value_float(ctx, "Sun Theta", hosek->sunTheta);
+	nk_value_float(ctx, "Sun Theta (degrees)", glm::degrees(hosek->sunTheta));
 
 
 }
