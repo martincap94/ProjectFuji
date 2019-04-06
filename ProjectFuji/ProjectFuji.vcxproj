@@ -85,6 +85,10 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="CDFEmitter - Copy.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </CudaCompile>
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
@@ -94,8 +98,11 @@
     <ClCompile Include="Camera2D.cpp" />
     <ClCompile Include="CircleEmitter.cpp" />
     <ClCompile Include="Curve.cpp" />
-    <ClCompile Include="CDFEmitter.cpp" />
-    <CudaCompile Include="CDFEmitterCUDA.cu">
+    <ClCompile Include="CDFEmitterOld.cpp" />
+    <ClCompile Include="CDFEmitter.cpp">
+      <FileType>CppCode</FileType>
+    </ClCompile>
+    <CudaCompile Include="CDFSampler.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
     <ClCompile Include="DirectionalLight.cpp" />
@@ -214,12 +221,18 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Camera2D.h" />
     <ClCompile Include="DataStructures.h" />
+    <ClInclude Include="CDFEmitter - Copy.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="CircleEmitter.h" />
     <ClInclude Include="CommonEnums.h" />
     <ClInclude Include="Cubemap.h" />
+    <CudaCompile Include="CUDADataStructures.h" />
     <ClInclude Include="Curve.h" />
+    <ClInclude Include="CDFEmitterOld.h" />
     <ClInclude Include="CDFEmitter.h" />
-    <ClInclude Include="CDFEmitterCUDA.h" />
+    <ClInclude Include="CDFSampler.h" />
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="Emitter.h" />
     <ClInclude Include="EVSMShadowMapper.h" />

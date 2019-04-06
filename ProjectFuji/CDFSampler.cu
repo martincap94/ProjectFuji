@@ -1,27 +1,26 @@
-#include "CDFEmitterCUDA.h"
+#include "CDFSampler.h"
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
+#include <glad\glad.h>
+#include <stb_image.h>
+
+#include <iostream>
+
+#include "TextureManager.h"
+#include "Utils.h"
+#include "CUDAUtils.cuh"
 
 #include <thrust/binary_search.h>
 #include <thrust/execution_policy.h>
 #include <thrust/device_ptr.h>
 
 
-#include "CUDAUtils.cuh"
-#include "ParticleSystem.h"
-#include "TextureManager.h"
-#include "Utils.h"
-
-#include <stb_image.h>
-
 using namespace std;
 
-//#define THRUST_BIN_SEARCH // much slower than regular CPU version
+CDFSampler::CDFSampler(std::string probabilityTexturePath) {
+
+	mt = mt19937_64(rd());
 
 
-// expects path to 16-bit grayscale png
-CDFEmitterCUDA::CDFEmitterCUDA(ParticleSystem *owner, string probabilityTexturePath) : Emitter(owner) {
 
 	//std::uniform_int_distribution<unsigned long long int> idist;
 
@@ -59,9 +58,6 @@ CDFEmitterCUDA::CDFEmitterCUDA(ParticleSystem *owner, string probabilityTextureP
 	firstdist = uniform_real_distribution<float>(1, maxTotalSum);
 
 
-
-
-
 	GLuint texId;
 
 	glGenTextures(1, &texId);
@@ -84,24 +80,13 @@ CDFEmitterCUDA::CDFEmitterCUDA(ParticleSystem *owner, string probabilityTextureP
 	}
 
 	initCUDA();
-
 }
 
-
-CDFEmitterCUDA::~CDFEmitterCUDA() {
+CDFSampler::~CDFSampler() {
 	delete[] sums;
-	CHECK_ERROR(cudaFree(d_sums));
 }
 
-void CDFEmitterCUDA::emitParticle() {
-
-	if (!canEmitParticle()) {
-		return;
-	}
-
-	int selectedRow = height - 1;
-	int selectedCol = width - 1;
-
+glm::ivec2 CDFSampler::getSample() {
 
 	int left = 0;
 	int right = width * height - 1;
@@ -128,49 +113,13 @@ void CDFEmitterCUDA::emitParticle() {
 	//cout << "idx = " << idx << endl;
 
 
-	selectedRow = idx / width;
-	selectedCol = idx % width;
+	int selectedRow = idx / width;
+	int selectedCol = idx % width;
 
-
-	Particle p;
-	glm::vec3 pos;
-
-	p.profileIndex = rand() % (owner->stlpSim->stlpDiagram->numProfiles - 1);
-	p.velocity = glm::vec3(0.0f);
-
-	//cout << pos.x << ", " << pos.y << ", " << pos.z << endl;
-
-	//for (int i = 0; i < 1000; i++) {
-		pos = glm::vec3(selectedRow, 0.0f, selectedCol);
-
-		// move inside the texel
-		pos.x += getRandFloat(0.0f, 1.0f);
-		pos.z += getRandFloat(0.0f, 1.0f);
-
-		pos.x *= owner->heightMap->vars->texelWorldSize; // ugly, cleanup
-		pos.z *= owner->heightMap->vars->texelWorldSize; // ugly, cleanup
-		pos.y = owner->heightMap->getHeight(pos.x, pos.z, true);
-		p.position = pos;
-
-
-		owner->pushParticleToEmit(p);
-	//}
-
+	return glm::ivec2(selectedRow, selectedCol);
 }
 
-void CDFEmitterCUDA::update() {
-}
-
-void CDFEmitterCUDA::draw() {
-}
-
-void CDFEmitterCUDA::draw(ShaderProgram * shader) {
-}
-
-void CDFEmitterCUDA::initBuffers() {
-}
-
-void CDFEmitterCUDA::initCUDA() {
+void CDFSampler::initCUDA() {
 
 	size_t bsize = sizeof(float) * width * height;
 	CHECK_ERROR(cudaMalloc((void**)&d_sums, bsize));
@@ -180,9 +129,9 @@ void CDFEmitterCUDA::initCUDA() {
 	// testing
 	float maxIntensity = (float)numeric_limits<unsigned short>().max();
 	for (int x = 10; x < 100; x++) {
-		for (int y = 10; y < 100; y++) {
-			arr[x + y * width] = maxIntensity;
-		}
+	for (int y = 10; y < 100; y++) {
+	arr[x + y * width] = maxIntensity;
+	}
 	}
 	*/
 

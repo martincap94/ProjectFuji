@@ -77,10 +77,10 @@ glm::vec4 TerrainPicker::getPixelData(int x, int y) {
 	glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, readData);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	//cout << readData[0] << endl;
-	//cout << readData[1] << endl;
-	//cout << readData[2] << endl;
-	//cout << readData[3] << endl;
+	cout << readData[0] << endl;
+	cout << readData[1] << endl;
+	cout << readData[2] << endl;
+	cout << readData[3] << endl;
 
 	return glm::vec4(readData[0], readData[1], readData[2], readData[3]);
 }

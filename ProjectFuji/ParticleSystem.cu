@@ -12,8 +12,8 @@
 #include "Emitter.h"
 #include "PositionalEmitter.h"
 #include "CircleEmitter.h"
+//#include "CDFEmitter.h"
 #include "CDFEmitter.h"
-#include "CDFEmitterCUDA.h"
 
 
 #include "TextureManager.h"
@@ -84,7 +84,7 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
 	emitters.push_back(new CircleEmitter(this, glm::vec3(4000.0f, 0.0f, 4000.0f), 2000.0f, true));
 	//emitters.push_back(new CircleEmitter(this, glm::vec3(20.0f), 10.0f, true));
-	emitters.push_back(new CDFEmitterCUDA(this, "textures/cdf2.png"));
+	emitters.push_back(new CDFEmitter(this, "textures/cdf2.png"));
 
 	disableAllEmitters();
 

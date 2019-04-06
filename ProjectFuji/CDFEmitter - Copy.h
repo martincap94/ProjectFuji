@@ -4,7 +4,7 @@
 
 #include <string>
 
-class CDFEmitterCUDA : public Emitter {
+class CDFEmitter : public Emitter {
 public:
 
 	float *arr = nullptr;
@@ -17,8 +17,8 @@ public:
 
 	std::uniform_real_distribution<float> firstdist;
 
-	CDFEmitterCUDA(ParticleSystem *owner, std::string probabilityTexturePath);
-	~CDFEmitterCUDA();
+	CDFEmitter(ParticleSystem *owner, std::string probabilityTexturePath);
+	~CDFEmitter();
 
 
 	virtual void emitParticle();

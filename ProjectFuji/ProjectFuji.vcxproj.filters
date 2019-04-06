@@ -43,7 +43,8 @@
       <Filter>Source Files</Filter>
     </CudaCompile>
     <CudaCompile Include="StreamlineParticleSystem.cu" />
-    <CudaCompile Include="CDFEmitterCUDA.cu" />
+    <CudaCompile Include="CDFEmitter - Copy.cu" />
+    <CudaCompile Include="CDFEmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -205,8 +206,9 @@
     <ClCompile Include="GPUVBO.cpp" />
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="PositionalEmitter.cpp" />
-    <ClCompile Include="CDFEmitter.cpp" />
     <ClCompile Include="TerrainPicker.cpp" />
+    <ClCompile Include="CDFEmitterOld.cpp" />
+    <ClCompile Include="CDFSampler.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -377,9 +379,14 @@
     <ClInclude Include="GPUVBO.h" />
     <ClInclude Include="Actor.h" />
     <ClInclude Include="PositionalEmitter.h" />
-    <ClInclude Include="CDFEmitter.h" />
-    <ClInclude Include="CDFEmitterCUDA.h" />
     <ClInclude Include="TerrainPicker.h" />
+    <ClInclude Include="CDFSampler.h" />
+    <ClInclude Include="CDFEmitterOld.h" />
+    <ClInclude Include="CDFEmitter.h" />
+    <ClInclude Include="CDFEmitter - Copy.h" />
+    <ClInclude Include="CUDADataStructures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

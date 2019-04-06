@@ -44,12 +44,12 @@ __device__ __host__ float rand(int x, int y) {
 	return ((1.0f - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0f) + 1.0f) * 0.5f;
 }
 
-/// Maps the value to the viridis color map.
-__device__ glm::vec3 mapToViridis3D(float val) {
-	val = glm::clamp(val, 0.0f, 1.0f);
-	int discreteVal = (int)(val * 255.0f);
-	return glm::vec3(viridis_cm[discreteVal][0], viridis_cm[discreteVal][1], viridis_cm[discreteVal][2]);
-}
+///// Maps the value to the viridis color map.
+//__device__ glm::vec3 mapToViridis3D(float val) {
+//	val = glm::clamp(val, 0.0f, 1.0f);
+//	int discreteVal = (int)(val * 255.0f);
+//	return glm::vec3(viridis_cm[discreteVal][0], viridis_cm[discreteVal][1], viridis_cm[discreteVal][2]);
+//}
 
 __host__ __device__ glm::vec3 getLatticePosition(glm::vec3 worldPosition) {
 	// TO DO - offsets (model matrix?), maybe even scaling (model matrix scale)

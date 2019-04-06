@@ -1167,26 +1167,38 @@ void processInput(GLFWwindow* window) {
 	}
 
 
-	if (mouseDown && mode < 2) {
+	if (mouseDown) {
+
+
 		//cout << "mouse down" << endl;
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
 		//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
-		//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
-		//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
-		//Z_ndc = 2.0 * depth - 1.0;
-		xpos = xpos * 2.0f / (float)vars.screenWidth - 1.0f;
-		ypos = vars.screenHeight - ypos;
-		ypos = ypos * 2.0f / (float)vars.screenHeight - 1.0f;
 
-		glm::vec4 mouseCoords(xpos, ypos, 0.0f, 1.0f);
-		mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
-		//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
+		if (mode < 2) {
+			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
+			//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
+			//Z_ndc = 2.0 * depth - 1.0;
+			xpos = xpos * 2.0f / (float)vars.screenWidth - 1.0f;
+			ypos = vars.screenHeight - ypos;
+			ypos = ypos * 2.0f / (float)vars.screenHeight - 1.0f;
 
-		//stlpDiagram.findClosestSoundingPoint(mouseCoords);
+			glm::vec4 mouseCoords(xpos, ypos, 0.0f, 1.0f);
+			mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
+			//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
 
-		stlpDiagram.moveSelectedPoint(mouseCoords);
+			//stlpDiagram.findClosestSoundingPoint(mouseCoords);
+
+			stlpDiagram.moveSelectedPoint(mouseCoords);
+		} else {
+
+			glm::vec4 pos = tPicker->getPixelData(xpos, vars.screenHeight - ypos);
+
+			if (pos.w == 1.0f) {
+				((PositionalEmitter*)particleSystem->emitters[0])->position = glm::vec3(pos);
+			}
+		}
 
 	}
 }
@@ -1232,10 +1244,11 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		} else {
 			cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
-			tPicker->getPixelData(xpos, vars.screenHeight - ypos);
+			glm::vec4 pos = tPicker->getPixelData(xpos, vars.screenHeight - ypos);
 
-
-
+			if (pos.w == 1.0f) {
+				((PositionalEmitter*)particleSystem->emitters[0])->position = glm::vec3(pos);
+			}
 		}
 
 		mouseDown = true;
