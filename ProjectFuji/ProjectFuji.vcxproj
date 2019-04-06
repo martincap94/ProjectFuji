@@ -102,10 +102,13 @@
     <ClCompile Include="CDFEmitter.cpp">
       <FileType>CppCode</FileType>
     </ClCompile>
-    <CudaCompile Include="CDFSampler.cu">
+    <ClCompile Include="CDFSampler.cpp">
+      <FileType>CppCode</FileType>
+    </ClCompile>
+    <ClCompile Include="DirectionalLight.cpp" />
+    <CudaCompile Include="DynamicCDFSampler.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
-    <ClCompile Include="DirectionalLight.cpp" />
     <ClCompile Include="Emitter.cpp" />
     <ClCompile Include="EVSMShadowMapper.cpp" />
     <ClCompile Include="FreeRoamCamera.cpp" />
@@ -234,6 +237,7 @@
     <ClInclude Include="CDFEmitter.h" />
     <ClInclude Include="CDFSampler.h" />
     <ClInclude Include="DirectionalLight.h" />
+    <ClInclude Include="DynamicCDFSampler.h" />
     <ClInclude Include="Emitter.h" />
     <ClInclude Include="EVSMShadowMapper.h" />
     <ClInclude Include="FreeRoamCamera.h" />

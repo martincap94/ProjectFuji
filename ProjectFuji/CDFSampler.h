@@ -7,37 +7,32 @@
 class CDFSampler {
 public:
 
-
-
-	float *arr = nullptr;
-	float *sums = nullptr;
-	float maxTotalSum = 0;
-
-	int width;
-	int height;
-	int numChannels;
-
-
-
+	CDFSampler();
 	// expects path to 16-bit grayscale png
 	CDFSampler(std::string probabilityTexturePath);
 	~CDFSampler();
 
 	glm::ivec2 getSample();
 
-private:
+protected:
+
+	float *sums = nullptr;
+	float maxTotalSum = 0;
+
+	int width;
+	int height;
+	int numChannels;
+	int size;
+
+	bool initialized = false;
 
 	std::random_device rd;
 	std::mt19937_64 mt;
 
 	std::uniform_real_distribution<float> firstdist;
 
+	void init(std::string probabilityTexturePath);
 
-	float *d_arr;
-	// since we want to change the original array, we cannot do the prefix sum (scan) in-place
-	float *d_sums;
-
-	void initCUDA();
 
 };
 
