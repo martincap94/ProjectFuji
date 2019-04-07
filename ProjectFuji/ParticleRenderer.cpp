@@ -428,16 +428,16 @@ void ParticleRenderer::drawSlice(int i) {
 
 void ParticleRenderer::drawSliceLightView(int i) {
 
-	// TO DO -> set matrix uniforms for lightView and lightProjection
+	// TODO -> set matrix uniforms for lightView and lightProjection
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
 	glViewport(0, 0, lightBufferResolution, lightBufferResolution);
 
-	// TO DO -> set color (or color modifier if color taken from texture)
+	// TODO -> set color (or color modifier if color taken from texture)
 	//			-> if texture, set texture uniforms, activate texture unit and bind sprite texture
 
-	// TO DO: SET SHADOW COLOR ALPHA
+	// TODO: SET SHADOW COLOR ALPHA
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 
@@ -458,7 +458,7 @@ void ParticleRenderer::drawPointSprites(ShaderProgram * shader, int start, int c
 
 	shader->use();
 
-	// TO DO - set shader uniforms and bind textures
+	// TODO - set shader uniforms and bind textures
 	//shader->
 
 	if (shadowed) {

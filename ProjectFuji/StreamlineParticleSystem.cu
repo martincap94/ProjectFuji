@@ -70,7 +70,7 @@ void StreamlineParticleSystem::draw() {
 		/*
 		for (int i = 0; i < maxNumStreamlines; i++) {
 			glBindVertexBuffer(0, streamlineVBOs[i], 0, sizeof(glm::vec3));
-			glDrawArrays(GL_LINES, 0, maxStreamlineLength); // TO DO - specify actual amount of vertices to be drawn (not maximum)
+			glDrawArrays(GL_LINES, 0, maxStreamlineLength); // TODO - specify actual amount of vertices to be drawn (not maximum)
 		}
 		*/
 

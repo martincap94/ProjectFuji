@@ -52,7 +52,7 @@ __device__ __host__ float rand(int x, int y) {
 //}
 
 __host__ __device__ glm::vec3 getLatticePosition(glm::vec3 worldPosition) {
-	// TO DO - offsets (model matrix?), maybe even scaling (model matrix scale)
+	// TODO - offsets (model matrix?), maybe even scaling (model matrix scale)
 	worldPosition -= d_position;
 	return (worldPosition / d_worldSizeRatio);
 	//return glm::vec3(worldPosition.x / d_worldSizeRatio, worldPosition.y / d_worldSizeRatio, worldPosition.z / d_worldSizeRatio);

@@ -128,7 +128,7 @@ __device__ float getMappedFromSimulationBox_dev(float val) {
 __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int numCurveVertices, float normP) {
 #define USE_BINARY_ISOBAR_INTERSECTION_SEARCH
 #ifndef USE_BINARY_ISOBAR_INTERSECTION_SEARCH
-	// naively search for correct interval - TO DO better solutions are: binary search and direct indexation using (non-normalized) pressure - needs better design
+	// naively search for correct interval - TODO better solutions are: binary search and direct indexation using (non-normalized) pressure - needs better design
 	for (int i = 0; i < numCurveVertices - 1; i += 1) {
 		if (curveVertices[i + 1].y > normP) {
 			continue;

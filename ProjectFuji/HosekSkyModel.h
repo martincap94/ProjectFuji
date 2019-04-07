@@ -7,6 +7,7 @@
 #include "ArHosekSkyModel.h"
 //#include "DirectionalLight.h"
 
+// BASED ON: https://github.com/benanders/Hosek-Wilkie BY BEN ANDERSON
 
 class HosekSkyModel {
 public:
@@ -17,10 +18,17 @@ public:
 
 	int liveRecalc = 1;
 
-	double horizonOffset = 0.01;
+	int calcParamMode = 0;
+	int useAndersonsRGBNormalization = 1;
+
 	double eta = 0.0; // angle "below" sun (between sun and xz plane)
 	double sunTheta = 0.0; // angle "above" sun (between sun and y plane)
 	
+
+	// shader uniforms
+	double horizonOffset = 0.01;
+	float sunIntensity = 0.5f;
+	int sunExponent = 256;
 
 	HosekSkyModel();
 	~HosekSkyModel();
@@ -34,6 +42,11 @@ public:
 
 	float getElevationDegrees();
 
+	// UI helpers
+	std::string getCalcParamModeName();
+	std::string getCalcParamModeName(int mode);
+
+
 private:
 
 	glm::vec3 params[10];
@@ -43,6 +56,8 @@ private:
 	double prevEta = 0.0;
 	double prevTurbidity = turbidity;
 	double prevAlbedo = albedo;
+	int prevCalcParamMode = calcParamMode;
+	int prevUseAndersonsRGBNormalization = useAndersonsRGBNormalization;
 
 	double elevation = 0.0;
 
@@ -62,8 +77,10 @@ private:
 	double calculateParam(double *dataset, int stride);
 	double calculateBezier(double *dataset, int start, int stride);
 
+	void normalizeRGBParams(glm::vec3 sunDir);
+
 	// uses implementation provided by Hosek
-	void recalculateParamsHosek();
+	void recalculateParamsHosek(glm::vec3 sunDir);
 
 
 };

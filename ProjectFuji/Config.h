@@ -42,10 +42,10 @@
 #define GRID_DEPTH 50	///< Old setting for lattice depth
 
 
-#define TEXTURE_UNIT_DEPTH_MAP 10
-#define TEXTURE_UNIT_CLOUD_SHADOW_MAP 16
+#define TEXTURE_UNIT_DEPTH_MAP 14
+#define TEXTURE_UNIT_CLOUD_SHADOW_MAP 15
 
-#define MAX_TERRAIN_MATERIALS 3
+#define MAX_TERRAIN_MATERIALS 4
 
 //#define LBM_EXPERIMENTAL // experimental features
 

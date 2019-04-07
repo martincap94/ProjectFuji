@@ -12,7 +12,7 @@ Mesh::~Mesh() {
 void Mesh::draw(ShaderProgram *shader) {
 	// Currently - one model, one material
 
-	// TO DO textures (naming and binding conventions)
+	// TODO textures (naming and binding conventions)
 
 	//shader.use();
 	glBindVertexArray(VAO);

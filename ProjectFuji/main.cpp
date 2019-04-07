@@ -351,6 +351,9 @@ int runApp() {
 	float ratio = (float)vars.screenWidth / (float)vars.screenHeight;
 
 
+	int maxNumTextureUnits;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxNumTextureUnits);
+	cout << "Maximum number of texture units (combined) = " << maxNumTextureUnits << endl;
 
 	// Create and configure the simulator
 	{
@@ -401,7 +404,7 @@ int runApp() {
 	dirLight->color = glm::vec3(1.0f, 0.99f, 0.9f);
 	//particleSystemLBM->lbm = lbm;
 
-	// TO DO - cleanup this hack
+	// TODO - cleanup this hack
 
 	streamlineParticleSystem = new StreamlineParticleSystem(&vars, lbm);
 	lbm->streamlineParticleSystem = streamlineParticleSystem;

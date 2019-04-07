@@ -212,7 +212,7 @@ public:
 	virtual void startEditing();
 	virtual void stopEditing(bool saveChanges);
 
-	// TO DO - make these two functions private later on
+	// TODO - make these two functions private later on
 	virtual void saveChanges();
 	virtual void resetChanges();
 

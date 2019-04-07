@@ -104,6 +104,9 @@ public:
 
 private:
 
+	const int materialMapTextureUnit = 12;
+	const int normalMapTextureUnit = 13;
+
 	GLuint VAO;		///< VAO of the height map
 	GLuint VBO;		///< VBO of the height map
 

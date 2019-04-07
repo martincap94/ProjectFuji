@@ -360,14 +360,16 @@ void HeightMap::initMaterials() {
 	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
 		materials[i].setTextureUniformsMultiple(shader, i);
 	}
-	shader->setInt("u_MaterialMap", 12);
-	shader->setInt("u_TerrainNormalMap", 11);
+	shader->setInt("u_MaterialMap", materialMapTextureUnit);
+	shader->setInt("u_TerrainNormalMap", normalMapTextureUnit);
 	shader->setFloat("u_UVRatio", (float)width / (float)height);
 
 	CHECK_GL_ERRORS();
 
 	terrainNormalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
-	materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
+	//materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
+	materialMap = TextureManager::loadTexture("textures/materialMap_1024.png");
+
 	visTexture = materialMap;
 
 	//terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
@@ -501,8 +503,8 @@ void HeightMap::draw(ShaderProgram *shader) {
 		for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
 			materials[i].setTextureUniformsMultiple(shader, i);
 		}
-		shader->setInt("u_TerrainNormalMap", 11);
-		shader->setInt("u_MaterialMap", 12);
+		shader->setInt("u_TerrainNormalMap", normalMapTextureUnit);
+		shader->setInt("u_MaterialMap", materialMapTextureUnit);
 		shader->setFloat("u_UVRatio", (float)width / (float)height);
 	}
 
@@ -513,7 +515,7 @@ void HeightMap::draw(ShaderProgram *shader) {
 	}
 
 
-	shader->setInt("u_TestDiffuse", 9);
+	//shader->setInt("u_TestDiffuse", 9);
 	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
 
 	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
@@ -527,20 +529,20 @@ void HeightMap::draw(ShaderProgram *shader) {
 	shader->setModelMatrix(modelMatrix);
 
 
-	glBindTextureUnit(11, terrainNormalMap->id);
+	glBindTextureUnit(normalMapTextureUnit, terrainNormalMap->id);
 
 
-	// TO DO - Make this global for multiple shaders
+	// TODO - Make this global for multiple shaders
 	shader->setInt("u_CloudShadowTexture", TEXTURE_UNIT_CLOUD_SHADOW_MAP);
 	shader->setBool("u_CloudsCastShadows", (bool)vars->cloudsCastShadows);
 	shader->setFloat("u_CloudCastShadowAlphaMultiplier", vars->cloudCastShadowAlphaMultiplier);
 
 	if (visualizeTextureMode && visTexture) {
 		shader->setBool("u_VisualizeTextureMode", true);
-		glBindTextureUnit(12, visTexture->id);
+		glBindTextureUnit(materialMapTextureUnit, visTexture->id);
 	} else {
 		shader->setBool("u_VisualizeTextureMode", false);
-		glBindTextureUnit(12, materialMap->id);
+		glBindTextureUnit(materialMapTextureUnit, materialMap->id);
 	}
 
 

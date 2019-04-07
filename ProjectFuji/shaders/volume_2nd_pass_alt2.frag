@@ -107,7 +107,7 @@ void main() {
 				fragColor.xyz += vec3(rayleighPhase / 100.0);
 			}
 			*/
-		} else if (u_PhaseFunction >= 2) {
+		} else if (u_PhaseFunction <= 5) {
 			
 			float henyeyGreenstein = 1.0 / (4.0 * PI);
 
@@ -124,12 +124,31 @@ void main() {
 				fragColor.xyz *= (1.0 + henyeyGreenstein * length(shadow));
 
 			} else {
-				fragColor.xyz *= vec3(1.0) + shadow * henyeyGreenstein;
+				fragColor.xyz *= (vec3(1.0) + shadow * henyeyGreenstein);
 
 			}
 
-		}
+		} else if (u_PhaseFunction <= 6) {
+			// Schlick
+			float schlick = 1.0 / (4.0 * PI);
+			float k = -u_SymmetryParameter;
+			schlick *= (1.0 - k) / ((1.0 + k * cosphi) * (1.0 + k * cosphi));
 
+			fragColor.xyz *= (vec3(1.0) + shadow * schlick);
+
+		} else if (u_PhaseFunction <= 7) {
+			// Cornette-Shanks
+
+			float g = u_SymmetryParameter;
+			float cornetteShanks = 1.0 / (4.0 * PI);
+			cornetteShanks *= (3.0 / 2.0);
+			cornetteShanks *= (1.0 - g * g) / (2.0 + g * g);
+			cornetteShanks *= (1.0 + cosphi * cosphi);
+			cornetteShanks /= pow((1.0 + g * g - 2.0 * g * cosphi), 3.0 / 2.0);
+
+			fragColor.xyz *= (vec3(1.0) + shadow * cornetteShanks);
+
+		}
 
 
 

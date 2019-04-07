@@ -511,7 +511,7 @@ void UserInterface::constructLBMTab() {
 	nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 10000.0f, 1.0f);
 
 
-	// TO DO - get this back in working order
+	// TODO - get this back in working order
 
 
 
@@ -548,7 +548,7 @@ void UserInterface::constructLBMTab() {
 	//nk_colorf()
 
 
-	// TO DO - make this into a function
+	// TODO - make this into a function
 	struct nk_colorf tmpColor;
 	tmpColor.r = dirLight->color.x;
 	tmpColor.g = dirLight->color.y;
@@ -847,9 +847,23 @@ void UserInterface::constructSkyTab() {
 
 
 	nk_property_double(ctx, "Horizon Offset", 0.001, &hosek->horizonOffset, 10.0, 0.001, 0.001);
+	nk_property_float(ctx, "Sun Intensity", 0.1f, &hosek->sunIntensity, 10.0f, 0.1f, 0.1f);
+	nk_property_int(ctx, "Sun Exponent", 1, &hosek->sunExponent, 1024, 1, 1);
 
 
 	nk_checkbox_label(ctx, "Recalculate Live", &hosek->liveRecalc);
+
+
+	if (nk_combo_begin_label(ctx, hosek->getCalcParamModeName().c_str(), nk_vec2(nk_widget_width(ctx), 60))) {
+		nk_layout_row_dynamic(ctx, 15, 1);
+		for (int i = 0; i < 2; i++) {
+			if (nk_combo_item_label(ctx, hosek->getCalcParamModeName(i).c_str(), NK_TEXT_CENTERED)) {
+				hosek->calcParamMode = i;
+			}
+		}
+		nk_combo_end(ctx);
+	}
+	nk_checkbox_label(ctx, "Use Anderson's RGB normalization", &hosek->useAndersonsRGBNormalization);
 
 
 
@@ -956,7 +970,7 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_property_float(ctx, "cast shadow alpha multiplier", 0.0f, &vars->cloudCastShadowAlphaMultiplier, 1.0f, 0.01f, 0.01f);
 
-	nk_property_int(ctx, "phase function", 0, &particleRenderer->phaseFunction, 5, 1, 1);
+	nk_property_int(ctx, "phase function", 0, &particleRenderer->phaseFunction, 10, 1, 1);
 	if (particleRenderer->phaseFunction >= 2) {
 		nk_property_float(ctx, "symmetry parameter", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.10f, 0.01f);
 	}

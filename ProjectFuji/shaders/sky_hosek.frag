@@ -13,6 +13,9 @@ out vec4 fragColor;
 uniform vec3 u_Params[10];
 uniform vec3 u_SunDir;
 
+uniform float u_SunIntensity;
+uniform int u_SunExponent;
+
 uniform float u_HorizonOffset = 0.01;
 
 vec3 hosekWilkie(float cosTheta, float gamma, float cosGamma);
@@ -33,10 +36,11 @@ void main() {
 	vec3 Z = u_Params[9];
 	vec3 R = Z * hosekWilkie(cosTheta, gamma, cosGamma);
 
-	if (cosGamma > 0) {
+	if (cosGamma > 0 /*&& cosGamma >= (1.0 - u_SunIntensity)*/) {
 		// Only positive values of dot product, so we don't end up creating two
 		// spots of light 180 degrees apart
-		R = R + vec3(pow(cosGamma, 256) * 0.5);
+		R = R + vec3(pow(cosGamma, u_SunExponent) * u_SunIntensity);
+		//R = vec3(1.0);
 	}
 
 	fragColor = vec4(R, 1.0);

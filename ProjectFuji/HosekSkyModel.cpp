@@ -28,7 +28,9 @@ void HosekSkyModel::draw() {
 	}
 	shader->use();
 
-	shader->setFloat("u_HorizonOffset", horizonOffset);
+	shader->setFloat("u_HorizonOffset", (float)horizonOffset);
+	shader->setFloat("u_SunIntensity", sunIntensity * 0.1f);
+	shader->setInt("u_SunExponent", sunExponent);
 
 	glDepthMask(GL_FALSE);
 
@@ -69,34 +71,58 @@ void HosekSkyModel::update(glm::vec3 sunDir) {
 	//cout << "   degrees: " << glm::degrees(eta) << endl;
 	//double elev = (double)glm::radians(eta); // doesn't make sense to use radians again (since eta is already in radians)
 
+	/*
 	double testElev = pow(eta / (MATH_PI / 2.0), (1.0 / 3.0));
 	cout << "testElev  = " << testElev << endl;
 	testElev = pow(1.0 - sunTheta / (MATH_PI / 2.0), (1.0 / 3.0));
 	cout << "testElev2 = " << testElev << endl;
-
+	*/
 
 
 	if (!shouldUpdate(eta)) {
 		return;
 	}
-	
-	//recalculateParamsHosek();
-	recalculateParams(sunDir);
+
+
+	if (calcParamMode == 0) {
+		recalculateParams(sunDir);
+	} else {
+		recalculateParamsHosek(sunDir);
+	}
+
 
 	glUniform3fv(glGetUniformLocation(shader->id, "u_Params"), 10, glm::value_ptr(params[0]));
-
 
 	prevEta = eta;
 	prevTurbidity = turbidity;
 	prevAlbedo = albedo;
+	prevCalcParamMode = calcParamMode;
+	prevUseAndersonsRGBNormalization = useAndersonsRGBNormalization;
+
 }
 
 float HosekSkyModel::getElevationDegrees() {
 	return glm::degrees(eta);
 }
 
+std::string HosekSkyModel::getCalcParamModeName() {
+	return getCalcParamModeName(calcParamMode);
+}
+
+std::string HosekSkyModel::getCalcParamModeName(int mode) {
+	if (mode == 0) {
+		return "Ben Anderson impl.";
+	} else {
+		return "Hosek & Wilkie impl.";
+	}
+}
+
 bool HosekSkyModel::shouldUpdate(float newEta) {
-	return (newEta != prevEta || turbidity != prevTurbidity || albedo != prevAlbedo);
+	return (newEta != prevEta 
+			|| turbidity != prevTurbidity 
+			|| albedo != prevAlbedo 
+			|| calcParamMode != prevCalcParamMode
+			|| prevUseAndersonsRGBNormalization != useAndersonsRGBNormalization);
 }
 
 glm::vec3 HosekSkyModel::getColor(float cosTheta, float gamma, float cosGamma) {
@@ -119,9 +145,9 @@ void HosekSkyModel::recalculateParams(glm::vec3 sunDir) {
 
 
 	elevation = pow(eta / (MATH_PI / 2.0), (1.0 / 3.0));
-	cout << "testElev  = " << elevation << endl;
-	elevation = pow(1.0 - sunTheta / (MATH_PI / 2.0), (1.0 / 3.0));
-	cout << "testElev2 = " << elevation << endl;
+	//cout << "testElev  = " << elevation << endl;
+	//elevation = pow(1.0 - sunTheta / (MATH_PI / 2.0), (1.0 / 3.0));
+	//cout << "testElev2 = " << elevation << endl;
 
 	for (int i = 0; i < 3; i++) {
 		params[0][i] = calculateParam(&datasetsRGB[i][0], 9);
@@ -138,29 +164,9 @@ void HosekSkyModel::recalculateParams(glm::vec3 sunDir) {
 		params[7][i] = calculateParam(&datasetsRGB[i][8], 9);
 
 		params[9][i] = calculateParam(datasetsRGBRad[i], 1);
-
-
 	}
-	
-	glm::vec3 S = getColor(-sunDir.y, 0.0f, 1.0f) * params[9];
-	params[9] /= glm::dot(S, glm::vec3(0.2126f, 0.7152f, 0.0722f));
 
-	float sunAmount = fmodf(((-sunDir.y) / (MATH_PI / 2.0f)), 4.0f);
-	if (sunAmount > 2.0f) {
-	sunAmount = 0.0f;
-	}
-	if (sunAmount > 1.0f) {
-	sunAmount = 2.0f - sunAmount;
-	} else if (sunAmount < -1.0f) {
-	sunAmount = -2.0f - sunAmount;
-	}
-	float normalizedSunY = 0.6f + 0.45f * sunAmount;
-	params[9] *= normalizedSunY;
-	
-
-
-
-
+	normalizeRGBParams(sunDir);
 
 }
 
@@ -198,7 +204,26 @@ double HosekSkyModel::calculateBezier(double * dataset, int start, int stride) {
 		1.0 * dataset[start + 5 * stride] * pow(elevation, 5.0);
 }
 
-void HosekSkyModel::recalculateParamsHosek() {
+void HosekSkyModel::normalizeRGBParams(glm::vec3 sunDir) {
+	if (useAndersonsRGBNormalization) {
+		glm::vec3 S = getColor(-sunDir.y, 0.0f, 1.0f) * params[9];
+		params[9] /= glm::dot(S, glm::vec3(0.2126f, 0.7152f, 0.0722f));
+
+		float sunAmount = fmodf(((-sunDir.y) / (MATH_PI / 2.0f)), 4.0f);
+		if (sunAmount > 2.0f) {
+			sunAmount = 0.0f;
+		}
+		if (sunAmount > 1.0f) {
+			sunAmount = 2.0f - sunAmount;
+		} else if (sunAmount < -1.0f) {
+			sunAmount = -2.0f - sunAmount;
+		}
+		float normalizedSunY = 0.6f + 0.45f * sunAmount;
+		params[9] *= normalizedSunY;
+	}
+}
+
+void HosekSkyModel::recalculateParamsHosek(glm::vec3 sunDir) {
 
 	double elev = eta;
 
@@ -216,23 +241,10 @@ void HosekSkyModel::recalculateParamsHosek() {
 	}
 	params[9] = tmp;
 
+	normalizeRGBParams(sunDir);
+
+
 	/*
-	glm::vec3 S = getColor(-sunDir.y, 0.0f, 1.0f) * params[9];
-	params[9] /= glm::dot(S, glm::vec3(0.2126f, 0.7152f, 0.0722f));
-
-	float sunAmount = fmodf(((-sunDir.y) / (MATH_PI / 2.0f)), 4.0f);
-	if (sunAmount > 2.0f) {
-	sunAmount = 0.0f;
-	}
-	if (sunAmount > 1.0f) {
-	sunAmount = 2.0f - sunAmount;
-	} else if (sunAmount < -1.0f) {
-	sunAmount = -2.0f - sunAmount;
-	}
-	float normalizedSunY = 0.6f + 0.45f * sunAmount;
-	params[9] *= normalizedSunY;
-	*/
-
 	glm::vec3 test;
 	double thetaTest = glm::radians(50.0);
 	double gammaTest = glm::radians(30.0);
@@ -243,6 +255,8 @@ void HosekSkyModel::recalculateParamsHosek() {
 	cout << "TEST:   " << test.x << ", " << test.y << ", " << test.z << endl;
 	test = getColor(glm::cos(thetaTest), gammaTest, glm::cos(gammaTest));
 	cout << "my own: " << test.x << ", " << test.y << ", " << test.z << endl;
+	*/
+
 
 	arhosekskymodelstate_free(skymodel_state);
 }
