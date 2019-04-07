@@ -93,6 +93,7 @@ public:
 
 	/// Initializes buffers for the particles.
 	void initBuffers();
+	void uploadProfileIndicesUniforms(ShaderProgram *shader);
 
 	void initCUDA();
 

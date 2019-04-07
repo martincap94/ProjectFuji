@@ -303,18 +303,11 @@ STLPSimulatorCUDA::~STLPSimulatorCUDA() {
 void STLPSimulatorCUDA::initBuffers() {
 
 	ShaderProgram *s = ShaderManager::getShaderPtr("pointSpriteTest");
-	s->use();
-	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
-		string fullName = "u_ProfileCCLs[" + to_string(i) + "]";
-		float P = stlpDiagram->CCLProfiles[i].y;
-		float y = getAltitudeFromPressure(P);
-		mapToSimulationBox(y);
-		s->setFloat(fullName, y);
-	}
-	s->setInt("u_NumProfiles", stlpDiagram->numProfiles);
-
-
-
+	uploadProfileIndicesUniforms(s);
+	s = ShaderManager::getShaderPtr("volume_1st_pass_alt2");
+	uploadProfileIndicesUniforms(s);
+	s = ShaderManager::getShaderPtr("volume_2nd_pass_alt2");
+	uploadProfileIndicesUniforms(s);
 
 	//glGenBuffers(1, &profileDataSSBO);
 	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, profileDataSSBO);
@@ -336,7 +329,7 @@ void STLPSimulatorCUDA::initBuffers() {
 
 	float altitude;
 	altitude = getAltitudeFromPressure(stlpDiagram->CCL.y);
-	mapToSimulationBox(altitude);
+	//mapToSimulationBox(altitude);
 	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
 	vertices.push_back(glm::vec3(0.0f, altitude, vars->latticeDepth));
 	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, vars->latticeDepth));
@@ -359,7 +352,7 @@ void STLPSimulatorCUDA::initBuffers() {
 	glBindBuffer(GL_ARRAY_BUFFER, ELLevelVBO);
 
 	altitude = getAltitudeFromPressure(stlpDiagram->EL.y);
-	mapToSimulationBox(altitude);
+	//mapToSimulationBox(altitude);
 	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
 	vertices.push_back(glm::vec3(0.0f, altitude, vars->latticeDepth));
 	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, vars->latticeDepth));
@@ -393,6 +386,20 @@ void STLPSimulatorCUDA::initBuffers() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
 
 	glBindVertexArray(0);
+}
+
+void STLPSimulatorCUDA::uploadProfileIndicesUniforms(ShaderProgram *shader) {
+	shader->use();
+	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
+		string fullName = "u_ProfileCCLs[" + to_string(i) + "]";
+		float P = stlpDiagram->CCLProfiles[i].y;
+		float y = getAltitudeFromPressure(P);
+		//mapToSimulationBox(y);
+		shader->setFloat(fullName, y);
+	}
+	shader->setInt("u_NumProfiles", stlpDiagram->numProfiles);
+
+
 }
 
 void STLPSimulatorCUDA::initCUDA() {

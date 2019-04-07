@@ -7,6 +7,9 @@ layout (max_vertices = 4) out;
 in int v_ParticleTextureIdx[];
 flat out int g_ParticleTextureIdx;
 
+flat in int g_DiscardParticle[];
+
+
 uniform mat4  u_View;
 uniform mat4  u_Projection;
 
@@ -18,6 +21,7 @@ uniform vec3 u_CameraPos;
 uniform float u_WorldPointSize;
 
 uniform int u_Mode;
+uniform bool u_ShowParticlesBelowCCL;
 
 const vec3 worldup = vec3(0.0, 1.0, 0.0);
 
@@ -28,6 +32,11 @@ out vec3 g_WorldSpacePos;
 float goldNoise(in vec2 coordinate, in float seed);
 
 void main() {
+
+	if (!u_ShowParticlesBelowCCL && g_DiscardParticle[0] == 1) {
+		return;	
+	}
+
 	g_ParticleTextureIdx = v_ParticleTextureIdx[0];
 
 	vec3 pos = gl_in[0].gl_Position.xyz;

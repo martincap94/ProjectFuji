@@ -938,7 +938,7 @@ void UserInterface::constructCloudVisualizationTab() {
 	particleSystem->pointSize = stlpSimCUDA->pointSize;
 	nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars->opacityMultiplier, 10.0f, 0.01f, 0.01f);
 
-
+	nk_checkbox_label(ctx, "Show particles below CCL", &particleRenderer->showParticlesBelowCCL);
 	nk_checkbox_label(ctx, "use new", &particleRenderer->compositeResultToFramebuffer);
 
 	nk_property_int(ctx, "first pass shader mode", 0, &particleRenderer->firstPassShaderMode, particleRenderer->numFirstPassShaderModes - 1, 1, 1);

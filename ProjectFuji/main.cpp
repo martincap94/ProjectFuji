@@ -343,7 +343,7 @@ int runApp() {
 
 	//particleSystemLBM = new ParticleSystemLBM(vars.numParticles, vars.drawStreamlines);
 	particleSystem = new ParticleSystem(&vars);
-	particleRenderer = new ParticleRenderer(&vars);
+	particleRenderer = new ParticleRenderer(&vars, particleSystem);
 
 
 	glm::ivec3 latticeDim(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);

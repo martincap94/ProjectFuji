@@ -11,7 +11,7 @@ using namespace std;
 
 
 
-ParticleRenderer::ParticleRenderer(VariableManager * vars) : vars(vars) {
+ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) : vars(vars), ps(ps) {
 	initFramebuffers();
 
 	/*
@@ -76,6 +76,7 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	shader->setBool("u_ShowParticleTextureIdx", (bool)showParticleTextureIdx);
 	shader->setInt("u_PhaseFunction", phaseFunction);
 	shader->setFloat("u_SymmetryParameter", symmetryParameter);
+	shader->setBool("u_ShowParticlesBelowCCL", (bool)showParticlesBelowCCL);
 
 }
 
@@ -250,6 +251,10 @@ void ParticleRenderer::updateShaderSet() {
 				break;
 		}
 		prevShaderSet = shaderSet;
+
+		//ps->stlpSim->uploadProfileIndicesUniforms(firstPassShader);
+		//ps->stlpSim->uploadProfileIndicesUniforms(secondPassShader);
+
 	}
 }
 

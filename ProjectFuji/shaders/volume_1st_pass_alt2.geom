@@ -4,6 +4,9 @@ layout (points) in;
 layout (triangle_strip) out;
 layout (max_vertices = 4) out;
 
+flat in int g_DiscardParticle[];
+
+
 uniform mat4  u_View;
 uniform mat4  u_Projection;
 
@@ -14,6 +17,7 @@ uniform vec3 u_CameraPos;
 uniform vec3 u_LightPos;
 
 uniform int u_Mode;
+uniform bool u_ShowParticlesBelowCCL;
 
 uniform float u_WorldPointSize;
 
@@ -24,6 +28,12 @@ out vec2 g_TexCoords;
 float goldNoise(in vec2 coordinate, in float seed);
 
 void main() {
+	
+	if (!u_ShowParticlesBelowCCL && g_DiscardParticle[0] == 1) {
+		return;	
+	}
+	
+
 	vec3 pos = gl_in[0].gl_Position.xyz;
 	mat4 VP = u_Projection * u_View;
 

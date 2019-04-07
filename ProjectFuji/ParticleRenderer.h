@@ -64,6 +64,7 @@ public:
 	int forceHalfVecToFaceCam = 0;
 	int showParticleTextureIdx = 0;
 	int useAtlasTexture = 0;
+	int showParticlesBelowCCL = 0;
 
 	float inversionThreshold = -0.5f;
 
@@ -77,7 +78,7 @@ public:
 	std::vector<Texture *> spriteTextures;
 
 
-	ParticleRenderer(VariableManager *vars);
+	ParticleRenderer(VariableManager *vars, ParticleSystem *ps);
 	~ParticleRenderer();
 
 
