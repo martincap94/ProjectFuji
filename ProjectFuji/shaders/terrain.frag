@@ -25,7 +25,15 @@ struct Material {
 	sampler2D normalMap;
 	float shininess;
 	float tiling;
+
+	//float ka;
+	//float kd;
+	//float ks;
 };
+
+uniform float u_ka;
+uniform float u_kd;
+uniform float u_ks;
 
 uniform sampler2D u_TestDiffuse;
 
@@ -56,6 +64,12 @@ uniform float u_CloudCastShadowAlphaMultiplier;
 
 uniform sampler2D u_TerrainNormalMap;
 uniform float u_GlobalNormalMapMixingRatio;
+uniform float u_GlobalNormalMapTiling = 1.0;
+
+uniform bool u_UseGrungeMap = false;
+uniform sampler2D u_GrungeMap;
+uniform float u_GrungeMapMin = 1.0;
+uniform float u_GrungeMapTiling = 1.0;
 
 uniform float u_UVRatio;
 
@@ -91,51 +105,25 @@ vec2 getTexCoords(int materialIdx);
 
 void main() {
 
-	//if (u_DirLight.direction.y > 0.0) {
-	//	fragColor = vec4(0.0);
-	//	return;
-	//}
-
-	//{
-	//	fragColor = vec4(v_Normal, 1.0);
-	//	//fragColor = texture(u_DiffuseTexture, v_TexCoords * 5.0);
-	//	return;
-	//}
-
-	//vec3 norm = normalize(v_Normal);
-
-	/*
-	vec3 norm = normalize(v_Normal);
-	norm = mix(norm, texture(u_Materials[0].normalMap, v_TexCoords * u_Materials[0].tiling).rgb, texture(u_MaterialMap, v_TexCoords).r / 4.0);
-	norm = mix(norm, texture(u_Materials[1].normalMap, v_TexCoords * u_Materials[1].tiling).rgb, texture(u_MaterialMap, v_TexCoords).g / 4.0);
-	*/
-
-	/*
-	vec3 norm = mix(texture(u_Materials[0].normalMap, v_TexCoords * u_Materials[0].tiling).rgb, texture(u_Materials[1].normalMap, v_TexCoords * u_Materials[1].tiling).rgb, texture(u_MaterialMap, v_TexCoords).r / 4.0);
-
-
-	vec3 norm = mix(texture(u_Materials[0].normalMap, v_TexCoords * u_Materials[0].tiling).rgb, texture(u_TerrainNormalMap, v_TexCoords).rgb, u_GlobalNormalMapMixingRatio);
-
-	*/
 
 	if (u_VisualizeTextureMode) {
-		
 		fragColor = texture(u_MaterialMap, v_TexCoords);
-
 		return;
 	}
 
-
-	vec3 firstNorm = texture(u_Materials[0].normalMap, getTexCoords(0)).rgb;
-	vec3 secondNorm = texture(u_Materials[1].normalMap, getTexCoords(1)).rgb;
 	vec4 materialMap = texture(u_MaterialMap, v_TexCoords);
+	materialMap.a = 1.0 - materialMap.a;
 	vec4 materialContributions = linstepMaxVec4(materialMap, dot(vec4(1.0), materialMap));
 
 
-	vec3 norm = materialContributions.r * firstNorm + materialContributions.g * secondNorm;
+	vec3 norm = 
+		materialContributions.r * texture(u_Materials[0].normalMap, getTexCoords(0)).rgb 
+		+ materialContributions.g * texture(u_Materials[1].normalMap, getTexCoords(1)).rgb
+		+ materialContributions.b * texture(u_Materials[2].normalMap, getTexCoords(2)).rgb
+		+ materialContributions.a * texture(u_Materials[3].normalMap, getTexCoords(3)).rgb;
 
 	if (u_NormalsMode == 0) {
-		norm = mix(norm, texture(u_TerrainNormalMap, v_TexCoords).rgb, u_GlobalNormalMapMixingRatio);
+		norm = mix(norm, texture(u_TerrainNormalMap, u_GlobalNormalMapTiling * vec2(u_UVRatio * v_TexCoords.x, v_TexCoords.y)).rgb, u_GlobalNormalMapMixingRatio);
 
 		norm = normalize(norm);
 		norm = normalize(norm * 2.0 - 1.0);
@@ -189,7 +177,6 @@ void main() {
 
 		}
 
-
 		fragColor = vec4(result, 1.0);
 
 
@@ -223,7 +210,11 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec4 materialContri
     vec3 reflectDir = reflect(-lightDir, normal);
     //float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Materials[0].shininess);
     
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Materials[0].shininess * materialContributions.r + u_Materials[1].shininess * materialContributions.g);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 
+		u_Materials[0].shininess * materialContributions.r 
+		+ u_Materials[1].shininess * materialContributions.g 
+		+ u_Materials[2].shininess * materialContributions.b 
+		+ u_Materials[3].shininess * materialContributions.a);
 
 
 
@@ -239,13 +230,16 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec4 materialContri
 	+ materialContributions.b * texture(u_Materials[2].diffuse, getTexCoords(2)).rgb
 	+ materialContributions.a * texture(u_Materials[3].diffuse, getTexCoords(3)).rgb;
 
-
+	if (u_UseGrungeMap) {
+		matColor *= max(texture(u_GrungeMap, u_GrungeMapTiling * vec2(u_UVRatio * v_TexCoords.x, v_TexCoords.y)).xyz, vec3(u_GrungeMapMin));
+	}
     // combine results
-    vec3 diffuse  = light.color  * diff * matColor;
-    vec3 specular = light.color * spec * matColor ;
+	vec3 ambient = light.color * matColor * u_ka;
+    vec3 diffuse  = light.color  * diff * matColor * u_kd;
+    vec3 specular = light.color * spec * matColor * u_ks;
 
     
-    return (diffuse + specular);
+    return (ambient + diffuse + specular);
 }
 
 vec3 calcNightAmbientLight(vec4 materialContributions, vec3 ambientColor) {

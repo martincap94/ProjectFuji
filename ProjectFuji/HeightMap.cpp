@@ -16,9 +16,6 @@
 #include <set>
 
 
-HeightMap::HeightMap() {}
-
-
 HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 	if (!vars) {
@@ -27,6 +24,8 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 	}
 	terrainHeightRange = vars->terrainHeightRange;
 	texelWorldSize = vars->texelWorldSize;
+	globalNormalMapMixingRatio = vars->globalNormalMapMixingRatio;
+	//globalNormalMapTiling = vars->globalNormalMapTiling;
 	heightMapFilename = SCENES_DIR + vars->sceneFilename;
 	//exit(EXIT_FAILURE); // TESTING!!!
 
@@ -418,21 +417,29 @@ void HeightMap::initMaterials() {
 	shader->use();
 
 
+	TextureManager::loadTexture("textures/TexturesCom_Grass0202_1_seamless_S.jpg");
+	TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
 
-	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/mossy-ground1-albedo.png");
+	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/TexturesCom_Grass0202_1_seamless_S.jpg");
 	materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
-	materials[0].shininess = 2.0f;
+	materials[0].shininess = 1.0f;
 	materials[0].textureTiling = 2000.0f;
 
 	materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
 	materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
-	materials[1].shininess = 16.0f;
+	materials[1].shininess = 2.0f;
 	materials[1].textureTiling = 1000.0f;
 
 	materials[2].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
 	materials[2].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
-	materials[2].shininess = 2.0f;
+	materials[2].shininess = 1.0f;
 	materials[2].textureTiling = 8000.0f;
+
+	materials[3].diffuseTexture = TextureManager::getTexturePtr("textures/TexturesCom_SoilMud0045_2_seamless_S.jpg");
+	//materials[3].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+	materials[3].shininess = 1.0f;
+	materials[3].textureTiling = 1000.0f;
+
 
 	//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
 	//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
@@ -442,6 +449,7 @@ void HeightMap::initMaterials() {
 		materials[i].setTextureUniformsMultiple(shader, i);
 	}
 	shader->setInt("u_MaterialMap", materialMapTextureUnit);
+	shader->setInt("u_GrungeMap", grungeMapTextureUnit);
 	shader->setInt("u_TerrainNormalMap", normalMapTextureUnit);
 	shader->setFloat("u_UVRatio", (float)width / (float)height);
 
@@ -449,8 +457,10 @@ void HeightMap::initMaterials() {
 
 	terrainNormalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
 	//materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
-	materialMap = TextureManager::loadTexture("materialMaps/materialMap_1024.png");
+	materialMap = TextureManager::loadTexture("materialMaps/materialMap_02_1024.png");
 	materialMapSampler = new CDFSamplerMultiChannel(materialMap->filename);
+
+	grungeMap = TextureManager::loadTexture("textures/grungeMap.png");
 
 
 	visTexture = materialMap;
@@ -539,6 +549,7 @@ void HeightMap::draw(ShaderProgram *shader) {
 		}
 		shader->setInt("u_TerrainNormalMap", normalMapTextureUnit);
 		shader->setInt("u_MaterialMap", materialMapTextureUnit);
+		shader->setInt("u_GrungeMap", grungeMapTextureUnit);
 		shader->setFloat("u_UVRatio", (float)width / (float)height);
 	}
 
@@ -552,10 +563,19 @@ void HeightMap::draw(ShaderProgram *shader) {
 	//shader->setInt("u_TestDiffuse", 9);
 	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
 
-	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
+	shader->setFloat("u_GlobalNormalMapMixingRatio", globalNormalMapMixingRatio);
+	shader->setFloat("u_GlobalNormalMapTiling", globalNormalMapTiling);
 
 	shader->setBool("u_NormalsOnly", (bool)showNormalsOnly);
 	shader->setInt("u_NormalsMode", normalsShaderMode);
+
+	shader->setBool("u_UseGrungeMap", (bool)useGrungeMap);
+	shader->setFloat("u_GrungeMapMin", grungeMapMin);
+	shader->setFloat("u_GrungeMapTiling", grungeMapTiling);
+
+	shader->setFloat("u_ka", ambientIntensity);
+	shader->setFloat("u_kd", diffuseIntensity);
+	shader->setFloat("u_ks", specularIntensity);
 
 	glm::mat4 modelMatrix(1.0f);
 	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
@@ -565,6 +585,9 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	glBindTextureUnit(normalMapTextureUnit, terrainNormalMap->id);
 
+	if (grungeMap && useGrungeMap) {
+		glBindTextureUnit(grungeMapTextureUnit, grungeMap->id);
+	}
 
 	// TODO - Make this global for multiple shaders
 	shader->setInt("u_CloudShadowTexture", TEXTURE_UNIT_CLOUD_SHADOW_MAP);

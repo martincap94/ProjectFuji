@@ -445,7 +445,7 @@ int runApp() {
 
 	Model unitboxModel("models/unitbox.fbx");
 
-	grassModel.makeInstanced(vars.heightMap, 1000000, glm::vec2(0.8f, 1.2f), 500.0f, 3, glm::vec2(0.0f, 0.0f), glm::vec2(10000.0f));
+	grassModel.makeInstancedMaterialMap(vars.heightMap, 5000000, 0, glm::vec2(1.5f, 3.0f));
 	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
 
 	testModel.transform.position = glm::vec3(3500.0f, 0.0f, 8500.0f);

@@ -50,6 +50,18 @@ public:
 	glm::vec2 terrainHeightRange;
 	float texelWorldSize;
 
+	float globalNormalMapMixingRatio;
+	float globalNormalMapTiling = 10.0f;
+
+	int useGrungeMap = 0;
+	Texture *grungeMap = nullptr;
+	float grungeMapMin = 0.0f;
+	float grungeMapTiling = 8.0f;
+
+	float ambientIntensity = 0.05f;
+	float diffuseIntensity = 0.9f;
+	float specularIntensity = 0.75f;
+
 
 	VariableManager *vars;
 	std::string heightMapFilename = "";
@@ -67,9 +79,6 @@ public:
 
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)
 	//ShaderProgram *wireframeShader;
-
-	/// Default constructor.
-	HeightMap();
 
 
 	HeightMap(VariableManager *vars);
@@ -107,6 +116,7 @@ private:
 
 	const int materialMapTextureUnit = 12;
 	const int normalMapTextureUnit = 13;
+	const int grungeMapTextureUnit = 14;
 
 	GLuint VAO;		///< VAO of the height map
 	GLuint VBO;		///< VBO of the height map

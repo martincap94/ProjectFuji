@@ -764,8 +764,13 @@ void UserInterface::constructTerrainTab() {
 	nk_checkbox_label(ctx, "Draw grass", &vars->drawGrass);
 	nk_checkbox_label(ctx, "Draw trees", &vars->drawTrees);
 	nk_checkbox_label(ctx, "Visualize normals", &vars->visualizeTerrainNormals);
-	nk_property_float(ctx, "Nrm mixing ratio: ", 0.0f, &vars->globalNormalMapMixingRatio, 1.0f, 0.01f, 0.01f);
+	nk_property_float(ctx, "Global nrm mixing ratio:", 0.0f, &hm->globalNormalMapMixingRatio, 1.0f, 0.01f, 0.01f);
+	nk_property_float(ctx, "Global nrm tiling:", 1.0f, &hm->globalNormalMapTiling, 1000.0f, 0.1f, 0.1f);
 	nk_checkbox_label(ctx, "Visualize texture", &vars->heightMap->visualizeTextureMode);
+
+	nk_checkbox_label(ctx, "Use grunge map", &hm->useGrungeMap);
+	nk_property_float(ctx, "Grunge map min", 0.0f, &hm->grungeMapMin, 1.0f, 0.01f, 0.01f);
+	nk_property_float(ctx, "Grunge map tiling", 1.0f, &hm->grungeMapTiling, 1000.0f, 0.1f, 0.1f);
 
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(vars->heightMap->visTexture).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
@@ -780,7 +785,11 @@ void UserInterface::constructTerrainTab() {
 		nk_combo_end(ctx);
 	}
 
-
+	nk_property_float(ctx, "Ambient intensity", 0.0f, &hm->ambientIntensity, 1.0f, 0.01f, 0.01f);
+	nk_property_float(ctx, "Diffuse intensity", 0.0f, &hm->diffuseIntensity, 1.0f, 0.01f, 0.01f);
+	nk_property_float(ctx, "Specular intensity", 0.0f, &hm->specularIntensity, 1.0f, 0.01f, 0.01f);
+	//nk_property_float(ctx, "Diffuse intensity", 0.0f, &hm->diffuseIntensity, 1.0f - hm->specularIntensity, 0.01f, 0.01f);
+	//nk_property_float(ctx, "Specular intensity", 0.0f, &hm->specularIntensity, 1.0f - hm->diffuseIntensity, 0.01f, 0.01f);
 
 
 	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
