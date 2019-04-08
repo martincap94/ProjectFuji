@@ -74,8 +74,11 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	shader->setVec3("u_TintColor", vars->tintColor);
 	shader->setFloat("u_ShadowAlpha", shadowAlpha);
 	shader->setBool("u_ShowParticleTextureIdx", (bool)showParticleTextureIdx);
-	shader->setInt("u_PhaseFunction", phaseFunction);
-	shader->setFloat("u_SymmetryParameter", symmetryParameter);
+	shader->setInt("u_PhaseFunction", (int)phaseFunction);
+	shader->setBool("u_MultiplyPhaseByShadow", (bool)multiplyPhaseByShadow);
+	shader->setFloat("u_g", symmetryParameter);
+	shader->setFloat("u_g2", symmetryParameter2);
+	shader->setFloat("u_f", dHenyeyGreensteinInterpolationParameter);
 	shader->setBool("u_ShowParticlesBelowCCL", (bool)showParticlesBelowCCL);
 
 }
@@ -255,6 +258,32 @@ void ParticleRenderer::updateShaderSet() {
 		//ps->stlpSim->uploadProfileIndicesUniforms(firstPassShader);
 		//ps->stlpSim->uploadProfileIndicesUniforms(secondPassShader);
 
+	}
+}
+
+const char * ParticleRenderer::getPhaseFunctionName(int phaseFunc) {
+	switch (phaseFunc) {
+		case ePhaseFunction::NONE:
+			return "None";
+			break;
+		case ePhaseFunction::RAYLEIGH:
+			return "Rayleigh";
+			break;
+		case ePhaseFunction::HENYEY_GREENSTEIN:
+			return "Henyey-Greenstein";
+			break;
+		case ePhaseFunction::DOUBLE_HENYEY_GREENSTEIN:
+			return "Double Henyey-Greenstein";
+			break;
+		case ePhaseFunction::SCHLICK:
+			return "Schlick";
+			break;
+		case ePhaseFunction::CORNETTE_SHANK:
+			return "Cornette-Shank";
+			break;
+		default:
+			return "None";
+			break;
 	}
 }
 

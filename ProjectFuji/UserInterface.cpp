@@ -970,10 +970,41 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_property_float(ctx, "cast shadow alpha multiplier", 0.0f, &vars->cloudCastShadowAlphaMultiplier, 1.0f, 0.01f, 0.01f);
 
-	nk_property_int(ctx, "phase function", 0, &particleRenderer->phaseFunction, 10, 1, 1);
-	if (particleRenderer->phaseFunction >= 2) {
-		nk_property_float(ctx, "symmetry parameter", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.10f, 0.01f);
+
+	if (nk_combo_begin_label(ctx, particleRenderer->getPhaseFunctionName(particleRenderer->phaseFunction), nk_vec2(nk_widget_width(ctx), 200))) {
+		nk_layout_row_dynamic(ctx, 15, 1);
+
+		for (int i = 0; i < ParticleRenderer::ePhaseFunction::_NUM_PHASE_FUNCTIONS; i++) {
+			if (nk_combo_item_label(ctx, particleRenderer->getPhaseFunctionName(i), NK_TEXT_CENTERED)) {
+				particleRenderer->phaseFunction = (ParticleRenderer::ePhaseFunction)i;
+			}
+		}
+		nk_combo_end(ctx);
 	}
+	
+
+	//nk_property_int(ctx, "phase function", 0, &particleRenderer->phaseFunction, 10, 1, 1);
+	if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::HENYEY_GREENSTEIN 
+		|| particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::CORNETTE_SHANK) {
+
+		nk_property_float(ctx, "g", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
+
+	} else if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::DOUBLE_HENYEY_GREENSTEIN) {
+
+		nk_property_float(ctx, "g1", 0.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
+		nk_property_float(ctx, "g2", -1.0f, &particleRenderer->symmetryParameter2, 0.0f, 0.01f, 0.01f);
+		nk_property_float(ctx, "f", 0.0f, &particleRenderer->dHenyeyGreensteinInterpolationParameter, 1.0f, 0.01f, 0.01f);
+
+	} else if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::SCHLICK) {
+
+		nk_property_float(ctx, "k", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
+
+	}
+
+	if (particleRenderer->phaseFunction > 0) {
+		nk_checkbox_label(ctx, "Multiply by shadow intensity", &particleRenderer->multiplyPhaseByShadow);
+	}
+
 
 	nk_checkbox_label(ctx, "Show particle texture idx", &particleRenderer->showParticleTextureIdx);
 	nk_checkbox_label(ctx, "Use atlas texture", &particleRenderer->useAtlasTexture);

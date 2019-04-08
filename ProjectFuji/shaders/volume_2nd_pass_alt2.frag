@@ -34,9 +34,19 @@ uniform vec3 u_LightPos;
 in vec3 g_WorldSpacePos;
 
 uniform int u_PhaseFunction = 0;
-uniform float u_SymmetryParameter;
+uniform bool u_MultiplyPhaseByShadow = true;
+uniform float u_g;	// also substitutes k for Schlick approximation (as k = -u_g)
+uniform float u_g2; // g2 for Double Henyey-Greenstein
+uniform float u_f;  // interpolation parameter for Double Henyey-Greenstein
 
 #define PI 3.1415926538
+
+
+float calculateRayleigh(float cosphi);
+float calculateHenyeyGreenstein(float cosphi, float g);
+float calculateDoubleHenyeyGreenstein(float cosphi, float g1, float g2, float f);
+float calculateSchlick(float cosphi, float k);
+float calculateCornetteShanks(float cosphi, float g);
 
 void main() {
 
@@ -72,84 +82,49 @@ void main() {
 	fragColor.xyz *= shadow * fragColor.w;
 
 
-	// Rayleigh scattering
+	// Phase functions
 	if (u_PhaseFunction != 0) {
 
 		vec3 sunToParticle = normalize(g_WorldSpacePos - u_LightPos);
 		vec3 particleToCamera = normalize(u_CameraPos - g_WorldSpacePos);
 		float cosphi = dot(sunToParticle, particleToCamera);
 
-		
+		float phaseFunc;
+
+		// I prefer using if/else in shaders instead of switch since it could be potentially computationally less optimized
 		if (u_PhaseFunction == 1) {
 
-			float rayleighPhase = 3.0 / (16.0 * PI) * (1.0 + cosphi * cosphi);
+			// Rayleigh phase function
+			phaseFunc = calculateRayleigh(cosphi);
 
-			// playing around with ideas
-			/*
-			if (length(shadow) > 1.0 && cosphi > 0.0) {
-				fragColor.xyz *= vec3(rayleighPhase * 2.0 + 1.0);
-				//fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-				return;
-			}
-			*/
-
-
-			fragColor.xyz *= vec3(rayleighPhase * 2.0 + 1.0);
-			return;
-
-
-			/*
-			if (u_PhaseFunction == 2) {
-				fragColor.xyz *= rayleighPhase;
-			} else if (u_PhaseFunction == 3) {
-				fragColor = vec4(vec3(rayleighPhase), 1.0);
-			} else if (u_PhaseFunction == 4) {
-				fragColor.xyz += vec3(rayleighPhase / 100.0);
-			}
-			*/
-		} else if (u_PhaseFunction <= 5) {
+		} else if (u_PhaseFunction == 2) {
 			
-			float henyeyGreenstein = 1.0 / (4.0 * PI);
+			// Henyey-Greenstein
+			phaseFunc = calculateHenyeyGreenstein(cosphi, u_g);
 
-			float rightSide = (1.0 - u_SymmetryParameter * u_SymmetryParameter) / pow((1.0 - 2.0 * u_SymmetryParameter * cosphi + u_SymmetryParameter * u_SymmetryParameter), 3.0 / 2.0);
-			//rightSide = pow(rightSide, 3.0 / 2.0); // incorrect pow!
-			henyeyGreenstein *= rightSide;
+		} else if (u_PhaseFunction == 3) {
 
-			if (u_PhaseFunction == 2) {
-				fragColor = vec4(vec3(henyeyGreenstein), 1.0);
-			} else if (u_PhaseFunction == 3) {
-				fragColor.xyz *= (1.0 + henyeyGreenstein);
-			} else if (u_PhaseFunction == 4) {
-				
-				fragColor.xyz *= (1.0 + henyeyGreenstein * length(shadow));
+			// Double Henyey-Greenstein
+			phaseFunc = calculateDoubleHenyeyGreenstein(cosphi, u_g, u_g2, u_f);
+		
+		} else if (u_PhaseFunction == 4) {
 
-			} else {
-				fragColor.xyz *= (vec3(1.0) + shadow * henyeyGreenstein);
-
-			}
-
-		} else if (u_PhaseFunction <= 6) {
 			// Schlick
-			float schlick = 1.0 / (4.0 * PI);
-			float k = -u_SymmetryParameter;
-			schlick *= (1.0 - k) / ((1.0 + k * cosphi) * (1.0 + k * cosphi));
-
-			fragColor.xyz *= (vec3(1.0) + shadow * schlick);
+			phaseFunc = calculateSchlick(cosphi, -u_g);
 
 		} else if (u_PhaseFunction <= 7) {
+
 			// Cornette-Shanks
-
-			float g = u_SymmetryParameter;
-			float cornetteShanks = 1.0 / (4.0 * PI);
-			cornetteShanks *= (3.0 / 2.0);
-			cornetteShanks *= (1.0 - g * g) / (2.0 + g * g);
-			cornetteShanks *= (1.0 + cosphi * cosphi);
-			cornetteShanks /= pow((1.0 + g * g - 2.0 * g * cosphi), 3.0 / 2.0);
-
-			fragColor.xyz *= (vec3(1.0) + shadow * cornetteShanks);
+			phaseFunc = calculateCornetteShanks(cosphi, u_g);
 
 		}
 
+		
+		if (u_MultiplyPhaseByShadow) {
+			fragColor.xyz *= (vec3(1.0) + shadow * phaseFunc);
+		} else {
+			fragColor.xyz *= vec3(1.0 + phaseFunc);
+		}
 
 
 	}
@@ -159,4 +134,38 @@ void main() {
 
 	
 
+}
+
+
+float calculateRayleigh(float cosphi) {
+	return (3.0 / (16.0 * PI) * (1.0 + cosphi * cosphi));
+
+}
+
+
+float calculateHenyeyGreenstein(float cosphi, float g) {
+	float henyeyGreenstein = 1.0 / (4.0 * PI);
+	henyeyGreenstein *= (1.0 - g * g);
+	henyeyGreenstein /= pow((1.0 - 2.0 * g * cosphi + g * g), 3.0 / 2.0);
+	return henyeyGreenstein;
+}
+
+float calculateDoubleHenyeyGreenstein(float cosphi, float g1, float g2, float f) {
+	return (1.0 - f) * calculateHenyeyGreenstein(cosphi, g1) + f * calculateHenyeyGreenstein(cosphi, g2);
+}
+
+
+float calculateSchlick(float cosphi, float k) {
+	float schlick = 1.0 / (4.0 * PI);
+	schlick *= (1.0 - k) / ((1.0 + k * cosphi) * (1.0 + k * cosphi));
+	return schlick;
+}
+
+float calculateCornetteShanks(float cosphi, float g) {
+	float cornetteShanks = 1.0 / (4.0 * PI);
+	cornetteShanks *= (3.0 / 2.0);
+	cornetteShanks *= (1.0 - g * g) / (2.0 + g * g);
+	cornetteShanks *= (1.0 + cosphi * cosphi);
+	cornetteShanks /= pow((1.0 + g * g - 2.0 * g * cosphi), 3.0 / 2.0);
+	return cornetteShanks;
 }

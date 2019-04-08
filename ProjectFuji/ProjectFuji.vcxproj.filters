@@ -44,7 +44,8 @@
     </CudaCompile>
     <CudaCompile Include="StreamlineParticleSystem.cu" />
     <CudaCompile Include="CDFEmitter - Copy.cu" />
-    <CudaCompile Include="CDFEmitter.cpp" />
+    <CudaCompile Include="DynamicCDFSampler.cu" />
+    <CudaCompile Include="CUDADataStructures.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -208,8 +209,8 @@
     <ClCompile Include="PositionalEmitter.cpp" />
     <ClCompile Include="TerrainPicker.cpp" />
     <ClCompile Include="CDFEmitterOld.cpp" />
-    <ClCompile Include="CDFSampler.cu" />
-    <ClCompile Include="DynamicCDFSampler.cu" />
+    <ClCompile Include="CDFEmitter.cpp" />
+    <ClCompile Include="CDFSampler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -385,9 +386,6 @@
     <ClInclude Include="CDFEmitterOld.h" />
     <ClInclude Include="CDFEmitter.h" />
     <ClInclude Include="CDFEmitter - Copy.h" />
-    <ClInclude Include="CUDADataStructures.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DynamicCDFSampler.h" />
   </ItemGroup>
   <ItemGroup>
@@ -634,6 +632,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\terrain_picker.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\volume_2nd_pass_alt2_backup.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

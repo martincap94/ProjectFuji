@@ -15,6 +15,17 @@
 class ParticleRenderer {
 public:
 
+	enum ePhaseFunction {
+		NONE = 0,
+		RAYLEIGH,
+		HENYEY_GREENSTEIN,
+		DOUBLE_HENYEY_GREENSTEIN,
+		SCHLICK,
+		CORNETTE_SHANK,
+		_NUM_PHASE_FUNCTIONS
+	};
+
+
 	glm::vec3 lightVec;
 	glm::vec3 lightPosEye;
 	glm::vec3 viewVec;
@@ -68,9 +79,11 @@ public:
 
 	float inversionThreshold = -0.5f;
 
-	int phaseFunction = 0;
+	ePhaseFunction phaseFunction = ePhaseFunction::HENYEY_GREENSTEIN;
+	int multiplyPhaseByShadow = 1;
 	float symmetryParameter = 0.5f; // for Henyey-Greenstein phase function (only)
-
+	float symmetryParameter2 = 0.5f;
+	float dHenyeyGreensteinInterpolationParameter = 0.5f;
 
 	Texture *spriteTexture;
 	Texture *atlasSpriteTexture;
@@ -98,6 +111,8 @@ public:
 
 
 	void updateShaderSet();
+
+	const char *getPhaseFunctionName(int phaseFunc);
 
 
 

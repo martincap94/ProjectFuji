@@ -124,6 +124,11 @@ ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const G
 	glGetProgramiv(id, GL_LINK_STATUS, &result);
 	if (result == GL_FALSE) {
 		cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED" << endl;
+		cerr << " | vs: " << vsPath << endl;
+		cerr << " | fs: " << fsPath << endl;
+		if (gsPath != nullptr) {
+			cerr << " | gs: " << gsPath << endl;
+		}
 		glGetProgramInfoLog(id, 1024, NULL, infoLog);
 		cout << infoLog << endl;
 		/*GLint logLen;

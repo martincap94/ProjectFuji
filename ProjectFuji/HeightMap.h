@@ -60,9 +60,6 @@ public:
 	Texture *visTexture = nullptr;
 
 
-	float **cdf; // testing only!
-	float **cdfres;
-
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)
 	//ShaderProgram *wireframeShader;
 
@@ -89,8 +86,6 @@ public:
 	void initMaterials();
 	void initBuffers();
 	void initBuffersOld();
-
-	void initCDF();
 
 	float getHeight(float x, float z, bool worldPosition = true);
 	float getWorldWidth();

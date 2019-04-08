@@ -91,12 +91,8 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 			}
 
 			data = new float*[width]();
-			cdf = new float*[width](); // just testing, this needs to be much more general
-			cdfres = new float*[width]();
 			for (int i = 0; i < width; i++) {
 				data[i] = new float[height]();
-				cdf[i] = new float[height](); 
-				cdfres[i] = new float[height]();
 			}
 
 			terrainWidth = width;
@@ -121,7 +117,6 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 					data[x][z] = (float)val;
 					data[x][z] /= (float)numeric_limits<unsigned short>().max();
-					cdf[x][z] = data[x][z]; // [0,1] values of probability
 					rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
 				}
 			}
@@ -269,8 +264,6 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 	initMaterials();
 
-
-	initCDF();
 }
 
 // this can be easily parallelized on GPU
@@ -319,12 +312,8 @@ HeightMap::~HeightMap() {
 	cout << "Deleting heightmap..." << endl;
 	for (int i = 0; i < width; i++) {
 		delete[] data[i];
-		delete[] cdf[i];
-		delete[] cdfres[i];
 	}
 	delete[] data;
-	delete[] cdf;
-	delete[] cdfres;
 }
 
 void HeightMap::initMaterials() {
@@ -375,55 +364,6 @@ void HeightMap::initMaterials() {
 	//terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
 	//materialMap = new Texture("textures/1200x800_materialMap.png");
 
-
-
-}
-
-
-void HeightMap::initCDF() {
-
-	// testing basic CPU implementation of the algorithm
-	
-
-	float *img = new float[width * height]();
-	float maxSum = 0.0f;
-
-
-	for (int z = 0; z < height; z++) {
-
-		float currSum = 0.0f;
-		for (int x = 0; x < width; x++) {
-			currSum += cdf[x][z];
-			cdfres[x][z] = currSum;
-
-			img[x + z * width] = currSum;
-		}
-		if (currSum > maxSum) {
-			maxSum = currSum;
-		}
-	}
-
-	for (int i = 0; i < width * height; i++) {
-		img[i] /= maxSum;
-	}
-
-
-
-
-	GLuint texId;
-
-	glGenTextures(1, &texId);
-	glBindTexture(GL_TEXTURE_2D, texId);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, img);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	TextureManager::pushCustomTexture(texId, width, height, 1, "test cdf");
-
-	delete[] img;
-
-	CHECK_GL_ERRORS();
 
 
 }
