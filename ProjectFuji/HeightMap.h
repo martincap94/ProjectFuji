@@ -19,6 +19,8 @@
 #include "Config.h"
 #include "Texture.h"
 #include "Material.h"
+#include "CDFSampler.h"
+#include "CDFSamplerMultiChannel.h"
 
 class VariableManager;
 
@@ -46,6 +48,7 @@ public:
 	int normalsShaderMode = 0;
 
 	glm::vec2 terrainHeightRange;
+	float texelWorldSize;
 
 
 	VariableManager *vars;
@@ -56,6 +59,7 @@ public:
 
 	Texture *terrainNormalMap;
 	Texture *materialMap;
+	CDFSamplerMultiChannel *materialMapSampler = nullptr;
 
 	int visualizeTextureMode = 0;
 	Texture *visTexture = nullptr;
@@ -89,6 +93,10 @@ public:
 	float getWorldWidth();
 	float getWorldDepth();
 
+	glm::vec3 getSampleWorldPosition(glm::ivec2 sampleCoords);
+	glm::vec3 getWorldPositionSample(CDFSampler *sampler);
+	glm::vec3 getWorldPositionMultiChannelSample(CDFSamplerMultiChannel *sampler, int channel);
+	glm::vec3 getWorldPositionMaterialMapSample(int materialIdx);
 
 	/// Draws the height map.
 	void draw();

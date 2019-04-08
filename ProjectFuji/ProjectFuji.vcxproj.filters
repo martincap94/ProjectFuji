@@ -214,6 +214,7 @@
     <ClCompile Include="HeightMap_backup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CDFSamplerMultiChannel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -390,6 +391,7 @@
     <ClInclude Include="CDFEmitter.h" />
     <ClInclude Include="CDFEmitter - Copy.h" />
     <ClInclude Include="DynamicCDFSampler.h" />
+    <ClInclude Include="CDFSamplerMultiChannel.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

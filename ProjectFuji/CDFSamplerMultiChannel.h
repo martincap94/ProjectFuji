@@ -8,7 +8,7 @@ class CDFSamplerMultiChannel {
 public:
 
 	CDFSamplerMultiChannel();
-	// expects path to 16-bit grayscale png
+
 	CDFSamplerMultiChannel(std::string probabilityTexturePath);
 	~CDFSamplerMultiChannel();
 

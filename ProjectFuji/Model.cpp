@@ -105,6 +105,25 @@ void Model::makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scal
 
 }
 
+void Model::makeInstancedMaterialMap(HeightMap * heightMap, int numInstances, int materialIdx, glm::vec2 scaleModifier) {
+
+	std::vector<Transform> instanceTransforms;
+	for (unsigned int i = 0; i < numInstances; i++) {
+		float instanceScaleModifier = getRandFloat(scaleModifier.x, scaleModifier.y);
+
+		//heightMap->materialMapSampler->getSample(materialIdx);
+
+		int counter = 0;
+
+		/*Transform t(glm::vec3(xPos, yPos, zPos), glm::vec3(0.0f, getRandFloat(0.0f, 90.0f), 0.0f), glm::vec3(instanceScaleModifier));
+		instanceTransforms.push_back(t);*/
+	}
+	for (int i = 0; i < meshes.size(); i++) {
+		meshes[i].makeInstanced(instanceTransforms);
+	}
+	instanced = true;
+}
+
 
 
 void Model::useMaterial() {

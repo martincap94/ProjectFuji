@@ -96,6 +96,7 @@
     <ClCompile Include="ArHosekSkyModel.c" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Camera2D.cpp" />
+    <ClCompile Include="CDFSamplerMultiChannel.cpp" />
     <ClCompile Include="CircleEmitter.cpp" />
     <ClCompile Include="Curve.cpp" />
     <ClCompile Include="CDFEmitterOld.cpp" />
@@ -232,6 +233,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="CDFSamplerMultiChannel.h" />
     <ClInclude Include="CircleEmitter.h" />
     <ClInclude Include="CommonEnums.h" />
     <ClInclude Include="Cubemap.h" />

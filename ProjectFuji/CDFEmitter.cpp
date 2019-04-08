@@ -38,28 +38,10 @@ void CDFEmitter::emitParticle() {
 		return;
 	}
 
-	glm::ivec2 sample = sampler->getSample();
-
-
 	Particle p;
-	glm::vec3 pos;
-
+	p.position = heightMap->getWorldPositionSample(sampler);
 	p.profileIndex = rand() % (owner->stlpSim->stlpDiagram->numProfiles - 1);
 	p.velocity = glm::vec3(0.0f);
-
-	//cout << pos.x << ", " << pos.y << ", " << pos.z << endl;
-
-	pos = glm::vec3(sample.x, 0.0f, sample.y);
-
-	// move inside the texel
-	pos.x += getRandFloat(0.0f, 1.0f);
-	pos.z += getRandFloat(0.0f, 1.0f);
-
-	pos.x *= owner->heightMap->vars->texelWorldSize; // ugly, cleanup
-	pos.z *= owner->heightMap->vars->texelWorldSize; // ugly, cleanup
-	pos.y = owner->heightMap->getHeight(pos.x, pos.z, true);
-	p.position = pos;
-
 
 	owner->pushParticleToEmit(p);
 

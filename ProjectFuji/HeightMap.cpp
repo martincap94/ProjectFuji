@@ -26,6 +26,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 		exit(EXIT_FAILURE);
 	}
 	terrainHeightRange = vars->terrainHeightRange;
+	texelWorldSize = vars->texelWorldSize;
 	heightMapFilename = SCENES_DIR + vars->sceneFilename;
 	//exit(EXIT_FAILURE); // TESTING!!!
 
@@ -403,6 +404,9 @@ void HeightMap::smoothHeights() {
 HeightMap::~HeightMap() {
 	cout << "Deleting heightmap..." << endl;
 	delete[] data;
+	if (materialMapSampler) {
+		delete materialMapSampler;
+	}
 }
 
 void HeightMap::initMaterials() {
@@ -413,23 +417,22 @@ void HeightMap::initMaterials() {
 	//shader = ShaderManager::getShaderPtr("singleColor");
 	shader->use();
 
-	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
-	materials[0].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
 
-	// load two other options
-	TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
-	TextureManager::loadTexture("textures/mossy-ground1-preview.png");
 
-	//materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/mossy-ground1-albedo.png");
-	//materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
-
+	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/mossy-ground1-albedo.png");
+	materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
 	materials[0].shininess = 2.0f;
-	materials[0].textureTiling = 8000.0f;
+	materials[0].textureTiling = 2000.0f;
 
 	materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
 	materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
 	materials[1].shininess = 16.0f;
 	materials[1].textureTiling = 1000.0f;
+
+	materials[2].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
+	materials[2].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+	materials[2].shininess = 2.0f;
+	materials[2].textureTiling = 8000.0f;
 
 	//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
 	//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
@@ -447,6 +450,8 @@ void HeightMap::initMaterials() {
 	terrainNormalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
 	//materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
 	materialMap = TextureManager::loadTexture("materialMaps/materialMap_1024.png");
+	materialMapSampler = new CDFSamplerMultiChannel(materialMap->filename);
+
 
 	visTexture = materialMap;
 
@@ -953,4 +958,37 @@ void HeightMap::initBuffersOld() {
 
 	glBindVertexArray(0);
 
+}
+
+glm::vec3 HeightMap::getSampleWorldPosition(glm::ivec2 sampleCoords) {
+
+	glm::vec3 pos = glm::vec3(sampleCoords.x, 0.0f, sampleCoords.y);
+
+	// move inside the texel
+	pos.x += getRandFloat(0.0f, 1.0f);
+	pos.z += getRandFloat(0.0f, 1.0f);
+
+	pos.x *= texelWorldSize;
+	pos.z *= texelWorldSize;
+	pos.y = getHeight(pos.x, pos.z, true);
+
+	return pos;
+}
+
+glm::vec3 HeightMap::getWorldPositionSample(CDFSampler *sampler) {
+	glm::ivec2 sample = sampler->getSample();
+	return getSampleWorldPosition(sample);
+}
+
+glm::vec3 HeightMap::getWorldPositionMultiChannelSample(CDFSamplerMultiChannel *sampler, int channel) {
+	glm::ivec2 sample = sampler->getSample(channel);
+	return getSampleWorldPosition(sample);
+}
+
+glm::vec3 HeightMap::getWorldPositionMaterialMapSample(int materialIdx) {
+	if (materialMapSampler) {
+		return getWorldPositionMultiChannelSample(materialMapSampler, materialIdx);
+	} else {
+		return glm::vec3();
+	}
 }

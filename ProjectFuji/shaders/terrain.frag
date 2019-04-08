@@ -233,7 +233,12 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec4 materialContri
 	//vec3 matColor = texture(u_Materials[0].diffuse, v_TexCoords * u_Materials[0].tiling).rgb *
 	//vec3 matColor = materialMap.r * 
 
-	vec3 matColor = materialContributions.r * texture(u_Materials[0].diffuse, getTexCoords(0)).rgb + materialContributions.g * texture(u_Materials[1].diffuse, getTexCoords(1)).rgb;
+	vec3 matColor = 
+	materialContributions.r * texture(u_Materials[0].diffuse, getTexCoords(0)).rgb 
+	+ materialContributions.g * texture(u_Materials[1].diffuse, getTexCoords(1)).rgb
+	+ materialContributions.b * texture(u_Materials[2].diffuse, getTexCoords(2)).rgb
+	+ materialContributions.a * texture(u_Materials[3].diffuse, getTexCoords(3)).rgb;
+
 
     // combine results
     vec3 diffuse  = light.color  * diff * matColor;
