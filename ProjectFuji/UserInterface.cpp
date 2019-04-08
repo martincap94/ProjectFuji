@@ -744,6 +744,16 @@ void UserInterface::constructTerrainTab() {
 		nk_combo_end(ctx);
 	}
 
+	if (nk_combo_begin_label(ctx, tryGetTextureFilename(hm->materialMap).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+		nk_layout_row_dynamic(ctx, 15, 1);
+		for (const auto& kv : *textures) {
+			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+				vars->heightMap->materialMap = kv.second;
+			}
+		}
+		nk_combo_end(ctx);
+	}
+
 	if (nk_button_label(ctx, "Reload mesh")) {
 		hm->loadHeightMapData();
 		hm->createAndUploadMesh();
@@ -769,6 +779,8 @@ void UserInterface::constructTerrainTab() {
 		}
 		nk_combo_end(ctx);
 	}
+
+
 
 
 	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {

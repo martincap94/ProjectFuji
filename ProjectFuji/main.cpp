@@ -218,6 +218,9 @@ ShaderProgram *diagramShader;
 ShaderProgram *skyboxShader;
 ShaderProgram *hosekShader;
 ShaderProgram *visualizeNormalsShader;
+ShaderProgram *normalsShader;
+ShaderProgram *normalsInstancedShader;
+ShaderProgram *grassShader;
 
 
 /// Main - runs the application and sets seed for the random number generator.
@@ -296,13 +299,12 @@ int runApp() {
 	stlpDiagram.init(vars.soundingFile);
 
 
+	// SKYBOX MODELS
 	skybox = new Skybox();
 	hosek = new HosekSkyModel();
 
-	glViewport(0, 0, vars.screenWidth, vars.screenHeight);
 
 	float aspectRatio = (float)vars.screenWidth / (float)vars.screenHeight;
-	//cout << "Aspect ratio = " << aspectRatio << endl;
 
 	float offset = 0.2f;
 	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
@@ -333,6 +335,10 @@ int runApp() {
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 	hosekShader = ShaderManager::getShaderPtr("sky_hosek");
 	visualizeNormalsShader = ShaderManager::getShaderPtr("visualize_normals");
+
+	normalsShader = ShaderManager::getShaderPtr("normals");
+	normalsInstancedShader = ShaderManager::getShaderPtr("normals_instanced");
+	grassShader = ShaderManager::getShaderPtr("grass_instanced");
 
 	vars.heightMap = new HeightMap(&vars/*, vars.sceneFilename, vars.latticeHeight*/);
 	tPicker = new TerrainPicker(&vars);
@@ -431,15 +437,15 @@ int runApp() {
 	Texture gspecular("textures/grass_S.png", 1);
 	Material gMat(gdiffuse, gspecular, anormal, 32.0f);
 
-	Model armoireModel("models/armoire.fbx", &aMat, ShaderManager::getShaderPtr("normals"));
-	Model grassModel("models/grass.obj", &gMat, ShaderManager::getShaderPtr("normals_instanced"));
+	Model armoireModel("models/armoire.fbx", &aMat, normalsShader);
+	Model grassModel("models/grass.obj", &gMat, grassShader);
 	//Model grassModel("models/grass.obj", &gMat, ShaderManager::getShaderPtr("normals"));
 
-	Model treeModel("models/Tree.obj", &treeMat, ShaderManager::getShaderPtr("normals_instanced"));
+	Model treeModel("models/Tree.obj", &treeMat, normalsInstancedShader);
 
 	Model unitboxModel("models/unitbox.fbx");
 
-	grassModel.makeInstanced(vars.heightMap, 1000000, glm::vec2(0.5f, 2.0f), 500.0f, 3, glm::vec2(3500.0f, 8500.0f), glm::vec2(1000.0f));
+	grassModel.makeInstanced(vars.heightMap, 1000000, glm::vec2(0.8f, 1.2f), 500.0f, 3, glm::vec2(0.0f, 0.0f), glm::vec2(10000.0f));
 	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
 
 	testModel.transform.position = glm::vec3(3500.0f, 0.0f, 8500.0f);
@@ -823,6 +829,10 @@ int runApp() {
 			glDepthFunc(GL_LEQUAL);
 
 			evsm.preFirstPass();
+
+			grassShader->use();
+			grassShader->setVec3("u_CameraPos", camera->position);
+
 			vars.heightMap->drawGeometry(evsm.firstPassShaders[0]);
 			//stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
 
@@ -833,6 +843,9 @@ int runApp() {
 			testModel.drawGeometry(evsm.firstPassShaders[0]);
 			//grassModel.drawGeometry(evsm.firstPassShaders[0]);
 			armoireModel.drawGeometry(evsm.firstPassShaders[0]);
+
+
+			
 
 			if (vars.drawTrees) {
 				treeModel.drawGeometry(evsm.firstPassShaders[0]);
@@ -862,6 +875,7 @@ int runApp() {
 
 			//testModel.draw(*evsm.secondPassShader);
 			testModel.draw();
+
 
 			if (vars.drawGrass) {
 				grassModel.draw();

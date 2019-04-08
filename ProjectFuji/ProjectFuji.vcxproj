@@ -326,6 +326,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\blur_basic.frag" />
+    <None Include="shaders\grass.frag" />
+    <None Include="shaders\grass_instanced.vert" />
     <None Include="shaders\terrain_picker.frag" />
     <None Include="shaders\terrain_picker.vert" />
     <None Include="shaders\visualize_normals.geom" />

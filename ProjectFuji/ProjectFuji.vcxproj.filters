@@ -640,5 +640,11 @@
     <None Include="shaders\volume_2nd_pass_alt2_backup.frag">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\grass.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\grass_instanced.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -82,7 +82,7 @@ public:
 	ePhaseFunction phaseFunction = ePhaseFunction::HENYEY_GREENSTEIN;
 	int multiplyPhaseByShadow = 1;
 	float symmetryParameter = 0.5f; // for Henyey-Greenstein phase function (only)
-	float symmetryParameter2 = 0.5f;
+	float symmetryParameter2 = -0.5f;
 	float dHenyeyGreensteinInterpolationParameter = 0.5f;
 
 	Texture *spriteTexture;

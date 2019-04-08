@@ -446,7 +446,7 @@ void HeightMap::initMaterials() {
 
 	terrainNormalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
 	//materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
-	materialMap = TextureManager::loadTexture("textures/materialMap_1024.png");
+	materialMap = TextureManager::loadTexture("materialMaps/materialMap_1024.png");
 
 	visTexture = materialMap;
 
