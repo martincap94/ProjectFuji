@@ -6,6 +6,8 @@
 
 #include <glm\glm.hpp>
 #include <GLFW\glfw3.h>
+#include <filesystem>
+
 
 #include "Timer.h"
 
@@ -197,6 +199,8 @@ public:
 
 	int renderMode = 0; // disables rendering of all helper visualization structures (boxes, vectors, etc.)
 
+	std::vector<std::string> sceneFilenames;
+
 
 	//int show
 
@@ -209,6 +213,7 @@ public:
 
 	/// Load configuration file and parse all correct parameters.
 	void loadConfigFile();
+	void loadSceneFilenames();
 
 	static std::string getFogModeString(int fogMode);
 

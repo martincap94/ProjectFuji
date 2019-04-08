@@ -2,6 +2,7 @@
 
 #include "DataStructures.h"
 
+
 #include <glad\glad.h>
 
 // Line intersection based on: https://martin-thoma.com/how-to-check-if-two-line-segments-intersect/
@@ -176,4 +177,19 @@ void reportUnimplementedFunction(const char * file, const char * function, int l
 
 float getRandFloat(float min, float max) {
 	return (min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min))));
+}
+
+
+// https://stackoverflow.com/questions/51949/how-to-get-file-extension-from-string-in-c/51993#51993
+bool getFileExtension(const std::string &filename, std::string &outExtension) {
+
+	std::string::size_type idx;
+
+	idx = filename.rfind('.');
+	if (idx != std::string::npos) {
+		outExtension = filename.substr(idx + 1);
+		return true;
+	}
+	return false;
+
 }

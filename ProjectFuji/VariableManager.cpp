@@ -10,6 +10,9 @@
 #include "Utils.h"
 //#include "Timer.h"
 
+// use namespace alias as not to type out the whole name
+namespace fs = std::experimental::filesystem;
+
 using namespace std;
 
 
@@ -31,6 +34,8 @@ void VariableManager::init(int argc, char **argv) {
 
 	loadConfigFile();
 	parseArguments(argc, argv);
+
+	loadSceneFilenames();
 
 	ready = true;
 }
@@ -75,6 +80,27 @@ void VariableManager::loadConfigFile() {
 		saveConfigParam(param, val);
 
 	}
+}
+
+void VariableManager::loadSceneFilenames() {
+
+	string path = SCENES_DIR;
+	string ext = "";
+	for (const auto &entry : fs::directory_iterator(path)) {
+		//cout << entry.path() << endl;
+		if (getFileExtension(entry.path().string(), ext)) {
+			transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+			if (ext == "png" || ext == "jpg" || ext == "jpeg") {
+				sceneFilenames.push_back(entry.path().string());
+			}
+		}
+	}
+	cout << "Possible Scenes:" << endl;
+	for (int i = 0; i < sceneFilenames.size(); i++) {
+		cout << " | " << sceneFilenames[i] << endl;
+	}
+
+
 }
 
 std::string VariableManager::getFogModeString(int fogMode) {

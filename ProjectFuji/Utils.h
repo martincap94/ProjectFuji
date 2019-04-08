@@ -189,3 +189,7 @@ float getRandFloat(float min, float max);
 
 
 //void snapToGround(glm::vec3 &targetPosition, HeightMap *heightMap);
+
+
+// only suitable for filenames, not paths! (PathFindExtensionA for windows is suitable for paths e.g.)
+bool getFileExtension(const std::string &filename, std::string &outExtension);

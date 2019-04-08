@@ -42,8 +42,7 @@ public:
 
 	int maxIntensity;	///< Maximum intensity of the height map - at the moment it will always be set to 255 due to .ppm usage
 	
-	float **data;		///< The height map data array	
-	float **terrainData;
+	float **data = nullptr;		///< The height map data array	
 
 	int showNormalsOnly = 0;
 	int normalsShaderMode = 0;
@@ -52,6 +51,7 @@ public:
 
 
 	VariableManager *vars;
+	std::string heightMapFilename = "";
 
 
 	Material materials[MAX_TERRAIN_MATERIALS];
@@ -78,6 +78,7 @@ public:
 
 	void smoothHeights();
 
+	void loadHeightMapData();
 	void loadHeightMapData(std::string filename);
 
 	void initMaterials();

@@ -26,20 +26,29 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 		exit(EXIT_FAILURE);
 	}
 	terrainHeightRange = vars->terrainHeightRange;
+	heightMapFilename = SCENES_DIR + vars->sceneFilename;
 	//exit(EXIT_FAILURE); // TESTING!!!
 
-
+	
 
 	//initBuffersOld();
 	initBuffers();
-	loadHeightMapData(SCENES_DIR + vars->sceneFilename);
+	loadHeightMapData();
 	createAndUploadMesh();
 
 	initMaterials();
 
 }
 
+void HeightMap::loadHeightMapData() {
+	loadHeightMapData(heightMapFilename);
+}
+
 void HeightMap::loadHeightMapData(std::string filename) {
+
+	if (data != nullptr) {
+		delete[] data;
+	}
 
 	typedef unsigned char img_type;
 

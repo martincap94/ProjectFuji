@@ -734,7 +734,18 @@ void UserInterface::constructTerrainTab() {
 	nk_property_float(ctx, "terrain bottom", -1000000.0f, &hm->terrainHeightRange.x, hm->terrainHeightRange.y, 100.0f, 100.0f);
 	nk_property_float(ctx, "terrain top", hm->terrainHeightRange.x, &hm->terrainHeightRange.y, 1000000.0f, 100.0f, 100.0f);
 
+	if (nk_combo_begin_label(ctx, hm->heightMapFilename.c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+		nk_layout_row_dynamic(ctx, 15, 1);
+		for (int i = 0; i < vars->sceneFilenames.size(); i++) {
+			if (nk_combo_item_label(ctx, vars->sceneFilenames[i].c_str(), NK_TEXT_CENTERED)) {
+				hm->heightMapFilename = vars->sceneFilenames[i];
+			}
+		}
+		nk_combo_end(ctx);
+	}
+
 	if (nk_button_label(ctx, "Reload mesh")) {
+		hm->loadHeightMapData();
 		hm->createAndUploadMesh();
 	}
 
