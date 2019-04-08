@@ -104,7 +104,7 @@ void UserInterface::constructUserInterface() {
 
 	constructLeftSidebar();
 	constructRightSidebar();
-	
+
 	constructHorizontalBar();
 
 	if (vars->aboutWindowOpened) {
@@ -131,11 +131,17 @@ bool UserInterface::isAnyWindowHovered() {
 	return nk_window_is_any_hovered(ctx);
 }
 
-void UserInterface::nk_property_vec3(glm::vec3 & target) {
+void UserInterface::nk_property_vec2(glm::vec2 & target, float min, float max, float step, float pixStep, std::string label, eVecNaming nidx) {
+	if (!label.empty()) {
+		nk_label(ctx, label.c_str(), NK_TEXT_CENTERED);
+	}
 
-	//nk_property_float(ctx, "#x", 0.0f, )
-
+	int idxOffset = nidx * 4;
+	for (int i = 0; i < 2; i++) {
+		nk_property_float(ctx, vecNames[i + idxOffset], min, &target[i], max, step, pixStep);
+	}
 }
+
 
 void UserInterface::nk_property_vec3(glm::vec3 & target, float min, float max, float step, float pixStep, std::string label, eVecNaming nidx) {
 	if (!label.empty()) {
@@ -723,6 +729,16 @@ void UserInterface::constructTerrainTab() {
 
 	nk_layout_row_dynamic(ctx, 15, 1);
 
+	HeightMap *hm = vars->heightMap;
+	//nk_property_vec2(hm->terrainHeightRange, );
+	nk_property_float(ctx, "terrain bottom", -1000000.0f, &hm->terrainHeightRange.x, hm->terrainHeightRange.y, 100.0f, 100.0f);
+	nk_property_float(ctx, "terrain top", hm->terrainHeightRange.x, &hm->terrainHeightRange.y, 1000000.0f, 100.0f, 100.0f);
+
+	if (nk_button_label(ctx, "Reload mesh")) {
+		hm->createAndUploadMesh();
+	}
+
+
 	nk_checkbox_label(ctx, "Draw grass", &vars->drawGrass);
 	nk_checkbox_label(ctx, "Draw trees", &vars->drawTrees);
 	nk_checkbox_label(ctx, "Visualize normals", &vars->visualizeTerrainNormals);
@@ -981,10 +997,10 @@ void UserInterface::constructCloudVisualizationTab() {
 		}
 		nk_combo_end(ctx);
 	}
-	
+
 
 	//nk_property_int(ctx, "phase function", 0, &particleRenderer->phaseFunction, 10, 1, 1);
-	if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::HENYEY_GREENSTEIN 
+	if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::HENYEY_GREENSTEIN
 		|| particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::CORNETTE_SHANK) {
 
 		nk_property_float(ctx, "g", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
@@ -1258,275 +1274,272 @@ void UserInterface::constructLBMDebugTab() {
 
 	nk_layout_row_dynamic(ctx, 30.0f, 1);
 	nk_label(ctx, "Streamlines", NK_TEXT_CENTERED);
-	
+
 	//nk_layout_row_dynamic(ctx, 200, 1); // wrapping row
 
 	//if (nk_group_begin(ctx, "Streamlines", NK_WINDOW_BORDER)) {
 
-		nk_layout_row_dynamic(ctx, 15, 1);
-		constructTauProperty();
+	nk_layout_row_dynamic(ctx, 15, 1);
+	constructTauProperty();
 
 
-		if (!sps->initialized && !streamlineInitMode) {
-			if (nk_button_label(ctx, "Use streamlines")) {
-				//sps->init();
-				streamlineInitMode = true;
-			}
-
-		} else if (sps->initialized) {
-
-			nk_checkbox_label(ctx, "visible", &sps->visible);
-
-
-			nk_layout_row(ctx, NK_STATIC, 15, 2, leftSidebarEditButtonRatio);
-
-			if (nk_button_label(ctx, "set horizontal line")) {
-				sps->setPositionInHorizontalLine();
-			}
-			struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
-			wpos.x += nk_widget_size(ctx).x;
-			wpos.y -= nk_widget_size(ctx).y;
-
-			if (nk_button_image(ctx, nkEditIcon)) {
-				sps->editingHorizontalParameters = true;
-			}
-			if (sps->editingHorizontalParameters) {
-				if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Horizontal Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
-					nk_layout_row_dynamic(ctx, 15, 1);
-					nk_label(ctx, "Horizontal Line Params", NK_TEXT_LEFT);
-
-					nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->hParams.xOffset, 0.99f, 0.01f, 0.01f);
-					nk_property_float(ctx, "yOffset (ratio)", 0.0f, &sps->hParams.yOffset, 0.99f, 0.01f, 0.01f);
-
-					if (nk_button_label(ctx, "Save & Apply")) {
-						sps->setPositionInHorizontalLine();
-						sps->editingHorizontalParameters = false;
-						nk_popup_close(ctx);
-					}
-					if (nk_button_label(ctx, "Save")) {
-						sps->editingHorizontalParameters = false;
-						nk_popup_close(ctx);
-					}
-					nk_popup_end(ctx);
-				} else {
-					sps->editingHorizontalParameters = false;
-				}
-			}
-
-			if (nk_button_label(ctx, "set vertical line")) {
-				sps->setPositionInVerticalLine();
-			}
-			wpos = nk_widget_position(ctx); // this needs to be before the widget!
-			wpos.x += nk_widget_size(ctx).x;
-			wpos.y -= nk_widget_size(ctx).y;
-			if (nk_button_image(ctx, nkEditIcon)) {
-				sps->editingVerticalParameters = true;
-			}
-			if (sps->editingVerticalParameters) {
-				if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Vertical Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
-					nk_layout_row_dynamic(ctx, 15, 1);
-					nk_label(ctx, "Vertical Line Params", NK_TEXT_LEFT);
-
-					nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->vParams.xOffset, 0.99f, 0.01f, 0.01f);
-					nk_property_float(ctx, "zOffset (ratio)", 0.0f, &sps->vParams.zOffset, 0.99f, 0.01f, 0.01f);
-
-					if (nk_button_label(ctx, "Save & Apply")) {
-						sps->setPositionInVerticalLine();
-						sps->editingVerticalParameters = false;
-						nk_popup_close(ctx);
-					}
-					if (nk_button_label(ctx, "Save")) {
-						sps->editingVerticalParameters = false;
-						nk_popup_close(ctx);
-					}
-					nk_popup_end(ctx);
-				} else {
-					sps->editingVerticalParameters = false;
-				}
-			}
-			nk_layout_row_dynamic(ctx, 15.0f, 1);
-			
-
-			if (sps->active) {
-				if (nk_button_label(ctx, "Deactivate streamlines")) {
-					sps->deactivate();
-				}
-			} else {
-				if (nk_button_label(ctx, "Activate streamlines")) {
-					sps->activate();
-				}
-			}
-
-			if (nk_button_label(ctx, "Reset")) {
-				sps->reset();
-			}
-
-
-			nk_checkbox_label(ctx, "live line cleanup (DEBUG)", &sps->liveLineCleanup);
-
-			struct nk_rect bounds;
-
-			bounds = nk_widget_bounds(ctx);
-			if (nk_button_label(ctx, "Teardown")) {
-				sps->tearDown();
-			}
-			if (nk_input_is_mouse_hovering_rect(ctx_in, bounds)) {
-				nk_layout_row_dynamic(ctx, 15, 1);
-				nk_tooltip(ctx, "Teardown current buffers - user can then create new streamline environment.");
-			}
-
-
-		} else if (streamlineInitMode) {
-
-			nk_property_int(ctx, "max streamlines", 1, &sps->maxNumStreamlines, 10000, 1, 1);
-			nk_property_int(ctx, "max streamline length", 1, &sps->maxStreamlineLength, 1000, 1, 1);
-			//nk_property_int(ctx, "streamline sampling", 1, &sps->sampling)
-
-			if (nk_button_label(ctx, "Apply settings")) {
-				cout << "Initializing streamline data..." << endl;
-				sps->init();
-				streamlineInitMode = false;
-			}
-
-		}
-		//nk_group_end(ctx);
-
-	//}
-
-
-
-	}
-
-	void UserInterface::constructDebugTab() {
-	}
-
-	void UserInterface::constructFavoritesMenu() {
-		nk_layout_row_push(ctx, 120);
-		if (nk_menu_begin_label(ctx, "Favorites", NK_TEXT_CENTERED, nk_vec2(300, 250))) {
-			nk_layout_row_dynamic(ctx, 15, 1);
-
-			constructTauProperty();
-			if (nk_button_label(ctx, "Form BOX")) {
-				particleSystem->formBox();
-			}
-
-			nk_checkbox_label(ctx, "Apply LBM", &vars->applyLBM);
-			nk_checkbox_label(ctx, "Apply STLP", &vars->applySTLP);
-			nk_property_float(ctx, "delta t (quick)", 0.1f, &stlpSimCUDA->delta_t, 100.0f, 0.1f, 0.1f);
-
-			constructWalkingPanel();
-
-			constructDirLightPositionPanel();
-
-			// temporary
-			nk_checkbox_label(ctx, "cloud shadows", &vars->cloudsCastShadows);
-
-
-			nk_menu_end(ctx);
-		}
-	}
-
-	void UserInterface::constructDirLightPositionPanel() {
-		nk_layout_row_dynamic(ctx, 15, 1);
-		nk_property_vec3(dirLight->position, -1000000.0f, 1000000.0f, 100.0f, 100.0f, "Sun position");
-		//nk_label(ctx, "Sun position", NK_TEXT_LEFT);
-		//nk_property_float(ctx, "#x:", -1000.0f, &dirLight->position.x, 1000.0f, 1.0f, 1.0f);
-		//nk_property_float(ctx, "#y:", -1000.0f, &dirLight->position.y, 1000.0f, 1.0f, 1.0f);
-		//nk_property_float(ctx, "#z:", -1000.0f, &dirLight->position.z, 1000.0f, 1.0f, 1.0f);
-	}
-
-	void UserInterface::constructFormBoxButtonPanel() {
-
-		//ctx->style.button.touch_padding
-		float ratio_two[] = { vars->leftSidebarWidth - 20.0f,  15.0f };
-		//nk_layout_row_dynamic(ctx, 15, 2);
-
-		nk_layout_row(ctx, NK_STATIC, 15, 2, ratio_two);
-
-		// testing
-		float prevButtonRounding = ctx->style.button.rounding;
-		struct nk_vec2 prevButtonPadding = ctx->style.button.padding;
-
-		ctx->style.button.rounding = 0.0f;
-		ctx->style.button.padding = nk_vec2(0.0f, 0.0f);
-		if (nk_button_label(ctx, "Form BOX")) {
-			particleSystem->formBox();
+	if (!sps->initialized && !streamlineInitMode) {
+		if (nk_button_label(ctx, "Use streamlines")) {
+			//sps->init();
+			streamlineInitMode = true;
 		}
 
+	} else if (sps->initialized) {
+
+		nk_checkbox_label(ctx, "visible", &sps->visible);
+
+
+		nk_layout_row(ctx, NK_STATIC, 15, 2, leftSidebarEditButtonRatio);
+
+		if (nk_button_label(ctx, "set horizontal line")) {
+			sps->setPositionInHorizontalLine();
+		}
 		struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
 		wpos.x += nk_widget_size(ctx).x;
 		wpos.y -= nk_widget_size(ctx).y;
 
-
 		if (nk_button_image(ctx, nkEditIcon)) {
-			particleSystem->editingFormBox = true;
+			sps->editingHorizontalParameters = true;
 		}
-		if (particleSystem->editingFormBox) {
-			//static struct nk_rect s = { 20, 100, 200, 200 }
-			if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Form Box Settings", 0, nk_rect(wpos.x, wpos.y, 200, 250))) {
+		if (sps->editingHorizontalParameters) {
+			if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Horizontal Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
 				nk_layout_row_dynamic(ctx, 15, 1);
-				nk_label(ctx, "Form box settings", NK_TEXT_LEFT);
-				nk_property_vec3(particleSystem->newFormBoxSettings.position, -100000.0f, 100000.0f, 10.0f, 10.0f, "Position");
-				nk_property_vec3(particleSystem->newFormBoxSettings.size, 100.0f, 100000.0f, 10.0f, 10.0f, "Size");
+				nk_label(ctx, "Horizontal Line Params", NK_TEXT_LEFT);
+
+				nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->hParams.xOffset, 0.99f, 0.01f, 0.01f);
+				nk_property_float(ctx, "yOffset (ratio)", 0.0f, &sps->hParams.yOffset, 0.99f, 0.01f, 0.01f);
 
 				if (nk_button_label(ctx, "Save & Apply")) {
-					particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
-					particleSystem->formBox();
-					particleSystem->editingFormBox = false;
+					sps->setPositionInHorizontalLine();
+					sps->editingHorizontalParameters = false;
 					nk_popup_close(ctx);
 				}
 				if (nk_button_label(ctx, "Save")) {
-					particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
-					particleSystem->editingFormBox = false;
+					sps->editingHorizontalParameters = false;
 					nk_popup_close(ctx);
 				}
-				if (nk_button_label(ctx, "Discard")) {
-					particleSystem->newFormBoxSettings = particleSystem->formBoxSettings;
-					particleSystem->editingFormBox = false;
-					nk_popup_close(ctx);
-				}
-
 				nk_popup_end(ctx);
 			} else {
-				particleSystem->editingFormBox = false;
+				sps->editingHorizontalParameters = false;
 			}
 		}
 
+		if (nk_button_label(ctx, "set vertical line")) {
+			sps->setPositionInVerticalLine();
+		}
+		wpos = nk_widget_position(ctx); // this needs to be before the widget!
+		wpos.x += nk_widget_size(ctx).x;
+		wpos.y -= nk_widget_size(ctx).y;
+		if (nk_button_image(ctx, nkEditIcon)) {
+			sps->editingVerticalParameters = true;
+		}
+		if (sps->editingVerticalParameters) {
+			if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Vertical Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+				nk_label(ctx, "Vertical Line Params", NK_TEXT_LEFT);
 
-		ctx->style.button.rounding = prevButtonRounding;
-		ctx->style.button.padding = prevButtonPadding;
+				nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->vParams.xOffset, 0.99f, 0.01f, 0.01f);
+				nk_property_float(ctx, "zOffset (ratio)", 0.0f, &sps->vParams.zOffset, 0.99f, 0.01f, 0.01f);
 
-		nk_layout_row_dynamic(ctx, 15, 1);
-	}
-
-	void UserInterface::constructTauProperty() {
-		nk_property_float(ctx, "Tau:", 0.5005f, &lbm->tau, 10.0f, 0.005f, 0.005f);
-	}
-
-	void UserInterface::constructWalkingPanel() {
-		if (vars->useFreeRoamCamera) {
-			FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
-			if (fcam) {
-				int wasWalking = fcam->walking;
-				nk_checkbox_label(ctx, "Walking", &fcam->walking);
-				if (!wasWalking && fcam->walking) {
-					fcam->snapToGround();
-					fcam->movementSpeed = 1.4f;
+				if (nk_button_label(ctx, "Save & Apply")) {
+					sps->setPositionInVerticalLine();
+					sps->editingVerticalParameters = false;
+					nk_popup_close(ctx);
 				}
-
-				nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
+				if (nk_button_label(ctx, "Save")) {
+					sps->editingVerticalParameters = false;
+					nk_popup_close(ctx);
+				}
+				nk_popup_end(ctx);
+			} else {
+				sps->editingVerticalParameters = false;
 			}
 		}
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
+
+
+		if (sps->active) {
+			if (nk_button_label(ctx, "Deactivate streamlines")) {
+				sps->deactivate();
+			}
+		} else {
+			if (nk_button_label(ctx, "Activate streamlines")) {
+				sps->activate();
+			}
+		}
+
+		if (nk_button_label(ctx, "Reset")) {
+			sps->reset();
+		}
+
+
+		nk_checkbox_label(ctx, "live line cleanup (DEBUG)", &sps->liveLineCleanup);
+
+		struct nk_rect bounds;
+
+		bounds = nk_widget_bounds(ctx);
+		if (nk_button_label(ctx, "Teardown")) {
+			sps->tearDown();
+		}
+		if (nk_input_is_mouse_hovering_rect(ctx_in, bounds)) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_tooltip(ctx, "Teardown current buffers - user can then create new streamline environment.");
+		}
+
+
+	} else if (streamlineInitMode) {
+
+		nk_property_int(ctx, "max streamlines", 1, &sps->maxNumStreamlines, 10000, 1, 1);
+		nk_property_int(ctx, "max streamline length", 1, &sps->maxStreamlineLength, 1000, 1, 1);
+		//nk_property_int(ctx, "streamline sampling", 1, &sps->sampling)
+
+		if (nk_button_label(ctx, "Apply settings")) {
+			cout << "Initializing streamline data..." << endl;
+			sps->init();
+			streamlineInitMode = false;
+		}
+
+	}
+	//nk_group_end(ctx);
+
+//}
+
+
+
+}
+
+void UserInterface::constructDebugTab() {
+}
+
+void UserInterface::constructFavoritesMenu() {
+	nk_layout_row_push(ctx, 120);
+	if (nk_menu_begin_label(ctx, "Favorites", NK_TEXT_CENTERED, nk_vec2(300, 250))) {
+		nk_layout_row_dynamic(ctx, 15, 1);
+
+		constructTauProperty();
+		if (nk_button_label(ctx, "Form BOX")) {
+			particleSystem->formBox();
+		}
+
+		nk_checkbox_label(ctx, "Apply LBM", &vars->applyLBM);
+		nk_checkbox_label(ctx, "Apply STLP", &vars->applySTLP);
+		nk_property_float(ctx, "delta t (quick)", 0.1f, &stlpSimCUDA->delta_t, 100.0f, 0.1f, 0.1f);
+
+		constructWalkingPanel();
+
+		constructDirLightPositionPanel();
+
+		// temporary
+		nk_checkbox_label(ctx, "cloud shadows", &vars->cloudsCastShadows);
+
+
+		nk_menu_end(ctx);
+	}
+}
+
+void UserInterface::constructDirLightPositionPanel() {
+	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_property_vec3(dirLight->position, -1000000.0f, 1000000.0f, 100.0f, 100.0f, "Sun position");
+	//nk_label(ctx, "Sun position", NK_TEXT_LEFT);
+	//nk_property_float(ctx, "#x:", -1000.0f, &dirLight->position.x, 1000.0f, 1.0f, 1.0f);
+	//nk_property_float(ctx, "#y:", -1000.0f, &dirLight->position.y, 1000.0f, 1.0f, 1.0f);
+	//nk_property_float(ctx, "#z:", -1000.0f, &dirLight->position.z, 1000.0f, 1.0f, 1.0f);
+}
+
+void UserInterface::constructFormBoxButtonPanel() {
+
+	//ctx->style.button.touch_padding
+	float ratio_two[] = { vars->leftSidebarWidth - 20.0f,  15.0f };
+	//nk_layout_row_dynamic(ctx, 15, 2);
+
+	nk_layout_row(ctx, NK_STATIC, 15, 2, ratio_two);
+
+	// testing
+	float prevButtonRounding = ctx->style.button.rounding;
+	struct nk_vec2 prevButtonPadding = ctx->style.button.padding;
+
+	ctx->style.button.rounding = 0.0f;
+	ctx->style.button.padding = nk_vec2(0.0f, 0.0f);
+	if (nk_button_label(ctx, "Form BOX")) {
+		particleSystem->formBox();
 	}
 
-	std::string UserInterface::tryGetTextureFilename(Texture * tex) {
-		if (tex == nullptr) {
-			return "NONE";
+	struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
+	wpos.x += nk_widget_size(ctx).x;
+	wpos.y -= nk_widget_size(ctx).y;
+
+
+	if (nk_button_image(ctx, nkEditIcon)) {
+		particleSystem->editingFormBox = true;
+	}
+	if (particleSystem->editingFormBox) {
+		//static struct nk_rect s = { 20, 100, 200, 200 }
+		if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Form Box Settings", 0, nk_rect(wpos.x, wpos.y, 200, 250))) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_label(ctx, "Form box settings", NK_TEXT_LEFT);
+			nk_property_vec3(particleSystem->newFormBoxSettings.position, -100000.0f, 100000.0f, 10.0f, 10.0f, "Position");
+			nk_property_vec3(particleSystem->newFormBoxSettings.size, 100.0f, 100000.0f, 10.0f, 10.0f, "Size");
+
+			if (nk_button_label(ctx, "Save & Apply")) {
+				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
+				particleSystem->formBox();
+				particleSystem->editingFormBox = false;
+				nk_popup_close(ctx);
+			}
+			if (nk_button_label(ctx, "Save")) {
+				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
+				particleSystem->editingFormBox = false;
+				nk_popup_close(ctx);
+			}
+			if (nk_button_label(ctx, "Discard")) {
+				particleSystem->newFormBoxSettings = particleSystem->formBoxSettings;
+				particleSystem->editingFormBox = false;
+				nk_popup_close(ctx);
+			}
+
+			nk_popup_end(ctx);
 		} else {
-			return tex->filename;
+			particleSystem->editingFormBox = false;
 		}
 	}
 
-	void UserInterface::nk_property_vec2(glm::vec2 & target) {
 
+	ctx->style.button.rounding = prevButtonRounding;
+	ctx->style.button.padding = prevButtonPadding;
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+}
+
+void UserInterface::constructTauProperty() {
+	nk_property_float(ctx, "Tau:", 0.5005f, &lbm->tau, 10.0f, 0.005f, 0.005f);
+}
+
+void UserInterface::constructWalkingPanel() {
+	if (vars->useFreeRoamCamera) {
+		FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
+		if (fcam) {
+			int wasWalking = fcam->walking;
+			nk_checkbox_label(ctx, "Walking", &fcam->walking);
+			if (!wasWalking && fcam->walking) {
+				fcam->snapToGround();
+				fcam->movementSpeed = 1.4f;
+			}
+
+			nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
+		}
 	}
+}
+
+std::string UserInterface::tryGetTextureFilename(Texture * tex) {
+	if (tex == nullptr) {
+		return "NONE";
+	} else {
+		return tex->filename;
+	}
+}
+

@@ -18,45 +18,6 @@
 
 HeightMap::HeightMap() {}
 
-HeightMap::HeightMap(string filename, int latticeHeight) {
-
-
-	ppmImage helper(SCENES_DIR + filename);
-
-	width = helper.width;
-	height = helper.height;
-	terrainWidth = width;
-	terrainDepth = height;
-
-	maxIntensity = helper.maxIntensity;
-	int maxSum = maxIntensity * 3;
-
-
-	data = new float*[width]();
-	for (int i = 0; i < width; i++) {
-		data[i] = new float[height]();
-	}
-
-	for (int z = height - 1; z >= 0; z--) {
-		for (int x = 0; x < width; x++) {
-			int sum = 0;
-
-			sum += helper.data[x][z].x;
-			sum += helper.data[x][z].y;
-			sum += helper.data[x][z].z;
-
-			data[x][z] = ((float)sum / (float)maxSum) * (float)(latticeHeight - 1);
-		}
-	}
-	//initBuffersOld();
-	initBuffers();
-
-
-	initMaterials();
-
-}
-
-
 
 HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
@@ -64,6 +25,21 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 		cerr << "Oh noes - VariableManager not set in HeightMap!" << endl;
 		exit(EXIT_FAILURE);
 	}
+	terrainHeightRange = vars->terrainHeightRange;
+	//exit(EXIT_FAILURE); // TESTING!!!
+
+
+
+	//initBuffersOld();
+	initBuffers();
+	loadHeightMapData(SCENES_DIR + vars->sceneFilename);
+	createAndUploadMesh();
+
+	initMaterials();
+
+}
+
+void HeightMap::loadHeightMapData(std::string filename) {
 
 	typedef unsigned char img_type;
 
@@ -81,11 +57,11 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 			int numChannels;
 
 			stbi_set_flip_vertically_on_load(true);
-			imageData = stbi_load_16((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
+			imageData = stbi_load_16((filename).c_str(), &width, &height, &numChannels, NULL);
 
 
 			if (!imageData) {
-				cout << "Error loading texture at " << (SCENES_DIR + vars->sceneFilename) << endl;
+				cout << "Error loading texture at " << filename << endl;
 				stbi_image_free(imageData);
 				exit(EXIT_FAILURE);
 			}
@@ -117,7 +93,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 					data[x][z] = (float)val;
 					data[x][z] /= (float)numeric_limits<unsigned short>().max();
-					rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+					rangeToRange(data[x][z], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
 				}
 			}
 
@@ -134,11 +110,11 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 			int numChannels;
 
 			stbi_set_flip_vertically_on_load(true);
-			imageData = stbi_load((SCENES_DIR + vars->sceneFilename).c_str(), &width, &height, &numChannels, NULL);
+			imageData = stbi_load((filename).c_str(), &width, &height, &numChannels, NULL);
 
 
 			if (!imageData) {
-				cout << "Error loading texture at " << (SCENES_DIR + vars->sceneFilename) << endl;
+				cout << "Error loading texture at " << (filename) << endl;
 				stbi_image_free(imageData);
 				exit(EXIT_FAILURE);
 			}
@@ -188,7 +164,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 					data[x][z] = (float)r * 0.6f + (float)g * 0.3f + (float)b * 0.1f;
 					data[x][z] /= (float)numeric_limits<img_type>().max();
 					//cout << "height before mapping: " << data[x][z] << endl;
-					rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+					rangeToRange(data[x][z], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
 					//cout << "after mapping: " << data[x][z] << endl;
 					//data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
 				}
@@ -208,7 +184,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 	} else {
 
-		ppmImage helper(SCENES_DIR + vars->sceneFilename);
+		ppmImage helper(filename);
 
 		width = helper.width;
 		height = helper.height;
@@ -240,368 +216,14 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 				//data[x][z] = ((float)sum / (float)maxSum);
 				//data[x][z] = ((float)sum / (float)maxSum) * (float)(vars->latticeHeight - 1);
 				data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
-				rangeToRange(data[x][z], 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+				rangeToRange(data[x][z], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
 
 			}
 		}
 	}
-
-	//exit(EXIT_FAILURE); // TESTING!!!
-
-
-	//smoothHeights();
-	//smoothHeights();
-	//smoothHeights();
-
-	//smoothHeights();
-	//smoothHeights();
-	//smoothHeights();
-	//smoothHeights();
-
-	//initBuffersOld();
-	initBuffers();
-
-
-	initMaterials();
-
 }
 
-// this can be easily parallelized on GPU
-void HeightMap::smoothHeights() {
-
-	const float kernel[] = {
-		0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067,
-		0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292,
-		0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117,
-		0.00038771,	0.01330373,	0.11098164,	0.22508352,	0.11098164,	0.01330373,	0.00038771,
-		0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117,
-		0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292,
-		0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067
-	};
-
-
-	for (int x = 3; x < width - 3; x++) {
-		for (int z = 3; z < height - 3; z++) {
-
-			float sum = 0.0f;
-			for (int j = -3; j <= 3; j++) {
-				for (int k = -3; k <= 3; k++) {
-					float scale = kernel[(3 + j) * 7 + (3 + k)];
-					sum += scale * data[x + j][z + k];
-				}
-			}
-			data[x][z] = sum;
-
-
-		}
-	}
-
-
-
-	//for (int z = height - 1; z >= 0; z--) {
-	//	for (int x = 0; x < width; x++) {
-
-
-	//	}
-	//}
-
-}
-
-
-HeightMap::~HeightMap() {
-	cout << "Deleting heightmap..." << endl;
-	for (int i = 0; i < width; i++) {
-		delete[] data[i];
-	}
-	delete[] data;
-}
-
-void HeightMap::initMaterials() {
-
-	CHECK_GL_ERRORS();
-
-	shader = ShaderManager::getShaderPtr("terrain");
-	//shader = ShaderManager::getShaderPtr("singleColor");
-	shader->use();
-
-	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
-	materials[0].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
-
-	// load two other options
-	TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
-	TextureManager::loadTexture("textures/mossy-ground1-preview.png");
-
-	//materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/mossy-ground1-albedo.png");
-	//materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
-
-	materials[0].shininess = 2.0f;
-	materials[0].textureTiling = 8000.0f;
-
-	materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
-	materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
-	materials[1].shininess = 16.0f;
-	materials[1].textureTiling = 1000.0f;
-
-	//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
-	//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
-	CHECK_GL_ERRORS();
-
-	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
-		materials[i].setTextureUniformsMultiple(shader, i);
-	}
-	shader->setInt("u_MaterialMap", materialMapTextureUnit);
-	shader->setInt("u_TerrainNormalMap", normalMapTextureUnit);
-	shader->setFloat("u_UVRatio", (float)width / (float)height);
-
-	CHECK_GL_ERRORS();
-
-	terrainNormalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
-	//materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
-	materialMap = TextureManager::loadTexture("textures/materialMap_1024.png");
-
-	visTexture = materialMap;
-
-	//terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
-	//materialMap = new Texture("textures/1200x800_materialMap.png");
-
-
-
-}
-
-
-
-
-float HeightMap::getHeight(float x, float z, bool worldPosition) {
-
-	if (worldPosition) {
-		x += vars->terrainXOffset;
-		z += vars->terrainZOffset;
-
-		x /= vars->texelWorldSize;
-		z /= vars->texelWorldSize;
-	}
-
-
-
-	int leftx = (int)x;
-	int rightx = leftx + 1;
-	int leftz = (int)z;
-	int rightz = leftz + 1;
-
-	// clamp to edges
-	leftx = glm::clamp(leftx, 0, width - 1);
-	rightx = glm::clamp(rightx, 0, width - 1);
-	leftz = glm::clamp(leftz, 0, height - 1);
-	rightz = glm::clamp(rightz, 0, height - 1);
-
-
-	float xRatio = x - leftx;
-	float zRatio = z - leftz;
-
-	float y1 = data[leftx][leftz];
-	float y2 = data[leftx][rightz];
-	float y3 = data[rightx][leftz];
-	float y4 = data[rightx][rightz];
-
-	float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
-	float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
-
-	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
-
-	return y;
-
-}
-
-float HeightMap::getWorldWidth() {
-	return width * vars->texelWorldSize;
-}
-
-float HeightMap::getWorldDepth() {
-	return height * vars->texelWorldSize;
-}
-
-void HeightMap::draw() {
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	//glUseProgram(shader->id);
-	//glBindVertexArray(VAO);
-	//glDrawArrays(GL_TRIANGLES, 0, numPoints);
-	draw(shader);
-
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-}
-
-void HeightMap::draw(ShaderProgram *shader) {
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	shader->use();
-
-
-	// Set texture uniforms for unknown shader
-	if (shader != this->shader) {
-		for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
-			materials[i].setTextureUniformsMultiple(shader, i);
-		}
-		shader->setInt("u_TerrainNormalMap", normalMapTextureUnit);
-		shader->setInt("u_MaterialMap", materialMapTextureUnit);
-		shader->setFloat("u_UVRatio", (float)width / (float)height);
-	}
-
-
-
-	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
-		materials[i].useMultiple(shader, i);
-	}
-
-
-	//shader->setInt("u_TestDiffuse", 9);
-	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
-
-	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
-
-	shader->setBool("u_NormalsOnly", (bool)showNormalsOnly);
-	shader->setInt("u_NormalsMode", normalsShaderMode);
-
-	glm::mat4 modelMatrix(1.0f);
-	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
-	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
-	shader->setModelMatrix(modelMatrix);
-
-
-	glBindTextureUnit(normalMapTextureUnit, terrainNormalMap->id);
-
-
-	// TODO - Make this global for multiple shaders
-	shader->setInt("u_CloudShadowTexture", TEXTURE_UNIT_CLOUD_SHADOW_MAP);
-	shader->setBool("u_CloudsCastShadows", (bool)vars->cloudsCastShadows);
-	shader->setFloat("u_CloudCastShadowAlphaMultiplier", vars->cloudCastShadowAlphaMultiplier);
-
-	if (visualizeTextureMode && visTexture) {
-		shader->setBool("u_VisualizeTextureMode", true);
-		glBindTextureUnit(materialMapTextureUnit, visTexture->id);
-	} else {
-		shader->setBool("u_VisualizeTextureMode", false);
-		glBindTextureUnit(materialMapTextureUnit, materialMap->id);
-	}
-
-
-
-
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, numPoints);
-
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-}
-
-void HeightMap::drawGeometry(ShaderProgram * shader) {
-	shader->use();
-
-	shader->setModelMatrix(glm::mat4(1.0f));
-	shader->setBool("u_IsInstanced", false);
-
-
-	glm::mat4 modelMatrix(1.0f);
-	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
-	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
-
-	shader->setModelMatrix(modelMatrix);
-
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, numPoints);
-}
-
-// Based on: https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap
-glm::vec3 HeightMap::computeNormal(int x, int z) {
-	int offset = 1;
-
-	int xLeft = x - offset;
-	int xRight = x + offset;
-	int zBottom = z + offset;
-	int zTop = z - offset;
-
-	if (xLeft < 0) {
-		xLeft = 0;
-	}
-	if (xRight > width - 1) {
-		xRight = width - 1;
-	}
-	if (zBottom > height - 1) {
-		zBottom = height - 1;
-	}
-	if (zTop < 0) {
-		zTop = 0;
-	}
-	float hLeft = data[xLeft][z];
-	float hRight = data[xRight][z];
-	float hBottom = data[x][zBottom];
-	float hTop = data[x][zTop];
-
-	//rangeToRange(hLeft, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
-	//rangeToRange(hLeft, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
-	//rangeToRange(hRight, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
-	//rangeToRange(hBottom, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
-	//rangeToRange(hTop, vars->terrainHeightRange.x, vars->terrainHeightRange.y, 0.0f, 1.0f);
-
-	//cout << "hLeft = " << hLeft << endl;
-
-	glm::vec3 normal;
-	normal.x = (hLeft - hRight) / vars->texelWorldSize;
-	//normal.x = (hLeft - hRight);
-	//normal.y = hBottom - hTop;
-	//normal.z = -2.0f;
-	normal.y = 2.0f/* * vars->texelWorldSize * 10.0f*/;
-	//rangeToRange(normal.y, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
-	normal.z = (hTop - hBottom) / vars->texelWorldSize;
-	//normal.z = (hTop - hBottom);
-
-
-	return glm::normalize(normal);
-
-	/*
-
-	int offset = 1;
-
-	int xLeft = x - offset;
-	int xRight = x + offset;
-	int zBottom = z + offset;
-	int zTop = z - offset;
-
-	if (xLeft < 0) {
-		xLeft = 0;
-	}
-	if (xRight > width - 1) {
-		xRight = width - 1;
-	}
-	if (zBottom > height - 1) {
-		zBottom = height - 1;
-	}
-	if (zTop < 0) {
-		zTop = 0;
-	}
-	float hLeft = data[xLeft][z];
-	float hRight = data[xRight][z];
-	float hBottom = data[x][zBottom];
-	float hTop = data[x][zTop];
-
-	glm::vec3 normal;
-	normal.x = hLeft - hRight;
-	//normal.y = hBottom - hTop;
-	//normal.z = -2.0f;
-	normal.y = 2.0f;
-	normal.z = hTop - hBottom;
-
-	return glm::normalize(normal);
-	*/
-}
-
-
-
-
-
-
-void HeightMap::initBuffers() {
+void HeightMap::createAndUploadMesh() {
 
 	vector<glm::vec3> vertices;
 	vector<glm::vec3> normals;
@@ -849,15 +471,355 @@ void HeightMap::initBuffers() {
 		vertexData.push_back(bitangents[i].y);
 		vertexData.push_back(bitangents[i].z);
 	}
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexData.size(), vertexData.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+
+}
+
+
+
+
+// this can be easily parallelized on GPU
+void HeightMap::smoothHeights() {
+
+	const float kernel[] = {
+		0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067,
+		0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292,
+		0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117,
+		0.00038771,	0.01330373,	0.11098164,	0.22508352,	0.11098164,	0.01330373,	0.00038771,
+		0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117,
+		0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292,
+		0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067
+	};
+
+
+	for (int x = 3; x < width - 3; x++) {
+		for (int z = 3; z < height - 3; z++) {
+
+			float sum = 0.0f;
+			for (int j = -3; j <= 3; j++) {
+				for (int k = -3; k <= 3; k++) {
+					float scale = kernel[(3 + j) * 7 + (3 + k)];
+					sum += scale * data[x + j][z + k];
+				}
+			}
+			data[x][z] = sum;
+		}
+	}
+
+
+
+	//for (int z = height - 1; z >= 0; z--) {
+	//	for (int x = 0; x < width; x++) {
+
+
+	//	}
+	//}
+
+}
+
+
+HeightMap::~HeightMap() {
+	cout << "Deleting heightmap..." << endl;
+	for (int i = 0; i < width; i++) {
+		delete[] data[i];
+	}
+	delete[] data;
+}
+
+void HeightMap::initMaterials() {
+
+	CHECK_GL_ERRORS();
+
+	shader = ShaderManager::getShaderPtr("terrain");
+	//shader = ShaderManager::getShaderPtr("singleColor");
+	shader->use();
+
+	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
+	materials[0].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+
+	// load two other options
+	TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
+	TextureManager::loadTexture("textures/mossy-ground1-preview.png");
+
+	//materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/mossy-ground1-albedo.png");
+	//materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
+
+	materials[0].shininess = 2.0f;
+	materials[0].textureTiling = 8000.0f;
+
+	materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
+	materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
+	materials[1].shininess = 16.0f;
+	materials[1].textureTiling = 1000.0f;
+
+	//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
+	//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
+	CHECK_GL_ERRORS();
+
+	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+		materials[i].setTextureUniformsMultiple(shader, i);
+	}
+	shader->setInt("u_MaterialMap", materialMapTextureUnit);
+	shader->setInt("u_TerrainNormalMap", normalMapTextureUnit);
+	shader->setFloat("u_UVRatio", (float)width / (float)height);
+
+	CHECK_GL_ERRORS();
+
+	terrainNormalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
+	//materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
+	materialMap = TextureManager::loadTexture("textures/materialMap_1024.png");
+
+	visTexture = materialMap;
+
+	//terrainNormalMap = new Texture("textures/ROCK_030_NORM.jpg");
+	//materialMap = new Texture("textures/1200x800_materialMap.png");
+
+
+
+}
+
+
+
+
+float HeightMap::getHeight(float x, float z, bool worldPosition) {
+
+	if (worldPosition) {
+		x += vars->terrainXOffset;
+		z += vars->terrainZOffset;
+
+		x /= vars->texelWorldSize;
+		z /= vars->texelWorldSize;
+	}
+
+
+
+	int leftx = (int)x;
+	int rightx = leftx + 1;
+	int leftz = (int)z;
+	int rightz = leftz + 1;
+
+	// clamp to edges
+	leftx = glm::clamp(leftx, 0, width - 1);
+	rightx = glm::clamp(rightx, 0, width - 1);
+	leftz = glm::clamp(leftz, 0, height - 1);
+	rightz = glm::clamp(rightz, 0, height - 1);
+
+
+	float xRatio = x - leftx;
+	float zRatio = z - leftz;
+
+	float y1 = data[leftx][leftz];
+	float y2 = data[leftx][rightz];
+	float y3 = data[rightx][leftz];
+	float y4 = data[rightx][rightz];
+
+	float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
+	float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
+
+	float y = yRightx * xRatio + (1.0f - xRatio) * yLeftx;
+
+	return y;
+
+}
+
+float HeightMap::getWorldWidth() {
+	return width * vars->texelWorldSize;
+}
+
+float HeightMap::getWorldDepth() {
+	return height * vars->texelWorldSize;
+}
+
+void HeightMap::draw() {
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	//glUseProgram(shader->id);
+	//glBindVertexArray(VAO);
+	//glDrawArrays(GL_TRIANGLES, 0, numPoints);
+	draw(shader);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+}
+
+void HeightMap::draw(ShaderProgram *shader) {
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	shader->use();
+
+
+	// Set texture uniforms for unknown shader
+	if (shader != this->shader) {
+		for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+			materials[i].setTextureUniformsMultiple(shader, i);
+		}
+		shader->setInt("u_TerrainNormalMap", normalMapTextureUnit);
+		shader->setInt("u_MaterialMap", materialMapTextureUnit);
+		shader->setFloat("u_UVRatio", (float)width / (float)height);
+	}
+
+
+
+	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+		materials[i].useMultiple(shader, i);
+	}
+
+
+	//shader->setInt("u_TestDiffuse", 9);
+	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
+
+	shader->setFloat("u_GlobalNormalMapMixingRatio", vars->globalNormalMapMixingRatio);
+
+	shader->setBool("u_NormalsOnly", (bool)showNormalsOnly);
+	shader->setInt("u_NormalsMode", normalsShaderMode);
+
+	glm::mat4 modelMatrix(1.0f);
+	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
+	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
+	shader->setModelMatrix(modelMatrix);
+
+
+	glBindTextureUnit(normalMapTextureUnit, terrainNormalMap->id);
+
+
+	// TODO - Make this global for multiple shaders
+	shader->setInt("u_CloudShadowTexture", TEXTURE_UNIT_CLOUD_SHADOW_MAP);
+	shader->setBool("u_CloudsCastShadows", (bool)vars->cloudsCastShadows);
+	shader->setFloat("u_CloudCastShadowAlphaMultiplier", vars->cloudCastShadowAlphaMultiplier);
+
+	if (visualizeTextureMode && visTexture) {
+		shader->setBool("u_VisualizeTextureMode", true);
+		glBindTextureUnit(materialMapTextureUnit, visTexture->id);
+	} else {
+		shader->setBool("u_VisualizeTextureMode", false);
+		glBindTextureUnit(materialMapTextureUnit, materialMap->id);
+	}
+
+
+
+
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, numPoints);
+
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+}
+
+void HeightMap::drawGeometry(ShaderProgram * shader) {
+	shader->use();
+
+	shader->setModelMatrix(glm::mat4(1.0f));
+	shader->setBool("u_IsInstanced", false);
+
+
+	glm::mat4 modelMatrix(1.0f);
+	modelMatrix = glm::translate(modelMatrix, -glm::vec3(vars->terrainXOffset, 0.0f, vars->terrainZOffset));
+	//modelMatrix = glm::scale(modelMatrix, glm::vec3(vars->texelWorldSize, 1.0f, vars->texelWorldSize));
+
+	shader->setModelMatrix(modelMatrix);
+
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, numPoints);
+}
+
+// Based on: https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap
+glm::vec3 HeightMap::computeNormal(int x, int z) {
+	int offset = 1;
+
+	int xLeft = x - offset;
+	int xRight = x + offset;
+	int zBottom = z + offset;
+	int zTop = z - offset;
+
+	if (xLeft < 0) {
+		xLeft = 0;
+	}
+	if (xRight > width - 1) {
+		xRight = width - 1;
+	}
+	if (zBottom > height - 1) {
+		zBottom = height - 1;
+	}
+	if (zTop < 0) {
+		zTop = 0;
+	}
+	float hLeft = data[xLeft][z];
+	float hRight = data[xRight][z];
+	float hBottom = data[x][zBottom];
+	float hTop = data[x][zTop];
+
+	//rangeToRange(hLeft, 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
+	//rangeToRange(hLeft, terrainHeightRange.x, terrainHeightRange.y, 0.0f, 1.0f);
+	//rangeToRange(hRight, terrainHeightRange.x, terrainHeightRange.y, 0.0f, 1.0f);
+	//rangeToRange(hBottom, terrainHeightRange.x, terrainHeightRange.y, 0.0f, 1.0f);
+	//rangeToRange(hTop, terrainHeightRange.x, terrainHeightRange.y, 0.0f, 1.0f);
+
+	//cout << "hLeft = " << hLeft << endl;
+
+	glm::vec3 normal;
+	normal.x = (hLeft - hRight) / vars->texelWorldSize;
+	//normal.x = (hLeft - hRight);
+	//normal.y = hBottom - hTop;
+	//normal.z = -2.0f;
+	normal.y = 2.0f/* * vars->texelWorldSize * 10.0f*/;
+	//rangeToRange(normal.y, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
+	normal.z = (hTop - hBottom) / vars->texelWorldSize;
+	//normal.z = (hTop - hBottom);
+
+
+	return glm::normalize(normal);
+
+	/*
+
+	int offset = 1;
+
+	int xLeft = x - offset;
+	int xRight = x + offset;
+	int zBottom = z + offset;
+	int zTop = z - offset;
+
+	if (xLeft < 0) {
+		xLeft = 0;
+	}
+	if (xRight > width - 1) {
+		xRight = width - 1;
+	}
+	if (zBottom > height - 1) {
+		zBottom = height - 1;
+	}
+	if (zTop < 0) {
+		zTop = 0;
+	}
+	float hLeft = data[xLeft][z];
+	float hRight = data[xRight][z];
+	float hBottom = data[x][zBottom];
+	float hTop = data[x][zTop];
+
+	glm::vec3 normal;
+	normal.x = hLeft - hRight;
+	//normal.y = hBottom - hTop;
+	//normal.z = -2.0f;
+	normal.y = 2.0f;
+	normal.z = hTop - hBottom;
+
+	return glm::normalize(normal);
+	*/
+}
+
+
+
+
+
+
+void HeightMap::initBuffers() {
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertexData.size(), vertexData.data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)0);
@@ -874,9 +836,6 @@ void HeightMap::initBuffers() {
 
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)(sizeof(float) * 11));
-
-
-
 
 	glBindVertexArray(0);
 }
@@ -1119,6 +1078,3 @@ void HeightMap::initBuffersOld() {
 	glBindVertexArray(0);
 
 }
-
-
-

@@ -132,7 +132,7 @@ public:
 	int lbmStepFrame = 1;
 	int stlpStepFrame = 1;
 
-	int drawSkybox = 0;
+	int drawSkybox = 1;
 	int hosekSkybox = 1;
 
 

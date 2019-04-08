@@ -110,8 +110,7 @@ private:
 	struct nk_image nkEditIcon;
 	struct nk_image nkSettingsIcon;
 
-
-	void nk_property_vec2(glm::vec2 &target);
+	void nk_property_vec2(glm::vec2 &target, float min, float max, float step, float pixStep, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
 	void nk_property_vec3(glm::vec3 &target);
 	void nk_property_vec3(glm::vec3 &target, float min, float max, float step, float pixStep, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
 	void nk_property_vec4(glm::vec4 &target);

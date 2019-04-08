@@ -209,6 +209,7 @@ void HosekSkyModel::normalizeRGBParams(glm::vec3 sunDir) {
 		glm::vec3 S = getColor(-sunDir.y, 0.0f, 1.0f) * params[9];
 		params[9] /= glm::dot(S, glm::vec3(0.2126f, 0.7152f, 0.0722f));
 
+
 		float sunAmount = fmodf(((-sunDir.y) / (MATH_PI / 2.0f)), 4.0f);
 		if (sunAmount > 2.0f) {
 			sunAmount = 0.0f;

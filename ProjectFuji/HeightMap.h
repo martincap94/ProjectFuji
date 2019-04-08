@@ -48,6 +48,9 @@ public:
 	int showNormalsOnly = 0;
 	int normalsShaderMode = 0;
 
+	glm::vec2 terrainHeightRange;
+
+
 	VariableManager *vars;
 
 
@@ -66,15 +69,7 @@ public:
 	/// Default constructor.
 	HeightMap();
 
-	/// Loads and constructs the height map from the given file and height.
-	/**
-		Constructs the height map from the given filename and height. Sets the shader that is used for rendering.
-		\param[in] filename			Filename of the height map to be loaded.
-		\param[in] latticeHeight	Height of the lattice for scaling (and normalization of height values).
-	*/
-	HeightMap(string filename, int latticeHeight);
 
-	// new version that supports downsampling
 	HeightMap(VariableManager *vars);
 
 
@@ -83,8 +78,12 @@ public:
 
 	void smoothHeights();
 
+	void loadHeightMapData(std::string filename);
+
 	void initMaterials();
 	void initBuffers();
+	void createAndUploadMesh();
+
 	void initBuffersOld();
 
 	float getHeight(float x, float z, bool worldPosition = true);

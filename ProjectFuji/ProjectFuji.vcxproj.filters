@@ -211,6 +211,9 @@
     <ClCompile Include="CDFEmitterOld.cpp" />
     <ClCompile Include="CDFEmitter.cpp" />
     <ClCompile Include="CDFSampler.cpp" />
+    <ClCompile Include="HeightMap_backup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
