@@ -313,8 +313,8 @@ void UserInterface::constructRightSidebar() {
 		nk_value_float(ctx, "wd [m]", vars->latticeDepth * lbm->scale);
 
 		nk_layout_row_dynamic(ctx, 15, 1);
-		nk_value_int(ctx, "terrain width resolution", vars->heightMap->terrainWidth);
-		nk_value_int(ctx, "terrain depth resolution", vars->heightMap->terrainDepth);
+		nk_value_int(ctx, "terrain width resolution", vars->heightMap->width);
+		nk_value_int(ctx, "terrain depth resolution", vars->heightMap->height);
 
 
 
@@ -747,6 +747,7 @@ void UserInterface::constructTerrainTab() {
 	if (nk_button_label(ctx, "Reload mesh")) {
 		hm->loadHeightMapData();
 		hm->createAndUploadMesh();
+		lbm->refreshHeightMap();
 	}
 
 

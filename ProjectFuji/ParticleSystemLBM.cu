@@ -163,7 +163,7 @@ void ParticleSystemLBM::initParticlePositions(int width, int height, int depth, 
 	float yOffset = 0.0f;
 	float zOffset = 0.0f;
 	while (particleCount != numParticles) {
-		if (hm->data[(int)x][(int)z] <= y) {
+		if (hm->data[(int)x + (int)z * hm->width] <= y) {
 			particleVertices[particleCount] = glm::vec3(x, y, z);
 			particleCount++;
 		}

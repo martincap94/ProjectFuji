@@ -35,14 +35,12 @@ public:
 	int width;		///< Width of the height map
 	int height;		///< Height of the height map - IMPORTANT - in the scene, the height of the map is described by the depth of the scene!!!
 
-	int terrainWidth;
-	int terrainDepth;
 
 	int downSample = 10;
 
 	int maxIntensity;	///< Maximum intensity of the height map - at the moment it will always be set to 255 due to .ppm usage
 	
-	float **data = nullptr;		///< The height map data array	
+	float *data = nullptr;		///< The height map data array	
 
 	int showNormalsOnly = 0;
 	int normalsShaderMode = 0;

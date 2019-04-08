@@ -193,3 +193,7 @@ bool getFileExtension(const std::string &filename, std::string &outExtension) {
 	return false;
 
 }
+
+int getIdx(int x, int y, int width) {
+	return x + y * width;
+}

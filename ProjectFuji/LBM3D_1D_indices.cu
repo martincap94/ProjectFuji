@@ -2392,13 +2392,13 @@ void LBM3D_1D_indices::refreshHeightMap() {
 			xidx /= vars->texelWorldSize;
 			zidx /= vars->texelWorldSize;
 
-			if (xidx < heightMap->terrainWidth && xidx >= 0 && zidx < heightMap->terrainDepth && zidx >= 0) {
+			if (xidx < heightMap->width && xidx >= 0 && zidx < heightMap->height && zidx >= 0) {
 				//tempHM[x + z * latticeWidth] = heightMap->data[xidx][zidx];
-				tempHM[x + z * latticeWidth] = (heightMap->data[xidx][zidx] - position.y) / scale;
+				tempHM[x + z * latticeWidth] = (heightMap->data[xidx + zidx * heightMap->width] - position.y) / scale;
 			}
 			//tempHM[x + z * latticeWidth] = heightMap->data[x][z];
 		}
-		}
+	}
 	CHECK_ERROR(cudaMemcpy(d_heightMap, tempHM, sizeof(float) * latticeWidth * latticeDepth, cudaMemcpyHostToDevice));
 
 
@@ -3186,7 +3186,7 @@ void LBM3D_1D_indices::updateColliders() {
 			for (int z = 0; z < latticeDepth; z++) {
 				int idx = getIdx(x, y, z);
 
-				if ((heightMap->data[x][z] >= y && heightMap->data[x][z] > 0.01f) || y == 0) {
+				if ((heightMap->data[x + z * heightMap->width] >= y && heightMap->data[x + z * heightMap->width] > 0.01f) || y == 0) {
 
 
 

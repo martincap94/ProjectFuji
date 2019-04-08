@@ -53,183 +53,53 @@ void HeightMap::loadHeightMapData(std::string filename) {
 	typedef unsigned char img_type;
 
 	cout << "Creating Terrain..." << endl;
-	bool useStb = true;
-	if (useStb) {
-
-		bool useGrayscale = true;
-		if (useGrayscale) {
 
 
-			unsigned short *imageData = nullptr;
+	unsigned short *imageData = nullptr;
 
 
-			int numChannels;
+	int numChannels;
 
-			stbi_set_flip_vertically_on_load(true);
-			imageData = stbi_load_16((filename).c_str(), &width, &height, &numChannels, NULL);
+	stbi_set_flip_vertically_on_load(true);
+	imageData = stbi_load_16((filename).c_str(), &width, &height, &numChannels, NULL);
 
 
-			if (!imageData) {
-				cout << "Error loading texture at " << filename << endl;
-				stbi_image_free(imageData);
-				exit(EXIT_FAILURE);
+	if (!imageData) {
+		cout << "Error loading texture at " << filename << endl;
+		stbi_image_free(imageData);
+		exit(EXIT_FAILURE);
+	}
+
+	data = new float[width * height]();
+
+
+
+
+	cout << "number of channels = " << numChannels << endl;
+
+	cout << "Width: " << width << ", height: " << height << endl;
+	cout << (float)numeric_limits<unsigned short>().max() << endl;
+
+	for (int z = 0; z < height; z++) {
+		for (int x = 0; x < width; x++) {
+			unsigned short *pixel = imageData + (x * height + z) * numChannels;
+			unsigned short val = pixel[0];
+			unsigned short a = 0xff;
+			if (numChannels >= 1) {
+				a = pixel[1];
 			}
 
-			data = new float*[width]();
-			for (int i = 0; i < width; i++) {
-				data[i] = new float[height]();
-			}
-
-			terrainWidth = width;
-			terrainDepth = height;
-
-
-
-
-			cout << "number of channels = " << numChannels << endl;
-
-			cout << "Width: " << width << ", height: " << height << endl;
-			cout << (float)numeric_limits<unsigned short>().max() << endl;
-
-			for (int z = 0; z < height; z++) {
-				for (int x = 0; x < width; x++) {
-					unsigned short *pixel = imageData + (x * height + z) * numChannels;
-					unsigned short val = pixel[0];
-					unsigned short a = 0xff;
-					if (numChannels >= 1) {
-						a = pixel[1];
-					}
-
-					data[x][z] = (float)val;
-					data[x][z] /= (float)numeric_limits<unsigned short>().max();
-					rangeToRange(data[x][z], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
-				}
-			}
-
-			if (imageData != nullptr) {
-				stbi_image_free(imageData);
-			}
-
-
-		} else {
-
-			img_type *imageData = nullptr;
-
-
-			int numChannels;
-
-			stbi_set_flip_vertically_on_load(true);
-			imageData = stbi_load((filename).c_str(), &width, &height, &numChannels, NULL);
-
-
-			if (!imageData) {
-				cout << "Error loading texture at " << (filename) << endl;
-				stbi_image_free(imageData);
-				exit(EXIT_FAILURE);
-			}
-
-			data = new float*[width]();
-			for (int i = 0; i < width; i++) {
-				data[i] = new float[height]();
-			}
-
-			terrainWidth = width;
-			terrainDepth = height;
-
-
-
-
-			cout << "number of channels = " << numChannels << endl;
-
-
-			set<img_type> valsR;
-			set<img_type> valsG;
-			set<img_type> valsB;
-
-
-			cout << "Width: " << width << ", height: " << height << endl;
-			cout << (float)numeric_limits<img_type>().max() << endl;
-
-			for (int z = 0; z < height; z++) {
-				for (int x = 0; x < width; x++) {
-					img_type *pixel = imageData + (x * height + z) * numChannels;
-					img_type r = pixel[0];
-					img_type g = pixel[1];
-					img_type b = pixel[2];
-					img_type a = 0xff;
-					if (numChannels >= 4) {
-						a = pixel[3];
-					}
-
-					//cout << r << endl;
-					//cout << g << endl;
-					//cout << b << endl;
-					//cout << endl;
-
-					//valsR.insert(r);
-					//valsG.insert(g);
-					//valsB.insert(b);
-
-					data[x][z] = (float)r * 0.6f + (float)g * 0.3f + (float)b * 0.1f;
-					data[x][z] /= (float)numeric_limits<img_type>().max();
-					//cout << "height before mapping: " << data[x][z] << endl;
-					rangeToRange(data[x][z], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
-					//cout << "after mapping: " << data[x][z] << endl;
-					//data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
-				}
-			}
-			cout << "VALS R size: " << valsR.size() << endl;
-			cout << "VALS G size: " << valsG.size() << endl;
-			cout << "VALS B size: " << valsB.size() << endl;
-
-			//for (const auto &i : valsR) {
-			//	cout << i << endl;
-			//}
-
-			if (imageData != nullptr) {
-				stbi_image_free(imageData);
-			}
-		}
-
-	} else {
-
-		ppmImage helper(filename);
-
-		width = helper.width;
-		height = helper.height;
-		terrainWidth = width;
-		terrainDepth = height;
-
-		data = new float*[width]();
-		for (int i = 0; i < width; i++) {
-			data[i] = new float[height]();
-		}
-
-
-		//terrainWidth = helper.width;
-		//terrainDepth = helper.height;
-		//width = terrainWidth / downSample;
-		//height = terrainDepth / downSample;
-
-		maxIntensity = helper.maxIntensity;
-		int maxSum = maxIntensity * 3;
-
-		for (int z = height - 1; z >= 0; z--) {
-			for (int x = 0; x < width; x++) {
-				int sum = 0;
-
-				sum += helper.data[x][z].x;
-				sum += helper.data[x][z].y;
-				sum += helper.data[x][z].z;
-
-				//data[x][z] = ((float)sum / (float)maxSum);
-				//data[x][z] = ((float)sum / (float)maxSum) * (float)(vars->latticeHeight - 1);
-				data[x][z] = ((float)sum / (float)maxSum); // [0, 1]
-				rangeToRange(data[x][z], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
-
-			}
+			data[x + z * width] = (float)val;
+			data[x + z * width] /= (float)numeric_limits<unsigned short>().max();
+			rangeToRange(data[x + z * width], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
 		}
 	}
+
+	if (imageData != nullptr) {
+		stbi_image_free(imageData);
+	}
+
+
 }
 
 void HeightMap::createAndUploadMesh() {
@@ -256,25 +126,25 @@ void HeightMap::createAndUploadMesh() {
 
 	numPoints = 0;
 
-	float den = (float)((terrainWidth >= terrainDepth) ? terrainWidth : terrainDepth);
+	float den = (float)((width >= height) ? width : height);
 
-	for (int z = terrainDepth - 1; z >= 1; z--) {
+	for (int z = height - 1; z >= 1; z--) {
 
-		for (int x = 0; x < terrainWidth - 1; x++) {
+		for (int x = 0; x < width - 1; x++) {
 
 
 
 			float tws = vars->texelWorldSize;
-			glm::vec3 p1(x * tws, data[x][z], z * tws);
-			glm::vec3 p2((x + 1) * tws, data[x + 1][z], z * tws);
-			glm::vec3 p3((x + 1) * tws, data[x + 1][z - 1], (z - 1) * tws);
-			glm::vec3 p4(x * tws, data[x][z - 1], (z - 1) * tws);
+			glm::vec3 p1(x * tws, data[x + z * width], z * tws);
+			glm::vec3 p2((x + 1) * tws, data[x + 1 + z * width], z * tws);
+			glm::vec3 p3((x + 1) * tws, data[x + 1 + (z - 1) * width], (z - 1) * tws);
+			glm::vec3 p4(x * tws, data[x + (z - 1) * width], (z - 1) * tws);
 
 
-			glm::vec3 p1i(x, data[x][z], z);
-			glm::vec3 p2i(x + 1, data[x + 1][z], z);
-			glm::vec3 p3i(x + 1, data[x + 1][z - 1], z - 1);
-			glm::vec3 p4i(x, data[x][z - 1], z - 1);
+			glm::vec3 p1i(x, data[x + z * width], z);
+			glm::vec3 p2i(x + 1, data[x + 1 + z * width], z);
+			glm::vec3 p3i(x + 1, data[x + 1 + (z - 1) * width], z - 1);
+			glm::vec3 p4i(x, data[x + (z - 1) * width], z - 1);
 
 			//glm::vec3 n1 = glm::normalize(glm::cross(p2 - p3, p2 - p1));
 			//glm::vec3 n2 = glm::normalize(glm::cross(p4 - p1, p4 - p3)); // flat shading normals
@@ -290,27 +160,27 @@ void HeightMap::createAndUploadMesh() {
 
 			vertices.push_back(p1);
 			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1i.z / terrainWidth, p1i.x / terrainDepth));
+			texCoords.push_back(glm::vec2(p1i.z / width, p1i.x / height));
 
 			vertices.push_back(p2);
 			normals.push_back(normalP2);
-			texCoords.push_back(glm::vec2(p2i.z / terrainWidth, p2i.x / terrainDepth));
+			texCoords.push_back(glm::vec2(p2i.z / width, p2i.x / height));
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3i.z / terrainWidth, p3i.x / terrainDepth));
+			texCoords.push_back(glm::vec2(p3i.z / width, p3i.x / height));
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
-			texCoords.push_back(glm::vec2(p3i.z / terrainWidth, p3i.x / terrainDepth));
+			texCoords.push_back(glm::vec2(p3i.z / width, p3i.x / height));
 
 			vertices.push_back(p4);
 			normals.push_back(normalP4);
-			texCoords.push_back(glm::vec2(p4i.z / terrainWidth, p4i.x / terrainDepth));
+			texCoords.push_back(glm::vec2(p4i.z / width, p4i.x / height));
 
 			vertices.push_back(p1);
 			normals.push_back(normalP1);
-			texCoords.push_back(glm::vec2(p1i.z / terrainWidth, p1i.x / terrainDepth));
+			texCoords.push_back(glm::vec2(p1i.z / width, p1i.x / height));
 
 			numPoints += 6;
 
@@ -343,68 +213,68 @@ void HeightMap::createAndUploadMesh() {
 			normals.push_back(normalP1);
 			//normals.push_back(n1);
 
-			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p1.x / width, p1.z / height));
 			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 
 			vertices.push_back(p2);
 			normals.push_back(normalP2);
 			//normals.push_back(n1);
 
-			texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p2.x / width, p2.z / height));
 			//texCoords.push_back(glm::vec2(p2.x, p2.z) / den);
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
 			//normals.push_back(n1);
 
-			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p3.x / width, p3.z / height));
 			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
 
 			vertices.push_back(p3);
 			normals.push_back(normalP3);
 			//normals.push_back(n2);
 
-			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p3.x / width, p3.z / height));
 			//texCoords.push_back(glm::vec2(p3.x, p3.z) / den);
 
 			vertices.push_back(p4);
 			normals.push_back(normalP4);
 			//normals.push_back(n2);
 
-			texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p4.x / width, p4.z / height));
 			//texCoords.push_back(glm::vec2(p4.x, p4.z) / den);
 
 			vertices.push_back(p1);
 			normals.push_back(normalP1);
 			//normals.push_back(n2);
 
-			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p1.x / width, p1.z / height));
 			//texCoords.push_back(glm::vec2(p1.x, p1.z) / den);
 			} else {
 
 			vertices.push_back(p1);
 			normals.push_back(n1);
-			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p1.x / width, p1.z / height));
 
 			vertices.push_back(p2);
 			normals.push_back(n1);
-			texCoords.push_back(glm::vec2(p2.x / terrainWidth, p2.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p2.x / width, p2.z / height));
 
 			vertices.push_back(p3);
 			normals.push_back(n1);
-			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p3.x / width, p3.z / height));
 
 			vertices.push_back(p3);
 			normals.push_back(n2);
-			texCoords.push_back(glm::vec2(p3.x / terrainWidth, p3.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p3.x / width, p3.z / height));
 
 			vertices.push_back(p4);
 			normals.push_back(n2);
-			texCoords.push_back(glm::vec2(p4.x / terrainWidth, p4.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p4.x / width, p4.z / height));
 
 			vertices.push_back(p1);
 			normals.push_back(n2);
-			texCoords.push_back(glm::vec2(p1.x / terrainWidth, p1.z / terrainDepth));
+			texCoords.push_back(glm::vec2(p1.x / width, p1.z / height));
 			}
 
 			numPoints += 6;
@@ -511,10 +381,10 @@ void HeightMap::smoothHeights() {
 			for (int j = -3; j <= 3; j++) {
 				for (int k = -3; k <= 3; k++) {
 					float scale = kernel[(3 + j) * 7 + (3 + k)];
-					sum += scale * data[x + j][z + k];
+					sum += scale * data[x + j + (z + k) * width];
 				}
 			}
-			data[x][z] = sum;
+			data[x + z * width] = sum;
 		}
 	}
 
@@ -532,9 +402,6 @@ void HeightMap::smoothHeights() {
 
 HeightMap::~HeightMap() {
 	cout << "Deleting heightmap..." << endl;
-	for (int i = 0; i < width; i++) {
-		delete[] data[i];
-	}
 	delete[] data;
 }
 
@@ -620,10 +487,10 @@ float HeightMap::getHeight(float x, float z, bool worldPosition) {
 	float xRatio = x - leftx;
 	float zRatio = z - leftz;
 
-	float y1 = data[leftx][leftz];
-	float y2 = data[leftx][rightz];
-	float y3 = data[rightx][leftz];
-	float y4 = data[rightx][rightz];
+	float y1 = data[leftx + leftz * width];
+	float y2 = data[leftx + rightz * width];
+	float y3 = data[rightx + leftz * width];
+	float y4 = data[rightx + rightz * width];
 
 	float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
 	float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;
@@ -755,10 +622,10 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 	if (zTop < 0) {
 		zTop = 0;
 	}
-	float hLeft = data[xLeft][z];
-	float hRight = data[xRight][z];
-	float hBottom = data[x][zBottom];
-	float hTop = data[x][zTop];
+	float hLeft = data[xLeft + z * width];
+	float hRight = data[xRight + z * width];
+	float hBottom = data[x + zBottom * width];
+	float hTop = data[x + zTop * width];
 
 	//rangeToRange(hLeft, 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
 	//rangeToRange(hLeft, terrainHeightRange.x, terrainHeightRange.y, 0.0f, 1.0f);
@@ -883,10 +750,10 @@ void HeightMap::initBuffersOld() {
 
 
 
-			glm::vec3 p1(x, data[x][z], z);
-			glm::vec3 p2(x + 1, data[x + 1][z], z);
-			glm::vec3 p3(x + 1, data[x + 1][z - 1], z - 1);
-			glm::vec3 p4(x, data[x][z - 1], z - 1);
+			glm::vec3 p1(x, data[x + z  * width], z);
+			glm::vec3 p2(x + 1, data[x + 1 + z * width], z);
+			glm::vec3 p3(x + 1, data[x + 1 + (z - 1) * width], z - 1);
+			glm::vec3 p4(x, data[x + (z - 1) * width], z - 1);
 
 			//glm::vec3 n1 = glm::normalize(glm::cross(p1 - p2, p3 - p2));
 			//glm::vec3 n2 = glm::normalize(glm::cross(p3 - p4, p1 - p4)); // flat shading normals

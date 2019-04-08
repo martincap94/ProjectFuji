@@ -754,10 +754,10 @@ void STLPSimulatorCUDA::generateParticle() {
 	float xRatio = randx - leftx;
 	float zRatio = randz - leftz;
 
-	float y1 = heightMap->data[leftx][leftz];
-	float y2 = heightMap->data[leftx][rightz];
-	float y3 = heightMap->data[rightx][leftz];
-	float y4 = heightMap->data[rightx][rightz];
+	float y1 = heightMap->data[leftx + leftz * heightMap->width];
+	float y2 = heightMap->data[leftx + rightz * heightMap->width];
+	float y3 = heightMap->data[rightx + leftz * heightMap->width];
+	float y4 = heightMap->data[rightx + rightz * heightMap->width];
 
 	float yLeftx = zRatio * y2 + (1.0f - zRatio) * y1;
 	float yRightx = zRatio * y4 + (1.0f - zRatio) * y3;

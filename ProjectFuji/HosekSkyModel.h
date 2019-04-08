@@ -14,7 +14,6 @@ public:
 
 	double turbidity = 4.0;
 	double albedo = 0.5;
-	//float sunElevation = 4.0f;
 
 	int liveRecalc = 1;
 
@@ -27,8 +26,8 @@ public:
 
 	// shader uniforms
 	double horizonOffset = 0.01;
-	float sunIntensity = 0.5f;
-	int sunExponent = 256;
+	float sunIntensity = 2.5f;
+	int sunExponent = 512;
 
 	HosekSkyModel();
 	~HosekSkyModel();
