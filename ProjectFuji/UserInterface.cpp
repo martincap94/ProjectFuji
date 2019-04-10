@@ -636,15 +636,6 @@ void UserInterface::constructLightingTab() {
 	nk_property_float(ctx, "near:", 0.1f, &dirLight->pNear, 100000.0f, 10.0f, 10.0f);
 	nk_property_float(ctx, "far:", 1.0f, &dirLight->pFar, 1000000.0f, 1000.0f, 1000.0f);
 
-	nk_checkbox_label(ctx, "Simulate sun", &vars->simulateSun);
-	nk_property_float(ctx, "Sun speed", 0.1f, &dirLight->circularMotionSpeed, 1000.0f, 0.1f, 0.1f);
-	if (nk_option_label(ctx, "y axis", dirLight->rotationAxis == DirectionalLight::Y_AXIS)) {
-		dirLight->rotationAxis = DirectionalLight::Y_AXIS;
-	}
-	if (nk_option_label(ctx, "z axis", dirLight->rotationAxis == DirectionalLight::Z_AXIS)) {
-		dirLight->rotationAxis = DirectionalLight::Z_AXIS;
-	}
-	nk_property_float(ctx, "rotation radius:", 0.0f, &dirLight->radius, 10000.0f, 1.0f, 1.0f);
 
 	nk_label(ctx, "EVSM", NK_TEXT_CENTERED);
 
@@ -931,6 +922,18 @@ void UserInterface::constructSkyTab() {
 	nk_value_float(ctx, "Sun Theta", hosek->sunTheta);
 	nk_value_float(ctx, "Sun Theta (degrees)", glm::degrees(hosek->sunTheta));
 
+	nk_checkbox_label(ctx, "Simulate sun", &vars->simulateSun);
+	nk_checkbox_label(ctx, "Skip night", &dirLight->skipNightTime);
+	nk_property_float(ctx, "Sun speed", 0.1f, &dirLight->circularMotionSpeed, 1000.0f, 0.1f, 0.1f);
+	if (nk_option_label(ctx, "y axis", dirLight->rotationAxis == DirectionalLight::Y_AXIS)) {
+		dirLight->rotationAxis = DirectionalLight::Y_AXIS;
+	}
+	if (nk_option_label(ctx, "z axis", dirLight->rotationAxis == DirectionalLight::Z_AXIS)) {
+		dirLight->rotationAxis = DirectionalLight::Z_AXIS;
+	}
+	nk_property_float(ctx, "rotation radius:", 0.0f, &dirLight->radius, 10000.0f, 1.0f, 1.0f);
+
+	nk_checkbox_label(ctx, "Use sky sun color", &vars->useSkySunColor);
 
 }
 

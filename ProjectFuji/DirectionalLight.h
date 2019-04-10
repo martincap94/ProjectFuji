@@ -48,6 +48,7 @@ public:
 	float radius = 500000.0f;
 	float circularMotionSpeed = 20.0f;
 	eRotationAxis rotationAxis = Z_AXIS;
+	int skipNightTime = 1;
 
 	glm::vec3 position;
 	//glm::vec3 direction;	///< Direction of the light

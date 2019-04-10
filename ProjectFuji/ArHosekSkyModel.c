@@ -316,7 +316,7 @@ ArHosekSkyModelState  * arhosekskymodelstate_alloc_init(
     state->solar_radius = ( 0.51 DEGREES ) / 2.0;
     state->turbidity    = atmospheric_turbidity;
     state->albedo       = ground_albedo;
-    state->elevation    = solar_elevation;
+    state->telev    = solar_elevation;
 
     for( unsigned int wl = 0; wl < 11; ++wl )
     {
@@ -411,7 +411,7 @@ ArHosekSkyModelState  * arhosekskymodelstate_alienworld_alloc_init(
 
     state->turbidity    = atmospheric_turbidity;
     state->albedo       = ground_albedo;
-    state->elevation    = solar_elevation;
+    state->telev    = solar_elevation;
     
     for( unsigned int wl = 0; wl < 11; ++wl )
     {
@@ -566,7 +566,7 @@ double arhosekskymodel_radiance(
 ArHosekSkyModelState  * arhosek_xyz_skymodelstate_alloc_init(
         const double  turbidity, 
         const double  albedo, 
-        const double  elevation
+        const double  telev
         )
 {
     ArHosekSkyModelState  * state = ALLOC(ArHosekSkyModelState);
@@ -574,7 +574,7 @@ ArHosekSkyModelState  * arhosek_xyz_skymodelstate_alloc_init(
     state->solar_radius = TERRESTRIAL_SOLAR_RADIUS;
     state->turbidity    = turbidity;
     state->albedo       = albedo;
-    state->elevation    = elevation;
+    state->telev    = telev;
     
     for( unsigned int channel = 0; channel < 3; ++channel )
     {
@@ -583,7 +583,7 @@ ArHosekSkyModelState  * arhosek_xyz_skymodelstate_alloc_init(
             state->configs[channel], 
             turbidity, 
             albedo, 
-            elevation
+            telev
             );
         
         state->radiances[channel] = 
@@ -591,7 +591,7 @@ ArHosekSkyModelState  * arhosek_xyz_skymodelstate_alloc_init(
             datasetsXYZRad[channel],
             turbidity, 
             albedo,
-            elevation
+            telev
             );
     }
     
@@ -602,7 +602,7 @@ ArHosekSkyModelState  * arhosek_xyz_skymodelstate_alloc_init(
 ArHosekSkyModelState  * arhosek_rgb_skymodelstate_alloc_init(
         const double  turbidity, 
         const double  albedo, 
-        const double  elevation
+        const double  telev
         )
 {
     ArHosekSkyModelState* state = ALLOC(ArHosekSkyModelState);
@@ -610,7 +610,7 @@ ArHosekSkyModelState  * arhosek_rgb_skymodelstate_alloc_init(
     state->solar_radius = TERRESTRIAL_SOLAR_RADIUS;
     state->turbidity    = turbidity;
     state->albedo       = albedo;
-    state->elevation    = elevation;
+    state->telev    = telev;
 
     for( unsigned int channel = 0; channel < 3; ++channel )
     {
@@ -619,7 +619,7 @@ ArHosekSkyModelState  * arhosek_rgb_skymodelstate_alloc_init(
             state->configs[channel], 
             turbidity, 
             albedo, 
-            elevation
+            telev
             );
         
         state->radiances[channel] = 
@@ -627,7 +627,7 @@ ArHosekSkyModelState  * arhosek_rgb_skymodelstate_alloc_init(
             datasetsRGBRad[channel],
             turbidity, 
             albedo,
-            elevation
+            telev
             );
     }
     
@@ -657,11 +657,11 @@ double arhosekskymodel_sr_internal(
         ArHosekSkyModelState  * state,
         int                     turbidity,
         int                     wl,
-        double                  elevation
+        double                  telev
         )
 {
     int pos =
-        (int) (pow(2.0*elevation / MATH_PI, 1.0/3.0) * pieces); // floor
+        (int) (pow(2.0*telev / MATH_PI, 1.0/3.0) * pieces); // floor
     
     if ( pos > 44 ) pos = 44;
     
@@ -672,7 +672,7 @@ double arhosekskymodel_sr_internal(
         solarDatasets[wl] + (order * pieces * turbidity + order * (pos+1) - 1);
 
     double res = 0.0;
-    const double x = elevation - break_x;
+    const double x = telev - break_x;
     double x_exp = 1.0;
 
     for (int i = 0; i < order; ++i)
@@ -687,7 +687,7 @@ double arhosekskymodel_sr_internal(
 double arhosekskymodel_solar_radiance_internal2(
         ArHosekSkyModelState  * state,
         double                  wavelength,
-        double                  elevation,
+        double                  telev,
         double                  gamma
         )
 {
@@ -724,14 +724,14 @@ double arhosekskymodel_solar_radiance_internal2(
                      state,
                      turb_low,
                      wl_low,
-                     elevation
+                     telev
                    )
            +   wl_frac
              * arhosekskymodel_sr_internal(
                      state,
                      turb_low,
                      wl_low+1,
-                     elevation
+                     telev
                    )
           )
       +   turb_frac
@@ -740,14 +740,14 @@ double arhosekskymodel_solar_radiance_internal2(
                      state,
                      turb_low+1,
                      wl_low,
-                     elevation
+                     telev
                    )
            +   wl_frac
              * arhosekskymodel_sr_internal(
                      state,
                      turb_low+1,
                      wl_low+1,
-                     elevation
+                     telev
                    )
           );
 

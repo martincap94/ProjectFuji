@@ -818,6 +818,15 @@ int runApp() {
 
 			//lbm->doStepCUDA();
 
+			if (vars.useSkySunColor) {
+				glm::vec3 sc = hosek->getSunColor();
+				//cout << "sun color: " << sc.x << ", " << sc.y << ", " << sc.z << endl;
+				float maxColor = max(max(sc.x, sc.y), sc.z);
+				rangeToRange(sc, 0.0f, maxColor, 0.0f, 1.0f);
+
+				dirLight->color = sc;
+			}
+
 
 			if (vars.simulateSun) {
 				dirLight->circularMotionStep(deltaTime);

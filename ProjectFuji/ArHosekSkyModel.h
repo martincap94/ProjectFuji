@@ -119,7 +119,7 @@ snippet, we assume that 'albedo' is defined as
 
     double  albedo[num_channels];
 
-with a ground albedo value between [0,1] for each channel. The solar elevation  
+with a ground albedo value between [0,1] for each channel. The solar telev  
 is given in radians.
 
     for ( unsigned int i = 0; i < num_channels; i++ )
@@ -344,7 +344,7 @@ typedef struct ArHosekSkyModelState
     double                        emission_correction_factor_sky[11];
     double                        emission_correction_factor_sun[11];
     double                        albedo;
-    double                        elevation;
+    double                        telev;
 } 
 ArHosekSkyModelState;
 
@@ -418,14 +418,14 @@ double arhosekskymodel_radiance(
 ArHosekSkyModelState  * arhosek_xyz_skymodelstate_alloc_init(
         const double  turbidity, 
         const double  albedo, 
-        const double  elevation
+        const double  telev
         );
 
 
 ArHosekSkyModelState  * arhosek_rgb_skymodelstate_alloc_init(
         const double  turbidity, 
         const double  albedo, 
-        const double  elevation
+        const double  telev
         );
 
 

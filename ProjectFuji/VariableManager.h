@@ -119,6 +119,8 @@ public:
 
 	int run_harris_1st_pass_inNextFrame = 0;
 
+	int useSkySunColor = 1;
+
 
 	// Particle System variables
 	int maxPositionRecalculations;

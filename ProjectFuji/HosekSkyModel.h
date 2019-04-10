@@ -20,6 +20,7 @@ public:
 	int calcParamMode = 0;
 	int useAndersonsRGBNormalization = 1;
 
+	float elevation;
 	double eta = 0.0; // angle "below" sun (between sun and xz plane)
 	double sunTheta = 0.0; // angle "above" sun (between sun and y plane)
 	
@@ -38,6 +39,8 @@ public:
 	//void update(DirectionalLight *sun);
 	void update(glm::vec3 sunDir);
 
+	glm::vec3 getColor(float cosTheta, float gamma, float cosGamma);
+	glm::vec3 getSunColor();
 
 	float getElevationDegrees();
 
@@ -58,7 +61,7 @@ private:
 	int prevCalcParamMode = calcParamMode;
 	int prevUseAndersonsRGBNormalization = useAndersonsRGBNormalization;
 
-	double elevation = 0.0;
+	double telev = 0.0;
 
 	ShaderProgram *shader = nullptr;
 
@@ -68,7 +71,6 @@ private:
 
 	bool shouldUpdate(float newEta);
 
-	glm::vec3 getColor(float cosTheta, float gamma, float cosGamma);
 
 	void recalculateParams(glm::vec3 sunDir);
 

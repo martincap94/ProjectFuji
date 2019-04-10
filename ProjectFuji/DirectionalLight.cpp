@@ -84,8 +84,14 @@ void DirectionalLight::circularMotionStep(float deltaTime) {
 	position += focusPoint; // offset by circle center (focus point)
 
 	theta += circularMotionSpeed * deltaTime;
-	if (theta >= 360.0f) {
-		theta = 0.0f;
+	if (skipNightTime) {
+		if (theta >= 180.0f) {
+			theta = 0.0f;
+		}
+	} else {
+		if (theta >= 360.0f) {
+			theta = 0.0f;
+		}
 	}
 
 }

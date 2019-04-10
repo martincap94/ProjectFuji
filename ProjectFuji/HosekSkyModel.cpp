@@ -65,6 +65,7 @@ void HosekSkyModel::update(glm::vec3 sunDir) {
 
 	shader->use();
 
+	elevation = -sunDir.y;
 	eta = asinf(-sunDir.y);
 	sunTheta = acosf(-sunDir.y);
 	//cout << "ETA: " << eta << endl;
@@ -138,16 +139,32 @@ glm::vec3 HosekSkyModel::getColor(float cosTheta, float gamma, float cosGamma) {
 	auto I = params[8];
 
 	glm::vec3 chi = (1 + cosGamma * cosGamma) / glm::pow(glm::vec3(1.0f) + H * H - 2.0f * cosGamma * H, glm::vec3(1.5));
-	return (glm::vec3(1.0f) + A * glm::exp(B / (cosTheta + 0.01f))) * (C + D * glm::exp(E * gamma) + F * (cosGamma * cosGamma) + G * chi + I * sqrt(cosTheta));
+	return (glm::vec3(1.0f) + A * glm::exp(B / (cosTheta + glm::vec3(horizonOffset)))) * (C + D * glm::exp(E * gamma) + F * (cosGamma * cosGamma) + G * chi + I * sqrt(cosTheta));
+}
+
+glm::vec3 HosekSkyModel::getSunColor() {
+	glm::vec3 sunColor = params[9] * getColor(elevation, 0.0f, 1.0f);
+	//sunColor += sunIntensity; // simplified calculation from fragment shader since cosGamma == 1.0 (pow(cosGamma, u_SunExponent) == 1.0)
+	
+	// testing: get multiple samples samples
+	//glm::vec3 sunColor = glm::vec3(0.0f);
+	//sunColor += getColor(elevation + glm::radians(1.0f), 0.0f, 1.0f);
+	//sunColor += getColor(elevation + glm::radians(0.5f), 0.0f, 1.0f);
+	//sunColor += getColor(elevation, 0.0, 1.0f);
+	//sunColor += getColor(elevation, 1.0f, cosf(1.0f));
+	//sunColor *= params[9];
+	//sunColor /= 4;
+
+	return sunColor;
 }
 
 void HosekSkyModel::recalculateParams(glm::vec3 sunDir) {
 
 
-	elevation = pow(eta / (MATH_PI / 2.0), (1.0 / 3.0));
-	//cout << "testElev  = " << elevation << endl;
-	//elevation = pow(1.0 - sunTheta / (MATH_PI / 2.0), (1.0 / 3.0));
-	//cout << "testElev2 = " << elevation << endl;
+	telev = pow(eta / (MATH_PI / 2.0), (1.0 / 3.0));
+	//cout << "testElev  = " << telev << endl;
+	//telev = pow(1.0 - sunTheta / (MATH_PI / 2.0), (1.0 / 3.0));
+	//cout << "testElev2 = " << telev << endl;
 
 	for (int i = 0; i < 3; i++) {
 		params[0][i] = calculateParam(&datasetsRGB[i][0], 9);
@@ -196,19 +213,18 @@ double HosekSkyModel::calculateParam(double *dataset, int stride) {
 
 double HosekSkyModel::calculateBezier(double * dataset, int start, int stride) {
 	return
-		1.0 * pow(1.0 - elevation, 5.0) * dataset[start + 0 * stride] +
-		5.0 * pow(1.0 - elevation, 4.0) * dataset[start + 1 * stride] * elevation +
-		10.0 * pow(1.0 - elevation, 3.0) * dataset[start + 2 * stride] * pow(elevation, 2.0) +
-		10.0 * pow(1.0 - elevation, 2.0) * dataset[start + 3 * stride] * pow(elevation, 3.0) +
-		5.0 * (1.0 - elevation) * dataset[start + 4 * stride] * pow(elevation, 4.0) +
-		1.0 * dataset[start + 5 * stride] * pow(elevation, 5.0);
+		1.0 * pow(1.0 - telev, 5.0) * dataset[start + 0 * stride] +
+		5.0 * pow(1.0 - telev, 4.0) * dataset[start + 1 * stride] * telev +
+		10.0 * pow(1.0 - telev, 3.0) * dataset[start + 2 * stride] * pow(telev, 2.0) +
+		10.0 * pow(1.0 - telev, 2.0) * dataset[start + 3 * stride] * pow(telev, 3.0) +
+		5.0 * (1.0 - telev) * dataset[start + 4 * stride] * pow(telev, 4.0) +
+		1.0 * dataset[start + 5 * stride] * pow(telev, 5.0);
 }
 
 void HosekSkyModel::normalizeRGBParams(glm::vec3 sunDir) {
 	if (useAndersonsRGBNormalization) {
 		glm::vec3 S = getColor(-sunDir.y, 0.0f, 1.0f) * params[9];
 		params[9] /= glm::dot(S, glm::vec3(0.2126f, 0.7152f, 0.0722f));
-
 
 		float sunAmount = fmodf(((-sunDir.y) / (MATH_PI / 2.0f)), 4.0f);
 		if (sunAmount > 2.0f) {

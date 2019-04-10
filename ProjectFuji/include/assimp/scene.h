@@ -210,7 +210,7 @@ struct ASSIMP_API aiNode
  * Denotes pure height-map terrain data. Pure terrains usually consist of quads,
  * sometimes triangles, in a regular grid. The x,y coordinates of all vertex
  * positions refer to the x,y coordinates on the terrain height map, the z-axis
- * stores the elevation at a specific point.
+ * stores the telev at a specific point.
  *
  * TER (Terragen) and HMP (3D Game Studio) are height map formats.
  * @note Assimp is probably not the best choice for loading *huge* terrains -
