@@ -222,6 +222,8 @@ ShaderProgram *normalsShader;
 ShaderProgram *normalsInstancedShader;
 ShaderProgram *grassShader;
 
+ShaderProgram *pbrTest;
+
 
 /// Main - runs the application and sets seed for the random number generator.
 int main(int argc, char **argv) {
@@ -340,6 +342,8 @@ int runApp() {
 	normalsInstancedShader = ShaderManager::getShaderPtr("normals_instanced");
 	grassShader = ShaderManager::getShaderPtr("grass_instanced");
 
+	pbrTest = ShaderManager::getShaderPtr("pbr_test");
+
 	vars.heightMap = new HeightMap(&vars/*, vars.sceneFilename, vars.latticeHeight*/);
 	tPicker = new TerrainPicker(&vars);
 	//vars.heightMap->vars = &vars;
@@ -444,6 +448,9 @@ int runApp() {
 	Model treeModel("models/Tree.obj", &treeMat, normalsInstancedShader);
 
 	Model unitboxModel("models/unitbox.fbx");
+
+	Model lamp("models/BankersLamp.fbx");
+	lamp.transform.scale = glm::vec3(100.0f);
 
 	grassModel.makeInstancedMaterialMap(vars.heightMap, 5000000, 0, glm::vec2(1.5f, 3.0f));
 	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
@@ -564,6 +571,7 @@ int runApp() {
 	ui->stlpSimCUDA = stlpSimCUDA;
 	ui->hosek = hosek;
 	ui->sps = streamlineParticleSystem;
+
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
 		// enable flags each frame because nuklear disables them when it is rendered	
@@ -892,6 +900,20 @@ int runApp() {
 
 			testMesh.draw();
 			armoireModel.draw();
+
+
+
+			// TESTING PBR
+			pbrTest->use();
+
+			pbrTest->setVec3("albedo", vars.pbrAlbedo);
+			pbrTest->setFloat("metallic", vars.pbrMetallic);
+			pbrTest->setFloat("roughness", vars.pbrRoughness);
+			pbrTest->setFloat("ao", vars.pbrAmbientOpacity);
+
+
+			lamp.drawGeometry(pbrTest);
+
 
 
 			if (vars.drawTrees) {

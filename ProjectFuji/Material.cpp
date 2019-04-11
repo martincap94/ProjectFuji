@@ -61,6 +61,7 @@ void Material::use(ShaderProgram &shader) {
 void Material::use(ShaderProgram *shader) {
 	shader->setFloat("u_Material.shininess", shininess);
 	shader->setFloat("u_Material.tiling", textureTiling);
+	setTextureUniforms(shader);
 	if (diffuseTexture) {
 		diffuseTexture->use(0);
 	}

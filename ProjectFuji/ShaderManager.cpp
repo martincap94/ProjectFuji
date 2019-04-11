@@ -132,6 +132,9 @@ namespace ShaderManager {
 			addShader("pass_thru", "pass_thru.vert", "pass_thru.frag");
 			addShader("visualize_normals", "visualize_normals.vert", "visualize_normals.frag", "visualize_normals.geom");
 
+			addShader("pbr_test", "pbr_test.vert", "pbr_test.frag", "", ShaderProgram::LIT, ShaderProgram::PBR);
+
+
 		}
 	}
 

@@ -130,15 +130,18 @@ void Model::useMaterial() {
 	useMaterial(shader);
 }
 
-void Model::useMaterial(ShaderProgram * shader) {
-	shader->setInt("u_Material.diffuse", 0);
-	shader->setInt("u_Material.specular", 1);
-	shader->setInt("u_Material.normalMap", 2);
-	shader->setFloat("u_Material.shininess", material->shininess);
+void Model::useMaterial(ShaderProgram *shader) {
 
-	material->diffuseTexture->use(0);
-	material->specularMap->use(1);
-	material->normalMap->use(2);
+	material->use(shader);
+
+	//shader->setInt("u_Material.diffuse", 0);
+	//shader->setInt("u_Material.specular", 1);
+	//shader->setInt("u_Material.normalMap", 2);
+	//shader->setFloat("u_Material.shininess", material->shininess);
+
+	//material->diffuseTexture->use(0);
+	//material->specularMap->use(1);
+	//material->normalMap->use(2);
 }
 
 void Model::loadModel(string path) {
