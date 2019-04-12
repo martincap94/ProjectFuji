@@ -215,6 +215,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CDFSamplerMultiChannel.cpp" />
+    <ClCompile Include="ParticleRenderer_backup.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">

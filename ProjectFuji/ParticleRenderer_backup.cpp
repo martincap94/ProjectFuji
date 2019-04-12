@@ -149,7 +149,7 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 	viewVec = glm::normalize(cam->front); // normalize just to be sure (camera front should always be normalized)
 	
 
-	lightVec = dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
+	lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
 
 	//viewVec.y = 0.0f;
 	//lightVec.y = 0.0f;
@@ -159,16 +159,6 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 
 	//cout << glm::dot(viewVec, lightVec) << endl;
 
-
-	if (glm::dot(viewVec, lightVec) > 0.0) {
-		halfVec = glm::normalize(viewVec + lightVec);
-		invertedView = true;
-	} else {
-		halfVec = glm::normalize(-viewVec + lightVec);
-		invertedView = false;
-	}
-
-	/*
 	if (glm::dot(viewVec, lightVec) > inversionThreshold) {
 		halfVec = glm::normalize(viewVec + lightVec);
 		if (forceHalfVecToFaceCam) {
@@ -184,7 +174,6 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 		}
 		invertedView = true;
 	}
-	*/
 
 	/*
 	lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec

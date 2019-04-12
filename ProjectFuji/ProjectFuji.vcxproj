@@ -179,6 +179,10 @@
     <CudaCompile Include="ParticleSystem.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
+    <ClCompile Include="ParticleRenderer_backup.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ParticleRenderer.cpp" />
     <ClCompile Include="PositionalEmitter.cpp" />
     <ClCompile Include="ppmImage.cpp" />

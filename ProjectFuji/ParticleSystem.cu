@@ -42,7 +42,7 @@ __global__ void computeParticleProjectedDistances(glm::vec3 *particleVertices, f
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 
 	if (idx < numParticles) {
-		particleDistances[idx] = -glm::dot(particleVertices[idx], sortVector);
+		particleDistances[idx] = glm::dot(particleVertices[idx], sortVector);
 	}
 
 
