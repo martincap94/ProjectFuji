@@ -332,6 +332,8 @@
     <None Include="shaders\grass_instanced.vert" />
     <None Include="shaders\pbr_test.vert" />
     <None Include="shaders\pbr_test.frag" />
+    <None Include="shaders\terrain_pbr.frag" />
+    <None Include="shaders\terrain_pbr.vert" />
     <None Include="shaders\terrain_picker.frag" />
     <None Include="shaders\terrain_picker.vert" />
     <None Include="shaders\visualize_normals.geom" />

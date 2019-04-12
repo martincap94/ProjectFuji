@@ -344,14 +344,9 @@ int runApp() {
 
 	pbrTest = ShaderManager::getShaderPtr("pbr_test");
 
-	vars.heightMap = new HeightMap(&vars/*, vars.sceneFilename, vars.latticeHeight*/);
+	vars.heightMap = new HeightMap(&vars);
 	tPicker = new TerrainPicker(&vars);
-	//vars.heightMap->vars = &vars;
 
-	//struct nk_colorf particlesColor;
-
-
-	//particleSystemLBM = new ParticleSystemLBM(vars.numParticles, vars.drawStreamlines);
 	particleSystem = new ParticleSystem(&vars);
 	particleRenderer = new ParticleRenderer(&vars, particleSystem);
 
@@ -449,11 +444,36 @@ int runApp() {
 
 	Model unitboxModel("models/unitbox.fbx");
 
+
+	// PBR TESTING
+
+	Model cerberus("models/Cerberus_LP.fbx");
+	cerberus.transform.position = glm::vec3(4000.0f, 15000.0f, 4000.0f);
+	cerberus.transform.scale = glm::vec3(100.0f);
+
+
+	Texture *calbedo = TextureManager::loadTexture("textures/Cerberus/Cerberus_A.png");
+	Texture *cnormalMap = TextureManager::loadTexture("textures/Cerberus/Cerberus_N.png");
+	Texture *cmetallic = TextureManager::loadTexture("textures/Cerberus/Cerberus_MS.png");
+	Texture *cao = TextureManager::loadTexture("textures/Cerberus/Cerberus_AO.png");
+
+
 	Model lamp("models/BankersLamp.fbx");
 	lamp.transform.scale = glm::vec3(100.0f);
 
-	grassModel.makeInstancedMaterialMap(vars.heightMap, 5000000, 0, glm::vec2(1.5f, 3.0f));
-	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
+	Texture *albedo = TextureManager::loadTexture("textures/BankersLamp_Textures/BankersLamp_DefaultMaterial_AlbedoTransparency.png");
+	Texture *normalMap = TextureManager::loadTexture("textures/BankersLamp_Textures/BankersLamp_DefaultMaterial_Normal.png");
+	Texture *metallic = TextureManager::loadTexture("textures/BankersLamp_Textures/BankersLamp_DefaultMaterial_MetallicSmoothness.png");
+	Texture *ao = TextureManager::loadTexture("textures/BankersLamp_Textures/BankersLamp_DefaultMaterial_AO.png");
+
+
+
+
+
+
+
+	//grassModel.makeInstancedMaterialMap(vars.heightMap, 500000, 0, glm::vec2(1.5f, 3.0f));
+	//treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
 
 	testModel.transform.position = glm::vec3(3500.0f, 0.0f, 8500.0f);
 	//testModel.transform.scale = glm::vec3(20.0f);
@@ -483,33 +503,17 @@ int runApp() {
 
 	double prevTime = glfwGetTime();
 	long long int totalFrameCounter = 0;
-	//int measurementFrameCounter = 0;
-	//double accumulatedTime = 0.0;
-
-
-	CHECK_ERROR(cudaPeekAtLastError());
 
 
 
-	//stlpSim = new STLPSimulator(&vars, &stlpDiagram);
 	stlpSimCUDA = new STLPSimulatorCUDA(&vars, &stlpDiagram);
 
-	CHECK_ERROR(cudaPeekAtLastError());
-
-	//stlpSim->initParticles();
-	//stlpSimCUDA->initParticles();
 	particleSystem->stlpSim = stlpSimCUDA;
 	stlpSimCUDA->particleSystem = particleSystem;
 
-	//stlpSimCUDA->initCUDA();
+
 	stlpSimCUDA->initCUDAGeneral();
 	stlpSimCUDA->uploadDataFromDiagramToGPU();
-
-
-	//stlpDiagram.particlesVAO = stlpSimCUDA->diagramParticlesVAO; // hack
-
-	CHECK_ERROR(cudaPeekAtLastError());
-
 
 
 	particleSystem->initParticlesOnTerrain();
@@ -906,14 +910,30 @@ int runApp() {
 			// TESTING PBR
 			pbrTest->use();
 
-			pbrTest->setVec3("albedo", vars.pbrAlbedo);
-			pbrTest->setFloat("metallic", vars.pbrMetallic);
-			pbrTest->setFloat("roughness", vars.pbrRoughness);
-			pbrTest->setFloat("ao", vars.pbrAmbientOpacity);
+			//pbrTest->setVec3("albedo", vars.pbrAlbedo);
+			//pbrTest->setFloat("metallic", vars.pbrMetallic);
+			//pbrTest->setFloat("roughness", vars.pbrRoughness);
+			//pbrTest->setFloat("ao", vars.pbrAmbientOcclusion);
 
+			pbrTest->setInt("albedoTex", 0);
+			pbrTest->setInt("metallicSmoothnessTex", 1);
+			pbrTest->setInt("normalMapTex", 2);
+			pbrTest->setInt("aoTex", 3);
+
+			albedo->use(0);
+			metallic->use(1);
+			normalMap->use(2);
+			ao->use(3);
 
 			lamp.drawGeometry(pbrTest);
 
+			
+			calbedo->use(0);
+			cmetallic->use(1);
+			cnormalMap->use(2);
+			cao->use(3);
+
+			cerberus.drawGeometry(pbrTest);
 
 
 			if (vars.drawTrees) {
@@ -1118,6 +1138,11 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
 		//camera->processKeyboardMovement(Camera::ROTATE_RIGHT, deltaTime);
 		camera->processKeyboardMovement(GLFW_KEY_Q, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
+		if (vars.useFreeRoamCamera) {
+			((FreeRoamCamera*)camera)->snapToGround();
+		}
 	}
 	if (glfwGetKey(window, vars.hideUIKey) == GLFW_PRESS) {
 		if (vars.prevHideUIKeyState == GLFW_RELEASE) {

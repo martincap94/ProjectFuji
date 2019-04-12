@@ -654,5 +654,11 @@
     <None Include="shaders\pbr_test.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="shaders\terrain_pbr.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\terrain_pbr.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -18,15 +18,15 @@ Texture::Texture(unsigned int id, int width, int height, int numChannels, string
 }
 
 
-Texture::Texture(const char *path, unsigned int textureUnit, bool clampEdges) : textureUnit(textureUnit) {
-	loadTexture(path, clampEdges);
+Texture::Texture(const char *path, unsigned int textureUnit, bool sRGB, bool clampEdges) : textureUnit(textureUnit) {
+	loadTexture(path, sRGB, clampEdges);
 }
 
 
 Texture::~Texture() {
 }
 
-bool Texture::loadTexture(const char *path, bool clampEdges) {
+bool Texture::loadTexture(const char *path, bool sRGB, bool clampEdges) {
 	filename = path;
 
 	stbi_set_flip_vertically_on_load(true);
@@ -53,10 +53,11 @@ bool Texture::loadTexture(const char *path, bool clampEdges) {
 			format = GL_RED;
 			break;
 		case 3:
-			format = GL_RGB;
+			format = sRGB ? GL_SRGB : GL_RGB;
+			//format = GL_SRGB
 			break;
 		case 4:
-			format = GL_RGBA;
+			format = sRGB ? GL_SRGB_ALPHA : GL_RGBA;
 			break;
 		default:
 			format = GL_RGB;

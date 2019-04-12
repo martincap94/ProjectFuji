@@ -52,9 +52,9 @@ namespace TextureManager {
 		textures.insert(make_pair(tex->filename, tex));
 	}
 
-	Texture * loadTexture(std::string filename) {
+	Texture * loadTexture(std::string filename, bool sRGB) {
 		if (textures.count(filename) == 0) {
-			textures.insert(make_pair(filename, new Texture(filename.c_str())));
+			textures.insert(make_pair(filename, new Texture(filename.c_str(), 0, sRGB)));
 		}
 		return textures[filename];
 	}

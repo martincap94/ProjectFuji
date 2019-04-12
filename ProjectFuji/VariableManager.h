@@ -147,7 +147,7 @@ public:
 	glm::vec3 pbrAlbedo = glm::vec3(0.8f, 0.05f, 0.05f);
 	float pbrMetallic = 0.0f;
 	float pbrRoughness = 0.0f;
-	float pbrAmbientOpacity = 0.01f;
+	float pbrAmbientOcclusion = 0.01f;
 
 
 

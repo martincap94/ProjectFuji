@@ -51,7 +51,7 @@ public:
 		\param[in] textureUnit		Texture unit which should be used when the texture is used.
 		\param[in] clampEdges		Whether to use GL_CLAMP_TO_EDGE or GL_REPEAT.
 	*/
-	Texture(const char *path, unsigned int textureUnit = 0, bool clampEdges = false);
+	Texture(const char *path, unsigned int textureUnit = 0, bool sRGB = false, bool clampEdges = false);
 	~Texture();
 
 
@@ -61,7 +61,7 @@ public:
 		\param[in] path				Path to the texture file.
 		\param[in] clampEdges		Whether to use GL_CLAMP_TO_EDGE or GL_REPEAT.
 	*/
-	bool loadTexture(const char *path, bool clampEdges = false);
+	bool loadTexture(const char *path, bool sRGB = false, bool clampEdges = false);
 
 	/// Activates and binds the texture to the textureUnit.
 	void useTexture();
