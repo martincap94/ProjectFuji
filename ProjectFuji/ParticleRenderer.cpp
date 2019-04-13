@@ -47,7 +47,7 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) :
 ParticleRenderer::~ParticleRenderer() {
 }
 
-void ParticleRenderer::clearLightFramebuffer(DirectionalLight * dirLight) {
+void ParticleRenderer::setLightTextureBorders(DirectionalLight * dirLight) {
 
 	GLfloat borderColor[4] = { 1.0f - dirLight->color.x, 1.0f - dirLight->color.y, 1.0f - dirLight->color.z, 0.0f };
 
@@ -83,7 +83,7 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 
 }
 
-void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, Camera *cam) {
+void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Camera *cam) {
 
 	// Set member variables for later use - must precede all rendering steps
 	this->ps = ps;
@@ -91,6 +91,8 @@ void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, C
 	this->cam = cam;
 
 	shadowAlpha = shadowAlpha100x * 0.01f;
+
+	setLightTextureBorders(dirLight);
 
 
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -160,7 +162,7 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 	//cout << glm::dot(viewVec, lightVec) << endl;
 
 
-	if (glm::dot(viewVec, lightVec) > 0.0) {
+	if (glm::dot(viewVec, lightVec) > inversionThreshold) {
 		halfVec = glm::normalize(viewVec + lightVec);
 		invertedView = true;
 	} else {
@@ -417,6 +419,16 @@ void ParticleRenderer::drawSlices() {
 	glClearColor(1.0f - dirLight->color.x, 1.0f - dirLight->color.y, 1.0f - dirLight->color.z, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	/*
+	// this is redundant
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[1 - srcLightTexture], 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[srcLightTexture], 0);
+	*/
+
+
 	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -436,6 +448,7 @@ void ParticleRenderer::drawSlices() {
 
 		if (useBlurPass) {
 			blurLightTexture();
+			spriteTexture->use(0);
 		}
 		CHECK_GL_ERRORS();
 	}
@@ -477,6 +490,8 @@ void ParticleRenderer::drawSliceLightView(int i) {
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[srcLightTexture], 0);
+
 	glViewport(0, 0, lightBufferResolution, lightBufferResolution);
 
 	// TODO -> set color (or color modifier if color taken from texture)
@@ -582,8 +597,6 @@ void ParticleRenderer::blurLightTexture() {
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[1 - srcLightTexture], 0);
 
-	//glClear(GL_COLOR_BUFFER_BIT);
-
 	glViewport(0, 0, lightBufferResolution, lightBufferResolution);
 
 
@@ -591,6 +604,7 @@ void ParticleRenderer::blurLightTexture() {
 	glBindTextureUnit(0, lightTexture[srcLightTexture]);
 
 	glUniform1i(glGetUniformLocation(pid, "u_InputTexture"), 0);
+	blurShader->setFloat("u_BlurAmount", blurAmount);
 
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);

@@ -654,6 +654,7 @@ void UserInterface::constructLightingTab() {
 	nk_label(ctx, "EVSM", NK_TEXT_CENTERED);
 
 	nk_checkbox_label(ctx, "use blur pass:", (int *)&evsm->useBlurPass);
+
 	nk_property_float(ctx, "shadowBias:", 0.0f, &evsm->shadowBias, 1.0f, 0.0001f, 0.0001f);
 	nk_property_float(ctx, "light bleed reduction:", 0.0f, &evsm->lightBleedReduction, 1.0f, 0.0001f, 0.0001f);
 	//nk_property_float(ctx, "variance min limit:", 0.0f, &evsm.varianceMinLimit, 1.0f, 0.0001f, 0.0001f);
@@ -1076,6 +1077,8 @@ void UserInterface::constructCloudVisualizationTab() {
 	nk_checkbox_label(ctx, "Use atlas texture", &particleRenderer->useAtlasTexture);
 
 	nk_checkbox_label(ctx, "Blur light texture", &particleRenderer->useBlurPass);
+	nk_property_float(ctx, "blur amount", 0.0f, &particleRenderer->blurAmount, 10.0f, 0.01f, 0.01f);
+
 
 }
 

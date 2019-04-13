@@ -564,6 +564,8 @@ int runApp() {
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[0]"), 0);
 	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[1]"), 1);
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("imageTexture"), 1);
+	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[1]"), 2);
+
 
 	// Provisional settings
 	ui->dirLight = dirLight;
@@ -810,6 +812,10 @@ int runApp() {
 			}
 
 			if (vars.stlpUseCUDA) {
+
+				particleSystem->doStep();
+
+
 				if (vars.applyLBM) {
 					if (totalFrameCounter % vars.lbmStepFrame == 0) {
 						lbm->doStepCUDA();
@@ -817,7 +823,6 @@ int runApp() {
 				}
 
 				//particleSystem->update();
-				particleSystem->doStep();
 
 				if (vars.applySTLP) {
 					if (totalFrameCounter % vars.stlpStepFrame == 0) {
@@ -906,6 +911,7 @@ int runApp() {
 			armoireModel.draw();
 
 
+			/*
 
 			// TESTING PBR
 			pbrTest->use();
@@ -934,7 +940,7 @@ int runApp() {
 			cao->use(3);
 
 			cerberus.drawGeometry(pbrTest);
-
+			*/
 
 			if (vars.drawTrees) {
 				treeModel.draw();
@@ -998,7 +1004,7 @@ int runApp() {
 			particleRenderer->postSceneRenderImage();
 
 
-			particleRenderer->render(particleSystem, dirLight, camera);
+			particleRenderer->draw(particleSystem, dirLight, camera);
 
 			/*
 							glDisable(GL_BLEND);

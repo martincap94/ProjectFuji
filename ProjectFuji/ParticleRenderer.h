@@ -61,6 +61,7 @@ public:
 	int compositeResultToFramebuffer = 1;
 
 	int useBlurPass = 0;
+	float blurAmount = 1.0f;
 
 	// for easier testing
 	int firstPassShaderMode = 0;
@@ -77,7 +78,7 @@ public:
 	int useAtlasTexture = 0;
 	int showParticlesBelowCCL = 0;
 
-	float inversionThreshold = -0.5f;
+	float inversionThreshold = 0.0f;
 
 	ePhaseFunction phaseFunction = ePhaseFunction::HENYEY_GREENSTEIN;
 	int multiplyPhaseByShadow = 1;
@@ -95,11 +96,11 @@ public:
 	~ParticleRenderer();
 
 
-	void clearLightFramebuffer(DirectionalLight *dirLight);
+	void setLightTextureBorders(DirectionalLight *dirLight);
 
 
 	void setShaderUniforms(ShaderProgram *shader);
-	void render(ParticleSystem *ps, DirectionalLight *dirLight, Camera *cam);
+	void draw(ParticleSystem *ps, DirectionalLight *dirLight, Camera *cam);
 
 	void recalcVectors(Camera *cam, DirectionalLight *dirLight);
 

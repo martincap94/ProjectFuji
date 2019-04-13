@@ -47,7 +47,7 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) :
 ParticleRenderer::~ParticleRenderer() {
 }
 
-void ParticleRenderer::clearLightFramebuffer(DirectionalLight * dirLight) {
+void ParticleRenderer::setLightTextureBorders(DirectionalLight * dirLight) {
 
 	GLfloat borderColor[4] = { 1.0f - dirLight->color.x, 1.0f - dirLight->color.y, 1.0f - dirLight->color.z, 0.0f };
 
@@ -83,7 +83,7 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 
 }
 
-void ParticleRenderer::render(ParticleSystem * ps, DirectionalLight *dirLight, Camera *cam) {
+void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Camera *cam) {
 
 	// Set member variables for later use - must precede all rendering steps
 	this->ps = ps;

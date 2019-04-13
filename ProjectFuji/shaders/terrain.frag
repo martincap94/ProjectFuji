@@ -170,8 +170,12 @@ void main() {
 			vec3 cloudShadow = vec3(1.0);
 			vec4 cloudShadowVals =  texture(u_CloudShadowTexture, projCoords.xy);
 
-			cloudShadow -= min(cloudShadowVals.xyz + cloudShadowVals.a * u_CloudCastShadowAlphaMultiplier, 1.0); // testing out ideas
+			cloudShadow -= min(cloudShadowVals.xyz + cloudShadowVals.a * u_CloudCastShadowAlphaMultiplier, 0.8); // testing out ideas
 			//cloudShadow -= cloudShadowVals.xyz; // simple
+
+			//if (cloudShadowVals.a > 0.9) {
+			//	cloudShadow -= min(cloudShadowVals.xyz, 0.8);
+			//}
 
 			result *= cloudShadow;
 

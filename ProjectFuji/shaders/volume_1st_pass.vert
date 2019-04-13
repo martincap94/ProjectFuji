@@ -23,7 +23,7 @@ void main(void) {
 		pointScale = u_WorldPointSize * 100.0 / lightDist;
 	} else {
 		float cameraDist = distance(vec3(a_Pos), u_CameraPos);
-		float pointScale = u_WorldPointSize * 100.0 / cameraDist;
+		pointScale = u_WorldPointSize * 100.0 / cameraDist;
 	}
 
 	gl_Position = u_Projection * u_View * a_Pos;
