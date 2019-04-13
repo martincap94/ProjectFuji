@@ -19,6 +19,7 @@
 #include "Config.h"
 #include "Texture.h"
 #include "Material.h"
+#include "PBRMaterial.h"
 #include "CDFSampler.h"
 #include "CDFSamplerMultiChannel.h"
 
@@ -63,11 +64,15 @@ public:
 	float specularIntensity = 0.75f;
 
 
+	int activeMaterialCount = 0;
+
+
 	VariableManager *vars;
 	std::string heightMapFilename = "";
 
 
 	Material materials[MAX_TERRAIN_MATERIALS];
+	PBRMaterial pbrMaterials[MAX_TERRAIN_MATERIALS - 1];
 
 	Texture *terrainNormalMap;
 	Texture *materialMap;

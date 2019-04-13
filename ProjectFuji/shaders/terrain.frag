@@ -155,7 +155,7 @@ void main() {
 		if (u_ShadowOnly) {
 			result = vec3(shadow);
 		} else {
-			vec3 color = calcDirLight(u_DirLight, norm, viewDir, materialMap);
+			vec3 color = calcDirLight(u_DirLight, norm, viewDir, materialContributions);
 			result = color * min(shadow + 0.2, 1.0);
 		}
 

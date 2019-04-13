@@ -20,22 +20,13 @@ struct DirLight {
 uniform DirLight u_DirLight;
 
 struct Material {
-	sampler2D diffuse;
-	sampler2D specular;
+	sampler2D albedo;
+	sampler2D metallicSmoothness;
 	sampler2D normalMap;
-	float shininess;
+	sampler2D ao;
 	float tiling;
-
-	//float ka;
-	//float kd;
-	//float ks;
 };
 
-uniform float u_ka;
-uniform float u_kd;
-uniform float u_ks;
-
-uniform sampler2D u_TestDiffuse;
 
 uniform Material[4] u_Materials;
 
@@ -90,16 +81,32 @@ uniform int u_NormalsMode = 0;
 uniform bool u_VisualizeTextureMode;
 
 
-vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec4 materialContributions);
-vec3 calcNightAmbientLight(vec4 materialContributions, vec3 ambientColor);
+const float PI = 3.14159265359;
 
-float calcShadowBasic(vec4 fragLightSpacePos);
+
+
+// Based on tutorial from learnopengl.com: https://learnopengl.com/PBR/Lighting
+//		by Joey De Vries
+float distributionGGX(vec3 N, vec3 H, float roughness);
+float geometrySchlickGGX(float NdotV, float roughness);
+float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
+vec3 fresnelSchlick(float cosTheta, vec3 F0);
+
+
+vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 albedo, vec2 ms, float ao);
+
 float calcShadow(vec4 fragLightSpacePos);
 float chebyshev(vec2 moments, float depth);
 float reduceLightBleed(float p_max, float amount);
 float linstep(float minVal, float maxVal, float val);
 float linstepMax(float val, float maxVal);
 vec4 linstepMaxVec4(vec4 val, float maxVal);
+
+vec3 computeNormalVec(vec4 materialContributions);
+vec4 computeAlbedo(vec4 materialContributions);
+vec2 computeMetallicSmoothness(vec4 materialContributions);
+float computeAmbientOcclusion(vec4 materialContributions);
+
 
 vec2 getTexCoords(int materialIdx);
 
@@ -116,13 +123,11 @@ void main() {
 	vec4 materialContributions = linstepMaxVec4(materialMap, dot(vec4(1.0), materialMap));
 
 
-	vec3 norm = 
-		materialContributions.r * texture(u_Materials[0].normalMap, getTexCoords(0)).rgb 
-		+ materialContributions.g * texture(u_Materials[1].normalMap, getTexCoords(1)).rgb
-		+ materialContributions.b * texture(u_Materials[2].normalMap, getTexCoords(2)).rgb
-		+ materialContributions.a * texture(u_Materials[3].normalMap, getTexCoords(3)).rgb;
+	vec3 norm;
 
 	if (u_NormalsMode == 0) {
+		norm = computeNormalVec(materialContributions);
+
 		norm = mix(norm, texture(u_TerrainNormalMap, u_GlobalNormalMapTiling * vec2(u_UVRatio * v_TexCoords.x, v_TexCoords.y)).rgb, u_GlobalNormalMapMixingRatio);
 
 		norm = normalize(norm);
@@ -141,51 +146,55 @@ void main() {
 
 
 	vec3 viewDir = normalize(u_ViewPos - v_FragPos.xyz);
-	//vec3 viewDir = normalize(v_FragPos.xyz - u_ViewPos);
 
-	
-	//if (u_DirLight.direction.y > 0.0) {
-	//	fragColor = vec4(calcNightAmbientLight(materialMap, vec3(0.2)), 1.0);
-	//} else {
+	float shadow = calcShadow(v_LightSpacePos);
 
-		float shadow = calcShadow(v_LightSpacePos);
+	vec3 result;
 
-		vec3 result;
+	if (u_ShadowOnly) {
+		result = vec3(shadow);
+	} else {
 
-		if (u_ShadowOnly) {
-			result = vec3(shadow);
-		} else {
-			vec3 color = calcDirLight(u_DirLight, norm, viewDir, materialMap);
-			result = color * min(shadow + 0.2, 1.0);
-		}
+		//vec3 albedo = vec3(computeAlbedo(materialContributions));
+		//vec2 metallicSmoothness = computeMetallicSmoothness(materialContributions);
+		//float ambientOcclusion = computeAmbientOcclusion(materialContributions);
 
+		vec3 albedo = texture(u_Materials[0].albedo, getTexCoords(0)).rgb;
+		vec2 metallicSmoothness = texture(u_Materials[0].metallicSmoothness, getTexCoords(0)).ra;
+		float ambientOcclusion = texture(u_Materials[0].ao, getTexCoords(0)).r;
 
 
-
-		if (u_CloudsCastShadows) {
-
-			vec3 projCoords = v_PrevLightSpacePos.xyz / v_PrevLightSpacePos.w;
-			projCoords = projCoords * 0.5 + vec3(0.5);
-
-			vec3 cloudShadow = vec3(1.0);
-			vec4 cloudShadowVals =  texture(u_CloudShadowTexture, projCoords.xy);
-
-			cloudShadow -= min(cloudShadowVals.xyz + cloudShadowVals.a * u_CloudCastShadowAlphaMultiplier, 1.0); // testing out ideas
-			//cloudShadow -= cloudShadowVals.xyz; // simple
-
-			result *= cloudShadow;
-
-		}
-
-		fragColor = vec4(result, 1.0);
+		vec3 color = calcDirLight(u_DirLight, norm, viewDir, albedo, metallicSmoothness, ambientOcclusion);
+		result = color * min(shadow + 0.2, 1.0);
+	}
 
 
 
-	//}
+	/*
+	if (u_CloudsCastShadows) {
 
+		vec3 projCoords = v_PrevLightSpacePos.xyz / v_PrevLightSpacePos.w;
+		projCoords = projCoords * 0.5 + vec3(0.5);
+
+		vec3 cloudShadow = vec3(1.0);
+		vec4 cloudShadowVals =  texture(u_CloudShadowTexture, projCoords.xy);
+
+		cloudShadow -= min(cloudShadowVals.xyz + cloudShadowVals.a * u_CloudCastShadowAlphaMultiplier, 1.0); // testing out ideas
+		//cloudShadow -= cloudShadowVals.xyz; // simple
+
+		result *= cloudShadow;
+
+	}
+	*/
+
+	fragColor = vec4(result, 1.0);
+
+	float gamma = 2.2;
+    fragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
+
+
+	/*
 	float dist = distance(v_FragPos.xyz, u_ViewPos);
-
-
 	if (u_Fog.mode == 0) {
 		float t = (dist - u_Fog.minDistance) / (u_Fog.maxDistance - u_Fog.minDistance);
 		fragColor = mix(fragColor, u_Fog.color, clamp(t * u_Fog.intensity, 0.0, 1.0));
@@ -194,73 +203,62 @@ void main() {
 		fragColor = mix(fragColor, u_Fog.color, clamp((1.0 - t) * u_Fog.intensity, 0.0, 1.0));
 
 	}
+	*/
  	
 	//fragColor = mix(u_Fog.color, fragColor, min(u_Fog.minDistance / distance, 1.0));
 
 }
 
 
-vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec4 materialContributions) {
+vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 albedo, vec2 ms, float ao) {
     vec3 lightDir = normalize(-light.direction);
-    
-    // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-    
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Materials[0].shininess);
-    
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 
-		u_Materials[0].shininess * materialContributions.r 
-		+ u_Materials[1].shininess * materialContributions.g 
-		+ u_Materials[2].shininess * materialContributions.b 
-		+ u_Materials[3].shininess * materialContributions.a);
 
 
+	vec3 halfVec = normalize(lightDir + viewDir);
 
-	//vec3 matColor = vec3(0.5, 0.2, 0.2);
-	//vec3 matColor = mix(texture(u_Materials[0].diffuse, v_TexCoords * u_Materials[0].tiling).rgb, texture(u_TestDiffuse, v_TexCoords * u_Materials[0].tiling).rgb, degrees(acos(dot(vec3(0.0, 1.0, 0.0), normal))) / 90.0);
+	vec3 radiance = light.intensity * light.color;
 
-	//vec3 matColor = texture(u_Materials[0].diffuse, v_TexCoords * u_Materials[0].tiling).rgb *
-	//vec3 matColor = materialMap.r * 
+	//return radiance;
+	
+	vec3 F0 = vec3(0.04);
+	F0 = mix(F0, albedo, ms.x);
+	
+	float roughness = ms.y;
 
-	vec3 matColor = 
-	materialContributions.r * texture(u_Materials[0].diffuse, getTexCoords(0)).rgb 
-	+ materialContributions.g * texture(u_Materials[1].diffuse, getTexCoords(1)).rgb
-	+ materialContributions.b * texture(u_Materials[2].diffuse, getTexCoords(2)).rgb
-	+ materialContributions.a * texture(u_Materials[3].diffuse, getTexCoords(3)).rgb;
+	float NDF = distributionGGX(normal, halfVec, roughness);
+	float G = geometrySmith(normal, viewDir, lightDir, roughness);
+	vec3 F = fresnelSchlick(max(dot(halfVec, viewDir), 0.0), F0);
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - ms.x;
+
+	vec3 numerator = NDF * G * F;
+	float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, lightDir), 0.0);
+	vec3 specular = numerator / max(denominator, 0.001); // check the max later
+
+	float NdotL = max(dot(normal, lightDir), 0.0);
+	vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL;
+
+	vec3 ambient = vec3(0.03) * albedo * ao;
+
+
+	vec3 color = ambient + Lo;
+	//vec3 color = Lo;
+
+	// gamma correction
+
+	vec3 matColor = color;
+
 
 	if (u_UseGrungeMap) {
 		matColor *= max(texture(u_GrungeMap, u_GrungeMapTiling * vec2(u_UVRatio * v_TexCoords.x, v_TexCoords.y)).xyz, vec3(u_GrungeMapMin));
 	}
-    // combine results
-	vec3 ambient = light.color * matColor * u_ka;
-    vec3 diffuse  = light.color  * diff * matColor * u_kd;
-    vec3 specular = light.color * spec * matColor * u_ks;
-
     
-    return (ambient + diffuse + specular);
-}
-
-vec3 calcNightAmbientLight(vec4 materialContributions, vec3 ambientColor) {
-	vec3 matColor = materialContributions.r * texture(u_Materials[0].diffuse, getTexCoords(0)).rgb + materialContributions.g * texture(u_Materials[1].diffuse, getTexCoords(1)).rgb;
-
-	return matColor * ambientColor;
+	return matColor;
 
 }
 
 
-
-float calcShadowBasic(vec4 fragLightSpacePos) {
-	
-	vec3 projCoords = fragLightSpacePos.xyz / fragLightSpacePos.w;
-
-	vec4 moments = texture(u_DepthMapTexture, projCoords.xy);
-
-
-	return (moments.z < projCoords.z) ? 0.0 : 1.0;
-
-}
 
 
 float calcShadow(vec4 fragLightSpacePos) {
@@ -334,3 +332,94 @@ vec4 linstepMaxVec4(vec4 val, float maxVal) {
 vec2 getTexCoords(int materialIdx) {
 	return vec2(u_UVRatio * v_TexCoords.x * u_Materials[materialIdx].tiling, v_TexCoords.y * u_Materials[materialIdx].tiling);
 }
+
+
+
+
+
+float distributionGGX(vec3 N, vec3 H, float roughness) {
+	float a = roughness * roughness;
+	float a2 = a * a;
+	float NdotH = max(dot(N, H), 0.0);
+	float NdotH2 = NdotH * NdotH;
+	//float num = a2;
+	float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+	denom = PI * denom * denom;
+
+	return a2 / denom;
+	
+}
+
+
+float geometrySchlickGGX(float NdotV, float roughness) {
+	float r = (roughness + 1.0);
+	float k = (r * r) * 0.125; // (r * r ) / 8.0; use MAD
+	float num = NdotV;
+	float denom = NdotV * (1.0 - k) + k;
+	return num / denom;
+
+} 
+
+
+float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
+	float NdotV = max(dot(N, V), 0.0);
+	float NdotL = max(dot(N, L), 0.0);
+	float ggx2 = geometrySchlickGGX(NdotV, roughness);
+	float ggx1 = geometrySchlickGGX(NdotL, roughness);
+
+	return ggx1 * ggx2;
+}
+
+vec3 fresnelSchlick(float cosTheta, vec3 F0) {
+	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+
+}
+
+
+
+vec3 computeNormalVec(vec4 materialContributions) {
+	return
+		materialContributions.r * texture(u_Materials[0].normalMap, getTexCoords(0)).rgb 
+		+ materialContributions.g * texture(u_Materials[1].normalMap, getTexCoords(1)).rgb
+		+ materialContributions.b * texture(u_Materials[2].normalMap, getTexCoords(2)).rgb
+		+ materialContributions.a * texture(u_Materials[3].normalMap, getTexCoords(3)).rgb;
+}
+
+
+vec4 computeAlbedo(vec4 materialContributions) {
+	//return pow(
+	return (
+		materialContributions.r * texture(u_Materials[0].albedo, getTexCoords(0)) 
+		+ materialContributions.g * texture(u_Materials[1].albedo, getTexCoords(1))
+		+ materialContributions.b * texture(u_Materials[2].albedo, getTexCoords(2))
+		+ materialContributions.a * texture(u_Materials[3].albedo, getTexCoords(3))
+		//, vec4(2.2)
+		);
+}
+
+
+vec2 computeMetallicSmoothness(vec4 materialContributions) {
+	//vec2 ms =
+	return
+		materialContributions.r * texture(u_Materials[0].metallicSmoothness, getTexCoords(0)).ra 
+		+ materialContributions.g * texture(u_Materials[1].metallicSmoothness, getTexCoords(1)).ra
+		+ materialContributions.b * texture(u_Materials[2].metallicSmoothness, getTexCoords(2)).ra
+		+ materialContributions.a * texture(u_Materials[3].metallicSmoothness, getTexCoords(3)).ra;
+	//ms.y = 1.0 - ms.y;
+	//return ms;
+}
+
+
+float computeAmbientOcclusion(vec4 materialContributions) {
+	return pow(
+		materialContributions.r * texture(u_Materials[0].ao, getTexCoords(0)).r 
+		+ materialContributions.g * texture(u_Materials[1].ao, getTexCoords(1)).r
+		+ materialContributions.b * texture(u_Materials[2].ao, getTexCoords(2)).r
+		+ materialContributions.a * texture(u_Materials[3].ao, getTexCoords(3)).r
+		, 2.2);
+}
+
+
+
+
+

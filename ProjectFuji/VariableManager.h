@@ -149,7 +149,7 @@ public:
 	float pbrRoughness = 0.0f;
 	float pbrAmbientOcclusion = 0.01f;
 
-
+	int terrainUsesPBR = 1;
 
 	enum eFogMode {
 		LINEAR = 0,

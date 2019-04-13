@@ -412,41 +412,70 @@ void HeightMap::initMaterials() {
 
 	CHECK_GL_ERRORS();
 
-	shader = ShaderManager::getShaderPtr("terrain");
-	//shader = ShaderManager::getShaderPtr("singleColor");
-	shader->use();
+
+	if (vars->terrainUsesPBR) {
+
+		activeMaterialCount = MAX_TERRAIN_MATERIALS - 1;
+
+		shader = ShaderManager::getShaderPtr("terrain_pbr");
 
 
-	TextureManager::loadTexture("textures/TexturesCom_Grass0202_1_seamless_S.jpg");
-	TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
-
-	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/TexturesCom_Grass0202_1_seamless_S.jpg");
-	materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
-	materials[0].shininess = 1.0f;
-	materials[0].textureTiling = 2000.0f;
-
-	materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
-	materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
-	materials[1].shininess = 2.0f;
-	materials[1].textureTiling = 1000.0f;
-
-	materials[2].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
-	materials[2].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
-	materials[2].shininess = 1.0f;
-	materials[2].textureTiling = 8000.0f;
-
-	materials[3].diffuseTexture = TextureManager::getTexturePtr("textures/TexturesCom_SoilMud0045_2_seamless_S.jpg");
-	//materials[3].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
-	materials[3].shininess = 1.0f;
-	materials[3].textureTiling = 1000.0f;
+		pbrMaterials[0].albedo = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-albedo.png");
+		pbrMaterials[0].metallicSmoothness = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-MetallicSmoothness.png");
+		pbrMaterials[0].normalMap = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-normal-opengl.png");
+		pbrMaterials[0].ao = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-ao.png");
+		pbrMaterials[0].textureTiling = 1.0f;
 
 
-	//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
-	//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
+		materialMap = TextureManager::loadTexture("materialMaps/red.png");
+
+
+	} else {
+		activeMaterialCount = MAX_TERRAIN_MATERIALS;
+
+		shader = ShaderManager::getShaderPtr("terrain");
+
+		shader->use();
+
+		TextureManager::loadTexture("textures/TexturesCom_Grass0202_1_seamless_S.jpg");
+		TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
+
+		materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/TexturesCom_Grass0202_1_seamless_S.jpg");
+		materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
+		materials[0].shininess = 1.0f;
+		materials[0].textureTiling = 2000.0f;
+
+		materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
+		materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
+		materials[1].shininess = 2.0f;
+		materials[1].textureTiling = 1000.0f;
+
+		materials[2].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
+		materials[2].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+		materials[2].shininess = 1.0f;
+		materials[2].textureTiling = 8000.0f;
+
+		materials[3].diffuseTexture = TextureManager::getTexturePtr("textures/TexturesCom_SoilMud0045_2_seamless_S.jpg");
+		//materials[3].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+		materials[3].shininess = 1.0f;
+		materials[3].textureTiling = 1000.0f;
+
+
+		//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
+		//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
+
+		materialMap = TextureManager::loadTexture("materialMaps/materialMap_02_1024.png");
+
+	}
+	
 	CHECK_GL_ERRORS();
 
-	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
-		materials[i].setTextureUniformsMultiple(shader, i);
+	for (int i = 0; i < activeMaterialCount; i++) {
+		if (vars->terrainUsesPBR) {
+			pbrMaterials[i].setTextureUniformsMultiple(shader, i);
+		} else {
+			materials[i].setTextureUniformsMultiple(shader, i);
+		}
 	}
 	shader->setInt("u_MaterialMap", materialMapTextureUnit);
 	shader->setInt("u_GrungeMap", grungeMapTextureUnit);
@@ -457,7 +486,6 @@ void HeightMap::initMaterials() {
 
 	terrainNormalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
 	//materialMap = TextureManager::loadTexture("textures/1200x800_materialMap.png");
-	materialMap = TextureManager::loadTexture("materialMaps/materialMap_02_1024.png");
 	materialMapSampler = new CDFSamplerMultiChannel(materialMap->filename);
 
 	grungeMap = TextureManager::loadTexture("textures/grungeMap.png");
@@ -544,8 +572,13 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	// Set texture uniforms for unknown shader
 	if (shader != this->shader) {
-		for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
-			materials[i].setTextureUniformsMultiple(shader, i);
+		for (int i = 0; i < activeMaterialCount; i++) {
+
+			if (vars->terrainUsesPBR) {
+				pbrMaterials[i].setTextureUniformsMultiple(shader, i);
+			} else {
+				materials[i].setTextureUniformsMultiple(shader, i);
+			}
 		}
 		shader->setInt("u_TerrainNormalMap", normalMapTextureUnit);
 		shader->setInt("u_MaterialMap", materialMapTextureUnit);
@@ -555,8 +588,12 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 
 
-	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
-		materials[i].useMultiple(shader, i);
+	for (int i = 0; i < activeMaterialCount; i++) {
+		if (vars->terrainUsesPBR) {
+			pbrMaterials[i].useMultiple(shader, i);
+		} else {
+			materials[i].useMultiple(shader, i);
+		}
 	}
 
 

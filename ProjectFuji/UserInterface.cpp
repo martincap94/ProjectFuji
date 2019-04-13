@@ -328,9 +328,13 @@ void UserInterface::constructRightSidebar() {
 		nk_property_float(ctx, "roughness", 0.0f, &vars->pbrRoughness, 1.0f, 0.01f, 0.01f);
 		nk_property_float(ctx, "ambient occlusion", 0.0f, &vars->pbrAmbientOcclusion, 1.0f, 0.01f, 0.01f);
 
-		nk_property_vec3(dirLight->color, 0.0f, 1000.0f, 1.0f, 1.0f, "dir light color HDR", eVecNaming::COLOR);
+		nk_property_vec3(dirLight->color, 0.0f, 100.0f, 1.0f, 1.0f, "dir light color", eVecNaming::COLOR);
+		nk_property_float(ctx, "dir light intensity", 0.0f, &dirLight->intensity, 1000.0f, 0.01f, 0.01f);
 
 
+		if (nk_button_label(ctx, "Reload shaders (recompile all) - EXPERIMENTAL")) {
+			ShaderManager::loadShaders();
+		}
 
 
 	}

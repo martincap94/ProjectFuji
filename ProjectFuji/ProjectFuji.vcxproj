@@ -184,6 +184,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="ParticleRenderer.cpp" />
+    <ClCompile Include="PBRMaterial.cpp" />
     <ClCompile Include="PositionalEmitter.cpp" />
     <ClCompile Include="ppmImage.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
@@ -284,6 +285,7 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="ParticleRenderer.h" />
     <ClInclude Include="ParticleSystem.h" />
+    <ClInclude Include="PBRMaterial.h" />
     <ClInclude Include="PositionalEmitter.h" />
     <ClInclude Include="ppmImage.h" />
     <ClInclude Include="SceneGraph.h" />

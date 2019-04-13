@@ -22,6 +22,8 @@ namespace ShaderManager {
 	bool init(VariableManager *vars = nullptr);
 	bool tearDown();
 
+	void loadShaders();
+
 	ShaderProgram *getShaderPtr(std::string shaderName);
 	ShaderProgram *getShaderPtr(GLuint shaderId);
 

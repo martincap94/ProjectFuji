@@ -159,7 +159,7 @@ void main() {
 	vec3 L = normalize(-u_DirLight.direction);
 	vec3 H = normalize(L + V);
 	
-	vec3 radiance = u_DirLight.color; // no attenuation for directional light
+	vec3 radiance = u_DirLight.color * u_DirLight.intensity; // no attenuation for directional light
 
 	float NDF = distributionGGX(N, H, roughness);
 	float G = geometrySmith(N, V, L, roughness);

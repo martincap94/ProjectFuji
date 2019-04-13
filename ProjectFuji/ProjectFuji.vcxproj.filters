@@ -216,6 +216,7 @@
     </ClCompile>
     <ClCompile Include="CDFSamplerMultiChannel.cpp" />
     <ClCompile Include="ParticleRenderer_backup.cpp" />
+    <ClCompile Include="PBRMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -393,6 +394,7 @@
     <ClInclude Include="CDFEmitter - Copy.h" />
     <ClInclude Include="DynamicCDFSampler.h" />
     <ClInclude Include="CDFSamplerMultiChannel.h" />
+    <ClInclude Include="PBRMaterial.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
