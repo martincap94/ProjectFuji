@@ -9,13 +9,13 @@ class PBRMaterial {
 public:
 
 	Texture *albedo = nullptr;
-	Texture *metallicSmoothness = nullptr;
+	Texture *metallicRoughness = nullptr;
 	Texture *normalMap = nullptr;
 	Texture *ao = nullptr;
 	float textureTiling = 1.0f;
 
 	PBRMaterial();
-	PBRMaterial(Texture *albedo, Texture *metallicSmoothness, Texture *normalMap, Texture *ao, float textureTiling = 1.0f);
+	PBRMaterial(Texture *albedo, Texture *metallicRoughness, Texture *normalMap, Texture *ao, float textureTiling = 1.0f);
 
 	~PBRMaterial();
 

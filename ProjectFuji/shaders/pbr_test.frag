@@ -13,7 +13,7 @@ uniform vec3 u_ViewPos;
 struct Material {
 
 	sampler2D albedoTexture;
-	sampler2D metallicSmoothnessTexture;
+	sampler2D metallicRoughnessTexture;
 	sampler2D normalMap;
 	sampler2D ambientOcclusionTexture;
 
@@ -31,7 +31,7 @@ struct Material {
 //uniform float ao;
 
 uniform sampler2D albedoTex;
-uniform sampler2D metallicSmoothnessTex;
+uniform sampler2D metallicRoughnessTex;
 uniform sampler2D normalMapTex;
 uniform sampler2D aoTex;
 
@@ -146,8 +146,8 @@ void main() {
 
 	vec3 albedo     = pow(texture(albedoTex, v_TexCoords).rgb, vec3(2.2));
 	//vec3 albedo = texture(albedoTex, v_TexCoords).rgb;
-    float metallic  = texture(metallicSmoothnessTex, v_TexCoords).r;
-    float roughness = 1.0 - texture(metallicSmoothnessTex, v_TexCoords).a;
+    float metallic  = texture(metallicRoughnessTex, v_TexCoords).r;
+    float roughness = texture(metallicRoughnessTex, v_TexCoords).a;
     //float ao        = texture(aoTex, v_TexCoords).r;
 	float ao        = pow(texture(aoTex, v_TexCoords).r, 2.2);
 

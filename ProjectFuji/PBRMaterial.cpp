@@ -12,10 +12,10 @@ namespace {
 
 	// very simply prepare uniform names instead of building them all the time - it would be nicer to precompute them as some kind of static global variable, but this will suffice for now
 	const string preparedMaterialUniforms[4][5] = {
-		{ "u_Materials[0].albedo", "u_Materials[0].metallicSmoothness", "u_Materials[0].normalMap", "u_Materials[0].ao", "u_Materials[0].tiling" },
-		{ "u_Materials[1].albedo", "u_Materials[1].metallicSmoothness", "u_Materials[1].normalMap", "u_Materials[1].ao", "u_Materials[1].tiling" },
-		{ "u_Materials[2].albedo", "u_Materials[2].metallicSmoothness", "u_Materials[2].normalMap", "u_Materials[2].ao", "u_Materials[2].tiling" },
-		{ "u_Materials[3].albedo", "u_Materials[3].metallicSmoothness", "u_Materials[3].normalMap", "u_Materials[3].ao", "u_Materials[3].tiling" }
+		{ "u_Materials[0].albedo", "u_Materials[0].metallicRoughness", "u_Materials[0].normalMap", "u_Materials[0].ao", "u_Materials[0].tiling" },
+		{ "u_Materials[1].albedo", "u_Materials[1].metallicRoughness", "u_Materials[1].normalMap", "u_Materials[1].ao", "u_Materials[1].tiling" },
+		{ "u_Materials[2].albedo", "u_Materials[2].metallicRoughness", "u_Materials[2].normalMap", "u_Materials[2].ao", "u_Materials[2].tiling" },
+		{ "u_Materials[3].albedo", "u_Materials[3].metallicRoughness", "u_Materials[3].normalMap", "u_Materials[3].ao", "u_Materials[3].tiling" }
 	};
 }
 
@@ -24,8 +24,8 @@ namespace {
 PBRMaterial::PBRMaterial() {
 }
 
-PBRMaterial::PBRMaterial(Texture *albedo, Texture *metallicSmoothness, Texture *normalMap, Texture *ao, float textureTiling) :
-albedo(albedo), metallicSmoothness(metallicSmoothness), normalMap(normalMap), ao(ao) {}
+PBRMaterial::PBRMaterial(Texture *albedo, Texture *metallicRoughness, Texture *normalMap, Texture *ao, float textureTiling) :
+albedo(albedo), metallicRoughness(metallicRoughness), normalMap(normalMap), ao(ao) {}
 
 
 PBRMaterial::~PBRMaterial() {
@@ -36,8 +36,8 @@ void PBRMaterial::use(ShaderProgram *shader) {
 	if (albedo) {
 		albedo->use(0);
 	}
-	if (metallicSmoothness) {
-		metallicSmoothness->use(1);
+	if (metallicRoughness) {
+		metallicRoughness->use(1);
 	}
 	if (normalMap) {
 		normalMap->use(2);
@@ -52,8 +52,8 @@ void PBRMaterial::useMultiple(ShaderProgram *shader, int materialIdx) {
 	if (albedo) {
 		albedo->use(0 + 4 * materialIdx);
 	}
-	if (metallicSmoothness) {
-		metallicSmoothness->use(1 + 4 * materialIdx);
+	if (metallicRoughness) {
+		metallicRoughness->use(1 + 4 * materialIdx);
 	}
 	if (normalMap) {
 		normalMap->use(2 + 4 * materialIdx);
@@ -67,7 +67,7 @@ void PBRMaterial::setTextureUniforms(ShaderProgram *shader) {
 	shader->use();
 	shader->setFloat("u_Material.tiling", textureTiling);
 	shader->setInt("u_Material.albedo", 0);
-	shader->setInt("u_Material.metallicSmoothness", 1);
+	shader->setInt("u_Material.metallicRoughness", 1);
 	shader->setInt("u_Material.normalMap", 2);
 	shader->setInt("u_Material.ao", 3);
 }

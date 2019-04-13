@@ -421,13 +421,16 @@ void HeightMap::initMaterials() {
 
 
 		pbrMaterials[0].albedo = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-albedo.png");
-		pbrMaterials[0].metallicSmoothness = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-MetallicSmoothness.png");
+		pbrMaterials[0].metallicRoughness = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-MetallicSmoothness.png");
 		pbrMaterials[0].normalMap = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-normal-opengl.png");
 		pbrMaterials[0].ao = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-ao.png");
 		pbrMaterials[0].textureTiling = 1.0f;
 
 
-		materialMap = TextureManager::loadTexture("materialMaps/red.png");
+
+
+
+		materialMap = TextureManager::loadTexture("materialMaps/all.png");
 
 
 	} else {

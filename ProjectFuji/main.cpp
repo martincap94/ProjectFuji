@@ -922,7 +922,7 @@ int runApp() {
 			//pbrTest->setFloat("ao", vars.pbrAmbientOcclusion);
 
 			pbrTest->setInt("albedoTex", 0);
-			pbrTest->setInt("metallicSmoothnessTex", 1);
+			pbrTest->setInt("metallicRoughnessTex", 1);
 			pbrTest->setInt("normalMapTex", 2);
 			pbrTest->setInt("aoTex", 3);
 

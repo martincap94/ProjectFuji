@@ -795,76 +795,157 @@ void UserInterface::constructTerrainTab() {
 		nk_combo_end(ctx);
 	}
 
-	nk_property_float(ctx, "Ambient intensity", 0.0f, &hm->ambientIntensity, 1.0f, 0.01f, 0.01f);
-	nk_property_float(ctx, "Diffuse intensity", 0.0f, &hm->diffuseIntensity, 1.0f, 0.01f, 0.01f);
-	nk_property_float(ctx, "Specular intensity", 0.0f, &hm->specularIntensity, 1.0f, 0.01f, 0.01f);
-	//nk_property_float(ctx, "Diffuse intensity", 0.0f, &hm->diffuseIntensity, 1.0f - hm->specularIntensity, 0.01f, 0.01f);
-	//nk_property_float(ctx, "Specular intensity", 0.0f, &hm->specularIntensity, 1.0f - hm->diffuseIntensity, 0.01f, 0.01f);
 
 
-	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {
+	if (vars->terrainUsesPBR) {
 
-		if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Material " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
+		for (int i = 0; i < vars->heightMap->activeMaterialCount; i++) {
 
-			nk_layout_row_dynamic(ctx, 15, 2);
+			if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Material " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
 
-			nk_label(ctx, "Diffuse", NK_TEXT_LEFT);
+				nk_layout_row_dynamic(ctx, 15, 2);
 
-			if (nk_combo_begin_label(ctx, vars->heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::DIFFUSE).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-				nk_layout_row_dynamic(ctx, 15, 1);
-				if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
-					vars->heightMap->materials[i].diffuseTexture = nullptr;
-				}
-				for (const auto& kv : *textures) {
-					if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-						vars->heightMap->materials[i].diffuseTexture = kv.second;
+				nk_label(ctx, "Albedo", NK_TEXT_LEFT);
+
+				if (nk_combo_begin_label(ctx, getTextureName(vars->heightMap->pbrMaterials[i].albedo).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+						vars->heightMap->pbrMaterials[i].albedo = nullptr;
 					}
-				}
-				nk_combo_end(ctx);
-			}
-
-			nk_label(ctx, "Specular", NK_TEXT_LEFT);
-
-			if (nk_combo_begin_label(ctx, vars->heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::SPECULAR).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-				nk_layout_row_dynamic(ctx, 15, 1);
-				if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
-					vars->heightMap->materials[i].specularMap = nullptr;
-				}
-				for (const auto& kv : *textures) {
-					if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-						vars->heightMap->materials[i].specularMap = kv.second;
+					for (const auto& kv : *textures) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+							vars->heightMap->pbrMaterials[i].albedo = kv.second;
+						}
 					}
+					nk_combo_end(ctx);
 				}
-				nk_combo_end(ctx);
-			}
 
-			nk_label(ctx, "Normal Map", NK_TEXT_LEFT);
+				nk_label(ctx, "MetallicSmoothness", NK_TEXT_LEFT);
 
-			if (nk_combo_begin_label(ctx, vars->heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::NORMAL_MAP).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-				nk_layout_row_dynamic(ctx, 15, 1);
-				if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
-					vars->heightMap->materials[i].normalMap = nullptr;
-				}
-				for (const auto& kv : *textures) {
-					if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-						vars->heightMap->materials[i].normalMap = kv.second;
+				if (nk_combo_begin_label(ctx, getTextureName(vars->heightMap->pbrMaterials[i].metallicRoughness).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+						vars->heightMap->pbrMaterials[i].metallicRoughness = nullptr;
 					}
+					for (const auto& kv : *textures) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+							vars->heightMap->pbrMaterials[i].metallicRoughness = kv.second;
+						}
+					}
+					nk_combo_end(ctx);
 				}
-				nk_combo_end(ctx);
+
+				nk_label(ctx, "Normal Map", NK_TEXT_LEFT);
+
+				if (nk_combo_begin_label(ctx, getTextureName(vars->heightMap->pbrMaterials[i].normalMap).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+						vars->heightMap->pbrMaterials[i].normalMap = nullptr;
+					}
+					for (const auto& kv : *textures) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+							vars->heightMap->pbrMaterials[i].normalMap = kv.second;
+						}
+					}
+					nk_combo_end(ctx);
+				}
+
+				nk_label(ctx, "Ambient Occlusion", NK_TEXT_LEFT);
+
+				if (nk_combo_begin_label(ctx, getTextureName(vars->heightMap->pbrMaterials[i].ao).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+						vars->heightMap->pbrMaterials[i].ao = nullptr;
+					}
+					for (const auto& kv : *textures) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+							vars->heightMap->pbrMaterials[i].ao = kv.second;
+						}
+					}
+					nk_combo_end(ctx);
+				}
+
+				nk_layout_row_dynamic(ctx, 15, 1);
+				nk_property_float(ctx, "#tiling", 0.1f, &vars->heightMap->pbrMaterials[i].textureTiling, 100000.0f, 0.1f, 1.0f);
+
+
+				nk_tree_pop(ctx);
 			}
-
-			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_float(ctx, "#shininess", 0.0f, &vars->heightMap->materials[i].shininess, 128.0f, 0.1f, 0.1f);
-			nk_property_float(ctx, "#tiling", 0.1f, &vars->heightMap->materials[i].textureTiling, 100000.0f, 0.1f, 1.0f);
-
-
-			nk_tree_pop(ctx);
 		}
 
+	} else {
+
+		nk_property_float(ctx, "Ambient intensity", 0.0f, &hm->ambientIntensity, 1.0f, 0.01f, 0.01f);
+		nk_property_float(ctx, "Diffuse intensity", 0.0f, &hm->diffuseIntensity, 1.0f, 0.01f, 0.01f);
+		nk_property_float(ctx, "Specular intensity", 0.0f, &hm->specularIntensity, 1.0f, 0.01f, 0.01f);
+		//nk_property_float(ctx, "Diffuse intensity", 0.0f, &hm->diffuseIntensity, 1.0f - hm->specularIntensity, 0.01f, 0.01f);
+		//nk_property_float(ctx, "Specular intensity", 0.0f, &hm->specularIntensity, 1.0f - hm->diffuseIntensity, 0.01f, 0.01f);
+
+
+		for (int i = 0; i < vars->heightMap->activeMaterialCount; i++) {
+
+			if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Material " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
+
+				nk_layout_row_dynamic(ctx, 15, 2);
+
+				nk_label(ctx, "Diffuse", NK_TEXT_LEFT);
+
+				if (nk_combo_begin_label(ctx, vars->heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::DIFFUSE).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+						vars->heightMap->materials[i].diffuseTexture = nullptr;
+					}
+					for (const auto& kv : *textures) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+							vars->heightMap->materials[i].diffuseTexture = kv.second;
+						}
+					}
+					nk_combo_end(ctx);
+				}
+
+				nk_label(ctx, "Specular", NK_TEXT_LEFT);
+
+				if (nk_combo_begin_label(ctx, vars->heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::SPECULAR).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+						vars->heightMap->materials[i].specularMap = nullptr;
+					}
+					for (const auto& kv : *textures) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+							vars->heightMap->materials[i].specularMap = kv.second;
+						}
+					}
+					nk_combo_end(ctx);
+				}
+
+				nk_label(ctx, "Normal Map", NK_TEXT_LEFT);
+
+				if (nk_combo_begin_label(ctx, vars->heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::NORMAL_MAP).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+						vars->heightMap->materials[i].normalMap = nullptr;
+					}
+					for (const auto& kv : *textures) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+							vars->heightMap->materials[i].normalMap = kv.second;
+						}
+					}
+					nk_combo_end(ctx);
+				}
+
+				nk_layout_row_dynamic(ctx, 15, 1);
+				nk_property_float(ctx, "#shininess", 0.0f, &vars->heightMap->materials[i].shininess, 128.0f, 0.1f, 0.1f);
+				nk_property_float(ctx, "#tiling", 0.1f, &vars->heightMap->materials[i].textureTiling, 100000.0f, 0.1f, 1.0f);
+
+
+				nk_tree_pop(ctx);
+			}
+
+		}
 	}
 
 
-
+	
 	if (nk_button_label(ctx, "Refresh LBM HEIGHTMAP")) {
 		lbm->refreshHeightMap();
 	}

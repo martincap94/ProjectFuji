@@ -21,7 +21,7 @@ uniform DirLight u_DirLight;
 
 struct Material {
 	sampler2D albedo;
-	sampler2D metallicSmoothness;
+	sampler2D metallicRoughness;
 	sampler2D normalMap;
 	sampler2D ao;
 	float tiling;
@@ -104,7 +104,7 @@ vec4 linstepMaxVec4(vec4 val, float maxVal);
 
 vec3 computeNormalVec(vec4 materialContributions);
 vec4 computeAlbedo(vec4 materialContributions);
-vec2 computeMetallicSmoothness(vec4 materialContributions);
+vec2 computeMetallicRoughness(vec4 materialContributions);
 float computeAmbientOcclusion(vec4 materialContributions);
 
 
@@ -155,17 +155,21 @@ void main() {
 		result = vec3(shadow);
 	} else {
 
-		//vec3 albedo = vec3(computeAlbedo(materialContributions));
-		//vec2 metallicSmoothness = computeMetallicSmoothness(materialContributions);
-		//float ambientOcclusion = computeAmbientOcclusion(materialContributions);
+		vec3 albedo = vec3(computeAlbedo(materialContributions));
+		vec2 metallicRoughness = computeMetallicRoughness(materialContributions);
+		float ambientOcclusion = computeAmbientOcclusion(materialContributions);
 
-		vec3 albedo = texture(u_Materials[0].albedo, getTexCoords(0)).rgb;
-		vec2 metallicSmoothness = texture(u_Materials[0].metallicSmoothness, getTexCoords(0)).ra;
-		float ambientOcclusion = texture(u_Materials[0].ao, getTexCoords(0)).r;
+		//vec3 albedo = texture(u_Materials[0].albedo, getTexCoords(0)).rgb;
+		//vec2 metallicRoughness = texture(u_Materials[0].metallicRoughness, getTexCoords(0)).ra;
+		//float ambientOcclusion = texture(u_Materials[0].ao, getTexCoords(0)).r;
 
 
-		vec3 color = calcDirLight(u_DirLight, norm, viewDir, albedo, metallicSmoothness, ambientOcclusion);
+		vec3 color = calcDirLight(u_DirLight, norm, viewDir, albedo, metallicRoughness, ambientOcclusion);
 		result = color * min(shadow + 0.2, 1.0);
+
+
+
+		//result = vec3(1.0 - metallicRoughness.y);
 	}
 
 
@@ -387,26 +391,23 @@ vec3 computeNormalVec(vec4 materialContributions) {
 
 
 vec4 computeAlbedo(vec4 materialContributions) {
-	//return pow(
-	return (
+	return pow(
+	//return (
 		materialContributions.r * texture(u_Materials[0].albedo, getTexCoords(0)) 
 		+ materialContributions.g * texture(u_Materials[1].albedo, getTexCoords(1))
 		+ materialContributions.b * texture(u_Materials[2].albedo, getTexCoords(2))
 		+ materialContributions.a * texture(u_Materials[3].albedo, getTexCoords(3))
-		//, vec4(2.2)
+		, vec4(2.2)
 		);
 }
 
 
-vec2 computeMetallicSmoothness(vec4 materialContributions) {
-	//vec2 ms =
+vec2 computeMetallicRoughness(vec4 materialContributions) {
 	return
-		materialContributions.r * texture(u_Materials[0].metallicSmoothness, getTexCoords(0)).ra 
-		+ materialContributions.g * texture(u_Materials[1].metallicSmoothness, getTexCoords(1)).ra
-		+ materialContributions.b * texture(u_Materials[2].metallicSmoothness, getTexCoords(2)).ra
-		+ materialContributions.a * texture(u_Materials[3].metallicSmoothness, getTexCoords(3)).ra;
-	//ms.y = 1.0 - ms.y;
-	//return ms;
+		materialContributions.r * texture(u_Materials[0].metallicRoughness, getTexCoords(0)).ra 
+		+ materialContributions.g * texture(u_Materials[1].metallicRoughness, getTexCoords(1)).ra
+		+ materialContributions.b * texture(u_Materials[2].metallicRoughness, getTexCoords(2)).ra
+		+ materialContributions.a * texture(u_Materials[3].metallicRoughness, getTexCoords(3)).ra;
 }
 
 
