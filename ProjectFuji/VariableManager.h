@@ -92,7 +92,7 @@ public:
 
 
 	int cloudsCastShadows = 1;
-	float cloudCastShadowAlphaMultiplier = 0.01f;
+	float cloudCastShadowAlphaMultiplier = 1.0f;
 
 
 	int dividePrevVelocity = 0;
@@ -141,14 +141,6 @@ public:
 
 
 	int terrainPickerMode = 0;
-
-
-	// TESTING PBR!
-	glm::vec3 pbrAlbedo = glm::vec3(0.8f, 0.05f, 0.05f);
-	float pbrMetallic = 0.0f;
-	float pbrRoughness = 0.0f;
-	float pbrAmbientOcclusion = 0.01f;
-
 	int terrainUsesPBR = 1;
 
 	enum eFogMode {
@@ -159,9 +151,9 @@ public:
 
 	int fogMode = LINEAR;
 	float fogExpFalloff = 0.01f;
-	float fogMinDistance = 0.0f;
-	float fogMaxDistance = 20000.0f;
-	float fogIntensity = 0.3f;
+	float fogMinDistance = 5000.0f;
+	float fogMaxDistance = 100000.0f;
+	float fogIntensity = 0.25f;
 	glm::vec4 fogColor = glm::vec4(0.05f, 0.05f, 0.08f, 1.0f);
 
 	////////////////////////////////////////////////////////////////

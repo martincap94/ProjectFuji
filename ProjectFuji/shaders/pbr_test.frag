@@ -11,30 +11,12 @@ out vec4 fragColor;
 uniform vec3 u_ViewPos;
 
 struct Material {
-
-	sampler2D albedoTexture;
-	sampler2D metallicRoughnessTexture;
+	sampler2D albedo;
+	sampler2D metallicRoughness;
 	sampler2D normalMap;
-	sampler2D ambientOcclusionTexture;
-
-
- //   sampler2D diffuse;
- //   sampler2D specular;
-	//sampler2D normalMap;
- //   float shininess;
+	sampler2D ao;
+	float tiling;
 };
-
-// quick testing
-//uniform vec3 albedo;
-//uniform float metallic;
-//uniform float roughness;
-//uniform float ao;
-
-uniform sampler2D albedoTex;
-uniform sampler2D metallicRoughnessTex;
-uniform sampler2D normalMapTex;
-uniform sampler2D aoTex;
-
 
 
 
@@ -131,7 +113,7 @@ void main() {
 
 	
 	//vec3 N = texture(u_Material.normalMap, v_TexCoords).rgb;
-	vec3 N = texture(normalMapTex, v_TexCoords).rgb;
+	vec3 N = texture(u_Material.normalMap, v_TexCoords).rgb;
 	N = normalize(N * 2.0 - 1.0);
 	N = normalize(v_TBN * N); 
 	
@@ -144,12 +126,12 @@ void main() {
 	vec3 result;
 
 
-	vec3 albedo     = pow(texture(albedoTex, v_TexCoords).rgb, vec3(2.2));
+	vec3 albedo     = pow(texture(u_Material.albedo, v_TexCoords).rgb, vec3(2.2));
 	//vec3 albedo = texture(albedoTex, v_TexCoords).rgb;
-    float metallic  = texture(metallicRoughnessTex, v_TexCoords).r;
-    float roughness = texture(metallicRoughnessTex, v_TexCoords).a;
+    float metallic  = texture(u_Material.metallicRoughness, v_TexCoords).r;
+    float roughness = texture(u_Material.metallicRoughness, v_TexCoords).g;
     //float ao        = texture(aoTex, v_TexCoords).r;
-	float ao        = pow(texture(aoTex, v_TexCoords).r, 2.2);
+	float ao        = pow(texture(u_Material.ao, v_TexCoords).r, 2.2);
 
 
 	// PBR
@@ -175,32 +157,30 @@ void main() {
 	float NdotL = max(dot(N, L), 0.0);
 	vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL;
 
-	vec3 ambient = vec3(0.03) * albedo * ao;
-	vec3 color = ambient + Lo;
+	//vec3 ambient = vec3(0.03) * albedo * ao;
+	//vec3 color = ambient + Lo;
+	vec3 color = Lo * ao;
 
-	// gamma correction
-	color = color / (color + vec3(1.0));
-	color = pow(color, vec3(1.0 / 2.2));
 
 	result = color;
-
-	//result = N;
 
 
 
     
     fragColor = vec4(result, 1.0);
 
-	//float gamma = 2.2;
-    //fragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
-	/*
 	float dist = distance(v_WorldPos.xyz, u_ViewPos);
-
 	if (u_Fog.mode == 0) {
 		float t = (dist - u_Fog.minDistance) / (u_Fog.maxDistance - u_Fog.minDistance);
 		fragColor = mix(fragColor, u_Fog.color, clamp(t * u_Fog.intensity, 0.0, 1.0));
+	} else if (u_Fog.mode == 1) {
+		float t = exp(-u_Fog.expFalloff * dist * u_Fog.expFalloff * dist);
+		fragColor = mix(fragColor, u_Fog.color, clamp((1.0 - t) * u_Fog.intensity, 0.0, 1.0));
 	}
-	*/
+
+	// gamma correction
+	float gamma = 2.2;
+    fragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
 	
     
 }

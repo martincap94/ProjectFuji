@@ -159,45 +159,33 @@ void main() {
 		vec2 metallicRoughness = computeMetallicRoughness(materialContributions);
 		float ambientOcclusion = computeAmbientOcclusion(materialContributions);
 
-		//vec3 albedo = texture(u_Materials[0].albedo, getTexCoords(0)).rgb;
-		//vec2 metallicRoughness = texture(u_Materials[0].metallicRoughness, getTexCoords(0)).ra;
-		//float ambientOcclusion = texture(u_Materials[0].ao, getTexCoords(0)).r;
-
-
 		vec3 color = calcDirLight(u_DirLight, norm, viewDir, albedo, metallicRoughness, ambientOcclusion);
 		result = color * min(shadow + 0.2, 1.0);
-
-
-
-		//result = vec3(1.0 - metallicRoughness.y);
 	}
 
 
 
-	/*
+	
 	if (u_CloudsCastShadows) {
 
 		vec3 projCoords = v_PrevLightSpacePos.xyz / v_PrevLightSpacePos.w;
 		projCoords = projCoords * 0.5 + vec3(0.5);
 
-		vec3 cloudShadow = vec3(1.0);
 		vec4 cloudShadowVals =  texture(u_CloudShadowTexture, projCoords.xy);
+		vec3 cloudShadow = vec3(1.0) - (cloudShadowVals.a * cloudShadowVals.xyz * vec3(u_CloudCastShadowAlphaMultiplier));
 
-		cloudShadow -= min(cloudShadowVals.xyz + cloudShadowVals.a * u_CloudCastShadowAlphaMultiplier, 1.0); // testing out ideas
-		//cloudShadow -= cloudShadowVals.xyz; // simple
+		//fragColor = vec4(cloudShadow, 1.0);
+		//return;
 
 		result *= cloudShadow;
 
 	}
-	*/
+	
 
 	fragColor = vec4(result, 1.0);
 
-	float gamma = 2.2;
-    fragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
 
-
-	/*
+	
 	float dist = distance(v_FragPos.xyz, u_ViewPos);
 	if (u_Fog.mode == 0) {
 		float t = (dist - u_Fog.minDistance) / (u_Fog.maxDistance - u_Fog.minDistance);
@@ -205,11 +193,11 @@ void main() {
 	} else if (u_Fog.mode == 1) {
 		float t = exp(-u_Fog.expFalloff * dist * u_Fog.expFalloff * dist);
 		fragColor = mix(fragColor, u_Fog.color, clamp((1.0 - t) * u_Fog.intensity, 0.0, 1.0));
-
 	}
-	*/
- 	
-	//fragColor = mix(u_Fog.color, fragColor, min(u_Fog.minDistance / distance, 1.0));
+	
+	float gamma = 2.2;
+    fragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
+
 
 }
 
@@ -243,11 +231,12 @@ vec3 calcDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 albedo, vec2 m
 	float NdotL = max(dot(normal, lightDir), 0.0);
 	vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL;
 
-	vec3 ambient = vec3(0.03) * albedo * ao;
+	//vec3 ambient = vec3(0.03) * albedo * ao;
 
 
-	vec3 color = ambient + Lo;
+	//vec3 color = ambient + Lo;
 	//vec3 color = Lo;
+	vec3 color = Lo * ao;
 
 	// gamma correction
 
@@ -404,10 +393,10 @@ vec4 computeAlbedo(vec4 materialContributions) {
 
 vec2 computeMetallicRoughness(vec4 materialContributions) {
 	return
-		materialContributions.r * texture(u_Materials[0].metallicRoughness, getTexCoords(0)).ra 
-		+ materialContributions.g * texture(u_Materials[1].metallicRoughness, getTexCoords(1)).ra
-		+ materialContributions.b * texture(u_Materials[2].metallicRoughness, getTexCoords(2)).ra
-		+ materialContributions.a * texture(u_Materials[3].metallicRoughness, getTexCoords(3)).ra;
+		materialContributions.r * texture(u_Materials[0].metallicRoughness, getTexCoords(0)).rg 
+		+ materialContributions.g * texture(u_Materials[1].metallicRoughness, getTexCoords(1)).rg
+		+ materialContributions.b * texture(u_Materials[2].metallicRoughness, getTexCoords(2)).rg
+		+ materialContributions.a * texture(u_Materials[3].metallicRoughness, getTexCoords(3)).rg;
 }
 
 

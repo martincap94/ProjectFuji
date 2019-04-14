@@ -132,7 +132,11 @@ void Model::useMaterial() {
 
 void Model::useMaterial(ShaderProgram *shader) {
 
-	material->use(shader);
+	if (shader->matType == ShaderProgram::eMaterialType::PHONG) {
+		material->use(shader);
+	} else if (shader->matType == ShaderProgram::eMaterialType::PBR) {
+		pbrMaterial->use(shader);
+	}
 
 	//shader->setInt("u_Material.diffuse", 0);
 	//shader->setInt("u_Material.specular", 1);

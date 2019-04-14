@@ -421,16 +421,37 @@ void HeightMap::initMaterials() {
 
 
 		pbrMaterials[0].albedo = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-albedo.png");
-		pbrMaterials[0].metallicRoughness = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-MetallicSmoothness.png");
+		pbrMaterials[0].metallicRoughness = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-MR.png");
 		pbrMaterials[0].normalMap = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-normal-opengl.png");
 		pbrMaterials[0].ao = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-ao.png");
-		pbrMaterials[0].textureTiling = 1.0f;
+		pbrMaterials[0].textureTiling = 1000.0f;
+
+		pbrMaterials[1].albedo = TextureManager::getTexturePtr("textures/sand1/sand1-albedo.png");
+		pbrMaterials[1].metallicRoughness = TextureManager::getTexturePtr("textures/sand1/sand1-MR.png");
+		pbrMaterials[1].normalMap = TextureManager::getTexturePtr("textures/sand1/sand1-normal-ogl.png");
+		pbrMaterials[1].ao = TextureManager::getTexturePtr("textures/white.png");
+		pbrMaterials[1].textureTiling = 1000.0f;
+
+		/*
+		pbrMaterials[2].albedo = TextureManager::getTexturePtr("textures/rustediron2/rustediron2_basecolor.png");
+		pbrMaterials[2].metallicRoughness = TextureManager::getTexturePtr("textures/rustediron2/rustediron2_MR.png");
+		pbrMaterials[2].normalMap = TextureManager::getTexturePtr("textures/rustediron2/rustediron2_normal.png");
+		pbrMaterials[2].ao = TextureManager::getTexturePtr("textures/white.png");
+		pbrMaterials[2].textureTiling = 1.0f;
+		*/
 
 
+		pbrMaterials[2].albedo = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-albedo.png");
+		pbrMaterials[2].metallicRoughness = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-MR.png");
+		pbrMaterials[2].normalMap = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-normal2.png");
+		pbrMaterials[2].ao = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-ao.png");
+		pbrMaterials[2].textureTiling = 1000.0f;
 
 
+		//materialMap = TextureManager::loadTexture("materialMaps/all.png");
+		materialMap = TextureManager::loadTexture("materialMaps/map.png");
 
-		materialMap = TextureManager::loadTexture("materialMaps/all.png");
+		//materialMap = TextureManager::loadTexture("materialMaps/materialMap_1024.png");
 
 
 	} else {

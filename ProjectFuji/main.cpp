@@ -63,6 +63,7 @@
 #include "UIConfig.h"
 #include "StreamlineParticleSystem.h"
 #include "TerrainPicker.h"
+#include "PBRMaterial.h"
 
 //#include "ArHosekSkyModel.h"
 //#include "ArHosekSkyModel.c"
@@ -173,7 +174,7 @@ glm::mat4 diagramProjection;
 glm::mat4 overlayDiagramProjection;
 
 float nearPlane = 0.1f;		///< Near plane of the view frustum
-float farPlane = 100000.0f;	///< Far plane of the view frustum
+float farPlane = 50000.0f;	///< Far plane of the view frustum
 
 float projWidth;			///< Width of the ortographic projection
 float projHeight;			///< Height of the ortographic projection
@@ -440,10 +441,23 @@ int runApp() {
 	Model grassModel("models/grass.obj", &gMat, grassShader);
 	//Model grassModel("models/grass.obj", &gMat, ShaderManager::getShaderPtr("normals"));
 
-	Model treeModel("models/Tree.obj", &treeMat, normalsInstancedShader);
+	Model treeModel("models/trees10_01.fbx", &treeMat, normalsInstancedShader);
 
 	Model unitboxModel("models/unitbox.fbx");
 
+	Model houseModel("models/house_model/houselow_r.fbx");
+
+	Texture halbedo("models/house_model/unknown_Base_Color.png", 0);
+	Texture hmr("models/house_model/unknown_MR.png", 1);
+	Texture hnormal("models/house_model/unknown_Normal_OpenGL.png", 2);
+	Texture hao("models/house_model/house_ao.jpg", 3);
+	PBRMaterial hmat(&halbedo, &hmr, &hnormal, &hao);
+
+	houseModel.pbrMaterial = &hmat;
+
+	float hx = 10000.0f;
+	float hz = 10000.0f;
+	houseModel.transform.position = glm::vec3(hx, vars.heightMap->getHeight(hx, hz), hz);
 
 	// PBR TESTING
 
@@ -454,8 +468,10 @@ int runApp() {
 
 	Texture *calbedo = TextureManager::loadTexture("textures/Cerberus/Cerberus_A.png");
 	Texture *cnormalMap = TextureManager::loadTexture("textures/Cerberus/Cerberus_N.png");
-	Texture *cmetallic = TextureManager::loadTexture("textures/Cerberus/Cerberus_MS.png");
+	Texture *cmetallic = TextureManager::loadTexture("textures/Cerberus/Cerberus_MR.png");
 	Texture *cao = TextureManager::loadTexture("textures/Cerberus/Cerberus_AO.png");
+	PBRMaterial cerbmat(calbedo, cmetallic, cnormalMap, cao);
+	cerberus.pbrMaterial = &cerbmat;
 
 
 	Model lamp("models/BankersLamp.fbx");
@@ -473,7 +489,7 @@ int runApp() {
 
 
 	//grassModel.makeInstancedMaterialMap(vars.heightMap, 500000, 0, glm::vec2(1.5f, 3.0f));
-	//treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
+	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
 
 	testModel.transform.position = glm::vec3(3500.0f, 0.0f, 8500.0f);
 	//testModel.transform.scale = glm::vec3(20.0f);
@@ -911,36 +927,9 @@ int runApp() {
 			armoireModel.draw();
 
 
-			/*
 
-			// TESTING PBR
-			pbrTest->use();
-
-			//pbrTest->setVec3("albedo", vars.pbrAlbedo);
-			//pbrTest->setFloat("metallic", vars.pbrMetallic);
-			//pbrTest->setFloat("roughness", vars.pbrRoughness);
-			//pbrTest->setFloat("ao", vars.pbrAmbientOcclusion);
-
-			pbrTest->setInt("albedoTex", 0);
-			pbrTest->setInt("metallicRoughnessTex", 1);
-			pbrTest->setInt("normalMapTex", 2);
-			pbrTest->setInt("aoTex", 3);
-
-			albedo->use(0);
-			metallic->use(1);
-			normalMap->use(2);
-			ao->use(3);
-
-			lamp.drawGeometry(pbrTest);
-
-			
-			calbedo->use(0);
-			cmetallic->use(1);
-			cnormalMap->use(2);
-			cao->use(3);
-
-			cerberus.drawGeometry(pbrTest);
-			*/
+			cerberus.draw(pbrTest);
+			houseModel.draw(pbrTest);
 
 			if (vars.drawTrees) {
 				treeModel.draw();

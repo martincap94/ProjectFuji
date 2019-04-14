@@ -12,12 +12,14 @@ uniform int u_NumProfiles;
 
 flat out int g_DiscardParticle;
 
+const float discardThreshold = 10.0; // 10 meters
+
 void main() {
 	g_DiscardParticle = 0;
 	if (a_ProfileIndex < u_NumProfiles) {
 		float CCL = u_ProfileCCLs[a_ProfileIndex];
 		float diff = a_Pos.y - CCL;
-		if (a_Pos.y - CCL < 0.0) {
+		if (a_Pos.y - CCL < discardThreshold) {
 			g_DiscardParticle = 1;
 		}
 	}

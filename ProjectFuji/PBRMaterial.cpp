@@ -4,7 +4,7 @@
 namespace {
 	enum ePrepMatUniformsIndices {
 		ALBEDO = 0,
-		METALLIC_SMOOTHNESS,
+		METALLIC_ROUGHNESS,
 		NORMAL_MAP,
 		AMBIENT_OCCLUSION,
 		TILING
@@ -76,7 +76,7 @@ void PBRMaterial::setTextureUniformsMultiple(ShaderProgram *shader, int material
 	shader->use();
 	shader->setFloat(preparedMaterialUniforms[materialIdx][TILING], textureTiling);
 	shader->setInt(preparedMaterialUniforms[materialIdx][ALBEDO], 0 + 4 * materialIdx);
-	shader->setInt(preparedMaterialUniforms[materialIdx][METALLIC_SMOOTHNESS], 1 + 4 * materialIdx);
+	shader->setInt(preparedMaterialUniforms[materialIdx][METALLIC_ROUGHNESS], 1 + 4 * materialIdx);
 	shader->setInt(preparedMaterialUniforms[materialIdx][NORMAL_MAP], 2 + 4 * materialIdx);
 	shader->setInt(preparedMaterialUniforms[materialIdx][AMBIENT_OCCLUSION], 3 + 4 * materialIdx);
 

@@ -9,6 +9,7 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Material.h"
+#include "PBRMaterial.h"
 #include "Transform.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -18,8 +19,9 @@
 class Model : public Actor {
 public:
 
-	ShaderProgram *shader;
-	Material *material;
+	ShaderProgram *shader = nullptr;
+	Material *material = nullptr;
+	PBRMaterial *pbrMaterial = nullptr;
 	//Transform transform;
 
 	Model(const char *path);

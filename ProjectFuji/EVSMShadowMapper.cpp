@@ -162,6 +162,9 @@ void EVSMShadowMapper::init() {
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("terrain"));
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("normals_instanced"));
 	secondPassShaders.push_back(ShaderManager::getShaderPtr("normals"));
+	secondPassShaders.push_back(ShaderManager::getShaderPtr("terrain_pbr"));
+	secondPassShaders.push_back(ShaderManager::getShaderPtr("pbr_test"));
+
 
 	TextureManager::pushCustomTexture(depthMapTexture, resolution, resolution, 4, "depthMapTexture");
 	TextureManager::pushCustomTexture(firstPassBlurTexture, resolution, resolution, 4, "firstPassBlurTexture");

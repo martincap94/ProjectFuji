@@ -318,15 +318,6 @@ void UserInterface::constructRightSidebar() {
 
 
 
-		nk_layout_row_dynamic(ctx, 30, 1);
-		nk_label(ctx, "PBR TESTING", NK_TEXT_CENTERED);
-		
-		nk_layout_row_dynamic(ctx, 15, 1);
-		nk_property_vec3(vars->pbrAlbedo, 0.0f, 1.0f, 0.01f, 0.01f);
-
-		nk_property_float(ctx, "metallic", 0.0f, &vars->pbrMetallic, 1.0f, 0.01f, 0.01f);
-		nk_property_float(ctx, "roughness", 0.0f, &vars->pbrRoughness, 1.0f, 0.01f, 0.01f);
-		nk_property_float(ctx, "ambient occlusion", 0.0f, &vars->pbrAmbientOcclusion, 1.0f, 0.01f, 0.01f);
 
 		nk_property_vec3(dirLight->color, 0.0f, 100.0f, 1.0f, 1.0f, "dir light color", eVecNaming::COLOR);
 		nk_property_float(ctx, "dir light intensity", 0.0f, &dirLight->intensity, 1000.0f, 0.01f, 0.01f);
@@ -695,8 +686,8 @@ void UserInterface::constructLightingTab() {
 	}*/
 
 	if (vars->fogMode == VariableManager::eFogMode::LINEAR) {
-		nk_property_float(ctx, "Fog min distance", 0.0f, &vars->fogMinDistance, 1000.0f, 0.1f, 0.1f);
-		nk_property_float(ctx, "Fog max distance", 0.0f, &vars->fogMaxDistance, 100000.0f, 100.0f, 100.0f);
+		nk_property_float(ctx, "Fog min distance", 0.0f, &vars->fogMinDistance, 100000.0f, 1.0f, 10.0f);
+		nk_property_float(ctx, "Fog max distance", 0.0f, &vars->fogMaxDistance, 100000.0f, 10.0f, 100.0f);
 	} else {
 		nk_property_float(ctx, "Fog exp falloff", 0.0f, &vars->fogExpFalloff, 1.0f, 0.01f, 0.01f);
 	}
@@ -1120,7 +1111,7 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_checkbox_label(ctx, "cloud shadows", &vars->cloudsCastShadows);
 
-	nk_property_float(ctx, "cast shadow alpha multiplier", 0.0f, &vars->cloudCastShadowAlphaMultiplier, 1.0f, 0.01f, 0.01f);
+	nk_property_float(ctx, "cast shadow alpha multiplier", 0.0f, &vars->cloudCastShadowAlphaMultiplier, 2.0f, 0.01f, 0.01f);
 
 
 	if (nk_combo_begin_label(ctx, particleRenderer->getPhaseFunctionName(particleRenderer->phaseFunction), nk_vec2(nk_widget_width(ctx), 200))) {
