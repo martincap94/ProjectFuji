@@ -5,6 +5,7 @@
 
 #include "Utils.h"
 #include "TextureManager.h"
+#include "MainFramebuffer.h"
 
 
 using namespace std;
@@ -21,7 +22,7 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) :
 	updateShaderSet();
 
 
-	passThruShader = ShaderManager::getShaderPtr("pass_thru");
+	passThruShader = ShaderManager::getShaderPtr("pass_thru_alpha");
 	blurShader = ShaderManager::getShaderPtr("blur_basic");
 
 	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png"));
@@ -138,8 +139,8 @@ void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Cam
 	}
 
 
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	vars->mainFramebuffer->bind();
+	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
 }
 
@@ -239,7 +240,8 @@ void ParticleRenderer::preSceneRenderImage() {
 
 void ParticleRenderer::postSceneRenderImage() {
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	vars->mainFramebuffer->bind();
+	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
@@ -301,19 +303,6 @@ const char * ParticleRenderer::getPhaseFunctionName(int phaseFunc) {
 }
 
 
-GLuint ParticleRenderer::createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format) {
-	GLuint texid;
-	glGenTextures(1, &texid);
-	glBindTexture(target, texid);
-
-	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glTexImage2D(target, 0, internalFormat, w, h, 0, format, GL_FLOAT, 0);
-	return texid;
-}
 
 void ParticleRenderer::initFramebuffers() {
 
@@ -331,6 +320,7 @@ void ParticleRenderer::initFramebuffers() {
 
 	imageTexture = createTextureHelper(GL_TEXTURE_2D, imageWidth, imageHeight, format, GL_RGBA);
 	imageDepthTexture = createTextureHelper(GL_TEXTURE_2D, imageWidth, imageHeight, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT);
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -466,7 +456,8 @@ void ParticleRenderer::drawSlice(int i) {
 	//glViewport(0, 0, imageWidth, imageHeight);
 
 	if (vars->renderVolumeParticlesDirectly) {
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		vars->mainFramebuffer->bind();
+		/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
 		glViewport(0, 0, vars->screenWidth, vars->screenHeight);
 	} else {
 		glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
@@ -566,12 +557,12 @@ void ParticleRenderer::drawPoints(int start, int count, bool sorted) {
 
 void ParticleRenderer::compositeResult() {
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	vars->mainFramebuffer->bind();
+	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
 	glDisable(GL_DEPTH_TEST);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
-	glDepthMask(GL_TRUE);
 
 	// draw texture
 	passThruShader->use();
@@ -583,6 +574,8 @@ void ParticleRenderer::compositeResult() {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+
 
 
 }

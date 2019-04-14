@@ -26,6 +26,7 @@ namespace TextureManager {
 
 	// Creates new Texture object from the already existing OpenGL texture (identified by its texId) - this allows users to create manually textures and then push them to the TextureManager where their memory allocation is managed
 	Texture *pushCustomTexture(GLuint texId, int width, int height, int numChannels = 4, string name = "", GLuint textureUnit = 0);
+	bool deleteTexture(string name);
 
 
 	// This is useful when we want to track this texture globally, expects textures allocated by new (!!!) and the TextureManager takes responsibility for deallocating it (checks if it still exists though)!

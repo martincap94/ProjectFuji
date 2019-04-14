@@ -2,6 +2,7 @@
 
 #include "ShaderManager.h"
 #include "TextureManager.h"
+#include "MainFramebuffer.h"
 
 TerrainPicker::TerrainPicker(VariableManager *vars) : vars(vars) {
 	initFramebuffer();
@@ -21,8 +22,8 @@ void TerrainPicker::drawTerrain(HeightMap *heightMap) {
 
 	heightMap->drawGeometry(shader);
 
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	vars->mainFramebuffer->bind();
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 
@@ -58,8 +59,8 @@ void TerrainPicker::initFramebuffer() {
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
 
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	vars->mainFramebuffer->bind();
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	TextureManager::pushCustomTexture(texture, vars->screenWidth, vars->screenHeight, 4, "Terrain Picker Data");
 
@@ -75,7 +76,8 @@ glm::vec4 TerrainPicker::getPixelData(int x, int y) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 	glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, readData);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	vars->mainFramebuffer->bind();
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	cout << readData[0] << endl;
 	cout << readData[1] << endl;

@@ -217,6 +217,7 @@
     <ClCompile Include="CDFSamplerMultiChannel.cpp" />
     <ClCompile Include="ParticleRenderer_backup.cpp" />
     <ClCompile Include="PBRMaterial.cpp" />
+    <ClCompile Include="MainFramebuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -395,6 +396,7 @@
     <ClInclude Include="DynamicCDFSampler.h" />
     <ClInclude Include="CDFSamplerMultiChannel.h" />
     <ClInclude Include="PBRMaterial.h" />
+    <ClInclude Include="MainFramebuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">
@@ -661,6 +663,9 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\terrain_pbr.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\pass_thru_alpha.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

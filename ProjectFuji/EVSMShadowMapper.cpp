@@ -6,6 +6,8 @@
 #include "DirectionalLight.h"
 #include "TextureManager.h"
 #include "Utils.h"
+#include "MainFramebuffer.h"
+#include "VariableManager.h"
 
 #include <limits>
 
@@ -17,9 +19,10 @@ EVSMShadowMapper::EVSMShadowMapper() {
 EVSMShadowMapper::~EVSMShadowMapper() {
 }
 
-void EVSMShadowMapper::init() {
+void EVSMShadowMapper::init(VariableManager *vars) {
 	CHECK_GL_ERRORS();
 
+	this->vars = vars;
 
 	glGenTextures(1, &zBufferTexture);
 	glGenTextures(1, &depthMapTexture);
@@ -134,7 +137,8 @@ void EVSMShadowMapper::init() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	vars->mainFramebuffer->bind();
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	CHECK_GL_ERRORS();
@@ -264,7 +268,8 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 	//glCullFace(GL_BACK);
 	glViewport(0, 0, screenWidth, screenHeight);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	vars->mainFramebuffer->bind();
+	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 

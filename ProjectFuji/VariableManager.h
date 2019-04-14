@@ -11,6 +11,8 @@
 
 #include "Timer.h"
 
+class MainFramebuffer;
+
 
 
 class VariableManager {
@@ -201,6 +203,8 @@ public:
 	int renderMode = 0; // disables rendering of all helper visualization structures (boxes, vectors, etc.)
 
 	std::vector<std::string> sceneFilenames;
+
+	MainFramebuffer *mainFramebuffer = nullptr;
 
 
 	//int show

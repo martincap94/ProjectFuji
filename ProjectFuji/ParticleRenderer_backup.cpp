@@ -135,8 +135,6 @@ void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Cam
 		compositeResult();
 	}
 
-
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
 }

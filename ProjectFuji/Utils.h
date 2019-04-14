@@ -2,7 +2,7 @@
 
 #include <glm\glm.hpp>
 #include <string>
-//#include <glad\glad.h>
+#include <glad\glad.h>
 
 constexpr double PI = 3.14159265358979323846;
 
@@ -198,4 +198,4 @@ bool getFileExtension(const std::string &filename, std::string &outExtension);
 int getIdx(int x, int y, int width);
 
 
-
+GLuint createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format);

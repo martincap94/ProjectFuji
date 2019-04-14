@@ -64,6 +64,7 @@
 #include "StreamlineParticleSystem.h"
 #include "TerrainPicker.h"
 #include "PBRMaterial.h"
+#include "MainFramebuffer.h"
 
 //#include "ArHosekSkyModel.h"
 //#include "ArHosekSkyModel.c"
@@ -128,6 +129,8 @@ Camera *camera;			///< Pointer to the current camera
 //ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system that is to be used throughout the whole application
 ParticleSystem *particleSystem;
 ParticleRenderer *particleRenderer;
+
+MainFramebuffer *mainFramebuffer;
 
 StreamlineParticleSystem *streamlineParticleSystem;
 
@@ -297,7 +300,12 @@ int runApp() {
 	TextureManager::init(&vars);
 	CHECK_GL_ERRORS();
 
-	evsm.init();
+	mainFramebuffer = new MainFramebuffer(&vars);
+	vars.mainFramebuffer = mainFramebuffer;
+
+
+
+	evsm.init(&vars);
 	dirLight = new DirectionalLight();
 	stlpDiagram.init(vars.soundingFile);
 
@@ -671,8 +679,8 @@ int runApp() {
 			glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, mainFramebuffer->id);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mainFramebuffer->id);
 
 			CHECK_GL_ERRORS();
 
@@ -680,8 +688,9 @@ int runApp() {
 
 
 		glViewport(0, 0, vars.screenWidth, vars.screenHeight);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glClear(GL_COLOR_BUFFER_BIT);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		mainFramebuffer->bind();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 
@@ -1018,10 +1027,16 @@ int runApp() {
 		CHECK_GL_ERRORS();
 
 
+		mainFramebuffer->drawToScreen();
+		// We have the default window framebuffer bound -> draw UI as the final step
+
+
 		// Render the user interface
+
 
 		ui->draw();
 		//nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
 		
 
 		lbm->recalculateVariables(); // recalculate variables based on values set in the user interface
@@ -1046,6 +1061,8 @@ int runApp() {
 	delete orbitCamera;
 	delete dirLight;
 	delete tPicker;
+
+	delete mainFramebuffer;
 
 	delete skybox;
 
@@ -1393,6 +1410,7 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 		viewportProjection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
 
 	}
+	mainFramebuffer->refresh();
 	TextureManager::refreshOverlayTextures();
 	stlpDiagram.refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
 }

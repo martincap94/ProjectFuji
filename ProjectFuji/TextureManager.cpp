@@ -48,6 +48,16 @@ namespace TextureManager {
 		return tex;
 	}
 
+	bool deleteTexture(string name) {
+		if (textures.count(name) != 0) {
+			delete textures[name];
+			textures.erase(name);
+			return true;
+		}
+		return false;
+	}
+
+
 	void pushTexturePtr(Texture * tex) {
 		textures.insert(make_pair(tex->filename, tex));
 	}

@@ -6,6 +6,7 @@
 
 #include "STLPUtils.h"
 #include "Utils.h"
+#include "MainFramebuffer.h"
 
 STLPDiagram::STLPDiagram() {
 	recalculateProfileDelta();
@@ -940,8 +941,7 @@ void STLPDiagram::initCurves() {
 	glGenFramebuffers(1, &diagramFramebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, diagramTexture, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+	
 
 	glGenTextures(1, &diagramMultisampledTexture);
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
@@ -2577,7 +2577,6 @@ void STLPDiagram::initBuffersOld() {
 	glGenFramebuffers(1, &diagramFramebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, diagramTexture, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 	glGenTextures(1, &diagramMultisampledTexture);

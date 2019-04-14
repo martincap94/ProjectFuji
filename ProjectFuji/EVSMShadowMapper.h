@@ -7,6 +7,7 @@
 
 class ShaderProgram;
 class DirectionalLight;
+class VariableManager;
 
 class EVSMShadowMapper {
 public:
@@ -33,7 +34,7 @@ public:
 	EVSMShadowMapper();
 	~EVSMShadowMapper();
 
-	void init();
+	void init(VariableManager *vars);
 
 	void preFirstPass();
 
@@ -76,6 +77,11 @@ public:
 
 	GLuint quadVAO;
 	GLuint quadVBO;
+
+private:
+
+	VariableManager *vars = nullptr;
+
 
 };
 

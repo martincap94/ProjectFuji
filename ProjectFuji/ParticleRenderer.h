@@ -147,7 +147,6 @@ private:
 	GLuint quadVBO;
 
 
-	GLuint createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format);
 	void initFramebuffers();
 
 	void drawSlices();

@@ -43,7 +43,8 @@ void main() {
 		//R = vec3(1.0);
 	}
 
-	fragColor = vec4(R, 1.0);
+
+	fragColor = vec4(max(R, 0.0), 1.0); // clamp R to only positives!!! important when compositing
     
 }
 

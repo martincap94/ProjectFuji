@@ -3,7 +3,7 @@
 #include "DataStructures.h"
 
 
-#include <glad\glad.h>
+//#include <glad\glad.h>
 
 // Line intersection based on: https://martin-thoma.com/how-to-check-if-two-line-segments-intersect/
 bool doBoundingBoxesIntersect(const glm::vec2 &amin, const glm::vec2 &amax, const glm::vec2 &bmin, const glm::vec2 &bmax) {
@@ -196,4 +196,18 @@ bool getFileExtension(const std::string &filename, std::string &outExtension) {
 
 int getIdx(int x, int y, int width) {
 	return x + y * width;
+}
+
+GLuint createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format) {
+	GLuint texid;
+	glGenTextures(1, &texid);
+	glBindTexture(target, texid);
+
+	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glTexImage2D(target, 0, internalFormat, w, h, 0, format, GL_FLOAT, 0);
+	return texid;
 }

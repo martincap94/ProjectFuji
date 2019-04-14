@@ -141,6 +141,8 @@ namespace ShaderManager {
 		addShader("volume_2nd_pass_alt2", "volume_2nd_pass_alt2.vert", "volume_2nd_pass_alt2.frag", "volume_2nd_pass_alt2.geom");
 
 		addShader("pass_thru", "pass_thru.vert", "pass_thru.frag");
+		addShader("pass_thru_alpha", "pass_thru.vert", "pass_thru_alpha.frag");
+
 		addShader("visualize_normals", "visualize_normals.vert", "visualize_normals.frag", "visualize_normals.geom");
 
 		addShader("pbr_test", "pbr_test.vert", "pbr_test.frag", "", ShaderProgram::LIT, ShaderProgram::PBR);
