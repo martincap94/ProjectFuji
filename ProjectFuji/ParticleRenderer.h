@@ -106,6 +106,7 @@ public:
 
 	glm::vec3 getSortVec();
 
+	void refreshImageBuffer();
 
 	void preSceneRenderImage();
 	void postSceneRenderImage();
@@ -148,6 +149,8 @@ private:
 
 
 	void initFramebuffers();
+	void initImageBuffer();
+	void initLightBuffers();
 
 	void drawSlices();
 	void drawSlice(int i);

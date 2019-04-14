@@ -998,8 +998,8 @@ int runApp() {
 			particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
 
 			particleRenderer->preSceneRenderImage();
-			vars.heightMap->draw();
-			particleRenderer->postSceneRenderImage();
+			//vars.heightMap->draw();
+			//particleRenderer->postSceneRenderImage();
 
 
 			particleRenderer->draw(particleSystem, dirLight, camera);
@@ -1411,6 +1411,7 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 
 	}
 	mainFramebuffer->refresh();
+	particleRenderer->refreshImageBuffer();
 	TextureManager::refreshOverlayTextures();
 	stlpDiagram.refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
 }

@@ -228,12 +228,18 @@ glm::vec3 ParticleRenderer::getSortVec() {
 }
 
 void ParticleRenderer::preSceneRenderImage() {
-	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
-	glViewport(0, 0, imageWidth, imageHeight);
 
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	glDepthMask(GL_TRUE);
-	glClear(GL_DEPTH_BUFFER_BIT);
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, vars->mainFramebuffer->depthTex, 0);
+
+
+	//glViewport(0, 0, imageWidth, imageHeight);
+
+	//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+	//glDepthMask(GL_TRUE);
+	//glClear(GL_DEPTH_BUFFER_BIT);
 
 
 }
@@ -306,67 +312,8 @@ const char * ParticleRenderer::getPhaseFunctionName(int phaseFunc) {
 
 void ParticleRenderer::initFramebuffers() {
 
-	// IMAGE FRAMEBUFFER
-	if (imageFramebuffer) {
-		glDeleteTextures(1, &imageTexture);
-		glDeleteTextures(1, &imageDepthTexture);
-		glDeleteFramebuffers(1, &imageFramebuffer);
-	}
-
-	imageWidth = vars->screenWidth / downSample;
-	imageHeight = vars->screenHeight / downSample;
-
-	GLint format = GL_RGBA16F;
-
-	imageTexture = createTextureHelper(GL_TEXTURE_2D, imageWidth, imageHeight, format, GL_RGBA);
-	imageDepthTexture = createTextureHelper(GL_TEXTURE_2D, imageWidth, imageHeight, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	glGenFramebuffers(1, &imageFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
-
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, imageTexture, 0);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, imageDepthTexture, 0);
-
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		printf("Creation of framebuffers failed, glCheckFramebufferStatus() = 0x%x\n", status);
-	}
-	// LIGHT FRAMEBUFFER
-
-	CHECK_GL_ERRORS();
-
-	//GLint format = GL_RGBA16F;
-
-	lightTexture[0] = createTextureHelper(GL_TEXTURE_2D, lightBufferResolution, lightBufferResolution, format, GL_RGBA);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-	lightTexture[1] = createTextureHelper(GL_TEXTURE_2D, lightBufferResolution, lightBufferResolution, format, GL_RGBA);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-
-	lightDepthTexture = createTextureHelper(GL_TEXTURE_2D, lightBufferResolution, lightBufferResolution, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT);
-
-	glGenFramebuffers(1, &lightFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
-
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[0], 0);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lightDepthTexture, 0);
-
-	CHECK_GL_ERRORS();
-
-	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		printf("Creation of framebuffers failed, glCheckFramebufferStatus() = 0x%x\n", status);
-	}
-
-
-
-
+	initImageBuffer();
+	initLightBuffers();
 
 	// QUAD
 	glGenVertexArrays(1, &quadVAO);
@@ -648,3 +595,74 @@ void ParticleRenderer::blurLightTexture() {
 
 }
 
+void ParticleRenderer::refreshImageBuffer() {
+
+	initImageBuffer();
+
+}
+
+void ParticleRenderer::initImageBuffer() {
+
+	// IMAGE FRAMEBUFFER
+	if (imageFramebuffer) {
+		glDeleteTextures(1, &imageTexture);
+		glDeleteTextures(1, &imageDepthTexture);
+		glDeleteFramebuffers(1, &imageFramebuffer);
+	}
+
+	imageWidth = vars->screenWidth / downSample;
+	imageHeight = vars->screenHeight / downSample;
+
+	GLint format = GL_RGBA16F;
+
+	imageTexture = createTextureHelper(GL_TEXTURE_2D, imageWidth, imageHeight, format, GL_RGBA);
+	imageDepthTexture = createTextureHelper(GL_TEXTURE_2D, imageWidth, imageHeight, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glGenFramebuffers(1, &imageFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, imageTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, imageDepthTexture, 0);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		printf("Creation of framebuffers failed, glCheckFramebufferStatus() = 0x%x\n", status);
+	}
+	CHECK_GL_ERRORS();
+
+}
+
+void ParticleRenderer::initLightBuffers() {
+	// LIGHT FRAMEBUFFER
+	GLint format = GL_RGBA16F;
+
+	//GLint format = GL_RGBA16F;
+
+	lightTexture[0] = createTextureHelper(GL_TEXTURE_2D, lightBufferResolution, lightBufferResolution, format, GL_RGBA);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+	lightTexture[1] = createTextureHelper(GL_TEXTURE_2D, lightBufferResolution, lightBufferResolution, format, GL_RGBA);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+
+	lightDepthTexture = createTextureHelper(GL_TEXTURE_2D, lightBufferResolution, lightBufferResolution, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT);
+
+	glGenFramebuffers(1, &lightFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[0], 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, lightDepthTexture, 0);
+
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		printf("Creation of framebuffers failed, glCheckFramebufferStatus() = 0x%x\n", status);
+	}
+	CHECK_GL_ERRORS();
+
+}
