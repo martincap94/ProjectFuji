@@ -53,8 +53,7 @@ __global__ void computeParticleProjectedDistances(glm::vec3 *particleVertices, f
 
 ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
-	harris_1st_pass_shader = ShaderManager::getShaderPtr("harris_1st_pass");
-	harris_2nd_pass_shader = ShaderManager::getShaderPtr("harris_2nd_pass");
+	curveShader = ShaderManager::getShaderPtr("curve");
 
 
 	heightMap = vars->heightMap;
@@ -336,15 +335,15 @@ void ParticleSystem::drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos) {
 
 }
 
-void ParticleSystem::drawDiagramParticles(ShaderProgram *shader) {
-	shader->use();
+void ParticleSystem::drawDiagramParticles() {
+	curveShader->use();
 	GLboolean depthTestEnabled;
 	glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
 	glDisable(GL_DEPTH_TEST);
 
 
 	glPointSize(2.0f);
-	shader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+	curveShader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
 
 	glBindVertexArray(diagramParticlesVAO);
 	//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
@@ -375,26 +374,6 @@ void ParticleSystem::drawHelperStructures() {
 
 }
 
-void ParticleSystem::drawHarris_1st_pass(glm::vec3 lightPos) {
-
-	sortParticlesByDistance(lightPos, eSortPolicy::GREATER);
-
-	harris_1st_pass_shader->use();
-	harris_1st_pass_shader->setInt("u_Texture", 0);
-
-	glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
-
-	glPointSize(pointSize);
-
-	glBindVertexArray(particlesVAO);
-	glDrawArrays(GL_POINTS, 0, numActiveParticles);
-
-
-}
-
-void ParticleSystem::drawHarris_2nd_pass(glm::vec3 cameraPos) {
-}
 
 void ParticleSystem::sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy) {
 

@@ -2267,7 +2267,11 @@ LBM3D_1D_indices::LBM3D_1D_indices() {
 
 
 
-LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram) : vars(vars), latticeWidth(dim.x), latticeHeight(dim.y), latticeDepth(dim.z), sceneFilename(sceneFilename), tau(tau), particleSystem(particleSystem), blockDim(blockDim), stlpDiagram(stlpDiagram) {
+LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram) : vars(vars), particleSystem(particleSystem), blockDim(blockDim), stlpDiagram(stlpDiagram) {
+
+	tau = vars->tau;
+	sceneFilename = vars->sceneFilename;
+
 
 	itau = 1.0f / tau;
 	nu = (2.0f * tau - 1.0f) / 6.0f;

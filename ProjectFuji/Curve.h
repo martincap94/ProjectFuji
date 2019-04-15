@@ -22,6 +22,7 @@ public:
 	void initBuffers();
 
 	void draw(ShaderProgram &shader);
+	void draw(ShaderProgram *shader);
 
 	glm::vec2 getIntersectionWithIsobar(float normalizedPressure);
 

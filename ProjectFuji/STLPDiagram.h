@@ -224,13 +224,13 @@ public:
 	void initFreetype();
 
 	/// Draws the diagram (without text).
-	void draw(ShaderProgram &shader, ShaderProgram &altShader);
+	void draw();
 
 	/// Draws the text label for the diagram.
 	void drawText();
 
 
-	void drawOverlayDiagram(ShaderProgram *shader, GLuint textureId = -1);
+	void drawOverlayDiagram(GLuint textureId = -1);
 	void refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight, GLuint viewport_x = 0, GLuint viewport_y = 0);
 
 
@@ -243,6 +243,10 @@ public:
 
 private:
 	
+	ShaderProgram *curveShader = nullptr;
+	ShaderProgram *singleColorShaderVBO = nullptr;
+	ShaderProgram *overlayDiagramShader = nullptr;
+
 	vector<glm::vec3> visualizationPoints; // helper points, buffered in such a way that it is point, color, point, color, etc. (stride = 3 * sizeof(float))
 	GLuint visPointsVAO;
 	GLuint visPointsVBO;

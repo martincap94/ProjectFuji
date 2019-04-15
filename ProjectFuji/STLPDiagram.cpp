@@ -25,6 +25,10 @@ STLPDiagram::~STLPDiagram() {
 
 void STLPDiagram::init(string filename) {
 
+	curveShader = ShaderManager::getShaderPtr("curve");
+	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
+	overlayDiagramShader = ShaderManager::getShaderPtr("overlayTexture");
+
 	loadSoundingData(filename);
 
 	initFreetype();
@@ -1150,67 +1154,59 @@ void STLPDiagram::initFreetype() {
 
 }
 
-void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
+void STLPDiagram::draw() {
 
 	int counter;
 	glLineWidth(1.0f);
 
-	reportGLErrors("STLP 1");
+	curveShader->use();
 
-	glUseProgram(shader.id);
-
-	shader.setBool("u_CropBounds", (bool)cropBounds);
+	curveShader->setBool("u_CropBounds", (bool)cropBounds);
 
 	if (showIsobars) {
-		shader.setVec3("color", glm::vec3(0.8f, 0.8f, 0.8f));
+		curveShader->setVec3("u_Color", glm::vec3(0.8f, 0.8f, 0.8f));
 		glBindVertexArray(isobarsVAO);
 		glDrawArrays(GL_LINES, 0, numIsobars * 2);
 	}
-	reportGLErrors("STLP 2");
 
 
 	glPointSize(8.0f);
-	shader.setVec3("color", glm::vec3(0.5f, 0.7f, 0.0f));
+	curveShader->setVec3("u_Color", glm::vec3(0.5f, 0.7f, 0.0f));
 	glBindVertexArray(temperaturePointsVAO);
 	glDrawArrays(GL_POINTS, 0, temperaturePointsCount);
 
-	reportGLErrors("STLP 3");
 
 	if (showIsotherms) {
 		glPointSize(8.0f);
-		shader.setVec3("color", glm::vec3(0.8f, 0.8f, 0.8f));
+		curveShader->setVec3("u_Color", glm::vec3(0.8f, 0.8f, 0.8f));
 		glBindVertexArray(isothermsVAO);
 		glDrawArrays(GL_LINES, 0, isothermsCount * 2);
 	}
-	reportGLErrors("STLP 4");
 
 
 	if (showAmbientTemperatureCurve) {
-		shader.setVec3("color", glm::vec3(0.7f, 0.1f, 0.15f));
+		curveShader->setVec3("u_Color", glm::vec3(0.7f, 0.1f, 0.15f));
 		glBindVertexArray(ambientTemperatureVAO);
 		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
 	}
-	reportGLErrors("STLP 5");
 
 
 	if (showDewpointCurve) {
-		shader.setVec3("color", glm::vec3(0.1f, 0.7f, 0.15f));
+		curveShader->setVec3("u_Color", glm::vec3(0.1f, 0.7f, 0.15f));
 		glBindVertexArray(dewTemperatureVAO);
 		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
 	}
-	reportGLErrors("STLP 6");
 
 
 	if (showIsohumes) {
-		shader.setVec3("color", glm::vec3(0.1f, 0.15f, 0.7f));
+		curveShader->setVec3("u_Color", glm::vec3(0.1f, 0.15f, 0.7f));
 		glBindVertexArray(isohumesVAO);
 		glDrawArrays(GL_LINES, 0, soundingData.size() * 2);
 	}
-	reportGLErrors("STLP 7");
 
 
 	if (showDryAdiabats) {
-		shader.setVec3("color", glm::vec3(0.6f, 0.6f, 0.6f));
+		curveShader->setVec3("u_Color", glm::vec3(0.6f, 0.6f, 0.6f));
 		glBindVertexArray(dryAdiabatsVAO);
 
 		glLineWidth(0.01f);
@@ -1223,12 +1219,11 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 			counter += dryAdiabatEdgeCount[i];
 		}
 	}
-	reportGLErrors("STLP 8");
 
 
 	if (showMoistAdiabats) {
 		glPointSize(2.0f);
-		shader.setVec3("color", glm::vec3(0.2f, 0.6f, 0.8f));
+		curveShader->setVec3("u_Color", glm::vec3(0.2f, 0.6f, 0.8f));
 		glBindVertexArray(moistAdiabatsVAO);
 		//glDrawArrays(GL_LINE_STRIP, 0, 1000000);
 		//glDrawArrays(GL_POINTS, 0, 100000);
@@ -1244,50 +1239,46 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 			counter += moistAdiabatEdgeCount[i];
 		}
 	}
-	reportGLErrors("STLP 9");
 
 
 	//glPointSize(9.0f);
-	//shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+	//shader.setVec3("u_Color", glm::vec3(1.0f, 0.0f, 0.0f));
 	//glBindVertexArray(CCLVAO);
 	//glDrawArrays(GL_POINTS, 0, 1);
 
 	//glPointSize(9.0f);
-	//shader.setVec3("color", glm::vec3(0.6f, 0.3f, 0.6f));
+	//shader.setVec3("u_Color", glm::vec3(0.6f, 0.3f, 0.6f));
 	//glBindVertexArray(TcVAO);
 	//glDrawArrays(GL_POINTS, 0, 1);
 
 
-	xaxis.draw(shader);
-	yaxis.draw(shader);
-	groundIsobar.draw(shader);
-	reportGLErrors("STLP 10");
+	xaxis.draw(curveShader);
+	yaxis.draw(curveShader);
+	groundIsobar.draw(curveShader);
 
 
 	glPointSize(3.0f);
-	glUseProgram(altShader.id);
+	singleColorShaderVBO->use();
 	glBindVertexArray(visPointsVAO);
 	glDrawArrays(GL_POINTS, 0, visualizationPoints.size() / 2);
-	reportGLErrors("STLP 11");
 
 
 	glPointSize(6.0f);
 	glBindVertexArray(mainParameterPointsVAO);
 	glDrawArrays(GL_POINTS, 0, mainParameterPoints.size() / 2);
-	reportGLErrors("STLP 12");
 
 
 
 
 	// draw particles on top of everything
-	shader.use();
+	curveShader->use();
 	GLboolean depthTestEnabled;
 	glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
 	glDisable(GL_DEPTH_TEST);
 	if (particlePoints.size() > 0) {
 		//cout << "?" << endl;
 		glPointSize(2.0f);
-		shader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+		curveShader->setVec3("u_Color", glm::vec3(1.0f, 0.0f, 0.0f));
 
 		glBindVertexArray(particlesVAO);
 		//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
@@ -1298,6 +1289,8 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 	if (depthTestEnabled) {
 		glEnable(GL_DEPTH_TEST);
 	}
+
+	CHECK_GL_ERRORS();
 
 
 }
@@ -1331,13 +1324,13 @@ void STLPDiagram::drawText() {
 
 }
 
-void STLPDiagram::drawOverlayDiagram(ShaderProgram *shader, GLuint textureId) {
+void STLPDiagram::drawOverlayDiagram(GLuint textureId) {
 	//GLint current_program_id = 0;
 	//glGetIntegerv(GL_CURRENT_PROGRAM, &current_program_id);
 	GLboolean depth_test_enabled = glIsEnabled(GL_DEPTH_TEST);
 
 	glDisable(GL_DEPTH_TEST);
-	shader->use();
+	overlayDiagramShader->use();
 	glActiveTexture(GL_TEXTURE0);
 
 	if (textureId == -1) {
@@ -1345,7 +1338,7 @@ void STLPDiagram::drawOverlayDiagram(ShaderProgram *shader, GLuint textureId) {
 	} else {
 		glBindTextureUnit(0, textureId);
 	}
-	glUniform1i(glGetUniformLocation(shader->id, "u_Texture"), 0);
+	overlayDiagramShader->setInt("u_Texture", 0);
 
 	glBindVertexArray(overlayDiagramVAO);
 

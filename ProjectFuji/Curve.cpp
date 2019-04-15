@@ -36,6 +36,13 @@ void Curve::draw(ShaderProgram & shader) {
 	glDrawArrays(GL_LINES, 0, vertices.size() * 2);
 }
 
+void Curve::draw(ShaderProgram *shader) {
+	shader->use();
+	shader->setVec3("u_Color", glm::vec3(0.1f));
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_LINES, 0, vertices.size() * 2);
+}
+
 glm::vec2 Curve::getIntersectionWithIsobar(float normalizedPressure) {
 
 	// naively search for correct interval - better solutions are: binary search and direct indexation using (non-normalized) pressure - needs better design

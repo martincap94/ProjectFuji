@@ -187,17 +187,8 @@ public:
 	/// Default constructor.
 	LBM3D_1D_indices();
 
-	/// Constructs the simulator with given dimensions, scene, initial tau value and number of threads for launching kernels.
-	/**
-		Constructs the simulator with given dimensions, scene, initial tau value and number of threads for launching kernels.
-		Initializes the scene and allocates CPU and GPU memory for simulation.
-		\param[in] dim				[NOT USED ANYMORE] Dimensions of the scene. Dimensions are now loaded from the scene file.
-		\param[in] sceneFilename	Filename of the scene. Scene defines the dimensions of the simulation space.
-		\param[in] tau				Initial tau simulation constant.
-		\param[in] particleSystem	Pointer to the particle system.
-		\param[in] blockDim			Dimensions of blocks to be used when launching CUDA kernels.
-	*/
-	LBM3D_1D_indices(VariableManager *vars, glm::ivec3 dim, string sceneFilename, float tau, ParticleSystemLBM *particleSystemLBM, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram);
+
+	LBM3D_1D_indices(VariableManager *vars, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram);
 
 	/// Frees CPU and GPU memory and unmaps CUDA graphics resources (VBOs).
 	virtual ~LBM3D_1D_indices();

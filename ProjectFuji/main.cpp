@@ -214,15 +214,12 @@ ShaderProgram *singleColorShader;
 ShaderProgram *singleColorShaderVBO;
 ShaderProgram *singleColorShaderAlpha;
 ShaderProgram *unlitColorShader;
-ShaderProgram *dirLightOnlyShader;
-ShaderProgram *curveShader;
 ShaderProgram *pointSpriteTestShader;
 ShaderProgram *coloredParticleShader;
 ShaderProgram *diagramShader;
 ShaderProgram *skyboxShader;
 ShaderProgram *hosekShader;
 ShaderProgram *visualizeNormalsShader;
-ShaderProgram *normalsShader;
 ShaderProgram *normalsInstancedShader;
 ShaderProgram *grassShader;
 
@@ -334,19 +331,14 @@ int runApp() {
 
 	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
 
-	dirLightOnlyShader = ShaderManager::getShaderPtr("dirLightOnly");
-	//dirLightOnlyShader = ShaderManager::getShaderPtr("dirLightOnly_evsm");
 
 	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
 	coloredParticleShader = ShaderManager::getShaderPtr("coloredParticle");
-	diagramShader = ShaderManager::getShaderPtr("overlayTexture");
 
-	curveShader = ShaderManager::getShaderPtr("curve");
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 	hosekShader = ShaderManager::getShaderPtr("sky_hosek");
 	visualizeNormalsShader = ShaderManager::getShaderPtr("visualize_normals");
 
-	normalsShader = ShaderManager::getShaderPtr("normals");
 	normalsInstancedShader = ShaderManager::getShaderPtr("normals_instanced");
 	grassShader = ShaderManager::getShaderPtr("grass_instanced");
 
@@ -359,7 +351,6 @@ int runApp() {
 	particleRenderer = new ParticleRenderer(&vars, particleSystem);
 
 
-	glm::ivec3 latticeDim(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
 
 	float ratio = (float)vars.screenWidth / (float)vars.screenHeight;
 
@@ -374,14 +365,8 @@ int runApp() {
 		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
 		CHECK_ERROR(cudaPeekAtLastError());
 
-		lbm = new LBM3D_1D_indices(&vars, latticeDim, vars.sceneFilename, vars.tau, nullptr, particleSystem, blockDim, &stlpDiagram);
+		lbm = new LBM3D_1D_indices(&vars, particleSystem, blockDim, &stlpDiagram);
 		CHECK_ERROR(cudaPeekAtLastError());
-
-
-		vars.latticeWidth = lbm->latticeWidth;
-		vars.latticeHeight = lbm->latticeHeight;
-		vars.latticeDepth = lbm->latticeDepth;
-
 
 
 		projectionRange = (float)((vars.latticeWidth > vars.latticeHeight) ? vars.latticeWidth : vars.latticeHeight);
@@ -444,7 +429,6 @@ int runApp() {
 	Texture gspecular("textures/grass_S.png", 1);
 	Material gMat(gdiffuse, gspecular, anormal, 32.0f);
 
-	Model armoireModel("models/armoire.fbx", &aMat, normalsShader);
 	Model grassModel("models/grass.obj", &gMat, grassShader);
 	//Model grassModel("models/grass.obj", &gMat, ShaderManager::getShaderPtr("normals"));
 
@@ -488,13 +472,10 @@ int runApp() {
 
 	testModel.transform.position = glm::vec3(3500.0f, 0.0f, 8500.0f);
 
-	armoireModel.transform.position = glm::vec3(3000.0f, 0.0f, 8000.0f);
-	armoireModel.transform.scale = glm::vec3(1.0f);
 
 	dirLight->position = glm::vec3(10000.0f, 15000.0f, 20000.0f);
 
 	testModel.snapToGround(vars.heightMap);
-	armoireModel.snapToGround(vars.heightMap);
 
 
 	SceneGraph scene;
@@ -651,11 +632,11 @@ int runApp() {
 			glClear(GL_COLOR_BUFFER_BIT);
 			//glBindTextureUnit(0, stlpDiagram.diagramTexture);
 
-			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
+			stlpDiagram.draw();
 
 			stlpDiagram.drawText();
 
-			particleSystem->drawDiagramParticles(curveShader);
+			particleSystem->drawDiagramParticles();
 
 
 
@@ -709,10 +690,6 @@ int runApp() {
 		ShaderManager::updateDirectionalLightUniforms(*dirLight);
 		ShaderManager::updateViewPositionUniforms(camera->position);
 
-		//dirLightOnlyShader->use();
-		//dirLightOnlyShader->setVec3("v_ViewPos", camera->position);
-
-
 		if (vars.drawSkybox) {
 			projection = glm::perspective(glm::radians(vars.fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
 
@@ -746,79 +723,8 @@ int runApp() {
 
 		if (mode == 0 || mode == 1) {
 
-			/*	if (mode == 1) {
-					stlpSim->doStep();
-				}
-	*/
-			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
+			stlpDiagram.draw();
 			stlpDiagram.drawText();
-
-			/*glUseProgram(diagramShader->id);
-			glBindTextureUnit(0, stlpDiagram.diagramTexture);
-			glUniform1i(glGetUniformLocation(diagramShader->id, "u_Texture"), 0);
-			glUniform2i(glGetUniformLocation(diagramShader->id, "u_ScreenSize"), screenWidth, screenHeight);
-
-
-			glBindVertexArray(stlpDiagram.overlayDiagramVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 6);*/
-
-
-
-			//Show2DTexture(stlpDiagram.diagramTexture, 0, 0, 200, 200);
-
-		} else if (mode == 2) {
-
-			if (!vars.paused) {
-				if (vars.useCUDA) {
-					lbm->doStepCUDA();
-				} else {
-					lbm->doStep();
-				}
-			}
-
-			if (vars.measureTime) {
-				if (vars.useCUDA) {
-					lbm->synchronize();
-					//cudaDeviceSynchronize();
-				}
-				if (vars.timer.clockAvgEnd() && vars.exitAfterFirstAvg) {
-					cout << "Exiting main loop..." << endl;
-					break;
-				}
-			}
-
-			// DRAW SCENE
-			//grid->draw(*singleColorShader);
-
-
-			lbm->draw(*singleColorShader);
-
-			//if (vars.usePointSprites) {
-			//	particleSystemLBM->draw(*pointSpriteTestShader, vars.useCUDA);
-			//} else if (lbm->visualizeVelocity) {
-			//	particleSystemLBM->draw(*coloredParticleShader, vars.useCUDA);
-			//} else {
-			//	particleSystemLBM->draw(*singleColorShader, vars.useCUDA);
-			//}
-			gGrid.draw(*unlitColorShader);
-
-			/*glDisable(GL_DEPTH_TEST);
-			glUseProgram(diagramShader->id);
-			glBindTextureUnit(0, stlpDiagram.diagramTexture);
-			glUniform1i(glGetUniformLocation(diagramShader->id, "u_Texture"), 0);
-			glUniform2i(glGetUniformLocation(diagramShader->id, "u_ScreenSize"), screenWidth, screenHeight);
-
-			glBindVertexArray(stlpDiagram.overlayDiagramVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			glEnable(GL_DEPTH_TEST);*/
-
-			//display2DTexture(stlpDiagram.diagramTexture, diagramShader->id, 0, 0, 200, 200);
-
-
-
-			//stlpDiagram.drawOverlayDiagram(diagramShader);
-
-
 
 		} else if (mode == 3) {
 
@@ -889,7 +795,6 @@ int runApp() {
 			CHECK_GL_ERRORS();
 
 
-			//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
 
 			//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 
@@ -979,16 +884,11 @@ int runApp() {
 
 			particleRenderer->draw(particleSystem, dirLight, camera);
 
-			/*
-							glDisable(GL_BLEND);
-							glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-							glEnable(GL_DEPTH_TEST);*/
-							//}
 
-							//stlpDiagram.drawOverlayDiagram(diagramShader, evsm.depthMapTexture);
+
 
 			if (vars.showOverlayDiagram) {
-				stlpDiagram.drawOverlayDiagram(diagramShader);
+				stlpDiagram.drawOverlayDiagram();
 			}
 
 

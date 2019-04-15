@@ -132,12 +132,9 @@ public:
 
 	void draw(const ShaderProgram &shader, glm::vec3 cameraPos);
 	void drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos);
-	void drawDiagramParticles(ShaderProgram *shader);
+	void drawDiagramParticles();
 
 	void drawHelperStructures();
-
-	void drawHarris_1st_pass(glm::vec3 lightPos);
-	void drawHarris_2nd_pass(glm::vec3 cameraPos);
 
 	void sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy);
 	void sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy sortPolicy);
@@ -170,12 +167,10 @@ public:
 
 private:
 
+	ShaderProgram *curveShader = nullptr;
+
 	Model *formBoxVisModel;
 	ShaderProgram *formBoxVisShader;
-
-
-	ShaderProgram *harris_1st_pass_shader;
-	ShaderProgram *harris_2nd_pass_shader;
 
 
 	GLuint streamLinesVAO;	///< Streamlines VAO

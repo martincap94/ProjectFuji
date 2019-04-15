@@ -4,7 +4,7 @@ in vec3 v_Pos;
 
 out vec4 fragColor;
 
-uniform vec3 color;
+uniform vec3 u_Color;
 uniform bool u_CropBounds;
 
 
@@ -14,5 +14,5 @@ void main() {
 		discard;
 	}
 
-	fragColor = vec4(color, 1.0);
+	fragColor = vec4(u_Color, 1.0);
 }
