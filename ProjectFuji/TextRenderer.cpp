@@ -1,5 +1,7 @@
 #include "TextRenderer.h"
 
+#include "ShaderManager.h"
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -8,6 +10,8 @@
 
 // Taken from: https://learnopengl.com/In-Practice/Text-Rendering 
 TextRenderer::TextRenderer() {
+
+	shader = ShaderManager::getShaderPtr("text");
 
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft)) {
@@ -86,11 +90,10 @@ TextRenderer::~TextRenderer() {
 
 
 // Taken from: https://learnopengl.com/In-Practice/Text-Rendering 
-void TextRenderer::RenderText(ShaderProgram & s, string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color) {
+void TextRenderer::renderText(string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color) {
 
-	// Activate corresponding render state	
-	glUseProgram(s.id);
-	glUniform3f(glGetUniformLocation(s.id, "textColor"), color.x, color.y, color.z);
+	shader->use();
+	shader->setVec3("textColor", color);
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(VAO);
 

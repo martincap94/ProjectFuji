@@ -65,6 +65,7 @@
 #include "TerrainPicker.h"
 #include "PBRMaterial.h"
 #include "MainFramebuffer.h"
+#include "SceneGraph.h"
 
 //#include "ArHosekSkyModel.h"
 //#include "ArHosekSkyModel.c"
@@ -214,7 +215,6 @@ ShaderProgram *singleColorShaderVBO;
 ShaderProgram *singleColorShaderAlpha;
 ShaderProgram *unlitColorShader;
 ShaderProgram *dirLightOnlyShader;
-ShaderProgram *textShader;
 ShaderProgram *curveShader;
 ShaderProgram *pointSpriteTestShader;
 ShaderProgram *coloredParticleShader;
@@ -341,7 +341,6 @@ int runApp() {
 	coloredParticleShader = ShaderManager::getShaderPtr("coloredParticle");
 	diagramShader = ShaderManager::getShaderPtr("overlayTexture");
 
-	textShader = ShaderManager::getShaderPtr("text");
 	curveShader = ShaderManager::getShaderPtr("curve");
 	skyboxShader = ShaderManager::getShaderPtr("skybox");
 	hosekShader = ShaderManager::getShaderPtr("sky_hosek");
@@ -466,6 +465,7 @@ int runApp() {
 	float hx = 10000.0f;
 	float hz = 10000.0f;
 	houseModel.transform.position = glm::vec3(hx, vars.heightMap->getHeight(hx, hz), hz);
+	houseModel.shader = pbrTest;
 
 	// PBR TESTING
 
@@ -480,27 +480,13 @@ int runApp() {
 	Texture *cao = TextureManager::loadTexture("textures/Cerberus/Cerberus_AO.png");
 	PBRMaterial cerbmat(calbedo, cmetallic, cnormalMap, cao);
 	cerberus.pbrMaterial = &cerbmat;
-
-
-	Model lamp("models/BankersLamp.fbx");
-	lamp.transform.scale = glm::vec3(100.0f);
-
-	Texture *albedo = TextureManager::loadTexture("textures/BankersLamp_Textures/BankersLamp_DefaultMaterial_AlbedoTransparency.png");
-	Texture *normalMap = TextureManager::loadTexture("textures/BankersLamp_Textures/BankersLamp_DefaultMaterial_Normal.png");
-	Texture *metallic = TextureManager::loadTexture("textures/BankersLamp_Textures/BankersLamp_DefaultMaterial_MetallicSmoothness.png");
-	Texture *ao = TextureManager::loadTexture("textures/BankersLamp_Textures/BankersLamp_DefaultMaterial_AO.png");
-
-
-
-
-
+	cerberus.shader = pbrTest;
 
 
 	//grassModel.makeInstancedMaterialMap(vars.heightMap, 500000, 0, glm::vec2(1.5f, 3.0f));
 	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
 
 	testModel.transform.position = glm::vec3(3500.0f, 0.0f, 8500.0f);
-	//testModel.transform.scale = glm::vec3(20.0f);
 
 	armoireModel.transform.position = glm::vec3(3000.0f, 0.0f, 8000.0f);
 	armoireModel.transform.scale = glm::vec3(1.0f);
@@ -511,7 +497,11 @@ int runApp() {
 	armoireModel.snapToGround(vars.heightMap);
 
 
-
+	SceneGraph scene;
+	scene.root = new Actor();
+	//scene.root->addChild(&treeModel);
+	scene.root->addChild(&cerberus);
+	scene.root->addChild(&houseModel);
 
 	evsm.dirLight = dirLight;
 
@@ -663,7 +653,7 @@ int runApp() {
 
 			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
 
-			stlpDiagram.drawText(*textShader);
+			stlpDiagram.drawText();
 
 			particleSystem->drawDiagramParticles(curveShader);
 
@@ -761,7 +751,7 @@ int runApp() {
 				}
 	*/
 			stlpDiagram.draw(*curveShader, *singleColorShaderVBO);
-			stlpDiagram.drawText(*textShader);
+			stlpDiagram.drawText();
 
 			/*glUseProgram(diagramShader->id);
 			glBindTextureUnit(0, stlpDiagram.diagramTexture);
@@ -887,14 +877,7 @@ int runApp() {
 			vars.heightMap->drawGeometry(evsm.firstPassShaders[0]);
 			//stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
 
-			//if (vars.cloudsCastShadows) {
-			//	particleSystem->drawGeometry(evsm.firstPassShaders[0], camera->position);
-			//}
-			//testMesh.draw(evsm.firstPassShader);
-			testModel.drawGeometry(evsm.firstPassShaders[0]);
-			//grassModel.drawGeometry(evsm.firstPassShaders[0]);
-			armoireModel.drawGeometry(evsm.firstPassShaders[0]);
-
+			scene.root->drawGeometry(evsm.firstPassShaders[0]);
 
 			
 
@@ -924,25 +907,15 @@ int runApp() {
 				vars.heightMap->drawGeometry(visualizeNormalsShader);
 			}
 
-			//testModel.draw(*evsm.secondPassShader);
-			testModel.draw();
-
-
 			if (vars.drawGrass) {
 				grassModel.draw();
 			}
-
-			testMesh.draw();
-			armoireModel.draw();
-
-
-
-			cerberus.draw(pbrTest);
-			houseModel.draw(pbrTest);
-
 			if (vars.drawTrees) {
 				treeModel.draw();
 			}
+
+			scene.root->draw();
+
 
 			evsm.postSecondPass();
 
@@ -1063,6 +1036,8 @@ int runApp() {
 	delete orbitCamera;
 	delete dirLight;
 	delete tPicker;
+
+	delete scene.root;
 
 	delete mainFramebuffer;
 

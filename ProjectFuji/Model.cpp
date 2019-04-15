@@ -18,6 +18,7 @@ Model::~Model() {
 }
 
 void Model::draw() {
+	Actor::draw();
 	if (!shader) {
 		cerr << "No shader attributed to the model" << endl;
 		return;
@@ -35,6 +36,7 @@ void Model::draw() {
 }
 
 void Model::draw(ShaderProgram *shader) {
+	Actor::draw(shader);
 
 	shader->use();
 	shader->setModelMatrix(transform.getModelMatrix());
@@ -50,6 +52,8 @@ void Model::draw(ShaderProgram *shader) {
 }
 
 void Model::drawGeometry(ShaderProgram * shader) {
+	Actor::drawGeometry(shader);
+
 	shader->use();
 	shader->setModelMatrix(transform.getModelMatrix());
 	shader->setBool("u_IsInstanced", instanced);
@@ -59,6 +63,8 @@ void Model::drawGeometry(ShaderProgram * shader) {
 }
 
 void Model::drawWireframe(ShaderProgram * shader) {
+	Actor::drawWireframe(shader);
+
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawGeometry(shader);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

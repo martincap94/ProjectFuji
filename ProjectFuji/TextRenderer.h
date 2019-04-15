@@ -59,7 +59,11 @@ public:
 		\param[in] scale	Scale factor for the text.
 		\param[in] color	Color of the text to be set in the shader ("textColor" uniform).
 	*/
-	void RenderText(ShaderProgram &s, string text, GLfloat x, GLfloat y, GLfloat scale = 0.0004f, glm::vec3 color = glm::vec3(0.0f));
+	void renderText(string text, GLfloat x, GLfloat y, GLfloat scale = 0.0004f, glm::vec3 color = glm::vec3(0.0f));
+
+private:
+
+	ShaderProgram *shader = nullptr;
 
 };
 

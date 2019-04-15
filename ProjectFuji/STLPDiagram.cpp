@@ -7,6 +7,7 @@
 #include "STLPUtils.h"
 #include "Utils.h"
 #include "MainFramebuffer.h"
+#include "ShaderManager.h"
 
 STLPDiagram::STLPDiagram() {
 	recalculateProfileDelta();
@@ -23,6 +24,7 @@ STLPDiagram::~STLPDiagram() {
 }
 
 void STLPDiagram::init(string filename) {
+
 	loadSoundingData(filename);
 
 	initFreetype();
@@ -1300,31 +1302,31 @@ void STLPDiagram::draw(ShaderProgram &shader, ShaderProgram &altShader) {
 
 }
 
-void STLPDiagram::drawText(ShaderProgram &shader) {
+void STLPDiagram::drawText() {
 
 	int i = 0;
 	for (int temp = MIN_TEMP; temp <= MAX_TEMP; temp += 10) {
-		textRend->RenderText(shader, to_string(temp), temperaturePoints[i].x, temperaturePoints[i].y + 0.02f);
+		textRend->renderText(to_string(temp), temperaturePoints[i].x, temperaturePoints[i].y + 0.02f);
 		i++;
 	}
 
-	textRend->RenderText(shader, "CCL", CCLNormalized.x, CCLNormalized.y);
-	textRend->RenderText(shader, "Tc", TcNormalized.x, TcNormalized.y);
-	textRend->RenderText(shader, "EL", ELNormalized.x, ELNormalized.y);
-	textRend->RenderText(shader, "LCL", LCLNormalized.x, LCLNormalized.y);
-	textRend->RenderText(shader, "LFC", LFCNormalized.x, LFCNormalized.y);
-	textRend->RenderText(shader, "EL2", OrographicELNormalized.x, OrographicELNormalized.y);
+	textRend->renderText("CCL", CCLNormalized.x, CCLNormalized.y);
+	textRend->renderText("Tc", TcNormalized.x, TcNormalized.y);
+	textRend->renderText("EL", ELNormalized.x, ELNormalized.y);
+	textRend->renderText("LCL", LCLNormalized.x, LCLNormalized.y);
+	textRend->renderText("LFC", LFCNormalized.x, LFCNormalized.y);
+	textRend->renderText("EL2", OrographicELNormalized.x, OrographicELNormalized.y);
 
-	textRend->RenderText(shader, to_string((int)soundingData[0].data[PRES]), 0.0f - 0.04f, 1.0f);
+	textRend->renderText(to_string((int)soundingData[0].data[PRES]), 0.0f - 0.04f, 1.0f);
 	for (i = 1000.0f; i >= MIN_P; i -= 100) {
-		textRend->RenderText(shader, to_string(i), 0.0f - 0.04f, getNormalizedPres(i));
-		textRend->RenderText(shader, to_string((int)getAltitudeFromPressure(i)) + "[m]", 0.0f + 0.01f, getNormalizedPres(i));
+		textRend->renderText(to_string(i), 0.0f - 0.04f, getNormalizedPres(i));
+		textRend->renderText(to_string((int)getAltitudeFromPressure(i)) + "[m]", 0.0f + 0.01f, getNormalizedPres(i));
 	}
 
-	textRend->RenderText(shader, "Temperature (C)", 0.45f, 1.10f);
-	textRend->RenderText(shader, "P (hPa)", -0.15f, 0.5f);
+	textRend->renderText("Temperature (C)", 0.45f, 1.10f);
+	textRend->renderText("P (hPa)", -0.15f, 0.5f);
 
-	textRend->RenderText(shader, "SkewT/LogP (" + soundingFile + ")", 0.4f, -0.05f, 0.0006f);
+	textRend->renderText("SkewT/LogP (" + soundingFile + ")", 0.4f, -0.05f, 0.0006f);
 
 
 }

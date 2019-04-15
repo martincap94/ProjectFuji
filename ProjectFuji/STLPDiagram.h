@@ -227,7 +227,7 @@ public:
 	void draw(ShaderProgram &shader, ShaderProgram &altShader);
 
 	/// Draws the text label for the diagram.
-	void drawText(ShaderProgram &shader);
+	void drawText();
 
 
 	void drawOverlayDiagram(ShaderProgram *shader, GLuint textureId = -1);
