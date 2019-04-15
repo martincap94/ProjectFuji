@@ -936,7 +936,7 @@ void STLPDiagram::initCurves() {
 	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
 
 	glGenFramebuffers(1, &diagramFramebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
@@ -945,7 +945,7 @@ void STLPDiagram::initCurves() {
 
 	glGenTextures(1, &diagramMultisampledTexture);
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA32F, textureResolution, textureResolution, false);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA16F, textureResolution, textureResolution, false);
 
 	glGenFramebuffers(1, &diagramMultisampledFramebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, diagramMultisampledFramebuffer);
@@ -2572,7 +2572,7 @@ void STLPDiagram::initBuffersOld() {
 	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
 
 	glGenFramebuffers(1, &diagramFramebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
@@ -2581,7 +2581,7 @@ void STLPDiagram::initBuffersOld() {
 
 	glGenTextures(1, &diagramMultisampledTexture);
 	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA32F, textureResolution, textureResolution, false);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA16F, textureResolution, textureResolution, false);
 
 	glGenFramebuffers(1, &diagramMultisampledFramebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, diagramMultisampledFramebuffer);

@@ -679,19 +679,19 @@ int runApp() {
 			glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, mainFramebuffer->id);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mainFramebuffer->id);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, mainFramebuffer->framebufferId);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mainFramebuffer->framebufferId);
 
 			CHECK_GL_ERRORS();
 
 		}
 
 
-		glViewport(0, 0, vars.screenWidth, vars.screenHeight);
+		//glViewport(0, 0, vars.screenWidth, vars.screenHeight);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		mainFramebuffer->bind();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		//mainFramebuffer->bind();
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		mainFramebuffer->prepareForNextFrame();
 
 
 		//cout << " Delta time = " << (deltaTime * 1000.0f) << " [ms]" << endl;
@@ -996,6 +996,8 @@ int runApp() {
 
 			// NOW sort particles using the sort vector
 			particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
+
+			mainFramebuffer->blitMultisampledToRegular();
 
 			particleRenderer->preSceneRenderImage();
 			//vars.heightMap->draw();

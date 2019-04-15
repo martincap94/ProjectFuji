@@ -9,17 +9,24 @@
 class MainFramebuffer {
 public:
 
-	GLuint id = 0;
+
+	GLuint framebufferId;
+	GLuint multisampledFramebufferId;
 
 	GLuint colorTex;
+	GLuint multisampledColorTex;
 	GLuint depthTex;
+	GLuint multisampledDepthTex; // required to create complete multisampled framebuffer
 	//Texture *mainTex = nullptr;
 	//Texture *depthTex = nullptr;
 
 	MainFramebuffer(VariableManager *vars);
 	~MainFramebuffer();
 
+	void prepareForNextFrame();
 	void drawToScreen();
+	void drawQuad();
+	void blitMultisampledToRegular();
 
 	void init();
 	void initBuffers();
@@ -30,8 +37,14 @@ public:
 
 private:
 
+	GLuint activeFramebuffer;
+
 	const std::string colorTexName = "Main framebuffer COLOR";
 	const std::string depthTexName = "Main framebuffer DEPTH";
+
+	const int sampleCount = 12;
+	const bool useMultisampling = true;
+
 
 	VariableManager *vars = nullptr;
 
@@ -39,6 +52,8 @@ private:
 
 	GLuint quadVAO;
 	GLuint quadVBO;
+
+	void refreshActiveFramebuffer();
 
 };
 
