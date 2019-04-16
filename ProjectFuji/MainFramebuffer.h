@@ -23,7 +23,7 @@ public:
 	MainFramebuffer(VariableManager *vars);
 	~MainFramebuffer();
 
-	void prepareForNextFrame();
+	void prepareForNextFrame(glm::vec4 clearColor);
 	void drawToScreen();
 	void drawQuad();
 	void blitMultisampledToRegular();

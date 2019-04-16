@@ -424,13 +424,13 @@ void HeightMap::initMaterials() {
 		pbrMaterials[0].metallicRoughness = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-MR.png");
 		pbrMaterials[0].normalMap = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-normal-opengl.png");
 		pbrMaterials[0].ao = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-ao.png");
-		pbrMaterials[0].textureTiling = 1000.0f;
+		pbrMaterials[0].textureTiling = 2500.0f;
 
 		pbrMaterials[1].albedo = TextureManager::getTexturePtr("textures/sand1/sand1-albedo.png");
 		pbrMaterials[1].metallicRoughness = TextureManager::getTexturePtr("textures/sand1/sand1-MR.png");
 		pbrMaterials[1].normalMap = TextureManager::getTexturePtr("textures/sand1/sand1-normal-ogl.png");
 		pbrMaterials[1].ao = TextureManager::getTexturePtr("textures/white.png");
-		pbrMaterials[1].textureTiling = 1000.0f;
+		pbrMaterials[1].textureTiling = 2500.0f;
 
 		/*
 		pbrMaterials[2].albedo = TextureManager::getTexturePtr("textures/rustediron2/rustediron2_basecolor.png");
@@ -445,7 +445,7 @@ void HeightMap::initMaterials() {
 		pbrMaterials[2].metallicRoughness = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-MR.png");
 		pbrMaterials[2].normalMap = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-normal2.png");
 		pbrMaterials[2].ao = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-ao.png");
-		pbrMaterials[2].textureTiling = 1000.0f;
+		pbrMaterials[2].textureTiling = 2500.0f;
 
 
 		//materialMap = TextureManager::loadTexture("materialMaps/all.png");
@@ -1049,8 +1049,8 @@ glm::vec3 HeightMap::getSampleWorldPosition(glm::ivec2 sampleCoords) {
 	glm::vec3 pos = glm::vec3(sampleCoords.x, 0.0f, sampleCoords.y);
 
 	// move inside the texel
-	pos.x += getRandFloat(0.0f, 1.0f);
-	pos.z += getRandFloat(0.0f, 1.0f);
+	pos.x += getRandFloat();
+	pos.z += getRandFloat();
 
 	pos.x *= texelWorldSize;
 	pos.z *= texelWorldSize;
@@ -1075,4 +1075,12 @@ glm::vec3 HeightMap::getWorldPositionMaterialMapSample(int materialIdx) {
 	} else {
 		return glm::vec3();
 	}
+}
+
+glm::vec3 HeightMap::getRandomWorldPosition() {
+	glm::vec3 pos;
+	pos.x = getRandFloat(0.0f, getWorldWidth());
+	pos.z = getRandFloat(0.0f, getWorldDepth());
+	pos.y = getHeight(pos.x, pos.z);
+	return pos;
 }

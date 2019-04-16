@@ -112,7 +112,7 @@ void main() {
 			// Schlick
 			phaseFunc = calculateSchlick(cosphi, -u_g);
 
-		} else if (u_PhaseFunction <= 7) {
+		} else if (u_PhaseFunction == 5) {
 
 			// Cornette-Shanks
 			phaseFunc = calculateCornetteShanks(cosphi, u_g);

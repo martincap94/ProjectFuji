@@ -272,8 +272,8 @@ void VariableManager::saveConfigParam(string param, string val) {
 	} else if (param == "lattice_depth") {
 		saveIntParam(latticeDepth, val);
 	} else if (param == "use_CUDA" || param == "-c") {
-		saveBoolParam(useCUDA, val);
-		useCUDACheckbox = (int)VariableManager::useCUDA;
+		//saveBoolParam(useCUDA, val);
+		//useCUDACheckbox = (int)VariableManager::useCUDA;
 	} else if (param == "tau" || param == "-tau") {
 		saveFloatParam(tau, val);
 	} else if (param == "draw_streamlines") {

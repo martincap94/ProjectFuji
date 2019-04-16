@@ -188,6 +188,7 @@
     <ClCompile Include="PBRMaterial.cpp" />
     <ClCompile Include="PositionalEmitter.cpp" />
     <ClCompile Include="ppmImage.cpp" />
+    <ClCompile Include="ProjectionSettings.cpp" />
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Skybox.cpp" />
@@ -290,6 +291,7 @@
     <ClInclude Include="PBRMaterial.h" />
     <ClInclude Include="PositionalEmitter.h" />
     <ClInclude Include="ppmImage.h" />
+    <ClInclude Include="ProjectionSettings.h" />
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Skybox.h" />

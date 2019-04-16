@@ -112,6 +112,9 @@ public:
 	glm::vec3 getWorldPositionMultiChannelSample(CDFSamplerMultiChannel *sampler, int channel);
 	glm::vec3 getWorldPositionMaterialMapSample(int materialIdx);
 
+
+	glm::vec3 getRandomWorldPosition();
+
 	/// Draws the height map.
 	void draw();
 	void draw(ShaderProgram *shader);

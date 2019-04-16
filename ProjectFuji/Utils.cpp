@@ -176,8 +176,9 @@ void reportUnimplementedFunction(const char * file, const char * function, int l
 }
 
 float getRandFloat(float min, float max) {
-	return (min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min))));
+	return (min + static_cast<float>(rand()) / (static_cast <float> (RAND_MAX / (max - min))));
 }
+
 
 
 // https://stackoverflow.com/questions/51949/how-to-get-file-extension-from-string-in-c/51993#51993

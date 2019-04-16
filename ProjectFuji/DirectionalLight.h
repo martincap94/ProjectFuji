@@ -56,7 +56,7 @@ public:
 	glm::vec3 up;
 
 	glm::vec3 color = glm::vec3(1.0f);
-	float intensity = 1.0f;
+	float intensity = 8.0f;
 
 	//glm::vec3 ambient;		///< Ambient value
 	//glm::vec3 diffuse;		///< Diffuse value

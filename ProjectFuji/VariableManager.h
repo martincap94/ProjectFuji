@@ -35,8 +35,8 @@ public:
 	int maxNumParticles = 1000000;
 	
 	string sceneFilename;		///< Filename of the scene
-	bool useCUDA = true;		///< Whether to use CUDA or run the CPU version of the application
-	int useCUDACheckbox = 1;	///< Helper int value for the UI checkbox
+	//bool useCUDA = true;		///< Whether to use CUDA or run the CPU version of the application
+	//int useCUDACheckbox = 1;	///< Helper int value for the UI checkbox
 
 
 	int windowWidth = 1000;		///< Window width
@@ -80,7 +80,7 @@ public:
 
 	int simulateSun = 0;
 
-	int stlpUseCUDA = 1;
+	//int stlpUseCUDA = 1;
 	int applyLBM = 0;
 	int applySTLP = 0;
 
@@ -117,9 +117,6 @@ public:
 
 	int fullscreen = 0;
 
-	int renderVolumeParticlesDirectly = 0;
-
-	int run_harris_1st_pass_inNextFrame = 0;
 
 	int useSkySunColor = 1;
 
@@ -183,11 +180,14 @@ public:
 
 	int numDebugOverlayTextures = 4;
 
+	int drawOverlayDiagramParticles = 1;
+
 
 	int prevHideUIKeyState = GLFW_RELEASE;
 	int hideUIKey = GLFW_KEY_F;
 	int hideUI = 0;
 
+	int viewportMode = 0;
 
 
 	int prevToggleLBMState = GLFW_RELEASE;

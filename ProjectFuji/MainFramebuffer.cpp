@@ -14,11 +14,11 @@ MainFramebuffer::MainFramebuffer(VariableManager *vars) : vars(vars) {
 MainFramebuffer::~MainFramebuffer() {
 }
 
-void MainFramebuffer::prepareForNextFrame() {
+void MainFramebuffer::prepareForNextFrame(glm::vec4 clearColor) {
 	refreshActiveFramebuffer();
 	bind();
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

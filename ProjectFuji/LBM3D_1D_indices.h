@@ -188,7 +188,7 @@ public:
 	LBM3D_1D_indices();
 
 
-	LBM3D_1D_indices(VariableManager *vars, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram);
+	LBM3D_1D_indices(VariableManager *vars, ParticleSystem *particleSystem, STLPDiagram *stlpDiagram);
 
 	/// Frees CPU and GPU memory and unmaps CUDA graphics resources (VBOs).
 	virtual ~LBM3D_1D_indices();

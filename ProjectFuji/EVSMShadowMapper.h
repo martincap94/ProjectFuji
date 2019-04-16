@@ -28,20 +28,18 @@ public:
 
 	int shadowOnly = 0;
 
-	DirectionalLight *dirLight = nullptr;
 
-
-	EVSMShadowMapper();
+	EVSMShadowMapper(VariableManager *vars, DirectionalLight *dirLight);
 	~EVSMShadowMapper();
 
-	void init(VariableManager *vars);
+	void init();
 
 	void preFirstPass();
 
 	void postFirstPass();
 
 
-	void preSecondPass(int screenWidth, int screenHeight);
+	void preSecondPass();
 
 	void postSecondPass();
 
@@ -81,6 +79,8 @@ public:
 private:
 
 	VariableManager *vars = nullptr;
+	DirectionalLight *dirLight = nullptr;
+
 
 
 };

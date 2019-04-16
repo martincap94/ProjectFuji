@@ -20,6 +20,7 @@
 #include "ShaderProgram.h"
 #include "Curve.h"
 #include "TextRenderer.h"
+#include "VariableManager.h"
 
 
 using namespace std;
@@ -135,15 +136,8 @@ public:
 	int cropBounds = 1;
 
 
-	/// Constructs the diagram instance without loading any sounding data.
-	STLPDiagram();
 
-	/// Constructs the diagram and loads the data from the given file.
-	/**
-		Constructs the diagram and loads the data from the given file.
-		\param[in] filename		Name of file that contains the sounding data in appropriate form.
-	*/
-	STLPDiagram(string filename);
+	STLPDiagram(VariableManager *vars);
 
 	/// Deallocates data - destroys the text renderer engine in particular.
 	~STLPDiagram();
@@ -242,6 +236,8 @@ public:
 
 
 private:
+
+	VariableManager *vars = nullptr;
 	
 	ShaderProgram *curveShader = nullptr;
 	ShaderProgram *singleColorShaderVBO = nullptr;

@@ -9,13 +9,10 @@
 #include "MainFramebuffer.h"
 #include "ShaderManager.h"
 
-STLPDiagram::STLPDiagram() {
-	recalculateProfileDelta();
-}
 
-STLPDiagram::STLPDiagram(string filename) : STLPDiagram() {
 
-	loadSoundingData(filename);
+STLPDiagram::STLPDiagram(VariableManager *vars) : vars(vars) {
+	init(vars->soundingFile);
 }
 
 
@@ -28,6 +25,9 @@ void STLPDiagram::init(string filename) {
 	curveShader = ShaderManager::getShaderPtr("curve");
 	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
 	overlayDiagramShader = ShaderManager::getShaderPtr("overlayTexture");
+
+	recalculateProfileDelta();
+
 
 	loadSoundingData(filename);
 

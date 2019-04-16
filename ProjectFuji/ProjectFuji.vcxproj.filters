@@ -218,6 +218,7 @@
     <ClCompile Include="ParticleRenderer_backup.cpp" />
     <ClCompile Include="PBRMaterial.cpp" />
     <ClCompile Include="MainFramebuffer.cpp" />
+    <ClCompile Include="ProjectionSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -397,6 +398,7 @@
     <ClInclude Include="CDFSamplerMultiChannel.h" />
     <ClInclude Include="PBRMaterial.h" />
     <ClInclude Include="MainFramebuffer.h" />
+    <ClInclude Include="ProjectionSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

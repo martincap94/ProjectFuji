@@ -58,7 +58,7 @@ public:
 	int imageWidth;
 	int imageHeight;
 
-	int compositeResultToFramebuffer = 1;
+	int useVolumetricRendering = 1;
 
 	int useBlurPass = 0;
 	float blurAmount = 1.0f;

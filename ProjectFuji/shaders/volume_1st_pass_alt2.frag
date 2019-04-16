@@ -16,5 +16,4 @@ void main(void) {
 	vec4 texColor = texture(u_Texture, g_TexCoords);
 	fragColor = vec4(texColor.rgb * texColor.a, texColor.a) * u_Opacity;
 	fragColor.xyz *= u_ShadowAlpha;
-	//fragColor = clamp(fragColor, 0.0, 1.0);
 }

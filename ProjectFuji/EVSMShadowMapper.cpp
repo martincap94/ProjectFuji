@@ -11,18 +11,14 @@
 
 #include <limits>
 
-
-EVSMShadowMapper::EVSMShadowMapper() {
+EVSMShadowMapper::EVSMShadowMapper(VariableManager *vars, DirectionalLight *dirLight) : vars(vars), dirLight(dirLight) {
+	init();
 }
-
 
 EVSMShadowMapper::~EVSMShadowMapper() {
 }
 
-void EVSMShadowMapper::init(VariableManager *vars) {
-	CHECK_GL_ERRORS();
-
-	this->vars = vars;
+void EVSMShadowMapper::init() {
 
 	glGenTextures(1, &zBufferTexture);
 	glGenTextures(1, &depthMapTexture);
@@ -188,8 +184,6 @@ void EVSMShadowMapper::preFirstPass() {
 	if (!isReady()) {
 		return;
 	}
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
 
 	//glCullFace(GL_FRONT);
 	glViewport(0, 0, resolution, resolution);
@@ -223,7 +217,6 @@ void EVSMShadowMapper::postFirstPass() {
 		return;
 	}
 
-	//glCullFace(GL_BACK);
 
 	if (useBlurPass) {
 		GLuint pid = blurShader->id;
@@ -255,18 +248,21 @@ void EVSMShadowMapper::postFirstPass() {
 		glBindVertexArray(0);
 	}
 
+	CHECK_GL_ERRORS();
+
 
 }
 
 
 
-void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
+void EVSMShadowMapper::preSecondPass() {
 	if (!isReady()) {
 		return;
 	}
 
-	//glCullFace(GL_BACK);
-	glViewport(0, 0, screenWidth, screenHeight);
+
+
+	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
 
 	vars->mainFramebuffer->bind();
 	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
@@ -313,7 +309,7 @@ void EVSMShadowMapper::preSecondPass(int screenWidth, int screenHeight) {
 		//secondPassShader->setVec3("v_ViewPos", di);
 	}
 
-
+	CHECK_GL_ERRORS();
 
 }
 
@@ -321,6 +317,8 @@ void EVSMShadowMapper::postSecondPass() {
 	if (!isReady()) {
 		return;
 	}
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 
 }

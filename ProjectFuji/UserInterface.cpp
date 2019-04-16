@@ -181,8 +181,12 @@ void UserInterface::constructLeftSidebar() {
 
 	ctx->style.window.border = leftSidebarBorderWidth;
 
-	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight, leftSidebarWidth + 20.0f, vars->screenHeight - vars->debugTextureRes - vars->toolbarHeight),
-				 NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
+	ctx->style.button.padding = nk_vec2(0.0f, 0.0f);
+	ctx->style.button.border = 0.0f;
+
+	float selectionTabHeight = 40.0f;
+	if (nk_begin(ctx, "Control Panel Selection", nk_rect(0, vars->toolbarHeight, leftSidebarWidth + 20.0f, selectionTabHeight),
+				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row_dynamic(ctx, 15, 4);
 		if (nk_button_label(ctx, "LBM")) {
 			uiMode = 0;
@@ -205,6 +209,13 @@ void UserInterface::constructLeftSidebar() {
 		if (nk_button_label(ctx, "LBM DEVELOPER")) {
 			uiMode = 6;
 		}
+
+	}
+	nk_end(ctx);
+
+
+	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight + selectionTabHeight, leftSidebarWidth + 20.0f, vars->screenHeight - vars->debugTextureRes - vars->toolbarHeight - selectionTabHeight),
+				 NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
 
 		if (uiMode == 0) {
 			constructLBMTab();
@@ -491,15 +502,15 @@ void UserInterface::constructLBMTab() {
 		particleSystem->sortParticlesByDistance(camera->position, eSortPolicy::GREATER);
 
 	}
-	if (/*lbmType == LBM2D &&*/ vars->useCUDA && !vars->usePointSprites) {
-		nk_layout_row_dynamic(ctx, 15, 1);
-		nk_checkbox_label(ctx, "Visualize velocity", &lbm->visualizeVelocity);
-	}
+	//if (/*lbmType == LBM2D &&*/ vars->useCUDA && !vars->usePointSprites) {
+	//	nk_layout_row_dynamic(ctx, 15, 1);
+	//	nk_checkbox_label(ctx, "Visualize velocity", &lbm->visualizeVelocity);
+	//}
 
-	if (!vars->useCUDA) {
-		nk_layout_row_dynamic(ctx, 15, 1);
-		nk_checkbox_label(ctx, "Respawn linearly", &lbm->respawnLinearly);
-	}
+	//if (!vars->useCUDA) {
+	//	nk_layout_row_dynamic(ctx, 15, 1);
+	//	nk_checkbox_label(ctx, "Respawn linearly", &lbm->respawnLinearly);
+	//}
 	/*
 	nk_layout_row_dynamic(ctx, 10, 1);
 	nk_labelf(ctx, NK_TEXT_LEFT, "Point size");
@@ -710,11 +721,6 @@ void UserInterface::constructLightingTab() {
 		nk_combo_end(ctx);
 	}
 
-
-	//nk_checkbox_label(ctx, "Run Harris 1st pass in next frame", &vars->run_harris_1st_pass_inNextFrame);
-	if (nk_button_label(ctx, "Run Harris 1st pass in the next frame")) {
-		vars->run_harris_1st_pass_inNextFrame = 1;
-	}
 
 
 
@@ -1057,9 +1063,6 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_value_int(ctx, "Batch size", particleRenderer->batchSize);
 
-
-	nk_checkbox_label(ctx, "Draw volume particles", &vars->renderVolumeParticlesDirectly);
-
 	constructFormBoxButtonPanel();
 
 
@@ -1082,7 +1085,7 @@ void UserInterface::constructCloudVisualizationTab() {
 	nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars->opacityMultiplier, 10.0f, 0.01f, 0.01f);
 
 	nk_checkbox_label(ctx, "Show particles below CCL", &particleRenderer->showParticlesBelowCCL);
-	nk_checkbox_label(ctx, "use new", &particleRenderer->compositeResultToFramebuffer);
+	nk_checkbox_label(ctx, "use new", &particleRenderer->useVolumetricRendering);
 
 	nk_property_int(ctx, "first pass shader mode", 0, &particleRenderer->firstPassShaderMode, particleRenderer->numFirstPassShaderModes - 1, 1, 1);
 
@@ -1242,7 +1245,7 @@ void UserInterface::constructDiagramControlsTab() {
 	nk_checkbox_label(ctx, "Show Overlay Diagram", &vars->showOverlayDiagram);
 
 
-	nk_checkbox_label(ctx, "Use CUDA", &vars->stlpUseCUDA);
+	//nk_checkbox_label(ctx, "Use CUDA", &vars->stlpUseCUDA);
 
 	nk_checkbox_label(ctx, "Apply LBM", &vars->applyLBM);
 	nk_property_int(ctx, "LBM step frame", 1, &vars->lbmStepFrame, 100, 1, 1);
@@ -1319,7 +1322,6 @@ void UserInterface::constructDiagramControlsTab() {
 	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();
-		//vars->run_harris_1st_pass_inNextFrame = 1; // DEBUG
 	}
 	if (nk_button_label(ctx, "Deactivate All Particles")) {
 		particleSystem->deactivateAllParticles();

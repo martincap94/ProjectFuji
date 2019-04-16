@@ -115,6 +115,12 @@ void refreshProjectionMatrix();
 
 
 
+enum eViewportMode {
+	VIEWPORT_3D = 0,
+	DIAGRAM
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///// GLOBAL VARIABLES
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +156,7 @@ Camera2D *overlayDiagramCamera;
 //STLPSimulator *stlpSim;
 STLPSimulatorCUDA *stlpSimCUDA;
 
-EVSMShadowMapper evsm;
+EVSMShadowMapper *evsm;
 DirectionalLight *dirLight;
 
 
@@ -203,8 +209,8 @@ bool mouseDown = false;
 float prevAvgFPS;
 float prevAvgDeltaTime;
 
-STLPDiagram stlpDiagram;	///< SkewT/LogP diagram instance
-int mode = 3;				///< Mode: 0 - show SkewT/LogP diagram, 1 - show 3D simulator
+STLPDiagram *stlpDiagram;	///< SkewT/LogP diagram instance
+int mode = VIEWPORT_3D;				
 
 Skybox *skybox;
 HosekSkyModel *hosek;
@@ -302,9 +308,10 @@ int runApp() {
 
 
 
-	evsm.init(&vars);
 	dirLight = new DirectionalLight();
-	stlpDiagram.init(vars.soundingFile);
+	evsm = new EVSMShadowMapper(&vars, dirLight);
+
+	stlpDiagram = new STLPDiagram(&vars);
 
 
 	// SKYBOX MODELS
@@ -362,11 +369,7 @@ int runApp() {
 	// Create and configure the simulator
 	{
 
-		dim3 blockDim(vars.blockDim_3D_x, vars.blockDim_3D_y, 1);
-		CHECK_ERROR(cudaPeekAtLastError());
-
-		lbm = new LBM3D_1D_indices(&vars, particleSystem, blockDim, &stlpDiagram);
-		CHECK_ERROR(cudaPeekAtLastError());
+		lbm = new LBM3D_1D_indices(&vars, particleSystem, stlpDiagram);
 
 
 		projectionRange = (float)((vars.latticeWidth > vars.latticeHeight) ? vars.latticeWidth : vars.latticeHeight);
@@ -377,7 +380,8 @@ int runApp() {
 		projWidth = projHeight * ratio;
 
 		projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
-		//grid = new Grid3D(vars.latticeWidth * lbm->scale, vars.latticeHeight * lbm->scale, vars.latticeDepth * lbm->scale, 6, 6, 6);
+
+
 		float cameraRadius = sqrtf((float)(vars.latticeWidth * vars.latticeWidth + vars.latticeDepth * vars.latticeDepth)) + 10.0f;
 
 		orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
@@ -399,19 +403,11 @@ int runApp() {
 	camera->movementSpeed = vars.cameraSpeed;
 
 	dirLight->focusPoint = glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, 0.0f, vars.heightMap->getWorldDepth() / 2.0f);
-	dirLight->color = glm::vec3(1.0f, 0.99f, 0.9f);
-	//particleSystemLBM->lbm = lbm;
 
 	// TODO - cleanup this hack
-
 	streamlineParticleSystem = new StreamlineParticleSystem(&vars, lbm);
 	lbm->streamlineParticleSystem = streamlineParticleSystem;
 
-
-
-
-	//StaticMesh testMesh("models/House_3.obj", ShaderManager::getShaderPtr("dirLightOnly"), nullptr);
-	//Model testModel("models/House_3.obj");
 
 	Material testMat(TextureManager::getTexturePtr("textures/body2.png"), TextureManager::getTexturePtr("textures/body2_S.png"), TextureManager::getTexturePtr("textures/body2_N.png"), 32.0f);
 
@@ -484,8 +480,6 @@ int runApp() {
 	scene.root->addChild(&cerberus);
 	scene.root->addChild(&houseModel);
 
-	evsm.dirLight = dirLight;
-
 
 	refreshProjectionMatrix();
 
@@ -501,7 +495,7 @@ int runApp() {
 
 
 
-	stlpSimCUDA = new STLPSimulatorCUDA(&vars, &stlpDiagram);
+	stlpSimCUDA = new STLPSimulatorCUDA(&vars, stlpDiagram);
 
 	particleSystem->stlpSim = stlpSimCUDA;
 	stlpSimCUDA->particleSystem = particleSystem;
@@ -512,7 +506,7 @@ int runApp() {
 
 
 	particleSystem->initParticlesOnTerrain();
-	particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
+	//particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
 	particleSystem->activateAllParticles();
 
 
@@ -522,7 +516,6 @@ int runApp() {
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//lbm->mapVBOTEST(stlpSimCUDA->particlesVBO, stlpSimCUDA->cudaParticleVerticesVBO);
 	lbm->mapVBOTEST(particleSystem->particleVerticesVBO, particleSystem->cudaParticleVerticesVBO);
 
 
@@ -535,7 +528,6 @@ int runApp() {
 
 
 	stringstream ss;
-	ss << (vars.useCUDA ? "GPU" : "CPU") << "_";
 	ss << vars.sceneFilename;
 	ss << "_h=" << vars.latticeHeight;
 	//ss << "_" << particleSystemLBM->numParticles;
@@ -551,7 +543,7 @@ int runApp() {
 
 
 	vector<GLuint> debugTextureIds;
-	debugTextureIds.push_back(evsm.getDepthMapTextureId());
+	debugTextureIds.push_back(evsm->getDepthMapTextureId());
 
 	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("depthMapTexture"), 0);
 	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("harrisTexture"), 1);
@@ -559,16 +551,16 @@ int runApp() {
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[0]"), 0);
 	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[1]"), 1);
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("imageTexture"), 1);
-	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[1]"), 2);
+	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[1]"), 2);
 
 
 	// Provisional settings
 	ui->dirLight = dirLight;
-	ui->evsm = &evsm;
+	ui->evsm = evsm;
 	ui->lbm = lbm;
 	ui->particleRenderer = particleRenderer;
 	ui->particleSystem = particleSystem;
-	ui->stlpDiagram = &stlpDiagram;
+	ui->stlpDiagram = stlpDiagram;
 	ui->stlpSimCUDA = stlpSimCUDA;
 	ui->hosek = hosek;
 	ui->sps = streamlineParticleSystem;
@@ -576,14 +568,11 @@ int runApp() {
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
 		// enable flags each frame because nuklear disables them when it is rendered	
-		//glEnable(GL_DEPTH_TEST);
-
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_PROGRAM_POINT_SIZE);
-		//glEnable(GL_CULL_FACE);
-		
+
 		CHECK_GL_ERRORS();
 
 		double currentFrameTime = glfwGetTime();
@@ -626,25 +615,21 @@ int runApp() {
 			ShaderManager::updatePVMatrixUniforms(overlayDiagramProjection, view);
 
 
-			GLint res = stlpDiagram.textureResolution;
+			GLint res = stlpDiagram->textureResolution;
 			glViewport(0, 0, res, res);
-			glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
+			glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram->diagramMultisampledFramebuffer);
 			glClear(GL_COLOR_BUFFER_BIT);
-			//glBindTextureUnit(0, stlpDiagram.diagramTexture);
 
-			stlpDiagram.draw();
+			stlpDiagram->draw();
+			stlpDiagram->drawText();
 
-			stlpDiagram.drawText();
-
-			particleSystem->drawDiagramParticles();
-
-
-
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stlpDiagram.diagramFramebuffer);
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, stlpDiagram.diagramMultisampledFramebuffer);
+			if (vars.drawOverlayDiagramParticles) {
+				particleSystem->drawDiagramParticles();
+			}
 
 
-			//glDrawBuffer(GL_BACK);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stlpDiagram->diagramFramebuffer);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, stlpDiagram->diagramMultisampledFramebuffer);
 
 
 			glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -658,103 +643,99 @@ int runApp() {
 		}
 
 
-		//glViewport(0, 0, vars.screenWidth, vars.screenHeight);
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//mainFramebuffer->bind();
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		mainFramebuffer->prepareForNextFrame();
 
 
 		//cout << " Delta time = " << (deltaTime * 1000.0f) << " [ms]" << endl;
 		//cout << " Framerate = " << (1.0f / deltaTime) << endl;
-		if (mode == 0 || mode == 1) {
-			glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glm::vec4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		if (mode == eViewportMode::DIAGRAM) {
+			clearColor = glm::vec4(1.0f);
 			glfwSwapInterval(1);
 			camera = diagramCamera;
 			glDisable(GL_DEPTH_TEST);
 		} else {
-			glClearColor(vars.bgClearColor.x, vars.bgClearColor.y, vars.bgClearColor.z, 1.0f);
+			clearColor = glm::vec4(vars.bgClearColor, 1.0f);
 			glfwSwapInterval(0);
 			camera = vars.useFreeRoamCamera ? freeRoamCamera : viewportCamera;
 			glEnable(GL_DEPTH_TEST);
-
-
 		}
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		mainFramebuffer->prepareForNextFrame(clearColor);
 
-		// UPDATE SHADER VIEW MATRICES
 
+		///////////////////////////////////////////////////////////////
+		// UPDATE SHARED SHADER UNIFORMS
+		///////////////////////////////////////////////////////////////
 		view = camera->getViewMatrix();
-
 		ShaderManager::updateViewMatrixUniforms(view);
 		ShaderManager::updateDirectionalLightUniforms(*dirLight);
 		ShaderManager::updateViewPositionUniforms(camera->position);
+		ShaderManager::updateFogUniforms();
 
-		if (vars.drawSkybox) {
-			projection = glm::perspective(glm::radians(vars.fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
 
-			if (mode == 2 || mode == 3) {
+
+
+		if (mode == eViewportMode::DIAGRAM) {
+
+			stlpDiagram->draw();
+			stlpDiagram->drawText();
+
+		} else if (mode == eViewportMode::VIEWPORT_3D) {
+
+			// Update Hosek's sky model parameters using current sun elevation
+			if (hosek->liveRecalc) {
+				hosek->update(dirLight->getDirection());
+			}
+
+			// Update particle system (emit particles mainly)
+			particleSystem->doStep();
+
+			// LBM simulation update
+			if (vars.applyLBM) {
+				if (totalFrameCounter % vars.lbmStepFrame == 0) {
+					lbm->doStepCUDA();
+				}
+				lbm->recalculateVariables(); // recalculate variables based on the updated values
+			}
+
+			// STLP simulation update
+			if (vars.applySTLP) {
+				if (totalFrameCounter % vars.stlpStepFrame == 0) {
+					stlpSimCUDA->doStep();
+				}
+			}
+
+			// Naively simulate sun movement
+			if (vars.simulateSun) {
+				dirLight->circularMotionStep(deltaTime);
+			}
+
+			///////////////////////////////////////////////////////////////
+			// DRAW SKYBOX
+			///////////////////////////////////////////////////////////////
+			if (vars.drawSkybox) {
+				glm::mat4 tmpView = glm::mat4(glm::mat3(view));
+
 				if (vars.hosekSkybox) {
 
 					hosekShader->use();
-					glm::mat4 tmpView = glm::mat4(glm::mat3(view));
 					hosekShader->setViewMatrix(tmpView);
-					hosekShader->setProjectionMatrix(projection);
 					hosekShader->setVec3("u_SunDir", -dirLight->getDirection());
 					hosek->draw();
 
 
 				} else {
 					skyboxShader->use();
-					glm::mat4 tmpView = glm::mat4(glm::mat3(view));
-					skyboxShader->setMat4fv("u_View", tmpView);
-					skyboxShader->setMat4fv("u_Projection", projection);
+					skyboxShader->setViewMatrix(tmpView);
 					skybox->draw(*skyboxShader);
 				}
 			}
-		}
 
-		refreshProjectionMatrix();
+			refreshProjectionMatrix();
 
-		CHECK_GL_ERRORS();
-
+			CHECK_GL_ERRORS();
 
 
-
-		if (mode == 0 || mode == 1) {
-
-			stlpDiagram.draw();
-			stlpDiagram.drawText();
-
-		} else if (mode == 3) {
-
-			if (hosek->liveRecalc) {
-				hosek->update(dirLight->getDirection());
-			}
-
-			if (vars.stlpUseCUDA) {
-
-				particleSystem->doStep();
-
-
-				if (vars.applyLBM) {
-					if (totalFrameCounter % vars.lbmStepFrame == 0) {
-						lbm->doStepCUDA();
-					}
-				}
-
-				//particleSystem->update();
-
-				if (vars.applySTLP) {
-					if (totalFrameCounter % vars.stlpStepFrame == 0) {
-						stlpSimCUDA->doStep();
-					}
-				}
-			} else {
-				//stlpSim->doStep();
-			}
-
-			//lbm->doStepCUDA();
 
 			if (vars.useSkySunColor) {
 				glm::vec3 sc = hosek->getSunColor();
@@ -766,44 +747,40 @@ int runApp() {
 			}
 
 
-			if (vars.simulateSun) {
-				dirLight->circularMotionStep(deltaTime);
-			}
-
-
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
 			glDepthFunc(GL_LEQUAL);
 
-			evsm.preFirstPass();
+
+
+			evsm->preFirstPass();
+
+			///////////////////////////////////////////////////////////////
+			// DRAW DEPTH FOR SHADOW MAPPING (light view)
+			///////////////////////////////////////////////////////////////
 
 			grassShader->use();
 			grassShader->setVec3("u_CameraPos", camera->position);
 
-			vars.heightMap->drawGeometry(evsm.firstPassShaders[0]);
-			//stlpSim->heightMap->drawGeometry(evsm.firstPassShader);
+			vars.heightMap->drawGeometry(evsm->firstPassShaders[0]);
+			//stlpSim->heightMap->drawGeometry(evsm->firstPassShader);
 
-			scene.root->drawGeometry(evsm.firstPassShaders[0]);
+			scene.root->drawGeometry(evsm->firstPassShaders[0]);
 
 			
 
 			if (vars.drawTrees) {
-				treeModel.drawGeometry(evsm.firstPassShaders[0]);
+				treeModel.drawGeometry(evsm->firstPassShaders[0]);
 			}
 
-			evsm.postFirstPass();
-			CHECK_GL_ERRORS();
+
+			evsm->postFirstPass();
+			evsm->preSecondPass();
 
 
-
-			//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
-
-
-
-
-			evsm.preSecondPass(vars.screenWidth, vars.screenHeight);
-			CHECK_GL_ERRORS();
-
+			///////////////////////////////////////////////////////////////
+			// DRAW SCENE (camera view)
+			///////////////////////////////////////////////////////////////
 
 			vars.heightMap->draw();
 			tPicker->drawTerrain(vars.heightMap);
@@ -821,30 +798,47 @@ int runApp() {
 
 			scene.root->draw();
 
-
-			evsm.postSecondPass();
+			evsm->postSecondPass();
 
 			CHECK_GL_ERRORS();
 
-			ShaderManager::updateFogUniforms();
 
 
-			//glCullFace(GL_FRONT);
-			//stlpSim->heightMap->draw();
 			dirLight->draw();
 
 			if (!vars.renderMode) {
 				particleSystem->drawHelperStructures();
 
 				lbm->draw();
-				//grid->draw(*singleColorShader);
 				gGrid.draw(*unlitColorShader);
 
 				streamlineParticleSystem->draw();
 			}
 
 
-			if (!particleRenderer->compositeResultToFramebuffer) {
+			///////////////////////////////////////////////////////////////
+			// DRAW PARTICLES
+			///////////////////////////////////////////////////////////////		
+			if (particleRenderer->useVolumetricRendering) {
+	
+
+				particleRenderer->recalcVectors(camera, dirLight);
+				glm::vec3 sortVec = particleRenderer->getSortVec();
+
+				// NOW sort particles using the sort vector
+				particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
+
+				mainFramebuffer->blitMultisampledToRegular();
+
+				particleRenderer->preSceneRenderImage();
+				//vars.heightMap->draw();
+				//particleRenderer->postSceneRenderImage();
+
+
+				particleRenderer->draw(particleSystem, dirLight, camera);
+				
+			} else {
+
 				if (vars.usePointSprites) {
 					glEnable(GL_BLEND);
 					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -863,36 +857,14 @@ int runApp() {
 			}
 
 
-			//if (vars.renderVolumeParticles) {
-				///////////////////////////////////////////////////////////////
-				//     NVIDIA VOLUMETRIC PARTICLES (HALF ANGLE SLICING)
-				///////////////////////////////////////////////////////////////			
-
-
-			particleRenderer->recalcVectors(camera, dirLight);
-			glm::vec3 sortVec = particleRenderer->getSortVec();
-
-			// NOW sort particles using the sort vector
-			particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
-
-			mainFramebuffer->blitMultisampledToRegular();
-
-			particleRenderer->preSceneRenderImage();
-			//vars.heightMap->draw();
-			//particleRenderer->postSceneRenderImage();
-
-
-			particleRenderer->draw(particleSystem, dirLight, camera);
-
 
 
 
 			if (vars.showOverlayDiagram) {
-				stlpDiagram.drawOverlayDiagram();
+				stlpDiagram->drawOverlayDiagram();
 			}
 
 
-			//TextureManager::drawOverlayTextures(debugTextureIds);
 			TextureManager::drawOverlayTextures();
 
 
@@ -907,14 +879,7 @@ int runApp() {
 
 
 		// Render the user interface
-
-
 		ui->draw();
-		//nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
-
-		
-
-		lbm->recalculateVariables(); // recalculate variables based on values set in the user interface
 
 		glfwSwapBuffers(window);
 
@@ -923,19 +888,18 @@ int runApp() {
 	}
 
 
-	//delete particleSystemLBM;
 	delete particleSystem;
 	delete particleRenderer;
 	delete streamlineParticleSystem;
 	delete lbm;
-	//delete grid;
-	//delete viewportCamera;
+	delete evsm;
 	delete freeRoamCamera;
 	delete diagramCamera;
 	delete overlayDiagramCamera;
 	delete orbitCamera;
 	delete dirLight;
 	delete tPicker;
+	delete stlpDiagram;
 
 	delete scene.root;
 
@@ -943,18 +907,7 @@ int runApp() {
 
 	delete skybox;
 
-	//delete stlpSim;
 
-
-	//size_t cudaMemFree = 0;
-	//size_t cudaMemTotal = 0;
-
-	//cudaMemGetInfo(&cudaMemFree, &cudaMemTotal);
-
-	/*
-	cout << " FREE CUDA MEMORY  = " << cudaMemFree << endl;
-	cout << " TOTAL CUDA MEMORY = " << cudaMemTotal << endl;
-	*/
 
 	ShaderManager::tearDown();
 	TextureManager::tearDown();
@@ -974,18 +927,14 @@ int runApp() {
 
 
 void refreshProjectionMatrix() {
-	if (mode == 0 || mode == 1) {
-		//projection = glm::ortho(-0.2f, 1.2f, 1.2f, -0.2f, nearPlane, farPlane);
+	if (mode == eViewportMode::DIAGRAM) {
 		projection = diagramProjection;
-		//camera->movementSpeed = 4.0f;
 	} else {
 		if (vars.projectionMode == ORTHOGRAPHIC) {
 			projection = viewportProjection;
 		} else {
 			projection = glm::perspective(glm::radians(vars.fov), (float)vars.screenWidth / vars.screenHeight, nearPlane, farPlane);
 		}
-		//mode = 2;
-		//camera->movementSpeed = 40.0f;
 	}
 
 	ShaderManager::updateProjectionMatrixUniforms(projection);
@@ -1031,6 +980,7 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
 		if (vars.useFreeRoamCamera) {
 			((FreeRoamCamera*)camera)->snapToGround();
+			//((FreeRoamCamera*)camera)->walking = !((FreeRoamCamera*)camera)->walking;
 		}
 	}
 	if (glfwGetKey(window, vars.hideUIKey) == GLFW_PRESS) {
@@ -1091,6 +1041,8 @@ void processInput(GLFWwindow* window) {
 		prevPauseKeyState = GLFW_RELEASE;
 	}
 
+
+	
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
 		mode = 0;
 		glDisable(GL_DEPTH_TEST); // painters algorithm for now
@@ -1110,8 +1062,10 @@ void processInput(GLFWwindow* window) {
 		mode = 3;
 		glEnable(GL_DEPTH_TEST);
 		refreshProjectionMatrix();
-
 	}
+	
+
+
 	if (glfwGetKey(window, mouseCursorKey) == GLFW_PRESS) {
 		if (prevMouseCursorKeyState == GLFW_RELEASE) {
 			//vars.paused = !vars.paused;
@@ -1138,7 +1092,7 @@ void processInput(GLFWwindow* window) {
 		//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
 
-		if (mode < 2) {
+		if (mode == eViewportMode::DIAGRAM) {
 			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
 			//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
 			//Z_ndc = 2.0 * depth - 1.0;
@@ -1150,9 +1104,9 @@ void processInput(GLFWwindow* window) {
 			mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
 			//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
 
-			//stlpDiagram.findClosestSoundingPoint(mouseCoords);
+			//stlpDiagram->findClosestSoundingPoint(mouseCoords);
 
-			stlpDiagram.moveSelectedPoint(mouseCoords);
+			stlpDiagram->moveSelectedPoint(mouseCoords);
 		} else {
 
 			glm::vec4 pos = tPicker->getPixelData(xpos, vars.screenHeight - ypos);
@@ -1188,7 +1142,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		glfwGetCursorPos(window, &xpos, &ypos);
 
 
-		if (mode < 2) {
+		if (mode == eViewportMode::DIAGRAM) {
 			//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
 			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
@@ -1202,7 +1156,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 			mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
 			//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
 
-			stlpDiagram.findClosestSoundingPoint(mouseCoords);
+			stlpDiagram->findClosestSoundingPoint(mouseCoords);
 		} else {
 			cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
@@ -1226,7 +1180,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	//	return;
 	//}
 
-	if (mode < 2) {
+	if (mode == eViewportMode::DIAGRAM) {
 		return;
 	}
 
@@ -1290,5 +1244,5 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 	mainFramebuffer->refresh();
 	particleRenderer->refreshImageBuffer();
 	TextureManager::refreshOverlayTextures();
-	stlpDiagram.refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
+	stlpDiagram->refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
 }

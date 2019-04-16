@@ -2267,11 +2267,11 @@ LBM3D_1D_indices::LBM3D_1D_indices() {
 
 
 
-LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, ParticleSystem *particleSystem, dim3 blockDim, STLPDiagram *stlpDiagram) : vars(vars), particleSystem(particleSystem), blockDim(blockDim), stlpDiagram(stlpDiagram) {
+LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, ParticleSystem *particleSystem, STLPDiagram *stlpDiagram) : vars(vars), particleSystem(particleSystem), blockDim(blockDim), stlpDiagram(stlpDiagram) {
 
 	tau = vars->tau;
 	sceneFilename = vars->sceneFilename;
-
+	blockDim = dim3(vars->blockDim_3D_x, vars->blockDim_3D_y, 1);
 
 	itau = 1.0f / tau;
 	nu = (2.0f * tau - 1.0f) / 6.0f;
@@ -2344,6 +2344,10 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, ParticleSystem *partic
 
 	grid = new GridLBM(this);
 	editGrid = new GridLBM(this, glm::vec3(1.0f, 0.2f, 0.2f));
+
+
+	CHECK_ERROR(cudaPeekAtLastError());
+
 
 }
 

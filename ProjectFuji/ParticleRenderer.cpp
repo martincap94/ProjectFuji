@@ -134,9 +134,7 @@ void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Cam
 	drawSlices();
 
 
-	if (compositeResultToFramebuffer) {
-		compositeResult();
-	}
+	compositeResult();
 
 
 	vars->mainFramebuffer->bind();
@@ -398,18 +396,8 @@ void ParticleRenderer::drawSlices() {
 
 void ParticleRenderer::drawSlice(int i) {
 
-
-	//glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
-	//glViewport(0, 0, imageWidth, imageHeight);
-
-	if (vars->renderVolumeParticlesDirectly) {
-		vars->mainFramebuffer->bind();
-		/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
-		glViewport(0, 0, vars->screenWidth, vars->screenHeight);
-	} else {
-		glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
-		glViewport(0, 0, imageWidth, imageHeight);
-	}
+	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
+	glViewport(0, 0, imageWidth, imageHeight);
 	
 	if (invertedView) {
 		glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
