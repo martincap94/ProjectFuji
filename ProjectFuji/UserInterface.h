@@ -11,6 +11,7 @@
 #include <map>
 #include <string>
 
+#include "Actor.h"
 
 
 #define NK_INCLUDE_FIXED_TYPES
@@ -41,6 +42,7 @@ class STLPSimulatorCUDA;
 class ParticleRenderer;
 class HosekSkyModel;
 class StreamlineParticleSystem;
+class SceneGraph;
 
 //struct nk_context;
 //struct nk_image;
@@ -59,6 +61,7 @@ public:
 	ParticleRenderer *particleRenderer = nullptr;
 	HosekSkyModel *hosek = nullptr;
 	StreamlineParticleSystem *sps = nullptr;
+	SceneGraph *scene = nullptr;
 
 	float prevAvgFPS;
 	float prevAvgDeltaTime;
@@ -98,6 +101,8 @@ private:
 
 	int uiMode = 4;
 
+	int hierarchyIdCounter = 0;
+
 
 	nk_context *ctx;
 	struct nk_input *ctx_in;
@@ -129,6 +134,11 @@ private:
 	void constructCloudVisualizationTab();
 	void constructDiagramControlsTab();
 	void constructLBMDebugTab();
+	void constructSceneHierarchyTab();
+	void addSceneHierarchyActor(Actor *actor);
+
+	void constructEmittersTab();
+
 	
 	void constructDebugTab();
 	void constructFavoritesMenu();

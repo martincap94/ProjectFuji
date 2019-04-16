@@ -1,7 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <string>
+
 #include <glm\glm.hpp>
+
 
 #include "Transform.h"
 #include "ShaderProgram.h"
@@ -13,12 +16,13 @@ public:
 
 	Transform transform;
 	//glm::mat4 modelMatrix;
-
+	std::string name;
 
 	Actor *parent = nullptr;
 	std::vector<Actor *> children;
 
 	Actor();
+	Actor(std::string name);
 	~Actor();
 
 	virtual void update();

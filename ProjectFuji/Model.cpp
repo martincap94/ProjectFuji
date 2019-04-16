@@ -5,11 +5,11 @@
 
 using namespace std;
 
-Model::Model(const char *path) {
+Model::Model(const char *path) : Actor(path) {
 	loadModel(path);
 }
 
-Model::Model(const char * path, Material * material, ShaderProgram *shader) : material(material), shader(shader) {
+Model::Model(const char * path, Material * material, ShaderProgram *shader) : Actor(path), material(material), shader(shader) {
 	loadModel(path);
 }
 

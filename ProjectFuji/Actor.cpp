@@ -6,6 +6,9 @@
 Actor::Actor() {
 }
 
+Actor::Actor(std::string name) : name(name) {
+}
+
 
 Actor::~Actor() {
 }

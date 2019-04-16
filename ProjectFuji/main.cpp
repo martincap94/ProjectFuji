@@ -475,8 +475,7 @@ int runApp() {
 
 
 	SceneGraph scene;
-	scene.root = new Actor();
-	//scene.root->addChild(&treeModel);
+	scene.root = new Actor("Root");
 	scene.root->addChild(&cerberus);
 	scene.root->addChild(&houseModel);
 
@@ -564,6 +563,7 @@ int runApp() {
 	ui->stlpSimCUDA = stlpSimCUDA;
 	ui->hosek = hosek;
 	ui->sps = streamlineParticleSystem;
+	ui->scene = &scene;
 
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {

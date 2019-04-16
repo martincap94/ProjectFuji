@@ -20,7 +20,7 @@
 #include "StreamlineParticleSystem.h"
 #include "Utils.h"
 #include "PositionalEmitter.h"
-
+#include "SceneGraph.h"
 
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL3_IMPLEMENTATION
@@ -184,10 +184,10 @@ void UserInterface::constructLeftSidebar() {
 	ctx->style.button.padding = nk_vec2(0.0f, 0.0f);
 	ctx->style.button.border = 0.0f;
 
-	float selectionTabHeight = 40.0f;
+	float selectionTabHeight = 65.0f;
 	if (nk_begin(ctx, "Control Panel Selection", nk_rect(0, vars->toolbarHeight, leftSidebarWidth + 20.0f, selectionTabHeight),
 				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
-		nk_layout_row_dynamic(ctx, 15, 4);
+		nk_layout_row_dynamic(ctx, 15, 3);
 		if (nk_button_label(ctx, "LBM")) {
 			uiMode = 0;
 		}
@@ -200,14 +200,20 @@ void UserInterface::constructLeftSidebar() {
 		if (nk_button_label(ctx, "Sky")) {
 			uiMode = 3;
 		}
-		if (nk_button_label(ctx, "Cloud Visualization")) {
+		if (nk_button_label(ctx, "Cloud Vis")) {
 			uiMode = 4;
 		}
-		if (nk_button_label(ctx, "Diagram controls")) {
+		if (nk_button_label(ctx, "Diagram Controls")) {
 			uiMode = 5;
 		}
 		if (nk_button_label(ctx, "LBM DEVELOPER")) {
 			uiMode = 6;
+		}
+		if (nk_button_label(ctx, "Hierarchy")) {
+			uiMode = 7;
+		}
+		if (nk_button_label(ctx, "Emitters")) {
+			uiMode = 8;
 		}
 
 	}
@@ -231,6 +237,10 @@ void UserInterface::constructLeftSidebar() {
 			constructDiagramControlsTab();
 		} else if (uiMode == 6) {
 			constructLBMDebugTab();
+		} else if (uiMode == 7) {
+			constructSceneHierarchyTab();
+		} else if (uiMode == 8) {
+			constructEmittersTab();
 		}
 	}
 	nk_end(ctx);
@@ -1239,38 +1249,38 @@ void UserInterface::constructDiagramControlsTab() {
 
 
 
-	for (int i = 0; i < particleSystem->emitters.size(); i++) {
-		if (nk_tree_push_id(ctx, NK_TREE_NODE, ("#Emitter " + to_string(i)).c_str(), NK_MINIMIZED, i)) {
-			Emitter *e = particleSystem->emitters[i];
+	//for (int i = 0; i < particleSystem->emitters.size(); i++) {
+	//	if (nk_tree_push_id(ctx, NK_TREE_NODE, ("#Emitter " + to_string(i)).c_str(), NK_MINIMIZED, i)) {
+	//		Emitter *e = particleSystem->emitters[i];
 
-			nk_layout_row_static(ctx, 15, 200, 1);
-			nk_checkbox_label(ctx, "#enabled", &e->enabled);
-			nk_checkbox_label(ctx, "#visible", &e->visible);
+	//		nk_layout_row_static(ctx, 15, 200, 1);
+	//		nk_checkbox_label(ctx, "#enabled", &e->enabled);
+	//		nk_checkbox_label(ctx, "#visible", &e->visible);
 
-			nk_property_int(ctx, "#emit per step", 0, &e->numParticlesToEmitPerStep, 10000, 10, 10);
+	//		nk_property_int(ctx, "#emit per step", 0, &e->numParticlesToEmitPerStep, 10000, 10, 10);
 
-			PositionalEmitter *pe = dynamic_cast<PositionalEmitter *>(e);
-			if (pe) {
+	//		PositionalEmitter *pe = dynamic_cast<PositionalEmitter *>(e);
+	//		if (pe) {
 
-				nk_checkbox_label(ctx, "#wiggle", &pe->wiggle);
-				nk_property_float(ctx, "#x wiggle", 0.1f, &pe->xWiggleRange, 10.0f, 0.1f, 0.1f);
-				nk_property_float(ctx, "#z wiggle", 0.1f, &pe->zWiggleRange, 10.0f, 0.1f, 0.1f);
+	//			nk_checkbox_label(ctx, "#wiggle", &pe->wiggle);
+	//			nk_property_float(ctx, "#x wiggle", 0.1f, &pe->xWiggleRange, 10.0f, 0.1f, 0.1f);
+	//			nk_property_float(ctx, "#z wiggle", 0.1f, &pe->zWiggleRange, 10.0f, 0.1f, 0.1f);
 
-				nk_property_float(ctx, "#x", -1000.0f, &pe->position.x, 1000.0f, 1.0f, 1.0f);
-				//nk_property_float(ctx, "#y", -1000.0f, &pe->position.y, 1000.0f, 1.0f, 1.0f);
-				nk_property_float(ctx, "#z", -1000.0f, &pe->position.z, 1000.0f, 1.0f, 1.0f);
+	//			nk_property_float(ctx, "#x", -1000.0f, &pe->position.x, 1000.0f, 1.0f, 1.0f);
+	//			//nk_property_float(ctx, "#y", -1000.0f, &pe->position.y, 1000.0f, 1.0f, 1.0f);
+	//			nk_property_float(ctx, "#z", -1000.0f, &pe->position.z, 1000.0f, 1.0f, 1.0f);
 
 
-				CircleEmitter *ce = dynamic_cast<CircleEmitter *>(pe);
-				if (ce) {
-					nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
-				}
-			}
+	//			CircleEmitter *ce = dynamic_cast<CircleEmitter *>(pe);
+	//			if (ce) {
+	//				nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
+	//			}
+	//		}
 
-			nk_tree_pop(ctx);
-			//particleSystem->emitters[i]
-		}
-	}
+	//		nk_tree_pop(ctx);
+	//		//particleSystem->emitters[i]
+	//	}
+	//}
 	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();
@@ -1495,6 +1505,107 @@ void UserInterface::constructLBMDebugTab() {
 
 
 }
+
+void UserInterface::constructSceneHierarchyTab() {
+
+
+	hierarchyIdCounter = 0;
+
+	nk_layout_row_dynamic(ctx, 30, 1);
+	nk_label(ctx, "Scene Hierarchy", NK_TEXT_CENTERED);
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+
+
+	//addSceneHierarchyActor(scene->root);
+
+	for (int i = 0; i < scene->root->children.size(); i++) {
+		addSceneHierarchyActor(scene->root->children[i]);
+	}
+
+
+}
+
+void UserInterface::addSceneHierarchyActor(Actor * actor) {
+	if (actor == nullptr) {
+		return;
+	}
+	hierarchyIdCounter++;
+
+	//if (nk_tree_element_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, 0, hierarchyIdCounter)) {
+	if (nk_tree_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, hierarchyIdCounter)) {
+
+		nk_layout_row_dynamic(ctx, 60, 1);
+		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.1f, 10.0f);
+			nk_group_end(ctx);
+		}
+
+		for (int i = 0; i < actor->children.size(); i++) {
+			addSceneHierarchyActor(actor->children[i]);
+		}
+
+		nk_tree_pop(ctx);
+	}
+}
+
+
+void UserInterface::constructEmittersTab() {
+
+
+
+	for (int i = 0; i < particleSystem->emitters.size(); i++) {
+		if (nk_tree_push_id(ctx, NK_TREE_NODE, ("#Emitter " + to_string(i)).c_str(), NK_MINIMIZED, i)) {
+			Emitter *e = particleSystem->emitters[i];
+
+			nk_layout_row_static(ctx, 15, 200, 1);
+			nk_checkbox_label(ctx, "#enabled", &e->enabled);
+			nk_checkbox_label(ctx, "#visible", &e->visible);
+
+			nk_property_int(ctx, "#emit per step", 0, &e->numParticlesToEmitPerStep, 10000, 10, 10);
+
+			PositionalEmitter *pe = dynamic_cast<PositionalEmitter *>(e);
+			if (pe) {
+
+				nk_checkbox_label(ctx, "#wiggle", &pe->wiggle);
+				nk_property_float(ctx, "#x wiggle", 0.1f, &pe->xWiggleRange, 10.0f, 0.1f, 0.1f);
+				nk_property_float(ctx, "#z wiggle", 0.1f, &pe->zWiggleRange, 10.0f, 0.1f, 0.1f);
+
+				nk_property_float(ctx, "#x", -1000.0f, &pe->position.x, 1000.0f, 1.0f, 1.0f);
+				//nk_property_float(ctx, "#y", -1000.0f, &pe->position.y, 1000.0f, 1.0f, 1.0f);
+				nk_property_float(ctx, "#z", -1000.0f, &pe->position.z, 1000.0f, 1.0f, 1.0f);
+
+
+				CircleEmitter *ce = dynamic_cast<CircleEmitter *>(pe);
+				if (ce) {
+					nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
+				}
+			}
+
+			nk_tree_pop(ctx);
+			//particleSystem->emitters[i]
+		}
+	}
+	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
+	if (nk_button_label(ctx, "Activate All Particles")) {
+		particleSystem->activateAllParticles();
+	}
+	if (nk_button_label(ctx, "Deactivate All Particles")) {
+		particleSystem->deactivateAllParticles();
+	}
+	if (nk_button_label(ctx, "Enable All Emitters")) {
+		particleSystem->enableAllEmitters();
+	}
+	if (nk_button_label(ctx, "Disable All Emitters")) {
+		particleSystem->disableAllEmitters();
+	}
+
+	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
+
+
+}
+
 
 void UserInterface::constructDebugTab() {
 }
