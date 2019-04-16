@@ -76,6 +76,20 @@ public:
 
 private:
 
+	enum eContentMode {
+		LBM = 0,
+		LIGHTING,
+		TERRAIN,
+		SKY,
+		CLOUD_VIS,
+		DIAGRAM,
+		LBM_DEBUG,
+		SCENE_HIERARCHY,
+		EMITTERS,
+		GENERAL_DEBUG
+
+	};
+
 	enum eVecNaming {
 		DEFAULT = 0, // x, y, z, w
 		COLOR, // r, g, b, a
@@ -94,12 +108,15 @@ private:
 	float leftSidebarEditButtonRatio[2];
 
 
+	const float selectionTabHeight = 65.0f;
+
 	float leftSidebarWidth;
 
 	//bool streamlinesAvailable = false;
 	bool streamlineInitMode = false;
 
-	int uiMode = 4;
+	int leftSidebarContentMode = CLOUD_VIS;
+	int rightSidebarContentMode = GENERAL_DEBUG;
 
 	int hierarchyIdCounter = 0;
 
@@ -126,6 +143,8 @@ private:
 	void constructLeftSidebar();
 	void constructRightSidebar();
 	void constructHorizontalBar();
+	void constructSidebarSelectionTab(int *contentModeTarget, float xPos, float width);
+	void constructSelectedContent(int contentMode);
 
 	void constructLBMTab();
 	void constructLightingTab();
@@ -138,6 +157,7 @@ private:
 	void addSceneHierarchyActor(Actor *actor);
 
 	void constructEmittersTab();
+	void constructGeneralDebugTab();
 
 	
 	void constructDebugTab();

@@ -184,64 +184,12 @@ void UserInterface::constructLeftSidebar() {
 	ctx->style.button.padding = nk_vec2(0.0f, 0.0f);
 	ctx->style.button.border = 0.0f;
 
-	float selectionTabHeight = 65.0f;
-	if (nk_begin(ctx, "Control Panel Selection", nk_rect(0, vars->toolbarHeight, leftSidebarWidth + 20.0f, selectionTabHeight),
-				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
-		nk_layout_row_dynamic(ctx, 15, 3);
-		if (nk_button_label(ctx, "LBM")) {
-			uiMode = 0;
-		}
-		if (nk_button_label(ctx, "Shadows")) {
-			uiMode = 1;
-		}
-		if (nk_button_label(ctx, "Terrain")) {
-			uiMode = 2;
-		}
-		if (nk_button_label(ctx, "Sky")) {
-			uiMode = 3;
-		}
-		if (nk_button_label(ctx, "Cloud Vis")) {
-			uiMode = 4;
-		}
-		if (nk_button_label(ctx, "Diagram Controls")) {
-			uiMode = 5;
-		}
-		if (nk_button_label(ctx, "LBM DEVELOPER")) {
-			uiMode = 6;
-		}
-		if (nk_button_label(ctx, "Hierarchy")) {
-			uiMode = 7;
-		}
-		if (nk_button_label(ctx, "Emitters")) {
-			uiMode = 8;
-		}
-
-	}
-	nk_end(ctx);
-
+	constructSidebarSelectionTab(&leftSidebarContentMode, 0, leftSidebarWidth + 20.0f);
 
 	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight + selectionTabHeight, leftSidebarWidth + 20.0f, vars->screenHeight - vars->debugTextureRes - vars->toolbarHeight - selectionTabHeight),
 				 NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
+		constructSelectedContent(leftSidebarContentMode);
 
-		if (uiMode == 0) {
-			constructLBMTab();
-		} else if (uiMode == 1) {
-			constructLightingTab();
-		} else if (uiMode == 2) {
-			constructTerrainTab();
-		} else if (uiMode == 3) {
-			constructSkyTab();
-		} else if (uiMode == 4) {
-			constructCloudVisualizationTab();
-		} else if (uiMode == 5) {
-			constructDiagramControlsTab();
-		} else if (uiMode == 6) {
-			constructLBMDebugTab();
-		} else if (uiMode == 7) {
-			constructSceneHierarchyTab();
-		} else if (uiMode == 8) {
-			constructEmittersTab();
-		}
 	}
 	nk_end(ctx);
 
@@ -249,105 +197,14 @@ void UserInterface::constructLeftSidebar() {
 }
 
 void UserInterface::constructRightSidebar() {
-	stringstream ss;
 
-	if (nk_begin(ctx, "Debug Tab", nk_rect(vars->screenWidth - vars->rightSidebarWidth, vars->toolbarHeight, vars->rightSidebarWidth, /*vars->debugTabHeight*/vars->screenHeight - vars->toolbarHeight), NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
-
-		nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
-
-		/*
-		ss.clear();
-		ss << "Delta time: " << fixed << setprecision(2) << (deltaTime * 1000.0);
-
-		//string fpsStr = "delta time: " + to_string(deltaTime * 1000.0);
-		nk_label(ctx, ss.str().c_str(), NK_TEXT_CENTERED);
-		*/
-		stringstream().swap(ss);
-		ss << "Delta time: " << fixed << setprecision(4) << prevAvgDeltaTime << " [ms] (" << setprecision(0) << prevAvgFPS << " FPS)";
-		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
-
-		// Quick info -> creation of the strings should be moved to the Diagram since it only changes when the diagram is changed
-		stringstream().swap(ss);
-		ss << "(ref) T_c: " << fixed << setprecision(0) << stlpDiagram->Tc.x << " [deg C] at " << stlpDiagram->Tc.y << " [hPa]";
-		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
-
-		stringstream().swap(ss);
-		ss << "CCL: " << fixed << setprecision(0) << stlpDiagram->CCL.x << " [deg C] at " << stlpDiagram->CCL.y << " [hPa]";
-
-		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
-
-		stringstream().swap(ss);
-		ss << "EL: " << fixed << setprecision(0) << stlpDiagram->EL.x << " [deg C] at " << stlpDiagram->EL.y << " [hPa]";
-		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
-
-		stringstream().swap(ss);
-		ss << "Ground pressure: " << stlpDiagram->P0 << " [hPa]";
-		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+	constructSidebarSelectionTab(&rightSidebarContentMode, vars->screenWidth - vars->rightSidebarWidth, vars->rightSidebarWidth);
 
 
-		vector<OverlayTexture *> *overlayTextures = TextureManager::getOverlayTexturesVectorPtr();
+	if (nk_begin(ctx, "Debug Tab", nk_rect(vars->screenWidth - vars->rightSidebarWidth, vars->toolbarHeight + selectionTabHeight, vars->rightSidebarWidth, /*vars->debugTabHeight*/vars->screenHeight - vars->toolbarHeight - selectionTabHeight), NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
 
-		for (int i = 0; i < overlayTextures->size(); i++) {
-
-			if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Overlay Texture " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
-				nk_layout_row_dynamic(ctx, 15, 2);
-				nk_checkbox_label(ctx, "#active", &(*overlayTextures)[i]->active);
-				nk_checkbox_label(ctx, "#show alpha", &(*overlayTextures)[i]->showAlphaChannel);
-				if (nk_combo_begin_label(ctx, (*overlayTextures)[i]->getBoundTextureName().c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-					nk_layout_row_dynamic(ctx, 15, 1);
-
-					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
-						(*overlayTextures)[i]->texture = nullptr;
-					}
-					for (const auto& kv : *textures) {
-						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-							(*overlayTextures)[i]->texture = kv.second;
-						}
-					}
-					nk_combo_end(ctx);
-				}
-
-
-				nk_tree_pop(ctx);
-			}
-
-		}
-
-		nk_layout_row_dynamic(ctx, 15, 1);
-		nk_label(ctx, "Camera info", NK_TEXT_CENTERED);
-
-		nk_layout_row_dynamic(ctx, 15, 3);
-
-		nk_value_float(ctx, "cam x:", camera->position.x);
-		nk_value_float(ctx, "cam y:", camera->position.y);
-		nk_value_float(ctx, "cam z:", camera->position.z);
-		nk_value_float(ctx, "cam fx:", camera->front.x);
-		nk_value_float(ctx, "cam fy:", camera->front.y);
-		nk_value_float(ctx, "cam fz:", camera->front.z);
-
-		nk_value_int(ctx, "w:", vars->latticeWidth);
-		nk_value_int(ctx, "h:", vars->latticeHeight);
-		nk_value_int(ctx, "d:", vars->latticeDepth);
-
-		nk_value_float(ctx, "wr [m]", vars->latticeWidth * lbm->scale);
-		nk_value_float(ctx, "wh [m]", vars->latticeHeight * lbm->scale);
-		nk_value_float(ctx, "wd [m]", vars->latticeDepth * lbm->scale);
-
-		nk_layout_row_dynamic(ctx, 15, 1);
-		nk_value_int(ctx, "terrain width resolution", vars->heightMap->width);
-		nk_value_int(ctx, "terrain depth resolution", vars->heightMap->height);
-
-
-
-
-		nk_property_vec3(dirLight->color, 0.0f, 100.0f, 1.0f, 1.0f, "dir light color", eVecNaming::COLOR);
-		nk_property_float(ctx, "dir light intensity", 0.0f, &dirLight->intensity, 1000.0f, 0.01f, 0.01f);
-
-
-		if (nk_button_label(ctx, "Reload shaders (recompile all) - EXPERIMENTAL")) {
-			ShaderManager::loadShaders();
-		}
-
+		constructSelectedContent(rightSidebarContentMode);
+		//constructGeneralDebugTab();
 
 	}
 	nk_end(ctx);
@@ -451,6 +308,72 @@ void UserInterface::constructHorizontalBar() {
 	}
 	nk_end(ctx);
 }
+
+
+void UserInterface::constructSidebarSelectionTab(int *contentModeTarget, float xPos, float width) {
+
+	if (nk_begin(ctx, ("#Control Panel Selection" + to_string(xPos)).c_str(), nk_rect(xPos, vars->toolbarHeight, width, selectionTabHeight),
+				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
+		nk_layout_row_dynamic(ctx, 15, 4);
+		if (nk_button_label(ctx, "LBM")) {
+			(*contentModeTarget) = 0;
+		}
+		if (nk_button_label(ctx, "Shadows")) {
+			(*contentModeTarget) = 1;
+		}
+		if (nk_button_label(ctx, "Terrain")) {
+			(*contentModeTarget) = 2;
+		}
+		if (nk_button_label(ctx, "Sky")) {
+			(*contentModeTarget) = 3;
+		}
+		if (nk_button_label(ctx, "Cloud Vis")) {
+			(*contentModeTarget) = 4;
+		}
+		if (nk_button_label(ctx, "Diagram Controls")) {
+			(*contentModeTarget) = 5;
+		}
+		if (nk_button_label(ctx, "LBM DEVELOPER")) {
+			(*contentModeTarget) = 6;
+		}
+		if (nk_button_label(ctx, "Hierarchy")) {
+			(*contentModeTarget) = 7;
+		}
+		if (nk_button_label(ctx, "Emitters")) {
+			(*contentModeTarget) = 8;
+		}
+		if (nk_button_label(ctx, "General Debug")) {
+			(*contentModeTarget) = GENERAL_DEBUG;
+		}
+
+	}
+	nk_end(ctx);
+}
+
+void UserInterface::constructSelectedContent(int contentMode) {
+	if (contentMode == 0) {
+		constructLBMTab();
+	} else if (contentMode == 1) {
+		constructLightingTab();
+	} else if (contentMode == 2) {
+		constructTerrainTab();
+	} else if (contentMode == 3) {
+		constructSkyTab();
+	} else if (contentMode == 4) {
+		constructCloudVisualizationTab();
+	} else if (contentMode == 5) {
+		constructDiagramControlsTab();
+	} else if (contentMode == 6) {
+		constructLBMDebugTab();
+	} else if (contentMode == 7) {
+		constructSceneHierarchyTab();
+	} else if (contentMode == 8) {
+		constructEmittersTab();
+	} else if (contentMode == 9) {
+		constructGeneralDebugTab();
+	}
+}
+
 
 void UserInterface::constructLBMTab() {
 	nk_layout_row_dynamic(ctx, 15, 1);
@@ -1541,6 +1464,11 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 			nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.1f, 10.0f, "pos");
 			nk_property_vec3(actor->transform.rotation, 0.0f, 360.0f, 0.1f, 0.1f, "rot");
 			nk_property_vec3(actor->transform.scale, 0.0f, 1000.0f, 0.1f, 0.1f, "scale");
+			//nk_property_float(ctx, "scale", 0.0f, &actor->transform.scale.x, 10000.0f, 0.1f, 0.1f);
+			//// quick hack
+			//actor->transform.scale.y = actor->transform.scale.x;
+			//actor->transform.scale.z = actor->transform.scale.x;
+
 			nk_group_end(ctx);
 		}
 
@@ -1619,6 +1547,106 @@ void UserInterface::constructEmittersTab() {
 
 	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
 
+
+}
+
+void UserInterface::constructGeneralDebugTab() {
+	stringstream ss;
+
+	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
+
+	/*
+	ss.clear();
+	ss << "Delta time: " << fixed << setprecision(2) << (deltaTime * 1000.0);
+
+	//string fpsStr = "delta time: " + to_string(deltaTime * 1000.0);
+	nk_label(ctx, ss.str().c_str(), NK_TEXT_CENTERED);
+	*/
+	stringstream().swap(ss);
+	ss << "Delta time: " << fixed << setprecision(4) << prevAvgDeltaTime << " [ms] (" << setprecision(0) << prevAvgFPS << " FPS)";
+	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+	// Quick info -> creation of the strings should be moved to the Diagram since it only changes when the diagram is changed
+	stringstream().swap(ss);
+	ss << "(ref) T_c: " << fixed << setprecision(0) << stlpDiagram->Tc.x << " [deg C] at " << stlpDiagram->Tc.y << " [hPa]";
+	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+	stringstream().swap(ss);
+	ss << "CCL: " << fixed << setprecision(0) << stlpDiagram->CCL.x << " [deg C] at " << stlpDiagram->CCL.y << " [hPa]";
+
+	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+	stringstream().swap(ss);
+	ss << "EL: " << fixed << setprecision(0) << stlpDiagram->EL.x << " [deg C] at " << stlpDiagram->EL.y << " [hPa]";
+	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+	stringstream().swap(ss);
+	ss << "Ground pressure: " << stlpDiagram->P0 << " [hPa]";
+	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+
+	vector<OverlayTexture *> *overlayTextures = TextureManager::getOverlayTexturesVectorPtr();
+
+	for (int i = 0; i < overlayTextures->size(); i++) {
+
+		if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Overlay Texture " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
+			nk_layout_row_dynamic(ctx, 15, 2);
+			nk_checkbox_label(ctx, "#active", &(*overlayTextures)[i]->active);
+			nk_checkbox_label(ctx, "#show alpha", &(*overlayTextures)[i]->showAlphaChannel);
+			if (nk_combo_begin_label(ctx, (*overlayTextures)[i]->getBoundTextureName().c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+
+				if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+					(*overlayTextures)[i]->texture = nullptr;
+				}
+				for (const auto& kv : *textures) {
+					if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+						(*overlayTextures)[i]->texture = kv.second;
+					}
+				}
+				nk_combo_end(ctx);
+			}
+
+
+			nk_tree_pop(ctx);
+		}
+
+	}
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_label(ctx, "Camera info", NK_TEXT_CENTERED);
+
+	nk_layout_row_dynamic(ctx, 15, 3);
+
+	nk_value_float(ctx, "cam x:", camera->position.x);
+	nk_value_float(ctx, "cam y:", camera->position.y);
+	nk_value_float(ctx, "cam z:", camera->position.z);
+	nk_value_float(ctx, "cam fx:", camera->front.x);
+	nk_value_float(ctx, "cam fy:", camera->front.y);
+	nk_value_float(ctx, "cam fz:", camera->front.z);
+
+	nk_value_int(ctx, "w:", vars->latticeWidth);
+	nk_value_int(ctx, "h:", vars->latticeHeight);
+	nk_value_int(ctx, "d:", vars->latticeDepth);
+
+	nk_value_float(ctx, "wr [m]", vars->latticeWidth * lbm->scale);
+	nk_value_float(ctx, "wh [m]", vars->latticeHeight * lbm->scale);
+	nk_value_float(ctx, "wd [m]", vars->latticeDepth * lbm->scale);
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_value_int(ctx, "terrain width resolution", vars->heightMap->width);
+	nk_value_int(ctx, "terrain depth resolution", vars->heightMap->height);
+
+
+
+
+	nk_property_vec3(dirLight->color, 0.0f, 100.0f, 1.0f, 1.0f, "dir light color", eVecNaming::COLOR);
+	nk_property_float(ctx, "dir light intensity", 0.0f, &dirLight->intensity, 1000.0f, 0.01f, 0.01f);
+
+
+	if (nk_button_label(ctx, "Reload shaders (recompile all) - EXPERIMENTAL")) {
+		ShaderManager::loadShaders();
+	}
 
 }
 

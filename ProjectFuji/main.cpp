@@ -451,7 +451,7 @@ int runApp() {
 
 	Model cerberus("models/Cerberus_LP.fbx");
 	cerberus.transform.position = glm::vec3(4000.0f, 15000.0f, 4000.0f);
-	//cerberus.transform.scale = glm::vec3(100.0f);
+	cerberus.transform.scale = glm::vec3(100.0f);
 
 
 	Texture *calbedo = TextureManager::loadTexture("textures/Cerberus/Cerberus_A.png");

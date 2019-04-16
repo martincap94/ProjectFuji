@@ -21,11 +21,15 @@ Transform::~Transform() {
 }
 
 glm::mat4 Transform::getModelMatrix() const {
+
+	// It would make sense to store these results and not calculate them again if no changes to the model position/scale/rotation were made
+
 	glm::mat4 model(1.0f);
 
 
 	glm::quat rotQ = glm::quat(glm::radians(rotation));
 
+	// Beware of GLM's multiplication order!
 	
 	model = glm::translate(model, position);
 
