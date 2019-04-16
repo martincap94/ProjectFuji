@@ -1553,7 +1553,7 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 
 void UserInterface::constructEmittersTab() {
 
-
+	vector<int> emitterIndicesToDelete;
 
 	for (int i = 0; i < particleSystem->emitters.size(); i++) {
 		if (nk_tree_push_id(ctx, NK_TREE_NODE, ("#Emitter " + to_string(i)).c_str(), NK_MINIMIZED, i)) {
@@ -1581,12 +1581,26 @@ void UserInterface::constructEmittersTab() {
 				if (ce) {
 					nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
 				}
+
+
+
+			}
+
+			if (nk_button_label(ctx, "Delete emitter")) {
+				//particleSystem->deleteEmitter(i);
+				emitterIndicesToDelete.push_back(i); // do not delete when iterating through the vector
 			}
 
 			nk_tree_pop(ctx);
 			//particleSystem->emitters[i]
 		}
 	}
+
+	for (const auto &i : emitterIndicesToDelete) {
+		particleSystem->deleteEmitter(i);
+	}
+
+
 	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();

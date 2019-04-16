@@ -154,6 +154,9 @@ public:
 
 	void enableAllEmitters();
 	void disableAllEmitters();
+
+	void deleteEmitter(int idx);
+
 	
 	void pushParticleToEmit(Particle p);
 

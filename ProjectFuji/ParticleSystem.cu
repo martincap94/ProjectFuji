@@ -85,6 +85,8 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	//emitters.push_back(new CircleEmitter(this, glm::vec3(20.0f), 10.0f, true));
 	emitters.push_back(new CDFEmitter(this, "textures/cdf2.png"));
 
+
+
 	disableAllEmitters();
 
 	//formBoxVisModel = new Model("models/unitbox.fbx");
@@ -749,6 +751,19 @@ void ParticleSystem::disableAllEmitters() {
 	for (int i = 0; i < emitters.size(); i++) {
 		emitters[i]->enabled = false;
 	}
+}
+
+void ParticleSystem::deleteEmitter(int idx) {
+	if (idx >= emitters.size()) {
+		cout << "Cannot delete emitter at idx " << idx << ": it is out of bounds!" << endl;
+		return;
+	}
+	if (emitters[idx]) {
+		delete emitters[idx];
+	}
+	emitters.erase(emitters.begin() + idx);
+
+
 }
 
 void ParticleSystem::pushParticleToEmit(Particle p) {
