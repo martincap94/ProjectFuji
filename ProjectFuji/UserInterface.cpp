@@ -1535,10 +1535,12 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 	//if (nk_tree_element_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, 0, hierarchyIdCounter)) {
 	if (nk_tree_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, hierarchyIdCounter)) {
 
-		nk_layout_row_dynamic(ctx, 60, 1);
+		nk_layout_row_dynamic(ctx, 250, 1);
 		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
 			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.1f, 10.0f);
+			nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.1f, 10.0f, "pos");
+			nk_property_vec3(actor->transform.rotation, 0.0f, 360.0f, 0.1f, 0.1f, "rot");
+			nk_property_vec3(actor->transform.scale, 0.0f, 1000.0f, 0.1f, 0.1f, "scale");
 			nk_group_end(ctx);
 		}
 

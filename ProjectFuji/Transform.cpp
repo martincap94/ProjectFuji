@@ -2,6 +2,10 @@
 #include <sstream>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 
 Transform::Transform() : Transform(glm::vec3(), glm::vec3(), glm::vec3(1.0f)) {
 }
@@ -18,12 +22,18 @@ Transform::~Transform() {
 
 glm::mat4 Transform::getModelMatrix() const {
 	glm::mat4 model(1.0f);
+
+
+	glm::quat rotQ = glm::quat(glm::radians(rotation));
+
+	
 	model = glm::translate(model, position);
 
-	// Only rotate around global y axis, full rotation to be implemented using quaternions!
-	model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	model = model * glm::toMat4(rotQ);
 
 	model = glm::scale(model, scale);
+	
+
 
 	return model;
 }
