@@ -33,13 +33,9 @@ public:
 
 	int simulateWind = 0;
 	int usePrevVelocity = 1;
-	//int showCCLLevelLayer = 1;
-	//int showELLevelLayer = 1;
 
 	HeightMap *heightMap;
 
-	//int maxNumParticles = MAX_PARTICLE_COUNT;
-	//int maxNumParticles = 1000000;
 
 	ppmImage *profileMap; // needs to have the same parameters as the height map (width, height), or at least larger
 
@@ -55,29 +51,19 @@ public:
 
 	struct cudaGraphicsResource *cudaParticleVerticesVBO;
 
-	//GLuint diagramParticlesVAO;
-	//GLuint diagramParticleVerticesVBO;
-	//struct cudaGraphicsResource *cudaDiagramParticleVerticesVBO;
-
 
 	float *d_verticalVelocities;
-	int *d_profileIndices;
 	float *d_particlePressures;
 
 	// for now, let us have curves here (that are copied from the CPU precomputation)
 	glm::vec2 *d_ambientTempCurve;
 	
-	//vector<glm::vec2 *> d_dryAdiabatProfiles;
-	//vector<glm::vec2 *> d_moistAdiabatProfiles;
-	//vector<glm::vec2 *> d_CCLProfiles;
-	//vector<glm::vec2 *> d_TcProfiles;
+
 	
 	// use flattened arrays (with offsets)
 	glm::vec2 *d_dryAdiabatProfiles;
-	//int *d_dryAdiabatOffsets;
 	glm::ivec2 *d_dryAdiabatOffsetsAndLengths;
 	glm::vec2 *d_moistAdiabatProfiles;
-	//int *d_moistAdiabatOffsets;
 	glm::ivec2 *d_moistAdiabatOffsetsAndLengths;
 	glm::vec2 *d_CCLProfiles;
 	glm::vec2 *d_TcProfiles;
@@ -103,8 +89,6 @@ public:
 
 	/// Does single step of the simulation.
 	void doStep();
-
-	//void updateGPU_delta_t();
 
 	void resetSimulation();
 

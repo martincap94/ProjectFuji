@@ -644,23 +644,10 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 
 void STLPSimulatorCUDA::doStep() {
 
-	//particleSystem->update();
-
-	//particleSystem->numActiveParticles += 100;
-	//if (particleSystem->numActiveParticles >= particleSystem->numParticles) {
-	//	particleSystem->numActiveParticles = particleSystem->numParticles;
-	//}
-	//for (int i = 0; i < 10; i++) {
-	//	particleSystem->emitParticles();
-	//}
-
 	size_t num_bytes;
 	glm::vec3 *d_mappedParticleVerticesVBO;
 	glm::vec2 *d_mappedDiagramParticleVerticesVBO;
 	int *d_mappedParticleProfilesVBO;
-
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindVertexArray(0);
 
 
 	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaParticleVerticesVBO, 0));
@@ -672,12 +659,7 @@ void STLPSimulatorCUDA::doStep() {
 
 	CHECK_ERROR(cudaGraphicsMapResources(1, &particleSystem->cudaDiagramParticleVerticesVBO, 0));
 	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedDiagramParticleVerticesVBO, &num_bytes, particleSystem->cudaDiagramParticleVerticesVBO));
-	//printf("CUDA-STLP mapped VBO: May access %ld bytes\n", num_bytes);
 
-	//CHECK_ERROR(cudaPeekAtLastError());
-
-	// FIX d_ VALUES HERE!!! (use the ones from ParticleSystem)
-	//simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numParticles, particleSystem->d_verticalVelocities, particleSystem->d_profileIndices, particleSystem->d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
 
 
 	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, delta_t, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, /*particleSystem->d_particlePressures,*/ d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO, vars->dividePrevVelocity, vars->prevVelocityDivisor * 0.01f);
@@ -688,29 +670,8 @@ void STLPSimulatorCUDA::doStep() {
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleProfilesVBO, 0);
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaDiagramParticleVerticesVBO, 0);
 
-
-	/*
-	glm::vec3 *dptr;
-	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
-	size_t num_bytes;
-	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&dptr, &num_bytes, cudaParticleVerticesVBO));
-	//printf("CUDA-STLP mapped VBO: May access %ld bytes\n", num_bytes);
-
-	//CHECK_ERROR(cudaPeekAtLastError());
-	simulationStepKernel << <gridDim.x, blockDim.x >> > (dptr, numParticles, d_verticalVelocities, d_profileIndices, d_particlePressures, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles);
-
-	CHECK_ERROR(cudaPeekAtLastError());
-
-	cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0);
-	*/
-
-
-
 }
 
-//void STLPSimulatorCUDA::updateGPU_delta_t() {
-//	CHECK_ERROR(cudaMemcpyToSymbol(d_const_delta_t, &delta_t, sizeof(float)));
-//}
 
 void STLPSimulatorCUDA::resetSimulation() {
 }

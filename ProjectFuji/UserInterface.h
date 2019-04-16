@@ -136,6 +136,8 @@ private:
 	void constructDirLightPositionPanel();
 	void constructFormBoxButtonPanel();
 
+	void constructTextureSelection(Texture **targetTexturePtr);
+
 
 	// small quick functions
 	void constructTauProperty();

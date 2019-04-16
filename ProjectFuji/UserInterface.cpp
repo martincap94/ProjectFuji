@@ -803,64 +803,16 @@ void UserInterface::constructTerrainTab() {
 				nk_layout_row_dynamic(ctx, 15, 2);
 
 				nk_label(ctx, "Albedo", NK_TEXT_LEFT);
-
-				if (nk_combo_begin_label(ctx, getTextureName(vars->heightMap->pbrMaterials[i].albedo).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-					nk_layout_row_dynamic(ctx, 15, 1);
-					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
-						vars->heightMap->pbrMaterials[i].albedo = nullptr;
-					}
-					for (const auto& kv : *textures) {
-						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-							vars->heightMap->pbrMaterials[i].albedo = kv.second;
-						}
-					}
-					nk_combo_end(ctx);
-				}
+				constructTextureSelection(&vars->heightMap->pbrMaterials[i].albedo);
 
 				nk_label(ctx, "MetallicSmoothness", NK_TEXT_LEFT);
-
-				if (nk_combo_begin_label(ctx, getTextureName(vars->heightMap->pbrMaterials[i].metallicRoughness).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-					nk_layout_row_dynamic(ctx, 15, 1);
-					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
-						vars->heightMap->pbrMaterials[i].metallicRoughness = nullptr;
-					}
-					for (const auto& kv : *textures) {
-						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-							vars->heightMap->pbrMaterials[i].metallicRoughness = kv.second;
-						}
-					}
-					nk_combo_end(ctx);
-				}
+				constructTextureSelection(&vars->heightMap->pbrMaterials[i].metallicRoughness);
 
 				nk_label(ctx, "Normal Map", NK_TEXT_LEFT);
-
-				if (nk_combo_begin_label(ctx, getTextureName(vars->heightMap->pbrMaterials[i].normalMap).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-					nk_layout_row_dynamic(ctx, 15, 1);
-					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
-						vars->heightMap->pbrMaterials[i].normalMap = nullptr;
-					}
-					for (const auto& kv : *textures) {
-						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-							vars->heightMap->pbrMaterials[i].normalMap = kv.second;
-						}
-					}
-					nk_combo_end(ctx);
-				}
+				constructTextureSelection(&vars->heightMap->pbrMaterials[i].normalMap);
 
 				nk_label(ctx, "Ambient Occlusion", NK_TEXT_LEFT);
-
-				if (nk_combo_begin_label(ctx, getTextureName(vars->heightMap->pbrMaterials[i].ao).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-					nk_layout_row_dynamic(ctx, 15, 1);
-					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
-						vars->heightMap->pbrMaterials[i].ao = nullptr;
-					}
-					for (const auto& kv : *textures) {
-						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
-							vars->heightMap->pbrMaterials[i].ao = kv.second;
-						}
-					}
-					nk_combo_end(ctx);
-				}
+				constructTextureSelection(&vars->heightMap->pbrMaterials[i].ao);
 
 				nk_layout_row_dynamic(ctx, 15, 1);
 				nk_property_float(ctx, "#tiling", 0.1f, &vars->heightMap->pbrMaterials[i].textureTiling, 100000.0f, 0.1f, 1.0f);
@@ -1644,6 +1596,21 @@ void UserInterface::constructFormBoxButtonPanel() {
 	ctx->style.button.padding = prevButtonPadding;
 
 	nk_layout_row_dynamic(ctx, 15, 1);
+}
+
+void UserInterface::constructTextureSelection(Texture **targetTexturePtr) {
+	if (nk_combo_begin_label(ctx, getTextureName(*targetTexturePtr).c_str(), nk_vec2(400, 200))) {
+		nk_layout_row_dynamic(ctx, 15, 1);
+		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+			*targetTexturePtr = nullptr;
+		}
+		for (const auto& kv : *textures) {
+			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+				(*targetTexturePtr) = kv.second;
+			}
+		}
+		nk_combo_end(ctx);
+	}
 }
 
 void UserInterface::constructTauProperty() {

@@ -184,7 +184,7 @@ void ParticleSystem::initCUDA() {
 	CHECK_ERROR(cudaMemcpy(d_numParticles, &numParticles, sizeof(int), cudaMemcpyHostToDevice));
 
 	CHECK_ERROR(cudaMalloc((void**)&d_verticalVelocities, sizeof(float) * numParticles));
-	CHECK_ERROR(cudaMalloc((void**)&d_profileIndices, sizeof(int) * numParticles));
+	//CHECK_ERROR(cudaMalloc((void**)&d_profileIndices, sizeof(int) * numParticles));
 	//cudaMalloc((void**)&d_particlePressures, sizeof(float) * numParticles);
 
 	CHECK_ERROR(cudaMemset(d_verticalVelocities, 0, sizeof(float) * numParticles));
@@ -721,7 +721,7 @@ void ParticleSystem::refreshParticlesOnTerrain() {
 	// PARTICLE PROFILES (INDICES) are currently twice on GPU - once in VBO, once in CUDA global memory -> merge!!! (map VBO to CUDA)
 
 	// TODO KEEP ONLY ONE INSTANCE
-	cudaMemcpy(d_profileIndices, &particleProfiles[0], sizeof(int) * particleProfiles.size(), cudaMemcpyHostToDevice);
+	//cudaMemcpy(d_profileIndices, &particleProfiles[0], sizeof(int) * particleProfiles.size(), cudaMemcpyHostToDevice);
 	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
 
 
