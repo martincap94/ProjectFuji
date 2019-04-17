@@ -18,9 +18,12 @@ public:
 	//glm::mat4 modelMatrix;
 	std::string name;
 
+	int visible = 1;
 	int selected = 0;
 
+
 	Actor *parent = nullptr;
+	int pidx = -1; // idx in its parent's children vector
 	std::vector<Actor *> children;
 
 	Actor();
@@ -28,16 +31,19 @@ public:
 	~Actor();
 
 	virtual void update();
-	virtual void draw();
-	virtual void draw(ShaderProgram *shader);
-	virtual void drawGeometry(ShaderProgram *shader);
-	virtual void drawWireframe(ShaderProgram *shader);
+	virtual bool draw();
+	virtual bool draw(ShaderProgram *shader);
+	virtual bool drawGeometry(ShaderProgram *shader);
+	virtual bool drawWireframe(ShaderProgram *shader);
 
 	virtual void addChild(Actor *child);
+	virtual void unparent(bool keepWorldPosition = true);
 
 	void snapToGround(HeightMap *heightMap);
 
 protected:
+
+	virtual bool shouldDraw();
 
 
 };

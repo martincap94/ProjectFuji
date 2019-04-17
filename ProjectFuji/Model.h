@@ -29,10 +29,10 @@ public:
 
 	~Model();
 
-	virtual void draw();
-	virtual void draw(ShaderProgram *shader);
-	virtual void drawGeometry(ShaderProgram *shader);
-	virtual void drawWireframe(ShaderProgram *shader);
+	virtual bool draw();
+	virtual bool draw(ShaderProgram *shader);
+	virtual bool drawGeometry(ShaderProgram *shader);
+	virtual bool drawWireframe(ShaderProgram *shader);
 
 	void makeInstanced(std::vector<Transform> &instanceTransforms);
 	void makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scaleModifier = glm::vec2(1.0f), float maxY = 1000.0f, int maxYTests = 0, glm::vec2 position = glm::vec2(0.0f), glm::vec2 areaSize = glm::vec2(0.0f));

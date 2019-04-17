@@ -1499,6 +1499,8 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 	}
 	hierarchyIdCounter++;
 
+	nk_layout_row_dynamic(ctx, 15, 1);
+
 
 	if (actor->children.size() > 0) {
 
@@ -1527,7 +1529,6 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 			nk_tree_pop(ctx);
 		}
 	} else {
-
 		nk_selectable_symbol_label(ctx, NK_SYMBOL_CIRCLE_SOLID, actor->name.c_str(), NK_TEXT_LEFT, &actor->selected);
 
 	}
@@ -1712,11 +1713,16 @@ void UserInterface::constructPropertiesTab() {
 
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, actor->name.c_str(), NK_TEXT_LEFT);
+		nk_checkbox_label(ctx, "visible", &actor->visible);
+
+		if (nk_button_label(ctx, "move up a level (unparent)")) {
+			actor->unparent();
+		}
 
 		nk_layout_row_dynamic(ctx, 250, 1);
 		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
 			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.1f, 10.0f, "pos");
+			nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.01f, 0.1f, "pos");
 			nk_property_vec3(actor->transform.rotation, 0.0f, 360.0f, 0.1f, 0.1f, "rot");
 			nk_property_vec3(actor->transform.scale, 0.0f, 1000.0f, 0.1f, 0.1f, "scale");
 			//nk_property_float(ctx, "scale", 0.0f, &actor->transform.scale.x, 10000.0f, 0.1f, 0.1f);

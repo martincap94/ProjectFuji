@@ -17,42 +17,54 @@ Model::Model(const char * path, Material * material, ShaderProgram *shader) : Ac
 Model::~Model() {
 }
 
-void Model::draw() {
-	Actor::draw();
+bool Model::draw() {
+	if (!shouldDraw()) {
+		return false;
+	}
+
 	if (!shader) {
 		cerr << "No shader attributed to the model" << endl;
-		return;
+		return false;
 	}
 	shader->use();
 	shader->setModelMatrix(transform.getModelMatrix());
 	useMaterial();
 
-	shader->setInt("u_DepthMapTexture", 10);
+	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
 
 
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].draw(shader);
 	}
+	return Actor::draw();
+
 }
 
-void Model::draw(ShaderProgram *shader) {
-	Actor::draw(shader);
+bool Model::draw(ShaderProgram *shader) {
+	if (!shouldDraw()) {
+		return false;
+	}
 
 	shader->use();
 	shader->setModelMatrix(transform.getModelMatrix());
 	useMaterial(shader);
 
-	shader->setInt("u_DepthMapTexture", 10);
+	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
 	//glBindTextureUnit(3, evsm)
 
 
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].draw(shader);
 	}
+	return Actor::draw(shader);
+
 }
 
-void Model::drawGeometry(ShaderProgram * shader) {
-	Actor::drawGeometry(shader);
+bool Model::drawGeometry(ShaderProgram * shader) {
+	if (!shouldDraw()) {
+		return false;
+	}
+
 
 	shader->use();
 	shader->setModelMatrix(transform.getModelMatrix());
@@ -60,14 +72,21 @@ void Model::drawGeometry(ShaderProgram * shader) {
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].draw(shader);
 	}
+	return Actor::drawGeometry(shader);
+
 }
 
-void Model::drawWireframe(ShaderProgram * shader) {
-	Actor::drawWireframe(shader);
+bool Model::drawWireframe(ShaderProgram * shader) {
+	if (!shouldDraw()) {
+		return false;
+	}
+
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	drawGeometry(shader);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	return Actor::drawWireframe(shader);
 
 }
 

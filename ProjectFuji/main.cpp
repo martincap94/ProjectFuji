@@ -52,7 +52,6 @@
 #include "EVSMShadowMapper.h"
 #include "CommonEnums.h"
 #include "VariableManager.h"
-#include "StaticMesh.h"
 #include "Model.h"
 #include "CUDAUtils.cuh"
 #include "Emitter.h"
@@ -412,7 +411,6 @@ int runApp() {
 	Material testMat(TextureManager::getTexturePtr("textures/body2.png"), TextureManager::getTexturePtr("textures/body2_S.png"), TextureManager::getTexturePtr("textures/body2_N.png"), 32.0f);
 
 	Model testModel("models/housewife.obj", &testMat, ShaderManager::getShaderPtr("normals"));
-	StaticMesh testMesh("models/housewife.obj", ShaderManager::getShaderPtr("normals"), &testMat);
 
 	Material treeMat(TextureManager::getTextureTripletPtrs("textures/Bark_Pine_001_COLOR.jpg", "textures/Bark_Pine_001_DISP.png", "textures/Bark_Pine_001_NORM.jpg"), 8.0f);
 
@@ -466,18 +464,19 @@ int runApp() {
 	//grassModel.makeInstancedMaterialMap(vars.heightMap, 500000, 0, glm::vec2(1.5f, 3.0f));
 	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
 
-	testModel.transform.position = glm::vec3(3500.0f, 0.0f, 8500.0f);
+	testModel.transform.position = glm::vec3(1.0f, 0.0f, 5.0f);
 
 
 	dirLight->position = glm::vec3(10000.0f, 15000.0f, 20000.0f);
 
-	testModel.snapToGround(vars.heightMap);
+	//testModel.snapToGround(vars.heightMap);
 
 
 	SceneGraph scene;
 	scene.root = new Actor("Root");
 	scene.root->addChild(&cerberus);
 	scene.root->addChild(&houseModel);
+	houseModel.addChild(&testModel);
 
 
 	refreshProjectionMatrix();
@@ -709,6 +708,8 @@ int runApp() {
 			if (vars.simulateSun) {
 				dirLight->circularMotionStep(deltaTime);
 			}
+
+			scene.root->update();
 
 			///////////////////////////////////////////////////////////////
 			// DRAW SKYBOX

@@ -75,7 +75,6 @@ public:
 
 	void circularMotionStep(float deltaTime = 1.0f);
 
-
 	void draw();
 	void initBuffers();
 

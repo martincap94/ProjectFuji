@@ -135,7 +135,6 @@
     </ClCompile>
     <ClCompile Include="HeightMap.cpp" />
     <ClCompile Include="HosekSkyModel.cpp" />
-    <ClCompile Include="InstancedModel.cpp" />
     <ClCompile Include="LatticeCollider.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Grid2D.cpp">
@@ -192,7 +191,6 @@
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Skybox.cpp" />
-    <ClCompile Include="StaticMesh.cpp" />
     <ClCompile Include="STLPDiagram.cpp" />
     <ClCompile Include="STLPSimulator.cpp" />
     <CudaCompile Include="STLPSimulatorCUDA.cu">
@@ -272,7 +270,6 @@
     </ClInclude>
     <ClInclude Include="HeightMap.h" />
     <ClInclude Include="HosekSkyModel.h" />
-    <ClInclude Include="InstancedModel.h" />
     <ClInclude Include="LatticeCollider.h" />
     <ClCompile Include="Config.h" />
     <ClInclude Include="Grid2D.h">
@@ -295,7 +292,6 @@
     <ClInclude Include="SceneGraph.h" />
     <ClInclude Include="ShaderManager.h" />
     <ClInclude Include="Skybox.h" />
-    <ClInclude Include="StaticMesh.h" />
     <ClInclude Include="STLPSimulator.h" />
     <ClInclude Include="STLPDiagram.h" />
     <ClInclude Include="STLPSimulatorCUDA.h" />

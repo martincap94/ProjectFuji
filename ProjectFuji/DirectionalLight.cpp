@@ -110,6 +110,7 @@ void DirectionalLight::draw() {
 	*/
 
 	sunModel->transform.position = position;
+	sunModel->transform.updateModelMatrix();
 	sunModel->drawGeometry(shader);
 
 
