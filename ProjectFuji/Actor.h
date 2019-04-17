@@ -19,6 +19,7 @@ public:
 	std::string name;
 
 	int visible = 1;
+	int castShadows = 1;
 	int selected = 0;
 
 
@@ -34,10 +35,13 @@ public:
 	virtual bool draw();
 	virtual bool draw(ShaderProgram *shader);
 	virtual bool drawGeometry(ShaderProgram *shader);
+	virtual bool drawShadows(ShaderProgram *shader);
 	virtual bool drawWireframe(ShaderProgram *shader);
 
 	virtual void addChild(Actor *child);
 	virtual void unparent(bool keepWorldPosition = true);
+
+	bool isRootChild();
 
 	void snapToGround(HeightMap *heightMap);
 

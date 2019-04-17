@@ -37,10 +37,11 @@ public:
 	/// Default destructor.
 	~GeneralGrid();
 
-	/// Draws the general grid using the provided shader.
-	void draw(ShaderProgram &shader);
+	void draw();
 
 private:
+
+	ShaderProgram *unlitColorShader;
 
 	GLuint VAO;		///< VAO for the grid
 	GLuint VBO;		///< VBO for the grid

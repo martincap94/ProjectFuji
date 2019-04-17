@@ -1,12 +1,16 @@
 #include "GeneralGrid.h"
 
+#include "ShaderManager.h"
+
 #include <glm\glm.hpp>
 #include <vector>
 
 GeneralGrid::GeneralGrid() {
+	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
 }
 
 GeneralGrid::GeneralGrid(int range, int stepSize, bool drawXZGrid) : range(range), stepSize(stepSize) {
+	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
 
 	vector<glm::vec3> gridVertices;
 
@@ -78,8 +82,9 @@ GeneralGrid::GeneralGrid(int range, int stepSize, bool drawXZGrid) : range(range
 GeneralGrid::~GeneralGrid() {
 }
 
-void GeneralGrid::draw(ShaderProgram & shader) {
-	glUseProgram(shader.id);
+void GeneralGrid::draw() {
+	unlitColorShader->use();
+
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_LINES, 0, numLines);
 

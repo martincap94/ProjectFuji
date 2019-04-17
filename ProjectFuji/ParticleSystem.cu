@@ -54,7 +54,8 @@ __global__ void computeParticleProjectedDistances(glm::vec3 *particleVertices, f
 ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
 	curveShader = ShaderManager::getShaderPtr("curve");
-
+	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
+	singleColorShader = ShaderManager::getShaderPtr("singleColor");
 
 	heightMap = vars->heightMap;
 	numParticles = vars->numParticles;
@@ -242,7 +243,7 @@ void ParticleSystem::emitParticles() {
 }
 
 // NOT USED ANYMORE
-void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
+void ParticleSystem::draw(glm::vec3 cameraPos) {
 
 	
 	/*
@@ -282,18 +283,29 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
 	*/
 	
+	ShaderProgram *shader;
+	if (vars->usePointSprites) {
 
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+		glDepthMask(GL_FALSE);
+		shader = pointSpriteTestShader;
 
-	glUseProgram(shader.id);
+	} else {
+		shader = singleColorShader;
+	}
 
-	shader.setBool("u_ShowHiddenParticles", (bool)showHiddenParticles);
-	shader.setInt("u_Tex", 0);
-	shader.setInt("u_SecondTex", 1);
-	shader.setVec3("u_TintColor", vars->tintColor);
+	//glUseProgram(point.id);
+	pointSpriteTestShader->use();
 
-	shader.setInt("u_OpacityBlendMode", opacityBlendMode);
-	shader.setFloat("u_OpacityBlendRange", opacityBlendRange);
+	pointSpriteTestShader->setBool("u_ShowHiddenParticles", (bool)showHiddenParticles);
+	pointSpriteTestShader->setInt("u_Tex", 0);
+	pointSpriteTestShader->setInt("u_SecondTex", 1);
+	pointSpriteTestShader->setVec3("u_TintColor", vars->tintColor);
+
+	pointSpriteTestShader->setInt("u_OpacityBlendMode", opacityBlendMode);
+	pointSpriteTestShader->setFloat("u_OpacityBlendRange", opacityBlendRange);
 
 
 	glActiveTexture(GL_TEXTURE0 + 0);
@@ -303,15 +315,19 @@ void ParticleSystem::draw(const ShaderProgram &shader, glm::vec3 cameraPos) {
 	glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture->id);
 
 	glPointSize(pointSize);
-	shader.setVec3("u_CameraPos", cameraPos);
-	shader.setFloat("u_PointSizeModifier", pointSize);
-	shader.setFloat("u_OpacityMultiplier", vars->opacityMultiplier);
+	pointSpriteTestShader->setVec3("u_CameraPos", cameraPos);
+	pointSpriteTestShader->setFloat("u_PointSizeModifier", pointSize);
+	pointSpriteTestShader->setFloat("u_OpacityMultiplier", vars->opacityMultiplier);
 
 	glBindVertexArray(particlesVAO);
 
 
 	//glDrawArrays(GL_POINTS, 0, numActiveParticles);
 	glDrawElements(GL_POINTS, numActiveParticles, GL_UNSIGNED_INT, 0);
+
+	
+	glDepthMask(GL_TRUE);
+
 
 
 	for (int i = 0; i < emitters.size(); i++) {
@@ -365,6 +381,7 @@ void ParticleSystem::drawHelperStructures() {
 		formBoxVisShader->setColor(glm::vec3(1.0f, 0.0f, 0.0f));
 		formBoxVisModel->transform.position = newFormBoxSettings.position;
 		formBoxVisModel->transform.scale = newFormBoxSettings.size;
+		formBoxVisModel->update();
 		formBoxVisModel->drawWireframe(formBoxVisShader);
 	}
 

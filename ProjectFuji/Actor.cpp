@@ -53,6 +53,17 @@ bool Actor::drawGeometry(ShaderProgram * shader) {
 	return true;
 }
 
+bool Actor::drawShadows(ShaderProgram * shader) {
+	if (!(shouldDraw() && castShadows)) {
+		return false;
+	}
+	for (int i = 0; i < children.size(); i++) {
+		children[i]->drawShadows(shader);
+	}
+	return true;
+}
+
+
 bool Actor::drawWireframe(ShaderProgram * shader) {
 	if (!shouldDraw()) {
 		return false;
@@ -71,7 +82,7 @@ void Actor::addChild(Actor *child) {
 }
 
 void Actor::unparent(bool keepWorldPosition) {
-	if (parent->parent == nullptr) {
+	if (isRootChild()) {
 		cerr << "Cannot unparent since the current parent is root." << endl;
 		return;
 	}
@@ -89,6 +100,10 @@ void Actor::unparent(bool keepWorldPosition) {
 
 
 
+}
+
+bool Actor::isRootChild() {
+	return (parent->parent == nullptr);
 }
 
 void Actor::snapToGround(HeightMap *heightMap) {

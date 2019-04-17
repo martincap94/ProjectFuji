@@ -1715,8 +1715,10 @@ void UserInterface::constructPropertiesTab() {
 		nk_label(ctx, actor->name.c_str(), NK_TEXT_LEFT);
 		nk_checkbox_label(ctx, "visible", &actor->visible);
 
-		if (nk_button_label(ctx, "move up a level (unparent)")) {
-			actor->unparent();
+		if (!actor->isRootChild()) {
+			if (nk_button_label(ctx, "move up a level (unparent)")) {
+				actor->unparent();
+			}
 		}
 
 		nk_layout_row_dynamic(ctx, 250, 1);
@@ -1732,6 +1734,20 @@ void UserInterface::constructPropertiesTab() {
 
 			nk_group_end(ctx);
 		}
+
+
+		Model *model = dynamic_cast<Model *>(actor);
+
+		if (model) {
+
+			model->constructUserInterfaceTab(ctx, vars->heightMap);
+
+
+		}
+		
+
+
+
 	}
 
 

@@ -130,7 +130,7 @@ public:
 
 	void emitParticles();
 
-	void draw(const ShaderProgram &shader, glm::vec3 cameraPos);
+	void draw(glm::vec3 cameraPos);
 	void drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos);
 	void drawDiagramParticles();
 
@@ -174,6 +174,9 @@ private:
 
 	Model *formBoxVisModel;
 	ShaderProgram *formBoxVisShader;
+
+	ShaderProgram *pointSpriteTestShader = nullptr;
+	ShaderProgram *singleColorShader = nullptr;
 
 
 	GLuint streamLinesVAO;	///< Streamlines VAO

@@ -28,45 +28,33 @@ void Mesh::draw(ShaderProgram *shader) {
 
 void Mesh::makeInstanced(std::vector<Transform> &instanceTransforms) {
 	if (instanced) {
-		cout << "This mesh is already instanced!" << endl;
+		cout << "This mesh is already instanced... Updating instance transforms!" << endl;
+		updateInstanceTransforms(instanceTransforms);
 		return;
 	}
-
-	glBindVertexArray(VAO);
-	glGenBuffers(1, &instancesVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, instancesVBO);
-
-	numInstances = instanceTransforms.size();
-
-	vector<glm::mat4> instanceMatrices;
-	for (int i = 0; i < numInstances; i++) {
-		instanceMatrices.push_back(instanceTransforms[i].getModelMatrix());
-	}
-	glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), instanceMatrices.data(), GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
-
-	glEnableVertexAttribArray(6);
-	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
-
-	glEnableVertexAttribArray(7);
-	glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
-
-	glEnableVertexAttribArray(8);
-	glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
-
-	glVertexAttribDivisor(5, 1);
-	glVertexAttribDivisor(6, 1);
-	glVertexAttribDivisor(7, 1);
-	glVertexAttribDivisor(8, 1);
-
-	glBindVertexArray(0);
-
+	initInstancedMeshBuffers();
+	updateInstanceTransforms(instanceTransforms);
 	instanced = true;
-
-
 }
+
+void Mesh::updateInstanceTransforms(std::vector<Transform>& instanceTransforms) {
+	numInstances = instanceTransforms.size();
+	vector<glm::mat4> instanceModelMatrices;
+	for (int i = 0; i < numInstances; i++) {
+		instanceModelMatrices.push_back(instanceTransforms[i].getModelMatrix());
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, instancesVBO);
+	glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), instanceModelMatrices.data(), GL_STATIC_DRAW);
+}
+
+void Mesh::updateInstanceModelMatrices(std::vector<glm::mat4> &instanceModelMatrices) {
+	numInstances = instanceModelMatrices.size();
+
+	glBindBuffer(GL_ARRAY_BUFFER, instancesVBO);
+	glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), instanceModelMatrices.data(), GL_STATIC_DRAW);
+}
+
+
 
 void Mesh::setupMesh() {
 	glGenVertexArrays(1, &VAO);
@@ -97,5 +85,31 @@ void Mesh::setupMesh() {
 
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, bitangent));
+	glBindVertexArray(0);
+}
+
+void Mesh::initInstancedMeshBuffers() {
+
+	glBindVertexArray(VAO);
+	glGenBuffers(1, &instancesVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instancesVBO);
+
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+
+	glEnableVertexAttribArray(6);
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+
+	glEnableVertexAttribArray(7);
+	glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+
+	glEnableVertexAttribArray(8);
+	glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+	glVertexAttribDivisor(5, 1);
+	glVertexAttribDivisor(6, 1);
+	glVertexAttribDivisor(7, 1);
+	glVertexAttribDivisor(8, 1);
+
 	glBindVertexArray(0);
 }

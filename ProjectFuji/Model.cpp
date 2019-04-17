@@ -27,7 +27,7 @@ bool Model::draw() {
 		return false;
 	}
 	shader->use();
-	shader->setModelMatrix(transform.getModelMatrix());
+	shader->setModelMatrix(transform.getSavedModelMatrix());
 	useMaterial();
 
 	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
@@ -46,7 +46,7 @@ bool Model::draw(ShaderProgram *shader) {
 	}
 
 	shader->use();
-	shader->setModelMatrix(transform.getModelMatrix());
+	shader->setModelMatrix(transform.getSavedModelMatrix());
 	useMaterial(shader);
 
 	shader->setInt("u_DepthMapTexture", TEXTURE_UNIT_DEPTH_MAP);
@@ -67,12 +67,26 @@ bool Model::drawGeometry(ShaderProgram * shader) {
 
 
 	shader->use();
-	shader->setModelMatrix(transform.getModelMatrix());
+	shader->setModelMatrix(transform.getSavedModelMatrix());
 	shader->setBool("u_IsInstanced", instanced);
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].draw(shader);
 	}
 	return Actor::drawGeometry(shader);
+
+}
+
+bool Model::drawShadows(ShaderProgram * shader) {
+	if (!(shouldDraw() && castShadows)) {
+		return false;
+	}
+	shader->use();
+	shader->setModelMatrix(transform.getSavedModelMatrix());
+	shader->setBool("u_IsInstanced", instanced);
+	for (int i = 0; i < meshes.size(); i++) {
+		meshes[i].draw(shader);
+	}
+	return Actor::drawShadows(shader);
 
 }
 
@@ -94,15 +108,18 @@ void Model::makeInstanced(std::vector<Transform> &instanceTransforms) {
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].makeInstanced(instanceTransforms);
 	}
+	this->numInstances = numInstances;
 	instanced = true;
 }
 
-void Model::makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scaleModifier, float maxY, int maxYTests, glm::vec2 position, glm::vec2 areaSize) {
+void Model::makeInstancedOld(HeightMap *heightMap, int numInstances, glm::vec2 scaleModifier, float maxY, int maxYTests, glm::vec2 position, glm::vec2 areaSize) {
 
 	if (areaSize.x == 0.0f || areaSize.y == 0.0f) {
 		areaSize.x = heightMap->getWorldWidth();
 		areaSize.y = heightMap->getWorldDepth();
 	}
+	float areaHalfWidth = areaSize.x / 2.0f;
+	float areaHalfDepth = areaSize.y / 2.0f;
 
 	std::vector<Transform> instanceTransforms;
 	for (unsigned int i = 0; i < numInstances; i++) {
@@ -114,8 +131,8 @@ void Model::makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scal
 		int counter = 0;
 
 		do {
-			xPos = getRandFloat(position.x, position.x + areaSize.x);
-			zPos = getRandFloat(position.y, position.y + areaSize.y);
+			xPos = getRandFloat(position.x - areaHalfWidth, position.x + areaHalfWidth);
+			zPos = getRandFloat(position.y - areaHalfDepth, position.y + areaHalfDepth);
 			yPos = heightMap->getHeight(xPos, zPos);
 			counter++;
 		} while (yPos > maxY && counter < maxYTests);
@@ -126,12 +143,47 @@ void Model::makeInstanced(HeightMap *heightMap, int numInstances, glm::vec2 scal
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].makeInstanced(instanceTransforms);
 	}
+	savedInstanceAreaSize = areaSize;
+	savedInstanceScaleModifier = scaleModifier;
+	this->numInstances = numInstances;
+	instanced = true;
+
+}
+
+void Model::makeInstanced(HeightMap * heightMap, int numInstances, glm::vec2 scaleModifier, glm::vec2 position, glm::vec2 areaSize) {
+	transform.position = glm::vec3(position.x, 0.0f, position.y);
+
+	if (areaSize.x == 0.0f || areaSize.y == 0.0f) {
+		areaSize.x = heightMap->getWorldWidth();
+		areaSize.y = heightMap->getWorldDepth();
+	}
+	float areaHalfWidth = areaSize.x / 2.0f;
+	float areaHalfDepth = areaSize.y / 2.0f;
+
+	std::vector<Transform> instanceTransforms;
+	for (unsigned int i = 0; i < numInstances; i++) {
+		float instanceScaleModifier = getRandFloat(scaleModifier.x, scaleModifier.y);
+
+		float xOff = getRandFloat(-areaHalfWidth, areaHalfWidth);
+		float zOff = getRandFloat(-areaHalfDepth, areaHalfDepth);
+		float xPos = transform.position.x + xOff;
+		float zPos = transform.position.z + zOff;
+		float yPos = heightMap->getHeight(xPos, zPos);
+
+		Transform t(glm::vec3(xOff, yPos, zOff), glm::vec3(0.0f, getRandFloat(0.0f, 90.0f), 0.0f), glm::vec3(instanceScaleModifier));
+		instanceTransforms.push_back(t);
+	}
+	for (int i = 0; i < meshes.size(); i++) {
+		meshes[i].makeInstanced(instanceTransforms);
+	}
+	savedInstanceAreaSize = areaSize;
+	savedInstanceScaleModifier = scaleModifier;
+	this->numInstances = numInstances;
 	instanced = true;
 
 }
 
 void Model::makeInstancedMaterialMap(HeightMap * heightMap, int numInstances, int materialIdx, glm::vec2 scaleModifier) {
-
 	std::vector<Transform> instanceTransforms;
 	for (unsigned int i = 0; i < numInstances; i++) {
 		float instanceScaleModifier = getRandFloat(scaleModifier.x, scaleModifier.y);
@@ -146,7 +198,22 @@ void Model::makeInstancedMaterialMap(HeightMap * heightMap, int numInstances, in
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i].makeInstanced(instanceTransforms);
 	}
+	savedInstanceScaleModifier = scaleModifier;
+	this->numInstances = numInstances;
 	instanced = true;
+}
+
+void Model::constructUserInterfaceTab(struct nk_context *ctx, HeightMap *hm) {
+	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_checkbox_label(ctx, "cast shadows", &castShadows);
+	if (instanced) {
+
+		if (hm != nullptr) {
+			if (nk_button_label(ctx, "Refresh instances")) {
+				makeInstanced(hm, this->numInstances, savedInstanceScaleModifier, glm::vec2(transform.position.x, transform.position.z), savedInstanceAreaSize);
+			}
+		}
+	}
 }
 
 

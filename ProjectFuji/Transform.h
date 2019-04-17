@@ -23,6 +23,7 @@ public:
 	~Transform();
 
 	void updateModelMatrix();
+	glm::mat4 getSavedModelMatrix();
 	glm::mat4 getModelMatrix();
 
 	void setOwner(Actor *owner);

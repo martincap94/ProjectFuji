@@ -33,7 +33,7 @@ void Transform::updateModelMatrix() {
 	glm::mat4 model(1.0f);
 
 	if (owner != nullptr && owner->parent != nullptr) {
-		model = model * owner->parent->transform.getModelMatrix();
+		model = model * owner->parent->transform.getSavedModelMatrix();
 	}
 
 
@@ -47,7 +47,12 @@ void Transform::updateModelMatrix() {
 	modelMatrix = model;
 }
 
+glm::mat4 Transform::getSavedModelMatrix() {
+	return modelMatrix;
+}
+
 glm::mat4 Transform::getModelMatrix() {
+	updateModelMatrix();
 	return modelMatrix;
 }
 

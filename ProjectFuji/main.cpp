@@ -215,12 +215,6 @@ Skybox *skybox;
 HosekSkyModel *hosek;
 
 
-ShaderProgram *singleColorShader;
-ShaderProgram *singleColorShaderVBO;
-ShaderProgram *singleColorShaderAlpha;
-ShaderProgram *unlitColorShader;
-ShaderProgram *pointSpriteTestShader;
-ShaderProgram *coloredParticleShader;
 ShaderProgram *diagramShader;
 ShaderProgram *visualizeNormalsShader;
 ShaderProgram *normalsInstancedShader;
@@ -303,48 +297,12 @@ int runApp() {
 	mainFramebuffer = new MainFramebuffer(&vars);
 	vars.mainFramebuffer = mainFramebuffer;
 
-
-
 	dirLight = new DirectionalLight();
 	evsm = new EVSMShadowMapper(&vars, dirLight);
-
 	stlpDiagram = new STLPDiagram(&vars);
-
-
-	// SKYBOX MODELS
 	skybox = new Skybox();
 	hosek = new HosekSkyModel(dirLight);
-
-
-	float aspectRatio = (float)vars.screenWidth / (float)vars.screenHeight;
-
-	float offset = 0.2f;
-	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
-	overlayDiagramProjection = glm::ortho(0.0f - offset, 1.0f + offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
-
-
 	ui = new UserInterface(window, &vars);
-	
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	///// SHADERS
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	singleColorShader = ShaderManager::getShaderPtr("singleColor");
-	singleColorShaderAlpha = ShaderManager::getShaderPtr("singleColorAlpha");
-	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
-
-	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
-
-
-	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
-	coloredParticleShader = ShaderManager::getShaderPtr("coloredParticle");
-
-	visualizeNormalsShader = ShaderManager::getShaderPtr("visualize_normals");
-
-	normalsInstancedShader = ShaderManager::getShaderPtr("normals_instanced");
-	grassShader = ShaderManager::getShaderPtr("grass_instanced");
-
-	pbrTest = ShaderManager::getShaderPtr("pbr_test");
 
 	vars.heightMap = new HeightMap(&vars);
 	tPicker = new TerrainPicker(&vars);
@@ -354,7 +312,28 @@ int runApp() {
 
 
 
-	float ratio = (float)vars.screenWidth / (float)vars.screenHeight;
+
+
+
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	///// SHADERS
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	visualizeNormalsShader = ShaderManager::getShaderPtr("visualize_normals");
+
+	normalsInstancedShader = ShaderManager::getShaderPtr("normals_instanced");
+	grassShader = ShaderManager::getShaderPtr("grass_instanced");
+
+	pbrTest = ShaderManager::getShaderPtr("pbr_test");
+
+
+
+	float aspectRatio = (float)vars.screenWidth / (float)vars.screenHeight;
+
+	float offset = 0.2f;
+	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
+	overlayDiagramProjection = glm::ortho(0.0f - offset, 1.0f + offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
 
 
 	int maxNumTextureUnits;
@@ -372,14 +351,14 @@ int runApp() {
 		projectionRange /= 2.0f;
 
 		projHeight = projectionRange;
-		projWidth = projHeight * ratio;
+		projWidth = projHeight * aspectRatio;
 
 		projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
 
 
-		float cameraRadius = sqrtf((float)(vars.latticeWidth * vars.latticeWidth + vars.latticeDepth * vars.latticeDepth)) + 10.0f;
+		float cameraRadius = sqrtf((float)(vars.heightMap->getWorldWidth() * vars.heightMap->getWorldWidth() + vars.heightMap->getWorldDepth() * vars.heightMap->getWorldDepth())) + 10.0f;
 
-		orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.latticeWidth / 2.0f, vars.latticeHeight / 2.0f, vars.latticeDepth / 2.0f), cameraRadius);
+		orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, (vars.heightMap->terrainHeightRange.x + vars.heightMap->terrainHeightRange.y) / 2.0f, vars.heightMap->getWorldDepth() / 2.0f), cameraRadius);
 	}
 
 	CHECK_ERROR(cudaPeekAtLastError());
@@ -457,8 +436,10 @@ int runApp() {
 	cerberus.shader = pbrTest;
 
 
-	//grassModel.makeInstancedMaterialMap(vars.heightMap, 500000, 0, glm::vec2(1.5f, 3.0f));
-	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(3.0f, 5.5f), 1000.0f, 20);
+	grassModel.makeInstanced(vars.heightMap, 500000, glm::vec2(0.5f, 2.0f), glm::vec2(10000.0f), glm::vec2(1000.0f));
+	grassModel.castShadows = 0;
+	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(1.0f, 3.0f), glm::vec2(10000.0f), glm::vec2(1000.0f));
+	treeModel.castShadows = 0;
 
 	testModel.transform.position = glm::vec3(1.0f, 0.0f, 5.0f);
 
@@ -472,6 +453,8 @@ int runApp() {
 	scene.root = new Actor("Root");
 	scene.root->addChild(&cerberus);
 	scene.root->addChild(&houseModel);
+	scene.root->addChild(&treeModel);
+	scene.root->addChild(&grassModel);
 	houseModel.addChild(&testModel);
 
 
@@ -753,14 +736,7 @@ int runApp() {
 			vars.heightMap->drawGeometry(evsm->firstPassShaders[0]);
 			//stlpSim->heightMap->drawGeometry(evsm->firstPassShader);
 
-			scene.root->drawGeometry(evsm->firstPassShaders[0]);
-
-			
-
-			if (vars.drawTrees) {
-				treeModel.drawGeometry(evsm->firstPassShaders[0]);
-			}
-
+			scene.root->drawShadows(evsm->firstPassShaders[0]);
 
 			evsm->postFirstPass();
 			evsm->preSecondPass();
@@ -780,9 +756,6 @@ int runApp() {
 			if (vars.drawGrass) {
 				grassModel.draw();
 			}
-			if (vars.drawTrees) {
-				treeModel.draw();
-			}
 
 			scene.root->draw();
 
@@ -798,7 +771,7 @@ int runApp() {
 				particleSystem->drawHelperStructures();
 
 				lbm->draw();
-				gGrid.draw(*unlitColorShader);
+				gGrid.draw();
 
 				streamlineParticleSystem->draw();
 			}
@@ -826,18 +799,7 @@ int runApp() {
 				particleRenderer->draw(particleSystem, dirLight, camera);
 				
 			} else {
-
-				if (vars.usePointSprites) {
-					glEnable(GL_BLEND);
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-					glDepthMask(GL_FALSE);
-					particleSystem->draw(*pointSpriteTestShader, camera->position);
-					glDepthMask(GL_TRUE);
-				} else {
-					particleSystem->draw(*singleColorShader, camera->position);
-
-				}
+				particleSystem->draw(camera->position);
 			}
 
 			if (!vars.renderMode) {

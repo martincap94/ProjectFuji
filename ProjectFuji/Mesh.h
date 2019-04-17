@@ -21,7 +21,8 @@ public:
 	void draw(ShaderProgram *shader);
 
 	void makeInstanced(std::vector<Transform> &instanceTransforms);
-
+	void updateInstanceTransforms(std::vector<Transform> &instanceTransforms);
+	void updateInstanceModelMatrices(std::vector<glm::mat4> &instanceModelMatrices);
 
 private:
 
@@ -35,6 +36,7 @@ private:
 
 
 	void setupMesh();
+	void initInstancedMeshBuffers();
 
 };
 
