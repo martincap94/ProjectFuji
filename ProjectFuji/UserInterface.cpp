@@ -345,12 +345,54 @@ void UserInterface::constructSidebarSelectionTab(int *contentModeTarget, float x
 		if (nk_button_label(ctx, "General Debug")) {
 			(*contentModeTarget) = GENERAL_DEBUG;
 		}
+		if (nk_button_label(ctx, "Properties")) {
+			(*contentModeTarget) = PROPERTIES;
+		}
 
 	}
 	nk_end(ctx);
 }
 
 void UserInterface::constructSelectedContent(int contentMode) {
+
+	switch (contentMode) {
+		case LBM:
+			constructLBMTab();
+			break;
+		case LIGHTING:
+			constructLightingTab();
+			break;
+		case TERRAIN:
+			constructTerrainTab();
+			break;
+		case SKY:
+			constructSkyTab();
+			break;
+		case CLOUD_VIS:
+			constructCloudVisualizationTab();
+			break;
+		case DIAGRAM:
+			constructDiagramControlsTab();
+			break;
+		case LBM_DEBUG:
+			constructLBMDebugTab();
+			break;
+		case SCENE_HIERARCHY:
+			constructSceneHierarchyTab();
+			break;
+		case EMITTERS:
+			constructEmittersTab();
+			break;
+		case GENERAL_DEBUG:
+			constructGeneralDebugTab();
+			break;
+		case PROPERTIES:
+		default:
+			constructPropertiesTab();
+			break;
+	}
+
+	/*
 	if (contentMode == 0) {
 		constructLBMTab();
 	} else if (contentMode == 1) {
@@ -372,6 +414,7 @@ void UserInterface::constructSelectedContent(int contentMode) {
 	} else if (contentMode == 9) {
 		constructGeneralDebugTab();
 	}
+	*/
 }
 
 
@@ -1433,6 +1476,7 @@ void UserInterface::constructSceneHierarchyTab() {
 
 
 	hierarchyIdCounter = 0;
+	activeActors.clear();
 
 	nk_layout_row_dynamic(ctx, 30, 1);
 	nk_label(ctx, "Scene Hierarchy", NK_TEXT_CENTERED);
@@ -1455,28 +1499,40 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 	}
 	hierarchyIdCounter++;
 
-	//if (nk_tree_element_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, 0, hierarchyIdCounter)) {
-	if (nk_tree_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, hierarchyIdCounter)) {
 
-		nk_layout_row_dynamic(ctx, 250, 1);
-		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
-			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.1f, 10.0f, "pos");
-			nk_property_vec3(actor->transform.rotation, 0.0f, 360.0f, 0.1f, 0.1f, "rot");
-			nk_property_vec3(actor->transform.scale, 0.0f, 1000.0f, 0.1f, 0.1f, "scale");
-			//nk_property_float(ctx, "scale", 0.0f, &actor->transform.scale.x, 10000.0f, 0.1f, 0.1f);
-			//// quick hack
-			//actor->transform.scale.y = actor->transform.scale.x;
-			//actor->transform.scale.z = actor->transform.scale.x;
+	if (actor->children.size() > 0) {
 
-			nk_group_end(ctx);
+		//if (nk_tree_element_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, 0, hierarchyIdCounter)) {
+		if (nk_tree_element_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, &actor->selected, hierarchyIdCounter)) {
+
+
+			//nk_layout_row_dynamic(ctx, 250, 1);
+			//if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
+			//	nk_layout_row_dynamic(ctx, 15, 1);
+			//	nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.1f, 10.0f, "pos");
+			//	nk_property_vec3(actor->transform.rotation, 0.0f, 360.0f, 0.1f, 0.1f, "rot");
+			//	nk_property_vec3(actor->transform.scale, 0.0f, 1000.0f, 0.1f, 0.1f, "scale");
+			//	//nk_property_float(ctx, "scale", 0.0f, &actor->transform.scale.x, 10000.0f, 0.1f, 0.1f);
+			//	//// quick hack
+			//	//actor->transform.scale.y = actor->transform.scale.x;
+			//	//actor->transform.scale.z = actor->transform.scale.x;
+
+			//	nk_group_end(ctx);
+			//}
+
+			for (int i = 0; i < actor->children.size(); i++) {
+				addSceneHierarchyActor(actor->children[i]);
+			}
+
+			nk_tree_pop(ctx);
 		}
+	} else {
 
-		for (int i = 0; i < actor->children.size(); i++) {
-			addSceneHierarchyActor(actor->children[i]);
-		}
+		nk_selectable_symbol_label(ctx, NK_SYMBOL_CIRCLE_SOLID, actor->name.c_str(), NK_TEXT_LEFT, &actor->selected);
 
-		nk_tree_pop(ctx);
+	}
+	if (actor->selected) {
+		activeActors.push_back(actor);
 	}
 }
 
@@ -1647,6 +1703,32 @@ void UserInterface::constructGeneralDebugTab() {
 	if (nk_button_label(ctx, "Reload shaders (recompile all) - EXPERIMENTAL")) {
 		ShaderManager::loadShaders();
 	}
+
+}
+
+void UserInterface::constructPropertiesTab() {
+
+	for (const auto &actor : activeActors) {
+
+		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_label(ctx, actor->name.c_str(), NK_TEXT_LEFT);
+
+		nk_layout_row_dynamic(ctx, 250, 1);
+		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.1f, 10.0f, "pos");
+			nk_property_vec3(actor->transform.rotation, 0.0f, 360.0f, 0.1f, 0.1f, "rot");
+			nk_property_vec3(actor->transform.scale, 0.0f, 1000.0f, 0.1f, 0.1f, "scale");
+			//nk_property_float(ctx, "scale", 0.0f, &actor->transform.scale.x, 10000.0f, 0.1f, 0.1f);
+			//// quick hack
+			//actor->transform.scale.y = actor->transform.scale.x;
+			//actor->transform.scale.z = actor->transform.scale.x;
+
+			nk_group_end(ctx);
+		}
+	}
+
+
 
 }
 

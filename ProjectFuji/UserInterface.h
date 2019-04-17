@@ -86,7 +86,8 @@ private:
 		LBM_DEBUG,
 		SCENE_HIERARCHY,
 		EMITTERS,
-		GENERAL_DEBUG
+		GENERAL_DEBUG,
+		PROPERTIES
 
 	};
 
@@ -116,10 +117,10 @@ private:
 	bool streamlineInitMode = false;
 
 	int leftSidebarContentMode = CLOUD_VIS;
-	int rightSidebarContentMode = GENERAL_DEBUG;
+	int rightSidebarContentMode = PROPERTIES;
 
 	int hierarchyIdCounter = 0;
-
+	std::vector<Actor *> activeActors;
 
 	nk_context *ctx;
 	struct nk_input *ctx_in;
@@ -158,6 +159,7 @@ private:
 
 	void constructEmittersTab();
 	void constructGeneralDebugTab();
+	void constructPropertiesTab();
 
 	
 	void constructDebugTab();

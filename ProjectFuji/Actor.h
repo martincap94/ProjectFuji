@@ -18,6 +18,8 @@ public:
 	//glm::mat4 modelMatrix;
 	std::string name;
 
+	int selected = 0;
+
 	Actor *parent = nullptr;
 	std::vector<Actor *> children;
 
