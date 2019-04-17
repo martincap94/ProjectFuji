@@ -934,7 +934,7 @@ void UserInterface::constructSkyTab() {
 
 	if (!hosek->liveRecalc) {
 		if (nk_button_label(ctx, "Recalculate Model")) {
-			hosek->update(dirLight->getDirection());
+			hosek->update();
 
 		}
 	}

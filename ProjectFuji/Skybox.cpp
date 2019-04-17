@@ -4,8 +4,10 @@
 #include <GLFW/glfw3.h>
 #include "Cubemap.h"
 #include "DataStructures.h"
+#include "ShaderManager.h"
 
 Skybox::Skybox() {
+	shader = ShaderManager::getShaderPtr("skybox");
 	setupSkybox();
 }
 
@@ -13,9 +15,10 @@ Skybox::Skybox() {
 Skybox::~Skybox() {
 }
 
-void Skybox::draw(ShaderProgram &shader) {
+void Skybox::draw(const glm::mat4 &viewMatrix) {
 	glDepthMask(GL_FALSE);
-	shader.use();
+	shader->use();
+	shader->setViewMatrix(viewMatrix);
 
 	/*view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
 	skyboxShader.setMat4fv("view", view);*/

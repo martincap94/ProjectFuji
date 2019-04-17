@@ -5,7 +5,7 @@
 #include "ShaderProgram.h"
 
 #include "ArHosekSkyModel.h"
-//#include "DirectionalLight.h"
+#include "DirectionalLight.h"
 
 // BASED ON: https://github.com/benanders/Hosek-Wilkie BY BEN ANDERSON
 
@@ -30,14 +30,13 @@ public:
 	float sunIntensity = 2.5f;
 	int sunExponent = 512;
 
-	HosekSkyModel();
+	HosekSkyModel(DirectionalLight *dirLight);
 	~HosekSkyModel();
 
-	void draw();
+	void draw(const glm::mat4 &viewMatrix);
 	void initBuffers();
 
-	//void update(DirectionalLight *sun);
-	void update(glm::vec3 sunDir);
+	void update();
 
 	glm::vec3 getColor(float cosTheta, float gamma, float cosGamma);
 	glm::vec3 getSunColor();
@@ -64,6 +63,8 @@ private:
 	double telev = 0.0;
 
 	ShaderProgram *shader = nullptr;
+
+	DirectionalLight *dirLight = nullptr;
 
 	GLuint VAO;
 	GLuint VBO;

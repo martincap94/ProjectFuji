@@ -12,7 +12,7 @@
 
 using namespace std;
 
-HosekSkyModel::HosekSkyModel() {
+HosekSkyModel::HosekSkyModel(DirectionalLight *dirLight) : dirLight(dirLight) {
 	initBuffers();
 	shader = ShaderManager::getShaderPtr("sky_hosek");
 }
@@ -21,13 +21,16 @@ HosekSkyModel::HosekSkyModel() {
 HosekSkyModel::~HosekSkyModel() {
 }
 
-void HosekSkyModel::draw() {
+void HosekSkyModel::draw(const glm::mat4 &viewMatrix) {
 	if (!shader) {
 		cerr << "No shader set in " << __FILE__ << " on " << __LINE__ << endl;
 		return;
 	}
 	shader->use();
 
+	shader->setViewMatrix(viewMatrix);
+
+	shader->setVec3("u_SunDir", -dirLight->getDirection());
 	shader->setFloat("u_HorizonOffset", (float)horizonOffset);
 	shader->setFloat("u_SunIntensity", sunIntensity * 0.1f);
 	shader->setInt("u_SunExponent", sunExponent);
@@ -61,7 +64,12 @@ void HosekSkyModel::initBuffers() {
 
 }
 
-void HosekSkyModel::update(glm::vec3 sunDir) {
+void HosekSkyModel::update() {
+	if (!liveRecalc) {
+		return;
+	}
+
+	glm::vec3 sunDir = dirLight->getDirection();
 
 	shader->use();
 

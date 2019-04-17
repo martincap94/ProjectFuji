@@ -222,8 +222,6 @@ ShaderProgram *unlitColorShader;
 ShaderProgram *pointSpriteTestShader;
 ShaderProgram *coloredParticleShader;
 ShaderProgram *diagramShader;
-ShaderProgram *skyboxShader;
-ShaderProgram *hosekShader;
 ShaderProgram *visualizeNormalsShader;
 ShaderProgram *normalsInstancedShader;
 ShaderProgram *grassShader;
@@ -315,7 +313,7 @@ int runApp() {
 
 	// SKYBOX MODELS
 	skybox = new Skybox();
-	hosek = new HosekSkyModel();
+	hosek = new HosekSkyModel(dirLight);
 
 
 	float aspectRatio = (float)vars.screenWidth / (float)vars.screenHeight;
@@ -341,8 +339,6 @@ int runApp() {
 	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
 	coloredParticleShader = ShaderManager::getShaderPtr("coloredParticle");
 
-	skyboxShader = ShaderManager::getShaderPtr("skybox");
-	hosekShader = ShaderManager::getShaderPtr("sky_hosek");
 	visualizeNormalsShader = ShaderManager::getShaderPtr("visualize_normals");
 
 	normalsInstancedShader = ShaderManager::getShaderPtr("normals_instanced");
@@ -682,9 +678,8 @@ int runApp() {
 		} else if (mode == eViewportMode::VIEWPORT_3D) {
 
 			// Update Hosek's sky model parameters using current sun elevation
-			if (hosek->liveRecalc) {
-				hosek->update(dirLight->getDirection());
-			}
+			hosek->update();
+			
 
 			// Update particle system (emit particles mainly)
 			particleSystem->doStep();
@@ -718,17 +713,9 @@ int runApp() {
 				glm::mat4 tmpView = glm::mat4(glm::mat3(view));
 
 				if (vars.hosekSkybox) {
-
-					hosekShader->use();
-					hosekShader->setViewMatrix(tmpView);
-					hosekShader->setVec3("u_SunDir", -dirLight->getDirection());
-					hosek->draw();
-
-
+					hosek->draw(tmpView);
 				} else {
-					skyboxShader->use();
-					skyboxShader->setViewMatrix(tmpView);
-					skybox->draw(*skyboxShader);
+					skybox->draw(tmpView);
 				}
 			}
 

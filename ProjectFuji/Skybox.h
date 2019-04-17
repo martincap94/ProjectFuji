@@ -8,9 +8,11 @@ public:
 	Skybox();
 	~Skybox();
 
-	void draw(ShaderProgram &shader);
+	void draw(const glm::mat4 &viewMatrix);
 
 private:
+
+	ShaderProgram *shader = nullptr;
 
 	const std::vector<std::string> faces {
 		"skybox/right.jpg",
