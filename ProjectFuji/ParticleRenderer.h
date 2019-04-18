@@ -76,7 +76,7 @@ public:
 	int forceHalfVecToFaceCam = 0;
 	int showParticleTextureIdx = 0;
 	int useAtlasTexture = 0;
-	int showParticlesBelowCCL = 0;
+	int showParticlesBelowCCL = 1;
 
 	float inversionThreshold = 0.0f;
 

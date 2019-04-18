@@ -314,7 +314,14 @@ int runApp() {
 	particleRenderer = new ParticleRenderer(&vars, particleSystem);
 
 
+	stlpSimCUDA = new STLPSimulatorCUDA(&vars, stlpDiagram);
 
+	particleSystem->stlpSim = stlpSimCUDA;
+	stlpSimCUDA->particleSystem = particleSystem;
+
+
+	stlpSimCUDA->initCUDAGeneral();
+	stlpSimCUDA->uploadDataFromDiagramToGPU();
 
 
 
@@ -473,17 +480,7 @@ int runApp() {
 	long long int totalFrameCounter = 0;
 
 
-
-	stlpSimCUDA = new STLPSimulatorCUDA(&vars, stlpDiagram);
-
-	particleSystem->stlpSim = stlpSimCUDA;
-	stlpSimCUDA->particleSystem = particleSystem;
-
-
-	stlpSimCUDA->initCUDAGeneral();
-	stlpSimCUDA->uploadDataFromDiagramToGPU();
-
-
+	particleSystem->createPredefinedEmitters();
 	particleSystem->initParticlesOnTerrain();
 	particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
 	particleSystem->activateAllParticles();

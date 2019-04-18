@@ -52,7 +52,7 @@ void CircleEmitter::emitParticle() {
 	p.position = glm::vec3(randx, y, randz);
 	p.velocity = glm::vec3(0.0f);
 	
-	p.profileIndex = rand() % (owner->stlpSim->stlpDiagram->numProfiles - 1);
+	p.profileIndex = getRandomProfileIndex();
 
 	owner->pushParticleToEmit(p);
 }

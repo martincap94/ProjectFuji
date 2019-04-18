@@ -185,6 +185,8 @@ public:
 	int viewportMode = 0;
 
 
+
+
 	int prevToggleLBMState = GLFW_RELEASE;
 	int toggleLBMState = GLFW_KEY_L;
 

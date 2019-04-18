@@ -40,7 +40,8 @@ void CDFEmitter::emitParticle() {
 
 	Particle p;
 	p.position = heightMap->getWorldPositionSample(sampler);
-	p.profileIndex = rand() % (owner->stlpSim->stlpDiagram->numProfiles - 1);
+	//p.profileIndex = rand() % (owner->stlpSim->stlpDiagram->numProfiles - 1);
+	p.profileIndex = getRandomProfileIndex();
 	p.velocity = glm::vec3(0.0f);
 
 	owner->pushParticleToEmit(p);

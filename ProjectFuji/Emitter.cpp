@@ -8,6 +8,11 @@ Emitter::Emitter(ParticleSystem *owner) : owner(owner) {
 	dist = uniform_real_distribution<float>(0.0f, 1.0f);
 	distRange = uniform_real_distribution<float>(-1.0f, 1.0f);
 	heightMap = owner->heightMap;
+	maxProfileIndex = owner->stlpSim->stlpDiagram->numProfiles - 1;
+	prevMinProfileIndex = minProfileIndex;
+	prevMaxProfileIndex = maxProfileIndex;
+	profileDist = uniform_int_distribution<int>(minProfileIndex, maxProfileIndex);
+
 }
 
 
@@ -32,25 +37,25 @@ void Emitter::emitParticles(int numParticles) {
 	if (owner->numActiveParticles >= owner->numParticles) {
 		return;
 	}
+	updateProfileIndexDistribution();
 	for (int i = 0; i < numParticles; i++) {
 		emitParticle();
 	}
 }
 
-//void Emitter::wigglePosition() {
-//
-//	position.x += distRange(mt) * xWiggleRange;
-//	position.z += distRange(mt) * zWiggleRange;
-//
-//}
+inline int Emitter::getRandomProfileIndex() {
+	return profileDist(mt);
+}
 
-//void Emitter::draw() {
-//}
-//
-//void Emitter::draw(ShaderProgram * shader) {
-//}
-//
-//void Emitter::initBuffers() {
-//}
+inline void Emitter::updateProfileIndexDistribution() {
+	if (prevMinProfileIndex != minProfileIndex || prevMaxProfileIndex != maxProfileIndex) {
+		profileDist = uniform_int_distribution<int>(minProfileIndex, maxProfileIndex);
+		prevMinProfileIndex = minProfileIndex;
+		prevMaxProfileIndex = maxProfileIndex;
+	}
+
+}
+
+
 
 

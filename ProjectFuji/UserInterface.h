@@ -93,9 +93,18 @@ private:
 		SCENE_HIERARCHY,
 		EMITTERS,
 		GENERAL_DEBUG,
-		PROPERTIES
-
+		PROPERTIES,
+		_NUM_CONTENT_MODES
 	};
+
+	enum eTabState {
+		INACTIVE = 0,
+		ACTIVE = 1
+	};
+
+	//int tabPositions[_NUM_CONTENT_MODES];
+	//int tabStates[_NUM_CONTENT_MODES];
+
 
 	enum eVecNaming {
 		DEFAULT = 0, // x, y, z, w
@@ -103,6 +112,12 @@ private:
 		INDEX, // 0, 1, 2, 3
 		TEXTURE, // s, t, p, q
 	};
+
+	//enum eTabPosition {
+	//	HIDDEN = 0,
+	//	LEFT_SIDEBAR,
+	//	RIGHT_SIDEBAR
+	//};
 
 	const char *vecNames[16] = {
 		"#x", "#y", "#z", "#w",

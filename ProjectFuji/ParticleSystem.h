@@ -155,6 +155,8 @@ public:
 	void enableAllEmitters();
 	void disableAllEmitters();
 
+	void createPredefinedEmitters();
+	void addEmitter();
 	void deleteEmitter(int idx);
 
 	

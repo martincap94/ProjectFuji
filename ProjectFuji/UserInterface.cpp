@@ -71,6 +71,8 @@ UserInterface::UserInterface(GLFWwindow *window, VariableManager *vars) : vars(v
 
 	leftSidebarEditButtonRatio[0] = leftSidebarWidth - 20.0f;
 	leftSidebarEditButtonRatio[1] = 15.0f;
+
+
 }
 
 UserInterface::~UserInterface() {
@@ -300,7 +302,7 @@ void UserInterface::constructHorizontalBar() {
 		}
 		nk_layout_row_push(ctx, 120);
 		if (nk_menu_begin_label(ctx, "About", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
-			nk_layout_row_dynamic(ctx, 25, 1);
+			nk_layout_row_dynamic(ctx, 15.0f, 1);
 			if (nk_menu_item_label(ctx, "Show About", NK_TEXT_CENTERED)) {
 				vars->aboutWindowOpened = true;
 			}
@@ -1540,6 +1542,9 @@ void UserInterface::constructEmittersTab() {
 			nk_checkbox_label(ctx, "#visible", &e->visible);
 
 			nk_property_int(ctx, "#emit per step", 0, &e->numParticlesToEmitPerStep, 10000, 10, 10);
+
+			nk_property_int(ctx, "min profile index", 0, &e->minProfileIndex, e->maxProfileIndex, 1, 1);
+			nk_property_int(ctx, "max profile index", e->minProfileIndex, &e->maxProfileIndex, stlpDiagram->numProfiles - 1, 1, 1);
 
 			PositionalEmitter *pe = dynamic_cast<PositionalEmitter *>(e);
 			if (pe) {
