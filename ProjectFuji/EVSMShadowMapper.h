@@ -16,9 +16,9 @@ public:
 	GLint resolution = 2048;
 
 	float shadowBias = 0.001f;
-	float lightBleedReduction = 0.01f;
+	float lightBleedReduction = 0.2f;
 	float varianceMinLimit = 0.0001f;
-	float exponent = 40.0f;
+	float exponent = 42.0f;
 
 	glm::mat4 lightProjectionMatrix;
 	glm::mat4 lightViewMatrix;
@@ -56,8 +56,6 @@ public:
 	std::vector<ShaderProgram *> firstPassShaders;
 	std::vector<ShaderProgram *> secondPassShaders;
 
-	//ShaderProgram *firstPassShader;
-	//ShaderProgram *secondPassShader;
 	ShaderProgram *blurShader;
 
 	// initial depth map generation

@@ -18,3 +18,15 @@ enum eSortPolicy {
 	LEQUAL,
 	GEQUAL
 };
+
+
+enum eViewportMode {
+	VIEWPORT_3D = 0,
+	DIAGRAM
+};
+
+enum eFogMode {
+	LINEAR = 0,
+	EXPONENTIAL,
+	_NUM_FOG_MODES
+};

@@ -8,6 +8,8 @@
 #include <glm\glm.hpp>
 
 #include "Texture.h"
+#include "CommonEnums.h"
+
 #include <map>
 #include <string>
 
@@ -62,6 +64,10 @@ public:
 	HosekSkyModel *hosek = nullptr;
 	StreamlineParticleSystem *sps = nullptr;
 	SceneGraph *scene = nullptr;
+
+
+	int viewportMode = eViewportMode::VIEWPORT_3D;
+
 
 	float prevAvgFPS;
 	float prevAvgDeltaTime;
@@ -118,6 +124,8 @@ private:
 
 	int leftSidebarContentMode = CLOUD_VIS;
 	int rightSidebarContentMode = PROPERTIES;
+
+
 
 	int hierarchyIdCounter = 0;
 	std::vector<Actor *> activeActors;

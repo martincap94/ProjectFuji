@@ -114,11 +114,6 @@ void refreshProjectionMatrix();
 
 
 
-enum eViewportMode {
-	VIEWPORT_3D = 0,
-	DIAGRAM
-};
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///// GLOBAL VARIABLES
@@ -127,7 +122,6 @@ enum eViewportMode {
 
 VariableManager vars;
 
-//eLBMType lbmType;		///< The LBM type that is to be displayed
 
 LBM3D_1D_indices *lbm;				///< Pointer to the current LBM
 //Grid *grid;				///< Pointer to the current grid
@@ -200,16 +194,14 @@ int prevMouseCursorKeyState = GLFW_RELEASE;
 int mouseCursorKey = GLFW_KEY_C;
 
 
-//string soundingFile;		///< Name of the sounding file to be loaded
 
 bool mouseDown = false;
 
-//bool updateFPSCounter = false;
+
 float prevAvgFPS;
 float prevAvgDeltaTime;
 
 STLPDiagram *stlpDiagram;	///< SkewT/LogP diagram instance
-int mode = VIEWPORT_3D;				
 
 Skybox *skybox;
 HosekSkyModel *hosek;
@@ -399,7 +391,6 @@ int runApp() {
 	Material gMat(gdiffuse, gspecular, anormal, 32.0f);
 
 	Model grassModel("models/grass.obj", &gMat, grassShader);
-	//Model grassModel("models/grass.obj", &gMat, ShaderManager::getShaderPtr("normals"));
 
 	Model treeModel("models/trees10_01.fbx", &treeMat, normalsInstancedShader);
 
@@ -461,7 +452,7 @@ int runApp() {
 	refreshProjectionMatrix();
 
 
-	GeneralGrid gGrid(100, 5, (vars.lbmType == LBM3D));
+	GeneralGrid gGrid(20000.0f, 1000.0f);
 
 
 	int frameCounter = 0;
@@ -483,7 +474,7 @@ int runApp() {
 
 
 	particleSystem->initParticlesOnTerrain();
-	//particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
+	particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
 	particleSystem->activateAllParticles();
 
 
@@ -522,13 +513,10 @@ int runApp() {
 	vector<GLuint> debugTextureIds;
 	debugTextureIds.push_back(evsm->getDepthMapTextureId());
 
-	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("depthMapTexture"), 0);
-	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("harrisTexture"), 1);
 
+	// Preset overlay textures that are useful for debugging
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[0]"), 0);
-	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[1]"), 1);
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("imageTexture"), 1);
-	//TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[1]"), 2);
 
 
 	// Provisional settings
@@ -578,8 +566,6 @@ int runApp() {
 		ui->camera = camera;
 		ui->constructUserInterface();
 
-		//constructUserInterface(ctx/*, particlesColor*/);
-
 
 		if (vars.measureTime) {
 			vars.timer.clockAvgStart();
@@ -626,7 +612,7 @@ int runApp() {
 		//cout << " Delta time = " << (deltaTime * 1000.0f) << " [ms]" << endl;
 		//cout << " Framerate = " << (1.0f / deltaTime) << endl;
 		glm::vec4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		if (mode == eViewportMode::DIAGRAM) {
+		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			clearColor = glm::vec4(1.0f);
 			glfwSwapInterval(1);
 			camera = diagramCamera;
@@ -653,12 +639,12 @@ int runApp() {
 
 
 
-		if (mode == eViewportMode::DIAGRAM) {
+		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 
 			stlpDiagram->draw();
 			stlpDiagram->drawText();
 
-		} else if (mode == eViewportMode::VIEWPORT_3D) {
+		} else if (ui->viewportMode == eViewportMode::VIEWPORT_3D) {
 
 			// Update Hosek's sky model parameters using current sun elevation
 			hosek->update();
@@ -751,10 +737,6 @@ int runApp() {
 
 			if (vars.visualizeTerrainNormals) {
 				vars.heightMap->drawGeometry(visualizeNormalsShader);
-			}
-
-			if (vars.drawGrass) {
-				grassModel.draw();
 			}
 
 			scene.root->draw();
@@ -877,7 +859,7 @@ int runApp() {
 
 
 void refreshProjectionMatrix() {
-	if (mode == eViewportMode::DIAGRAM) {
+	if (ui->viewportMode == eViewportMode::DIAGRAM) {
 		projection = diagramProjection;
 	} else {
 		if (vars.projectionMode == ORTHOGRAPHIC) {
@@ -994,26 +976,13 @@ void processInput(GLFWwindow* window) {
 
 	
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-		mode = 0;
-		glDisable(GL_DEPTH_TEST); // painters algorithm for now
+		ui->viewportMode = 0;
 		refreshProjectionMatrix();
 	}
 	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-		mode = 1;
-		glDisable(GL_DEPTH_TEST); // painters algorithm for now
+		ui->viewportMode = 1;
 		refreshProjectionMatrix();
 	}
-	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
-		mode = 2;
-		glEnable(GL_DEPTH_TEST);
-		refreshProjectionMatrix();
-	}
-	if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
-		mode = 3;
-		glEnable(GL_DEPTH_TEST);
-		refreshProjectionMatrix();
-	}
-	
 
 
 	if (glfwGetKey(window, mouseCursorKey) == GLFW_PRESS) {
@@ -1042,7 +1011,7 @@ void processInput(GLFWwindow* window) {
 		//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
 
-		if (mode == eViewportMode::DIAGRAM) {
+		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
 			//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
 			//Z_ndc = 2.0 * depth - 1.0;
@@ -1092,7 +1061,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		glfwGetCursorPos(window, &xpos, &ypos);
 
 
-		if (mode == eViewportMode::DIAGRAM) {
+		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
 			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
@@ -1126,11 +1095,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-	//if (ui->isAnyWindowHovered() || mode < 2) {
-	//	return;
-	//}
 
-	if (mode == eViewportMode::DIAGRAM) {
+	if (ui->viewportMode == eViewportMode::DIAGRAM) {
 		return;
 	}
 
@@ -1173,24 +1139,13 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 	float offset = 0.2f;
 	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
 
-	//cout << "Aspect ratio = " << aspectRatio << endl;
 
 
-	if (vars.lbmType == LBM2D) {
-		if (vars.latticeWidth >= vars.latticeHeight) {
-			projWidth = (float)vars.latticeWidth;
-			projHeight = projWidth / aspectRatio;
-		} else {
-			projHeight = (float)vars.latticeHeight;
-			projWidth = projHeight * aspectRatio;
-		}
-		viewportProjection = glm::ortho(-1.0f, projWidth, -1.0f, projHeight, nearPlane, farPlane);
-	} else {
-		projHeight = projectionRange;
-		projWidth = projHeight * aspectRatio;
-		viewportProjection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
+	projHeight = projectionRange;
+	projWidth = projHeight * aspectRatio;
+	viewportProjection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
 
-	}
+
 	mainFramebuffer->refresh();
 	particleRenderer->refreshImageBuffer();
 	TextureManager::refreshOverlayTextures();

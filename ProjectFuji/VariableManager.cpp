@@ -247,13 +247,7 @@ void VariableManager::parseArguments(int argc, char **argv) {
 
 void VariableManager::saveConfigParam(string param, string val) {
 
-	if (param == "LBM_type" || param == "-t") {
-		if (val == "2D" || val == "2") {
-			lbmType = LBM2D;
-		} else if (val == "3D" || val == "3") {
-			lbmType = LBM3D;
-		}
-	} else if (param == "VSync") {
+	if (param == "VSync") {
 		saveIntParam(vsync, val);
 	} else if (param == "num_particles" || param == "-p") {
 		saveIntParam(numParticles, val);
@@ -271,9 +265,6 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveIntParam(latticeHeight, val);
 	} else if (param == "lattice_depth") {
 		saveIntParam(latticeDepth, val);
-	} else if (param == "use_CUDA" || param == "-c") {
-		//saveBoolParam(useCUDA, val);
-		//useCUDACheckbox = (int)VariableManager::useCUDA;
 	} else if (param == "tau" || param == "-tau") {
 		saveFloatParam(tau, val);
 	} else if (param == "draw_streamlines") {

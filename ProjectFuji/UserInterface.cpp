@@ -250,9 +250,19 @@ void UserInterface::constructHorizontalBar() {
 		nk_layout_row_push(ctx, 120);
 		//nk_label(ctx, "View", NK_TEXT_CENTERED);
 		if (nk_menu_begin_label(ctx, "View", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
-			nk_layout_row_dynamic(ctx, 25, 1);
+			nk_layout_row_dynamic(ctx, 15, 1);
 
 			nk_checkbox_label(ctx, "Render Mode", &vars->renderMode);
+
+			if (viewportMode == eViewportMode::VIEWPORT_3D) {
+				if (nk_menu_item_label(ctx, "Diagram view", NK_TEXT_CENTERED)) {
+					viewportMode == eViewportMode::DIAGRAM;
+				}
+			} else if (viewportMode == eViewportMode::DIAGRAM) {
+				if (nk_menu_item_label(ctx, "3D viewport", NK_TEXT_CENTERED)) {
+					viewportMode = eViewportMode::VIEWPORT_3D;
+				}
+			}
 
 
 			//nk_button_label(ctx, "Debug Window");
@@ -478,45 +488,14 @@ void UserInterface::constructLBMTab() {
 		particleSystem->sortParticlesByDistance(camera->position, eSortPolicy::GREATER);
 
 	}
-	//if (/*lbmType == LBM2D &&*/ vars->useCUDA && !vars->usePointSprites) {
-	//	nk_layout_row_dynamic(ctx, 15, 1);
-	//	nk_checkbox_label(ctx, "Visualize velocity", &lbm->visualizeVelocity);
-	//}
 
-	//if (!vars->useCUDA) {
-	//	nk_layout_row_dynamic(ctx, 15, 1);
-	//	nk_checkbox_label(ctx, "Respawn linearly", &lbm->respawnLinearly);
-	//}
-	/*
-	nk_layout_row_dynamic(ctx, 10, 1);
-	nk_labelf(ctx, NK_TEXT_LEFT, "Point size");
-	nk_slider_float(ctx, 1.0f, &particleSystemLBM->pointSize, 100.0f, 0.5f);
 
-	if (!vars->usePointSprites && !lbm->visualizeVelocity) {
-	nk_layout_row_dynamic(ctx, 20, 1);
-	nk_label(ctx, "Particles Color:", NK_TEXT_LEFT);
-	nk_layout_row_dynamic(ctx, 25, 1);
-	if (nk_combo_begin_color(ctx, nk_rgb_cf(particlesColor), nk_vec2(nk_widget_width(ctx), 400))) {
-	nk_layout_row_dynamic(ctx, 120, 1);
-	particlesColor = nk_color_picker(ctx, particlesColor, NK_RGBA);
-	nk_layout_row_dynamic(ctx, 25, 1);
-	particlesColor.r = nk_propertyf(ctx, "#R:", 0, particlesColor.r, 1.0f, 0.01f, 0.005f);
-	particlesColor.g = nk_propertyf(ctx, "#G:", 0, particlesColor.g, 1.0f, 0.01f, 0.005f);
-	particlesColor.b = nk_propertyf(ctx, "#B:", 0, particlesColor.b, 1.0f, 0.01f, 0.005f);
-	particlesColor.a = nk_propertyf(ctx, "#A:", 0, particlesColor.a, 1.0f, 0.01f, 0.005f);
-	particleSystemLBM->particlesColor = glm::vec3(particlesColor.r, particlesColor.g, particlesColor.b);
-	nk_combo_end(ctx);
-	}
-	}*/
 	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_label(ctx, "Camera movement speed", NK_TEXT_LEFT);
 	nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 10000.0f, 1.0f);
 
 
-	// TODO - get this back in working order
-
-
-
+	// TODO - get this back in working order (and nicer looking)
 	nk_layout_row_dynamic(ctx, 15, 2);
 	if (nk_option_label(ctx, "Orthographic", vars->projectionMode == ORTHOGRAPHIC)) {
 		vars->projectionMode = ORTHOGRAPHIC;
@@ -529,8 +508,6 @@ void UserInterface::constructLBMTab() {
 	}
 
 
-
-	//int useFreeRoamCameraPrev = vars->useFreeRoamCamera;
 	nk_checkbox_label(ctx, "Use freeroam camera", &vars->useFreeRoamCamera);
 
 	constructWalkingPanel();
@@ -672,7 +649,7 @@ void UserInterface::constructLightingTab() {
 	nk_combo_end(ctx);
 	}*/
 
-	if (vars->fogMode == VariableManager::eFogMode::LINEAR) {
+	if (vars->fogMode == eFogMode::LINEAR) {
 		nk_property_float(ctx, "Fog min distance", 0.0f, &vars->fogMinDistance, 100000.0f, 1.0f, 10.0f);
 		nk_property_float(ctx, "Fog max distance", 0.0f, &vars->fogMaxDistance, 100000.0f, 10.0f, 100.0f);
 	} else {

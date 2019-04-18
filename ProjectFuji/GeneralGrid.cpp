@@ -9,36 +9,40 @@ GeneralGrid::GeneralGrid() {
 	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
 }
 
-GeneralGrid::GeneralGrid(int range, int stepSize, bool drawXZGrid) : range(range), stepSize(stepSize) {
+GeneralGrid::GeneralGrid(float range, float stepSize) : range(range), stepSize(stepSize) {
 	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
 
 	vector<glm::vec3> gridVertices;
 
-	float axisRange = range * 100.0f;
+	float axisRange = range * 10.0f;
 
-	if (drawXZGrid) {
-		for (int x = -range; x <= range; x += stepSize) {
-			gridVertices.push_back(glm::vec3(x, 0.0f, -range));
-			gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
-			gridVertices.push_back(glm::vec3(x, 0.0f, range));
-			gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
+	float epsilon = 0.1f;
 
-		}
-		//for (int y = -range; y <= range; y += stepSize) {
-		//	gridVertices.push_back(glm::vec3(0.0f, y, -range));
-		//	gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
-		//	gridVertices.push_back(glm::vec3(0.0f, y, range));
-		//	gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
+	for (int x = -range; x <= range; x += stepSize) {
+		gridVertices.push_back(glm::vec3(x, -epsilon, -range));
+		gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
+		gridVertices.push_back(glm::vec3(x, -epsilon, range));
+		gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
 
-		//}
-		for (int z = -range; z <= range; z += stepSize) {
-			gridVertices.push_back(glm::vec3(-range, 0.0f, z));
-			gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
-			gridVertices.push_back(glm::vec3(range, 0.0f, z));
-			gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
-
-		}
 	}
+	//for (int y = -range; y <= range; y += stepSize) {
+	//	gridVertices.push_back(glm::vec3(0.0f, y, -range));
+	//	gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
+	//	gridVertices.push_back(glm::vec3(0.0f, y, range));
+	//	gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
+
+	//}
+	for (int z = -range; z <= range; z += stepSize) {
+		gridVertices.push_back(glm::vec3(-range, -epsilon, z));
+		gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
+		gridVertices.push_back(glm::vec3(range, -epsilon, z));
+		gridVertices.push_back(glm::vec3(0.1f, 0.1f, 0.1f));
+
+	}
+
+
+
+
 
 	gridVertices.push_back(glm::vec3(-axisRange, 0.0f, 0.0f));
 	gridVertices.push_back(glm::vec3(1.0f, 0.0f, 0.0f));
@@ -83,6 +87,7 @@ GeneralGrid::~GeneralGrid() {
 }
 
 void GeneralGrid::draw() {
+
 	unlitColorShader->use();
 
 	glBindVertexArray(VAO);

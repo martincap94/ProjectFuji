@@ -28,15 +28,12 @@ public:
 
 
 	int vsync = 0;
-	eLBMType lbmType;
 	HeightMap *heightMap = nullptr;
 
 	int numParticles = 1000;	///< Number of particles
 	int maxNumParticles = 1000000;
 	
 	string sceneFilename;		///< Filename of the scene
-	//bool useCUDA = true;		///< Whether to use CUDA or run the CPU version of the application
-	//int useCUDACheckbox = 1;	///< Helper int value for the UI checkbox
 
 
 	int windowWidth = 1000;		///< Window width
@@ -142,13 +139,9 @@ public:
 	int terrainPickerMode = 0;
 	int terrainUsesPBR = 1;
 
-	enum eFogMode {
-		LINEAR = 0,
-		EXPONENTIAL,
-		_NUM_FOG_MODES
-	};
 
-	int fogMode = LINEAR;
+
+	int fogMode = eFogMode::LINEAR;
 	float fogExpFalloff = 0.01f;
 	float fogMinDistance = 5000.0f;
 	float fogMaxDistance = 100000.0f;

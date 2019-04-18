@@ -1,15 +1,15 @@
 #version 400 core
 
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
+layout (location = 0) in vec3 a_Pos;
+layout (location = 1) in vec3 a_Color;
 
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 
-out vec3 vColor;
+out vec3 v_Color;
 
 void main() {
-	vColor = aColor;
-	gl_Position = u_Projection * u_View * vec4(aPos, 1.0);
+	v_Color = a_Color;
+	gl_Position = u_Projection * u_View * vec4(a_Pos, 1.0);
 }
 
