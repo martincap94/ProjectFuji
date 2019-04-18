@@ -20,9 +20,8 @@ namespace TextureManager {
 		TextureManager::vars = vars;
 
 		// prepare debug overlay textures
-		int debugOverlayTexturesRes = vars->leftSidebarWidth;
 		for (int i = 0; i < vars->numDebugOverlayTextures; i++) {
-			overlayTextures.push_back(new OverlayTexture(i * debugOverlayTexturesRes, 0/*vars->screenHeight - (i + 1) * debugOverlayTexturesRes*/, debugOverlayTexturesRes, debugOverlayTexturesRes, TextureManager::vars));
+			overlayTextures.push_back(new OverlayTexture(vars->leftSidebarWidth + 20.0f + i * vars->debugOverlayTextureRes, 0/*vars->screenHeight - (i + 1) * debugOverlayTexturesRes*/, vars->debugOverlayTextureRes, vars->debugOverlayTextureRes, TextureManager::vars));
 		}
 
 		return true;

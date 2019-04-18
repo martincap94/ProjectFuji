@@ -186,7 +186,7 @@ void UserInterface::constructLeftSidebar() {
 
 	constructSidebarSelectionTab(&leftSidebarContentMode, 0, leftSidebarWidth + 20.0f);
 
-	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight + selectionTabHeight, leftSidebarWidth + 20.0f, vars->screenHeight - vars->debugTextureRes - vars->toolbarHeight - selectionTabHeight),
+	if (nk_begin(ctx, "Control Panel", nk_rect(0, vars->toolbarHeight + selectionTabHeight, leftSidebarWidth + 20.0f, vars->screenHeight - vars->toolbarHeight - selectionTabHeight),
 				 NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
 		constructSelectedContent(leftSidebarContentMode);
 
@@ -1506,7 +1506,17 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 			nk_tree_pop(ctx);
 		}
 	} else {
-		nk_selectable_symbol_label(ctx, NK_SYMBOL_CIRCLE_SOLID, actor->name.c_str(), NK_TEXT_LEFT, &actor->selected);
+
+		//nk_layout_row_dynamic(ctx, 15, 1);
+		nk_layout_row_begin(ctx, NK_DYNAMIC, 15.0f, 2);
+		nk_layout_row_push(ctx, 0.9f);
+		nk_selectable_label(ctx, actor->name.c_str(), NK_TEXT_LEFT, &actor->selected);
+		nk_layout_row_push(ctx, 0.1f);
+
+		if (nk_button_symbol(ctx, actor->visible ? NK_SYMBOL_CIRCLE_SOLID : NK_SYMBOL_CIRCLE_OUTLINE)) {
+
+		}
+		nk_layout_row_end(ctx);
 
 	}
 	if (actor->selected) {

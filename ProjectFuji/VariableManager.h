@@ -38,6 +38,9 @@ public:
 
 	int windowWidth = 1000;		///< Window width
 	int windowHeight = 1000;	///< Window height
+	bool useMonitorResolution = true;
+	bool fullscreen = false;
+
 
 	int screenWidth;			///< Screen width
 	int screenHeight;			///< Screen height
@@ -112,7 +115,6 @@ public:
 	float lbmVelocityMultiplier = 1.0f;
 	int lbmUseCorrectInterpolation = 0;
 
-	int fullscreen = 0;
 
 
 	int useSkySunColor = 1;
@@ -169,9 +171,9 @@ public:
 	int debugTabHeight = 300;
 	int leftSidebarWidth = 250;
 	int rightSidebarWidth = 250;
-	int debugTextureRes = leftSidebarWidth;
+	int debugOverlayTextureRes = 250;
 
-	int numDebugOverlayTextures = 4;
+	int numDebugOverlayTextures = 3;
 
 	int drawOverlayDiagramParticles = 1;
 

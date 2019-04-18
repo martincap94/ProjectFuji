@@ -259,9 +259,20 @@ int runApp() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 
-	glfwWindowHint(GLFW_SAMPLES, 12); // enable MSAA with 4 samples
+	//glfwWindowHint(GLFW_SAMPLES, 12); // enable MSAA with 4 samples
 
-	GLFWwindow *window = glfwCreateWindow(vars.windowWidth, vars.windowHeight, "Project Fuji", nullptr, nullptr);
+	if (vars.useMonitorResolution || vars.fullscreen) {
+		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+		vars.windowWidth = mode->width;
+		vars.windowHeight = mode->height;
+	}
+	GLFWmonitor *monitor = nullptr;
+	if (vars.fullscreen) {
+		monitor = glfwGetPrimaryMonitor();
+	}
+
+	GLFWwindow *window = glfwCreateWindow(vars.windowWidth, vars.windowHeight, "Project Fuji", monitor, nullptr);
 
 	if (!window) {
 		cerr << "Failed to create GLFW window" << endl;
@@ -1151,3 +1162,8 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 	TextureManager::refreshOverlayTextures();
 	stlpDiagram->refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
 }
+
+
+
+
+

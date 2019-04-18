@@ -308,7 +308,12 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveVec2Param(terrainHeightRange, val);
 	} else if (param == "lattice_scale") {
 		saveFloatParam(latticeScale, val);
+	} else if (param == "use_monitor_resolution") {
+		saveBoolParam(useMonitorResolution, val);
+	} else if (param == "fullscreen") {
+		saveBoolParam(fullscreen, val);
 	}
+
 
 }
 
