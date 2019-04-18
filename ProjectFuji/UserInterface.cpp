@@ -1458,8 +1458,6 @@ void UserInterface::constructSceneHierarchyTab() {
 	nk_layout_row_dynamic(ctx, 30, 1);
 	nk_label(ctx, "Scene Hierarchy", NK_TEXT_CENTERED);
 
-	nk_layout_row_dynamic(ctx, 15, 1);
-
 
 	//addSceneHierarchyActor(scene->root);
 
@@ -1480,6 +1478,7 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 
 
 	if (actor->children.size() > 0) {
+
 
 		//if (nk_tree_element_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, 0, hierarchyIdCounter)) {
 		if (nk_tree_element_push_id(ctx, NK_TREE_NODE, actor->name.c_str(), NK_MINIMIZED, &actor->selected, hierarchyIdCounter)) {
@@ -1506,15 +1505,18 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 			nk_tree_pop(ctx);
 		}
 	} else {
+		struct nk_rect w;
+		w = nk_layout_widget_bounds(ctx);
 
 		//nk_layout_row_dynamic(ctx, 15, 1);
-		nk_layout_row_begin(ctx, NK_DYNAMIC, 15.0f, 2);
-		nk_layout_row_push(ctx, 0.9f);
+		nk_layout_row_begin(ctx, NK_STATIC, 15.0f, 2);
+		nk_layout_row_push(ctx, w.w - 15.0f);
 		nk_selectable_label(ctx, actor->name.c_str(), NK_TEXT_LEFT, &actor->selected);
-		nk_layout_row_push(ctx, 0.1f);
+		nk_layout_row_push(ctx, 15.0f);
+
 
 		if (nk_button_symbol(ctx, actor->visible ? NK_SYMBOL_CIRCLE_SOLID : NK_SYMBOL_CIRCLE_OUTLINE)) {
-
+			actor->visible = !actor->visible;
 		}
 		nk_layout_row_end(ctx);
 
