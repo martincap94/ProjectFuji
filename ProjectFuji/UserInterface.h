@@ -141,6 +141,9 @@ private:
 	int rightSidebarContentMode = PROPERTIES;
 
 
+	bool terrainGeneratorPopupOpened = false;
+
+
 
 	int hierarchyIdCounter = 0;
 	std::vector<Actor *> activeActors;
@@ -173,6 +176,7 @@ private:
 	void constructLBMTab();
 	void constructLightingTab();
 	void constructTerrainTab();
+	void constructTerrainGeneratorWindow();
 	void constructSkyTab();
 	void constructCloudVisualizationTab();
 	void constructDiagramControlsTab();

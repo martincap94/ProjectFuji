@@ -11,7 +11,6 @@
 #include "ShaderManager.h"
 #include "TextureManager.h"
 #include "Utils.h"
-#include "PerlinNoiseSampler.h"
 
 #include <stb_image.h>
 #include <limits>
@@ -41,6 +40,22 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 	initMaterials();
 
+}
+
+void HeightMap::loadAndUpload() {
+	loadAndUpload(dataGenerationMode);
+}
+
+void HeightMap::loadAndUpload(int dataGenerationMode) {
+	if (dataGenerationMode == eDataGenerationMode::HEIGHT_MAP) {
+		loadHeightMapData();
+	} else if (dataGenerationMode == eDataGenerationMode::RANDOM_PERLIN) {
+		if (!generateRandomHeightData()) {
+			cerr << "Error generating random height map data!" << endl;
+			return;
+		}
+	}
+	createAndUploadMesh();
 }
 
 void HeightMap::loadHeightMapData() {
@@ -76,7 +91,6 @@ void HeightMap::loadHeightMapData(std::string filename) {
 	data = new float[width * height]();
 
 
-	bool usePerlinNoise = true;
 
 	cout << "number of channels = " << numChannels << endl;
 
@@ -92,13 +106,8 @@ void HeightMap::loadHeightMapData(std::string filename) {
 				a = pixel[1];
 			}
 
-			if (usePerlinNoise) {
-				data[x + z * width] = PerlinNoiseSampler::getSampleOctaves((float)x / width, (float)z / height, 0.0f, 4.0f, true, 8, 0.4f, true);
-				//cout << data[x + z * width] << " ";
-			} else {
-				data[x + z * width] = (float)val;
-				data[x + z * width] /= (float)numeric_limits<unsigned short>().max();
-			}
+			data[x + z * width] = (float)val;
+			data[x + z * width] /= (float)numeric_limits<unsigned short>().max();
 			rangeToRange(data[x + z * width], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
 		}
 	}
@@ -107,6 +116,31 @@ void HeightMap::loadHeightMapData(std::string filename) {
 		stbi_image_free(imageData);
 	}
 
+
+}
+
+bool HeightMap::generateRandomHeightData() {
+	if (data != nullptr) {
+		delete[] data;
+	}
+	if (width == 0 || height == 0) {
+		return false;
+	}
+
+	data = new float[width * height]();
+
+	for (int z = 0; z < height; z++) {
+		for (int x = 0; x < width; x++) {
+			
+			//data[x + z * width] = PerlinNoiseSampler::getSampleOctavesStatic((float)x / width, (float)z / height, 0.0f, 4.0f, 8, 0.4f, PerlinNoiseSampler::eSamplingMode::NORMALIZED);
+			//cout << data[x + z * width] << " ";
+			data[x + z * width] = perlinSampler.getSampleOctaves((float)x / width, (float)z / height, 0.0f);
+
+			rangeToRange(data[x + z * width], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
+		}
+	}
+
+	return true;
 
 }
 
@@ -1100,3 +1134,27 @@ glm::vec3 HeightMap::getRandomWorldPosition() {
 	pos.y = getHeight(pos.x, pos.z);
 	return pos;
 }
+
+
+const char * HeightMap::getDataGenerationModeString() {
+	return getDataGenerationModeString(dataGenerationMode);
+}
+
+
+const char * HeightMap::getDataGenerationModeString(int mode) {
+	switch (mode) {
+		case eDataGenerationMode::HEIGHT_MAP:
+			return "Height Map";
+		case eDataGenerationMode::RANDOM_PERLIN:
+			return "Random Perlin";
+	}
+	return "NONE";
+}
+
+void HeightMap::constructPerlinGeneratorUITab(nk_context *ctx) {
+
+	perlinSampler.constructUIPropertiesTab(ctx);
+
+
+}
+

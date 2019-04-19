@@ -72,7 +72,6 @@ UserInterface::UserInterface(GLFWwindow *window, VariableManager *vars) : vars(v
 	leftSidebarEditButtonRatio[0] = leftSidebarWidth - 20.0f;
 	leftSidebarEditButtonRatio[1] = 15.0f;
 
-
 }
 
 UserInterface::~UserInterface() {
@@ -108,6 +107,8 @@ void UserInterface::constructUserInterface() {
 	constructRightSidebar();
 
 	constructHorizontalBar();
+
+	constructTerrainGeneratorWindow();
 
 	if (vars->aboutWindowOpened) {
 
@@ -696,35 +697,24 @@ void UserInterface::constructTerrainTab() {
 	nk_property_float(ctx, "terrain bottom", -1000000.0f, &hm->terrainHeightRange.x, hm->terrainHeightRange.y, 100.0f, 100.0f);
 	nk_property_float(ctx, "terrain top", hm->terrainHeightRange.x, &hm->terrainHeightRange.y, 1000000.0f, 100.0f, 100.0f);
 
-	if (nk_combo_begin_label(ctx, hm->heightMapFilename.c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-		nk_layout_row_dynamic(ctx, 15, 1);
-		for (int i = 0; i < vars->sceneFilenames.size(); i++) {
-			if (nk_combo_item_label(ctx, vars->sceneFilenames[i].c_str(), NK_TEXT_CENTERED)) {
-				hm->heightMapFilename = vars->sceneFilenames[i];
-			}
-		}
-		nk_combo_end(ctx);
-	}
 
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(hm->materialMap).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
 		for (const auto& kv : *textures) {
 			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
 				vars->heightMap->materialMap = kv.second;
+				nk_combo_close(ctx);
 			}
 		}
 		nk_combo_end(ctx);
 	}
 
-	if (nk_button_label(ctx, "Reload mesh")) {
-		hm->loadHeightMapData();
-		hm->createAndUploadMesh();
-		lbm->refreshHeightMap();
+	if (nk_button_label(ctx, "Terrain Generator")) {
+		terrainGeneratorPopupOpened = true;
 	}
 
 
-	nk_checkbox_label(ctx, "Draw grass", &vars->drawGrass);
-	nk_checkbox_label(ctx, "Draw trees", &vars->drawTrees);
+
 	nk_checkbox_label(ctx, "Visualize normals", &vars->visualizeTerrainNormals);
 	nk_property_float(ctx, "Global nrm mixing ratio:", 0.0f, &hm->globalNormalMapMixingRatio, 1.0f, 0.01f, 0.01f);
 	nk_property_float(ctx, "Global nrm tiling:", 1.0f, &hm->globalNormalMapTiling, 1000.0f, 0.1f, 0.1f);
@@ -861,6 +851,57 @@ void UserInterface::constructTerrainTab() {
 	nk_property_int(ctx, "normals mode", 0, &vars->heightMap->normalsShaderMode, 10, 1, 1);
 
 
+}
+
+void UserInterface::constructTerrainGeneratorWindow() {
+	if (terrainGeneratorPopupOpened) {
+		float w = 500.0f;
+		float h = 500.0f;
+		HeightMap *hm = vars->heightMap;
+		if (nk_begin(ctx, "Terrain Generator", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), 0)) {
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+
+			if (nk_combo_begin_label(ctx, hm->getDataGenerationModeString(), nk_vec2(nk_widget_width(ctx), 200))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+				for (int i = 0; i < HeightMap::eDataGenerationMode::_NUM_MODES; i++) {
+					if (nk_combo_item_label(ctx, hm->getDataGenerationModeString(i), NK_TEXT_CENTERED)) {
+						hm->dataGenerationMode = i;
+						nk_combo_close(ctx);
+					}
+				}
+
+				nk_combo_end(ctx);
+			}
+
+			if (hm->dataGenerationMode == HeightMap::eDataGenerationMode::HEIGHT_MAP) {
+				if (nk_combo_begin_label(ctx, vars->heightMap->heightMapFilename.c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					for (int i = 0; i < vars->sceneFilenames.size(); i++) {
+						if (nk_combo_item_label(ctx, vars->sceneFilenames[i].c_str(), NK_TEXT_CENTERED)) {
+							vars->heightMap->heightMapFilename = vars->sceneFilenames[i];
+							nk_combo_close(ctx);
+						}
+					}
+					nk_combo_end(ctx);
+				}
+			} else if (hm->dataGenerationMode == HeightMap::eDataGenerationMode::RANDOM_PERLIN) {
+				hm->constructPerlinGeneratorUITab(ctx);
+			}
+
+
+
+			if (nk_button_label(ctx, "Generate Terrain")) {
+				vars->heightMap->loadAndUpload();
+				lbm->refreshHeightMap();
+				terrainGeneratorPopupOpened = false;
+			}
+
+			nk_end(ctx);
+		} else {
+			terrainGeneratorPopupOpened = false;
+		}
+	}
 }
 
 

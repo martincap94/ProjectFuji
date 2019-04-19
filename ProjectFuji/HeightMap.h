@@ -22,6 +22,10 @@
 #include "PBRMaterial.h"
 #include "CDFSampler.h"
 #include "CDFSamplerMultiChannel.h"
+#include "PerlinNoiseSampler.h"
+
+#include <nuklear.h>
+
 
 class VariableManager;
 
@@ -35,11 +39,9 @@ class VariableManager;
 class HeightMap {
 public:
 
-	int width;		///< Width of the height map
-	int height;		///< Height of the height map - IMPORTANT - in the scene, the height of the map is described by the depth of the scene!!!
+	int width = 1024;		///< Width of the height map
+	int height = 1024;		///< Height of the height map - IMPORTANT - in the scene, the height of the map is described by the depth of the scene!!!
 
-
-	int downSample = 10;
 
 	int maxIntensity;	///< Maximum intensity of the height map - at the moment it will always be set to 255 due to .ppm usage
 	
@@ -69,6 +71,15 @@ public:
 
 	VariableManager *vars;
 	std::string heightMapFilename = "";
+	PerlinNoiseSampler perlinSampler;
+
+	enum eDataGenerationMode {
+		HEIGHT_MAP = 0,
+		RANDOM_PERLIN,
+		_NUM_MODES
+	};
+
+	int dataGenerationMode = 0;
 
 
 	Material materials[MAX_TERRAIN_MATERIALS];
@@ -94,8 +105,13 @@ public:
 
 	void smoothHeights();
 
+	void loadAndUpload();
+	void loadAndUpload(int dataGenerationMode);
+
+
 	void loadHeightMapData();
 	void loadHeightMapData(std::string filename);
+	bool generateRandomHeightData();
 
 	void initMaterials();
 	void initBuffers();
@@ -114,6 +130,11 @@ public:
 
 
 	glm::vec3 getRandomWorldPosition();
+
+	const char *getDataGenerationModeString();
+	const char *getDataGenerationModeString(int mode);
+
+	void constructPerlinGeneratorUITab(struct nk_context *ctx);
 
 	/// Draws the height map.
 	void draw();

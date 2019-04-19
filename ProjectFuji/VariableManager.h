@@ -153,8 +153,6 @@ public:
 	////////////////////////////////////////////////////////////////
 	// Terrain
 	////////////////////////////////////////////////////////////////
-	int drawGrass = 0;
-	int drawTrees = 0;
 	int visualizeTerrainNormals = 0;
 	float globalNormalMapMixingRatio = 0.2f;
 	float texelWorldSize = 10.0f;
