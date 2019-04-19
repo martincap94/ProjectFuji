@@ -74,6 +74,7 @@ uniform int u_EVSMMode = 0;
 uniform float u_ShadowBias;
 
 uniform bool u_ShadowOnly;
+uniform float u_ShadowReduction;
 
 
 uniform bool u_NormalsOnly;

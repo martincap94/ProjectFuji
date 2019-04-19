@@ -213,6 +213,7 @@
     <ClCompile Include="PBRMaterial.cpp" />
     <ClCompile Include="MainFramebuffer.cpp" />
     <ClCompile Include="ProjectionSettings.cpp" />
+    <ClCompile Include="PerlinNoiseSampler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -387,6 +388,7 @@
     <ClInclude Include="PBRMaterial.h" />
     <ClInclude Include="MainFramebuffer.h" />
     <ClInclude Include="ProjectionSettings.h" />
+    <ClInclude Include="PerlinNoiseSampler.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

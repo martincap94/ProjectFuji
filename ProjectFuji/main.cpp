@@ -65,6 +65,7 @@
 #include "PBRMaterial.h"
 #include "MainFramebuffer.h"
 #include "SceneGraph.h"
+#include "PerlinNoiseSampler.h"
 
 //#include "ArHosekSkyModel.h"
 //#include "ArHosekSkyModel.c"
@@ -220,6 +221,8 @@ int main(int argc, char **argv) {
 	srand(time(NULL));
 
 
+	PerlinNoiseSampler::loadPermutationsData("resources/perlin_noise_permutations.txt");
+	//cout << PerlinNoiseSampler::getSample(3.14f, 42.0f, 7.0f);
 
 	vars.init(argc, argv);
 

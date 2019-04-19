@@ -11,9 +11,12 @@
 #include "ShaderManager.h"
 #include "TextureManager.h"
 #include "Utils.h"
+#include "PerlinNoiseSampler.h"
+
 #include <stb_image.h>
 #include <limits>
 #include <set>
+
 
 
 HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
@@ -29,7 +32,7 @@ HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 	heightMapFilename = SCENES_DIR + vars->sceneFilename;
 	//exit(EXIT_FAILURE); // TESTING!!!
 
-	
+
 
 	//initBuffersOld();
 	initBuffers();
@@ -73,7 +76,7 @@ void HeightMap::loadHeightMapData(std::string filename) {
 	data = new float[width * height]();
 
 
-
+	bool usePerlinNoise = true;
 
 	cout << "number of channels = " << numChannels << endl;
 
@@ -89,8 +92,13 @@ void HeightMap::loadHeightMapData(std::string filename) {
 				a = pixel[1];
 			}
 
-			data[x + z * width] = (float)val;
-			data[x + z * width] /= (float)numeric_limits<unsigned short>().max();
+			if (usePerlinNoise) {
+				data[x + z * width] = PerlinNoiseSampler::getSampleOctaves((float)x / width, (float)z / height, 0.0f, 4.0f, true, 8, 0.4f, true);
+				//cout << data[x + z * width] << " ";
+			} else {
+				data[x + z * width] = (float)val;
+				data[x + z * width] /= (float)numeric_limits<unsigned short>().max();
+			}
 			rangeToRange(data[x + z * width], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
 		}
 	}
@@ -135,16 +143,24 @@ void HeightMap::createAndUploadMesh() {
 
 
 			float tws = vars->texelWorldSize;
-			glm::vec3 p1(x * tws, data[x + z * width], z * tws);
-			glm::vec3 p2((x + 1) * tws, data[x + 1 + z * width], z * tws);
-			glm::vec3 p3((x + 1) * tws, data[x + 1 + (z - 1) * width], (z - 1) * tws);
-			glm::vec3 p4(x * tws, data[x + (z - 1) * width], (z - 1) * tws);
+
+			float y1, y2, y3, y4;
+
+			y1 = data[x + z * width];
+			y2 = data[x + 1 + z * width];
+			y3 = data[x + 1 + (z - 1) * width];
+			y4 = data[x + (z - 1) * width];
+
+			glm::vec3 p1 = glm::vec3(x * tws, y1, z * tws);
+			glm::vec3 p2 = glm::vec3((x + 1) * tws, y2, z * tws);
+			glm::vec3 p3 = glm::vec3((x + 1) * tws, y3, (z - 1) * tws);
+			glm::vec3 p4 = glm::vec3(x * tws, y4, (z - 1) * tws);
 
 
-			glm::vec3 p1i(x, data[x + z * width], z);
-			glm::vec3 p2i(x + 1, data[x + 1 + z * width], z);
-			glm::vec3 p3i(x + 1, data[x + 1 + (z - 1) * width], z - 1);
-			glm::vec3 p4i(x, data[x + (z - 1) * width], z - 1);
+			glm::vec3 p1i(x, p1.y, z);
+			glm::vec3 p2i(x + 1, p2.y, z);
+			glm::vec3 p3i(x + 1, p3.y, z - 1);
+			glm::vec3 p4i(x, p4.y, z - 1);
 
 			//glm::vec3 n1 = glm::normalize(glm::cross(p2 - p3, p2 - p1));
 			//glm::vec3 n2 = glm::normalize(glm::cross(p4 - p1, p4 - p3)); // flat shading normals
@@ -491,7 +507,7 @@ void HeightMap::initMaterials() {
 		materialMap = TextureManager::loadTexture("materialMaps/materialMap_02_1024.png");
 
 	}
-	
+
 	CHECK_GL_ERRORS();
 
 	for (int i = 0; i < activeMaterialCount; i++) {
