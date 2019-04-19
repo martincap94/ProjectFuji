@@ -694,10 +694,6 @@ void UserInterface::constructTerrainTab() {
 	nk_layout_row_dynamic(ctx, 15, 1);
 
 	HeightMap *hm = vars->heightMap;
-	//nk_property_vec2(hm->terrainHeightRange, );
-	nk_property_float(ctx, "terrain bottom", -1000000.0f, &hm->terrainHeightRange.x, hm->terrainHeightRange.y, 100.0f, 100.0f);
-	nk_property_float(ctx, "terrain top", hm->terrainHeightRange.x, &hm->terrainHeightRange.y, 1000000.0f, 100.0f, 100.0f);
-
 
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(hm->materialMap).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
@@ -859,9 +855,13 @@ void UserInterface::constructTerrainGeneratorWindow() {
 		float w = 500.0f;
 		float h = 500.0f;
 		HeightMap *hm = vars->heightMap;
-		if (nk_begin(ctx, "Terrain Generator", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), 0)) {
+		if (nk_begin(ctx, "Terrain Generator", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
 
 			nk_layout_row_dynamic(ctx, 15, 1);
+
+			nk_property_float(ctx, "Minimum Height", -1000000.0f, &hm->terrainHeightRange.x, hm->terrainHeightRange.y, 100.0f, 100.0f);
+			nk_property_float(ctx, "Maximum Height", hm->terrainHeightRange.x, &hm->terrainHeightRange.y, 1000000.0f, 100.0f, 100.0f);
+
 
 			if (nk_combo_begin_label(ctx, hm->getDataGenerationModeString(), nk_vec2(nk_widget_width(ctx), 200))) {
 				nk_layout_row_dynamic(ctx, 15, 1);
@@ -890,11 +890,16 @@ void UserInterface::constructTerrainGeneratorWindow() {
 				hm->constructPerlinGeneratorUITab(ctx);
 			}
 
-
-
-			if (nk_button_label(ctx, "Generate Terrain")) {
+			if (nk_button_label(ctx, "Generate")) {
 				vars->heightMap->loadAndUpload();
 				lbm->refreshHeightMap();
+			}
+			if (nk_button_label(ctx, "Generate & Close")) {
+				vars->heightMap->loadAndUpload();
+				lbm->refreshHeightMap();
+				terrainGeneratorPopupOpened = false;
+			}
+			if (nk_button_label(ctx, "Close")) {
 				terrainGeneratorPopupOpened = false;
 			}
 

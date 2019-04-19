@@ -80,6 +80,7 @@ public:
 	};
 
 	int dataGenerationMode = 0;
+	int terrainSeed = 0;
 
 
 	Material materials[MAX_TERRAIN_MATERIALS];

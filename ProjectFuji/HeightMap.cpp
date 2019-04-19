@@ -134,7 +134,7 @@ bool HeightMap::generateRandomHeightData() {
 			
 			//data[x + z * width] = PerlinNoiseSampler::getSampleOctavesStatic((float)x / width, (float)z / height, 0.0f, 4.0f, 8, 0.4f, PerlinNoiseSampler::eSamplingMode::NORMALIZED);
 			//cout << data[x + z * width] << " ";
-			data[x + z * width] = perlinSampler.getSampleOctaves((float)x / width, (float)z / height, 0.0f);
+			data[x + z * width] = perlinSampler.getSampleOctaves((float)x / width, (float)z / height, terrainSeed);
 
 			rangeToRange(data[x + z * width], 0.0f, 1.0f, terrainHeightRange.x, terrainHeightRange.y);
 		}
@@ -1152,6 +1152,9 @@ const char * HeightMap::getDataGenerationModeString(int mode) {
 }
 
 void HeightMap::constructPerlinGeneratorUITab(nk_context *ctx) {
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_property_int(ctx, "Seed", 0, &terrainSeed, 10000, 1, 1);
 
 	perlinSampler.constructUIPropertiesTab(ctx);
 

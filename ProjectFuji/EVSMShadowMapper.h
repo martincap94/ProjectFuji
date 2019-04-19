@@ -36,12 +36,8 @@ public:
 	void init();
 
 	void preFirstPass();
-
 	void postFirstPass();
-
-
 	void preSecondPass();
-
 	void postSecondPass();
 
 
