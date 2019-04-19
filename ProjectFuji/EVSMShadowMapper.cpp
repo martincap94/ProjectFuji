@@ -276,6 +276,7 @@ void EVSMShadowMapper::preSecondPass() {
 		glUniform2f(glGetUniformLocation(pid, "u_Exponents"), exponent, exponent);
 		secondPassShaders[i]->setFloat("u_ShadowBias", shadowBias);
 		secondPassShaders[i]->setFloat("u_LightBleedReduction", lightBleedReduction);
+		secondPassShaders[i]->setFloat("u_ShadowDamping", 1.0f - shadowIntensity);
 
 		glUniformMatrix4fv(glGetUniformLocation(pid, "u_LightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(pid, "u_PrevLightSpaceMatrix"), 1, GL_FALSE, &prevLightSpaceMatrix[0][0]);

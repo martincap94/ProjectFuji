@@ -623,6 +623,7 @@ void UserInterface::constructLightingTab() {
 	nk_property_float(ctx, "exponent:", 1.0f, &evsm->exponent, 42.0f, 0.1f, 0.1f);
 
 	nk_checkbox_label(ctx, "shadow only", &evsm->shadowOnly);
+	nk_property_float(ctx, "Shadow Intensity", 0.0f, &evsm->shadowIntensity, 1.0f, 0.01f, 0.01f);
 
 
 	nk_property_float(ctx, "Fog intensity", 0.0f, &vars->fogIntensity, 1.0f, 0.01f, 0.01f);
@@ -1755,6 +1756,10 @@ void UserInterface::constructPropertiesTab() {
 				actor->unparent();
 			}
 		}
+		if (nk_button_label(ctx, "Snap to Ground")) {
+			actor->snapToGround(vars->heightMap);
+		}
+
 
 		nk_layout_row_dynamic(ctx, 250, 1);
 		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {

@@ -74,7 +74,7 @@ uniform int u_EVSMMode = 0;
 uniform float u_ShadowBias;
 
 uniform bool u_ShadowOnly;
-uniform float u_ShadowReduction;
+uniform float u_ShadowDamping;
 
 
 uniform bool u_NormalsOnly;
@@ -161,7 +161,7 @@ void main() {
 		float ambientOcclusion = computeAmbientOcclusion(materialContributions);
 
 		vec3 color = calcDirLight(u_DirLight, norm, viewDir, albedo, metallicRoughness, ambientOcclusion);
-		result = color * min(shadow + 0.2, 1.0);
+		result = color * min(shadow + u_ShadowDamping, 1.0);
 	}
 
 

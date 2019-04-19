@@ -83,6 +83,7 @@ uniform int u_EVSMMode = 0;
 uniform float u_ShadowBias;
 
 uniform bool u_ShadowOnly;
+uniform float u_ShadowDamping;
 
 
 uniform bool u_NormalsOnly;
@@ -156,7 +157,7 @@ void main() {
 			result = vec3(shadow);
 		} else {
 			vec3 color = calcDirLight(u_DirLight, norm, viewDir, materialContributions);
-			result = color * min(shadow + 0.2, 1.0);
+			result = color * min(shadow + u_ShadowDamping, 1.0);
 		}
 
 

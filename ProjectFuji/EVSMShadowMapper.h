@@ -19,6 +19,7 @@ public:
 	float lightBleedReduction = 0.2f;
 	float varianceMinLimit = 0.0001f;
 	float exponent = 42.0f;
+	float shadowIntensity = 0.95f;
 
 	glm::mat4 lightProjectionMatrix;
 	glm::mat4 lightViewMatrix;
