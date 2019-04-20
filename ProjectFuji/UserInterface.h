@@ -50,36 +50,6 @@ class SceneGraph;
 //struct nk_image;
 
 class UserInterface {
-public:
-
-	LBM3D_1D_indices *lbm = nullptr;
-	ParticleSystem *particleSystem = nullptr;
-	VariableManager *vars = nullptr;
-	Camera *camera = nullptr;
-	DirectionalLight *dirLight = nullptr;
-	EVSMShadowMapper *evsm = nullptr;
-	STLPDiagram *stlpDiagram = nullptr;
-	STLPSimulatorCUDA *stlpSimCUDA = nullptr;
-	ParticleRenderer *particleRenderer = nullptr;
-	HosekSkyModel *hosek = nullptr;
-	StreamlineParticleSystem *sps = nullptr;
-	SceneGraph *scene = nullptr;
-
-
-	int viewportMode = eViewportMode::VIEWPORT_3D;
-
-
-	float prevAvgFPS;
-	float prevAvgDeltaTime;
-
-	UserInterface(GLFWwindow *window, VariableManager *vars);
-	~UserInterface();
-
-	void draw();
-
-	void constructUserInterface();
-	bool isAnyWindowHovered();
-
 private:
 
 	enum eContentMode {
@@ -112,6 +82,48 @@ private:
 		INDEX, // 0, 1, 2, 3
 		TEXTURE, // s, t, p, q
 	};
+
+public:
+
+	LBM3D_1D_indices *lbm = nullptr;
+	ParticleSystem *particleSystem = nullptr;
+	VariableManager *vars = nullptr;
+	Camera *camera = nullptr;
+	DirectionalLight *dirLight = nullptr;
+	EVSMShadowMapper *evsm = nullptr;
+	STLPDiagram *stlpDiagram = nullptr;
+	STLPSimulatorCUDA *stlpSimCUDA = nullptr;
+	ParticleRenderer *particleRenderer = nullptr;
+	HosekSkyModel *hosek = nullptr;
+	StreamlineParticleSystem *sps = nullptr;
+	SceneGraph *scene = nullptr;
+
+
+	int viewportMode = eViewportMode::VIEWPORT_3D;
+
+
+	float prevAvgFPS;
+	float prevAvgDeltaTime;
+
+	UserInterface(GLFWwindow *window, VariableManager *vars);
+	~UserInterface();
+
+	void draw();
+
+	void constructUserInterface();
+	bool isAnyWindowHovered();
+
+	void nk_property_vec2(struct nk_context *ctx, float min, glm::vec2 &target, float max, float step, float pixStep, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
+	void nk_property_vec3(struct nk_context *ctx, float min, glm::vec3 &target, float max, float step, float pixStep, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
+
+	void nk_property_vec4(struct nk_context *ctx, glm::vec4 &target);
+	void nk_property_color_rgb(struct nk_context *ctx, glm::vec3 &target);
+	void nk_property_color_rgba(struct nk_context *ctx, glm::vec4 &target);
+
+	void nk_value_vec3(struct nk_context *ctx, const glm::vec3 &target, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
+
+private:
+
 
 	//enum eTabPosition {
 	//	HIDDEN = 0,
@@ -158,14 +170,6 @@ private:
 
 	struct nk_image nkEditIcon;
 	struct nk_image nkSettingsIcon;
-
-	void nk_property_vec2(glm::vec2 &target, float min, float max, float step, float pixStep, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
-	void nk_property_vec3(glm::vec3 &target, float min, float max, float step, float pixStep, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
-
-	void nk_property_vec4(glm::vec4 &target);
-	void nk_property_color(glm::vec4 &target);
-
-	void nk_value_vec3(const glm::vec3 &target, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
 
 	void constructLeftSidebar();
 	void constructRightSidebar();

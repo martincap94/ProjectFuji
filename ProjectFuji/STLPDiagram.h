@@ -22,6 +22,9 @@
 #include "TextRenderer.h"
 #include "VariableManager.h"
 
+#include "UserInterface.h"
+#include <nuklear.h>
+
 
 using namespace std;
 
@@ -83,7 +86,15 @@ public:
 	int showDryAdiabats = 1;
 	int showMoistAdiabats = 1;
 	int showDewpointCurve = 1;
-	int showAmbientTemperatureCurve = 1;
+	int showAmbientCurve = 1;
+
+	glm::vec3 isobarsColor = glm::vec3(0.8f, 0.8f, 0.8f);
+	glm::vec3 isothermsColor = glm::vec3(0.8f, 0.8f, 0.8f);
+	glm::vec3 ambientCurveColor = glm::vec3(0.7f, 0.1f, 0.15f);
+	glm::vec3 dewpointCurveColor = glm::vec3(0.1f, 0.7f, 0.15f);
+	glm::vec3 isohumesColor = glm::vec3(0.1f, 0.15f, 0.7f);
+	glm::vec3 dryAdiabatsColor = glm::vec3(0.6f, 0.6f, 0.6f);
+	glm::vec3 moistAdiabatsColor = glm::vec3(0.2f, 0.6f, 0.8f);
 
 
 	float minP;						//!< Minimum pressure in normalized (diagram) coordinates 
@@ -119,10 +130,10 @@ public:
 	GLuint overlayDiagramVAO;
 	GLuint overlayDiagramVBO;
 
-	GLuint overlayDiagramX = 0;
-	GLuint overlayDiagramY = 0;
-	GLuint overlayDiagramWidth = 256;
-	GLuint overlayDiagramHeight = 256;
+	float overlayDiagramX = 270.0f;
+	float overlayDiagramY = 250.0f;
+	float overlayDiagramResolution = 500.0f;
+	//GLuint overlayDiagramHeight = 256;
 
 	GLuint particlesVAO;
 	GLuint particlesVBO;
@@ -234,6 +245,9 @@ public:
 
 	void findClosestSoundingPoint(glm::vec2 queryPoint);
 	void moveSelectedPoint(glm::vec2 mouseCoords);
+
+
+	void constructDiagramCurvesToolbar(struct nk_context *ctx, UserInterface *ui);
 
 
 private:

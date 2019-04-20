@@ -226,35 +226,15 @@ int main(int argc, char **argv) {
 
 	vars.init(argc, argv);
 
-	runApp();
-
-	cout << "Finished..." << endl;
-
-	return 0;
+	return runApp();
 }
 
-/// Runs the application including the game loop.
-/**
-	Creates the window, user interface and all the main parts of the simulation including the simulator itself (either
-	LBM 2D or 3D), grids, particle system, and collider object (2D) or height map (3D).
-	Furthermore, creates all the shaders and runs the main game loop of the application in which the simulation is updated
-	and the UI is drawn (and constructed since nuklear panel needs to be constructed in each frame).
-*/
+
+
+
+
+
 int runApp() {
-
-	/*int ompMaxThreads = omp_get_max_threads();
-	printf("OpenMP max threads = %d\n", ompMaxThreads);
-
-	omp_set_num_threads(ompMaxThreads);
-
-
-	int count = 0;
-#pragma omp parallel num_threads(ompMaxThreads)
-	{
-#pragma omp atomic
-		count++;
-	}
-	printf_s("Number of threads: %d\n", count);*/
 
 	glfwInit();
 
@@ -281,7 +261,7 @@ int runApp() {
 
 	if (!window) {
 		cerr << "Failed to create GLFW window" << endl;
-		glfwTerminate(); // maybe unnecessary according to the documentation
+		glfwTerminate();
 		return -1;
 	}
 
@@ -611,10 +591,6 @@ int runApp() {
 
 			glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, mainFramebuffer->framebufferId);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mainFramebuffer->framebufferId);
-
 			CHECK_GL_ERRORS();
 
 		}
@@ -653,6 +629,7 @@ int runApp() {
 
 
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
+			refreshProjectionMatrix();
 
 			stlpDiagram->draw();
 			stlpDiagram->drawText();
@@ -688,6 +665,10 @@ int runApp() {
 
 			scene.root->update();
 
+
+			refreshProjectionMatrix();
+
+
 			///////////////////////////////////////////////////////////////
 			// DRAW SKYBOX
 			///////////////////////////////////////////////////////////////
@@ -701,7 +682,6 @@ int runApp() {
 				}
 			}
 
-			refreshProjectionMatrix();
 
 			CHECK_GL_ERRORS();
 

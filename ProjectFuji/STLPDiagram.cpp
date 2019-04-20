@@ -1172,7 +1172,7 @@ void STLPDiagram::draw() {
 	curveShader->setBool("u_CropBounds", (bool)cropBounds);
 
 	if (showIsobars) {
-		curveShader->setVec3("u_Color", glm::vec3(0.8f, 0.8f, 0.8f));
+		curveShader->setColor(isobarsColor);
 		glBindVertexArray(isobarsVAO);
 		glDrawArrays(GL_LINES, 0, numIsobars * 2);
 	}
@@ -1186,35 +1186,35 @@ void STLPDiagram::draw() {
 
 	if (showIsotherms) {
 		glPointSize(8.0f);
-		curveShader->setVec3("u_Color", glm::vec3(0.8f, 0.8f, 0.8f));
+		curveShader->setColor(isothermsColor);
 		glBindVertexArray(isothermsVAO);
 		glDrawArrays(GL_LINES, 0, isothermsCount * 2);
 	}
 
 
-	if (showAmbientTemperatureCurve) {
-		curveShader->setVec3("u_Color", glm::vec3(0.7f, 0.1f, 0.15f));
+	if (showAmbientCurve) {
+		curveShader->setColor(ambientCurveColor);
 		glBindVertexArray(ambientTemperatureVAO);
 		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size());
 	}
 
 
 	if (showDewpointCurve) {
-		curveShader->setVec3("u_Color", glm::vec3(0.1f, 0.7f, 0.15f));
+		curveShader->setColor(dewpointCurveColor);
 		glBindVertexArray(dewTemperatureVAO);
 		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size());
 	}
 
 
 	if (showIsohumes) {
-		curveShader->setVec3("u_Color", glm::vec3(0.1f, 0.15f, 0.7f));
+		curveShader->setColor(isohumesColor);
 		glBindVertexArray(isohumesVAO);
 		glDrawArrays(GL_LINES, 0, soundingData.size() * 2);
 	}
 
 
 	if (showDryAdiabats) {
-		curveShader->setVec3("u_Color", glm::vec3(0.6f, 0.6f, 0.6f));
+		curveShader->setColor(dryAdiabatsColor);
 		glBindVertexArray(dryAdiabatsVAO);
 
 		glLineWidth(0.01f);
@@ -1231,7 +1231,7 @@ void STLPDiagram::draw() {
 
 	if (showMoistAdiabats) {
 		glPointSize(2.0f);
-		curveShader->setVec3("u_Color", glm::vec3(0.2f, 0.6f, 0.8f));
+		curveShader->setColor(moistAdiabatsColor);
 		glBindVertexArray(moistAdiabatsVAO);
 		//glDrawArrays(GL_LINE_STRIP, 0, 1000000);
 		//glDrawArrays(GL_POINTS, 0, 100000);
@@ -1366,8 +1366,8 @@ void STLPDiagram::refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHei
 	vp.y = viewport_y;
 	vp.z = viewportWidth;
 	vp.w = viewportHeight;
-	float width = overlayDiagramWidth;
-	float height = overlayDiagramHeight;
+	float width = overlayDiagramResolution;
+	float height = overlayDiagramResolution;
 	float x = overlayDiagramX;
 	float y = overlayDiagramY;
 
@@ -1461,6 +1461,49 @@ void STLPDiagram::moveSelectedPoint(glm::vec2 mouseCoords) {
 		glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * pointIndex, sizeof(glm::vec2), &curvePtr->vertices[pointIndex]);
 	}
 	setVisualizationPoint(glm::vec3(curvePtr->vertices[pointIndex], 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 3, true);
+
+
+
+}
+
+void STLPDiagram::constructDiagramCurvesToolbar(nk_context *ctx, UserInterface *ui) {
+
+	nk_checkbox_label(ctx, "Show Isobars", &showIsobars);
+	if (showIsobars) {
+		ui->nk_property_color_rgb(ctx, isobarsColor);
+	}
+
+	nk_checkbox_label(ctx, "Show Isotherms", &showIsotherms);
+	if (showIsotherms) {
+		ui->nk_property_color_rgb(ctx, isothermsColor);
+	}
+
+	nk_checkbox_label(ctx, "Show Isohumes", &showIsohumes);
+	if (showIsohumes) {
+		ui->nk_property_color_rgb(ctx, isohumesColor);
+	}
+
+	nk_checkbox_label(ctx, "Show Dry Adiabats", &showDryAdiabats);
+	if (showDryAdiabats) {
+		ui->nk_property_color_rgb(ctx, dryAdiabatsColor);
+	}
+
+	nk_checkbox_label(ctx, "Show Moist Adiabats", &showMoistAdiabats);
+	if (showMoistAdiabats) {
+		ui->nk_property_color_rgb(ctx, moistAdiabatsColor);
+	}
+
+	nk_checkbox_label(ctx, "Show Dewpoint Curve", &showDewpointCurve);
+	if (showDewpointCurve) {
+		ui->nk_property_color_rgb(ctx, dewpointCurveColor);
+	}
+
+	nk_checkbox_label(ctx, "Show Ambient Curve", &showAmbientCurve);
+	if (showAmbientCurve) {
+		ui->nk_property_color_rgb(ctx, ambientCurveColor);
+	}
+
+	nk_checkbox_label(ctx, "Crop Bounds", &cropBounds);
 
 
 

@@ -134,38 +134,67 @@ bool UserInterface::isAnyWindowHovered() {
 	return nk_window_is_any_hovered(ctx);
 }
 
-void UserInterface::nk_property_vec2(glm::vec2 & target, float min, float max, float step, float pixStep, std::string label, eVecNaming nidx) {
+void UserInterface::nk_property_vec2(nk_context * ctx, float min, glm::vec2 & target, float max, float step, float pixStep, std::string label, eVecNaming namingConvention) {
 	if (!label.empty()) {
 		nk_label(ctx, label.c_str(), NK_TEXT_CENTERED);
 	}
 
-	int idxOffset = nidx * 4;
+	int idxOffset = namingConvention * 4;
 	for (int i = 0; i < 2; i++) {
 		nk_property_float(ctx, vecNames[i + idxOffset], min, &target[i], max, step, pixStep);
 	}
 }
 
-
-void UserInterface::nk_property_vec3(glm::vec3 & target, float min, float max, float step, float pixStep, std::string label, eVecNaming nidx) {
+void UserInterface::nk_property_vec3(nk_context * ctx, float min, glm::vec3 & target, float max, float step, float pixStep, std::string label, eVecNaming namingConvention) {
 	if (!label.empty()) {
 		nk_label(ctx, label.c_str(), NK_TEXT_CENTERED);
 	}
 
-	int idxOffset = nidx * 4;
+	int idxOffset = namingConvention * 4;
 	for (int i = 0; i < 3; i++) {
 		nk_property_float(ctx, vecNames[i + idxOffset], min, &target[i], max, step, pixStep);
 	}
 }
 
-void UserInterface::nk_property_vec4(glm::vec4 & target) {
+void UserInterface::nk_property_vec4(nk_context * ctx, glm::vec4 & target) {
 	REPORT_NOT_IMPLEMENTED();
 }
 
-void UserInterface::nk_property_color(glm::vec4 & target) {
-
+void UserInterface::nk_property_color_rgb(nk_context * ctx, glm::vec3 & target) {
+	struct nk_colorf tmp;
+	tmp.r = target.r;
+	tmp.g = target.g;
+	tmp.b = target.b;
+	if (nk_combo_begin_color(ctx, nk_rgb_cf(tmp), nk_vec2(nk_widget_width(ctx), 400))) {
+		nk_layout_row_dynamic(ctx, 120, 1);
+		tmp = nk_color_picker(ctx, tmp, NK_RGB);
+		nk_layout_row_dynamic(ctx, 15, 1);
+		target.r = nk_propertyf(ctx, "#R:", 0, tmp.r, 1.0f, 0.01f, 0.005f);
+		target.g = nk_propertyf(ctx, "#G:", 0, tmp.g, 1.0f, 0.01f, 0.005f);
+		target.b = nk_propertyf(ctx, "#B:", 0, tmp.b, 1.0f, 0.01f, 0.005f);
+		nk_combo_end(ctx);
+	}
 }
 
-void UserInterface::nk_value_vec3(const glm::vec3 & target, std::string label, eVecNaming namingConvention) {
+void UserInterface::nk_property_color_rgba(nk_context * ctx, glm::vec4 & target) {
+	struct nk_colorf tmp;
+	tmp.r = target.r;
+	tmp.g = target.g;
+	tmp.b = target.b;
+	tmp.a = target.a;
+	if (nk_combo_begin_color(ctx, nk_rgb_cf(tmp), nk_vec2(nk_widget_width(ctx), 400))) {
+		nk_layout_row_dynamic(ctx, 120, 1);
+		tmp = nk_color_picker(ctx, tmp, NK_RGBA);
+		nk_layout_row_dynamic(ctx, 15, 1);
+		target.r = nk_propertyf(ctx, "#R:", 0, tmp.r, 1.0f, 0.01f, 0.005f);
+		target.g = nk_propertyf(ctx, "#G:", 0, tmp.g, 1.0f, 0.01f, 0.005f);
+		target.b = nk_propertyf(ctx, "#B:", 0, tmp.b, 1.0f, 0.01f, 0.005f);
+		target.a = nk_propertyf(ctx, "#A:", 0, tmp.a, 1.0f, 0.01f, 0.005f);
+		nk_combo_end(ctx);
+	}
+}
+
+void UserInterface::nk_value_vec3(nk_context * ctx, const glm::vec3 & target, std::string label, eVecNaming namingConvention) {
 	if (!label.empty()) {
 		nk_label(ctx, label.c_str(), NK_TEXT_CENTERED);
 	}
@@ -178,6 +207,8 @@ void UserInterface::nk_value_vec3(const glm::vec3 & target, std::string label, e
 	nk_layout_row_dynamic(ctx, 15, 1);
 
 }
+
+
 
 void UserInterface::constructLeftSidebar() {
 
@@ -1024,12 +1055,12 @@ void UserInterface::constructCloudVisualizationTab() {
 
 
 
-	nk_value_vec3(particleRenderer->lightVec, "Light vector");
-	nk_value_vec3(particleRenderer->viewVec, "View vector");
+	nk_value_vec3(ctx, particleRenderer->lightVec, "Light vector");
+	nk_value_vec3(ctx, particleRenderer->viewVec, "View vector");
 	nk_value_float(ctx, "Dot product", glm::dot(particleRenderer->viewVec, particleRenderer->lightVec));
 	nk_property_float(ctx, "Inversion threshold", -1.0f, &particleRenderer->inversionThreshold, 1.0f, 0.01f, 0.01f);
 	nk_value_bool(ctx, "Inverted rendering", particleRenderer->invertedView);
-	nk_value_vec3(particleRenderer->halfVec, "Half vector");
+	nk_value_vec3(ctx, particleRenderer->halfVec, "Half vector");
 
 	nk_checkbox_label(ctx, "Half vector always faces camera", &particleRenderer->forceHalfVecToFaceCam);
 
@@ -1156,29 +1187,12 @@ void UserInterface::constructDiagramControlsTab() {
 
 	if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram controls", NK_MINIMIZED)) {
 		nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
-
-		nk_checkbox_label(ctx, "Show isobars", &stlpDiagram->showIsobars);
-		nk_checkbox_label(ctx, "Show isotherms", &stlpDiagram->showIsotherms);
-		nk_checkbox_label(ctx, "Show isohumes", &stlpDiagram->showIsohumes);
-		nk_checkbox_label(ctx, "Show dry adiabats", &stlpDiagram->showDryAdiabats);
-		nk_checkbox_label(ctx, "Show moist adiabats", &stlpDiagram->showMoistAdiabats);
-		nk_checkbox_label(ctx, "Show dewpoint curve", &stlpDiagram->showDewpointCurve);
-		nk_checkbox_label(ctx, "Show ambient temp. curve", &stlpDiagram->showAmbientTemperatureCurve);
-		nk_checkbox_label(ctx, "Crop Bounds", &stlpDiagram->cropBounds);
-
+		stlpDiagram->constructDiagramCurvesToolbar(ctx, this);
 		nk_tree_pop(ctx);
-
 	}
 
 	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
 
-	int tmp = stlpDiagram->overlayDiagramWidth;
-	int maxDiagramWidth = (vars->screenWidth < vars->screenHeight) ? vars->screenWidth : vars->screenHeight;
-	nk_slider_int(ctx, 10, (int *)&stlpDiagram->overlayDiagramWidth, maxDiagramWidth, 1);
-	if (tmp != stlpDiagram->overlayDiagramWidth) {
-		stlpDiagram->overlayDiagramHeight = stlpDiagram->overlayDiagramWidth;
-		stlpDiagram->refreshOverlayDiagram(vars->screenWidth, vars->screenHeight);
-	}
 
 	if (nk_button_label(ctx, "Reset to default")) {
 		stlpDiagram->recalculateAll();
@@ -1217,7 +1231,29 @@ void UserInterface::constructDiagramControlsTab() {
 	nk_checkbox_label(ctx, "Show CCL Level", &vars->showCCLLevelLayer);
 	nk_checkbox_label(ctx, "Show EL Level", &vars->showELLevelLayer);
 	nk_checkbox_label(ctx, "Show Overlay Diagram", &vars->showOverlayDiagram);
+	if (vars->showOverlayDiagram) {
 
+		int tmp = stlpDiagram->overlayDiagramResolution;
+		int maxDiagramWidth = (vars->screenWidth < vars->screenHeight) ? vars->screenWidth : vars->screenHeight;
+		nk_slider_float(ctx, 10.0f, &stlpDiagram->overlayDiagramResolution, maxDiagramWidth, 1.0f);
+
+
+		float prevX = stlpDiagram->overlayDiagramX;
+		float prevY = stlpDiagram->overlayDiagramY;
+		nk_property_float(ctx, "x:", 0.0f, &stlpDiagram->overlayDiagramX, vars->screenWidth - stlpDiagram->overlayDiagramResolution, 0.1f, 0.1f);
+		nk_property_float(ctx, "y:", 0.0f, &stlpDiagram->overlayDiagramY, vars->screenHeight - stlpDiagram->overlayDiagramResolution, 0.1f, 0.1f);
+		
+		if (tmp != stlpDiagram->overlayDiagramResolution ||
+			prevX != stlpDiagram->overlayDiagramX ||
+			prevY != stlpDiagram->overlayDiagramY) {
+			stlpDiagram->refreshOverlayDiagram(vars->screenWidth, vars->screenHeight);
+		}
+
+		nk_checkbox_label(ctx, "Show Particles in Diagram", &vars->drawOverlayDiagramParticles);
+		if (vars->drawOverlayDiagramParticles) {
+
+		}
+	}
 
 	//nk_checkbox_label(ctx, "Use CUDA", &vars->stlpUseCUDA);
 
@@ -1247,9 +1283,11 @@ void UserInterface::constructDiagramControlsTab() {
 	tintColor.g = vars->tintColor.y;
 	tintColor.b = vars->tintColor.z;
 
+	nk_property_color_rgb(ctx, vars->tintColor);
+	/*
 	if (nk_combo_begin_color(ctx, nk_rgb_cf(tintColor), nk_vec2(nk_widget_width(ctx), 400))) {
 		nk_layout_row_dynamic(ctx, 120, 1);
-		tintColor = nk_color_picker(ctx, tintColor, NK_RGBA);
+		tintColor = nk_color_picker(ctx, tintColor, NK_RGB);
 		nk_layout_row_dynamic(ctx, 10, 1);
 		tintColor.r = nk_propertyf(ctx, "#R:", 0, tintColor.r, 1.0f, 0.01f, 0.005f);
 		tintColor.g = nk_propertyf(ctx, "#G:", 0, tintColor.g, 1.0f, 0.01f, 0.005f);
@@ -1258,6 +1296,7 @@ void UserInterface::constructDiagramControlsTab() {
 		vars->tintColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
 		nk_combo_end(ctx);
 	}
+	*/
 
 
 
@@ -1758,7 +1797,7 @@ void UserInterface::constructGeneralDebugTab() {
 
 
 
-	nk_property_vec3(dirLight->color, 0.0f, 100.0f, 1.0f, 1.0f, "dir light color", eVecNaming::COLOR);
+	nk_property_vec3(ctx, 0.0f, dirLight->color, 100.0f, 1.0f, 1.0f, "dir light color", eVecNaming::COLOR);
 	nk_property_float(ctx, "dir light intensity", 0.0f, &dirLight->intensity, 1000.0f, 0.01f, 0.01f);
 
 
@@ -1794,9 +1833,9 @@ void UserInterface::constructPropertiesTab() {
 		nk_layout_row_dynamic(ctx, 250, 1);
 		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
 			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_vec3(actor->transform.position, -1000000.0f, 1000000.0f, 0.01f, 0.1f, "pos");
-			nk_property_vec3(actor->transform.rotation, 0.0f, 360.0f, 0.1f, 0.1f, "rot");
-			nk_property_vec3(actor->transform.scale, 0.0f, 1000.0f, 0.1f, 0.1f, "scale");
+			nk_property_vec3(ctx, -1000000.0f, actor->transform.position, 1000000.0f, 0.01f, 0.1f, "pos");
+			nk_property_vec3(ctx, 0.0f, actor->transform.rotation, 360.0f, 0.1f, 0.1f, "rot");
+			nk_property_vec3(ctx, 0.0f, actor->transform.scale, 1000.0f, 0.1f, 0.1f, "scale");
 			//nk_property_float(ctx, "scale", 0.0f, &actor->transform.scale.x, 10000.0f, 0.1f, 0.1f);
 			//// quick hack
 			//actor->transform.scale.y = actor->transform.scale.x;
@@ -1856,7 +1895,7 @@ void UserInterface::constructFavoritesMenu() {
 
 void UserInterface::constructDirLightPositionPanel() {
 	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_property_vec3(dirLight->position, -1000000.0f, 1000000.0f, 100.0f, 100.0f, "Sun position");
+	nk_property_vec3(ctx, -1000000.0f, dirLight->position, 1000000.0f, 100.0f, 100.0f, "Sun position");
 	//nk_label(ctx, "Sun position", NK_TEXT_LEFT);
 	//nk_property_float(ctx, "#x:", -1000.0f, &dirLight->position.x, 1000.0f, 1.0f, 1.0f);
 	//nk_property_float(ctx, "#y:", -1000.0f, &dirLight->position.y, 1000.0f, 1.0f, 1.0f);
@@ -1894,8 +1933,8 @@ void UserInterface::constructFormBoxButtonPanel() {
 		if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Form Box Settings", 0, nk_rect(wpos.x, wpos.y, 200, 250))) {
 			nk_layout_row_dynamic(ctx, 15, 1);
 			nk_label(ctx, "Form box settings", NK_TEXT_LEFT);
-			nk_property_vec3(particleSystem->newFormBoxSettings.position, -100000.0f, 100000.0f, 10.0f, 10.0f, "Position");
-			nk_property_vec3(particleSystem->newFormBoxSettings.size, 100.0f, 100000.0f, 10.0f, 10.0f, "Size");
+			nk_property_vec3(ctx, -100000.0f, particleSystem->newFormBoxSettings.position, 100000.0f, 10.0f, 10.0f, "Position");
+			nk_property_vec3(ctx, 100.0f, particleSystem->newFormBoxSettings.size, 100000.0f, 10.0f, 10.0f, "Size");
 
 			if (nk_button_label(ctx, "Save & Apply")) {
 				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
