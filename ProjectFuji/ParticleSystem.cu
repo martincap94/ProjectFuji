@@ -348,6 +348,8 @@ void ParticleSystem::drawGeometry(ShaderProgram *shader, glm::vec3 cameraPos) {
 
 }
 
+
+
 void ParticleSystem::drawDiagramParticles() {
 	curveShader->use();
 	GLboolean depthTestEnabled;
@@ -356,13 +358,13 @@ void ParticleSystem::drawDiagramParticles() {
 
 
 	glPointSize(2.0f);
-	curveShader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+	curveShader->setColor(diagramParticlesColor);
 
 	glBindVertexArray(diagramParticlesVAO);
 	//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
 	//glNamedBufferData(particlesVBO, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
-	glDrawArrays(GL_POINTS, 0, numActiveParticles);
+	glDrawArrays(GL_POINTS, 0, numDiagramParticlesToDraw);
 	
 	if (depthTestEnabled) {
 		glEnable(GL_DEPTH_TEST);
@@ -751,6 +753,14 @@ void ParticleSystem::activateAllParticles() {
 
 void ParticleSystem::deactivateAllParticles() {
 	numActiveParticles = 0;
+}
+
+void ParticleSystem::activateAllDiagramParticles() {
+	numDiagramParticlesToDraw = numActiveParticles;
+}
+
+void ParticleSystem::deactivateAllDiagramParticles() {
+	numDiagramParticlesToDraw = 0;
 }
 
 void ParticleSystem::enableAllEmitters() {

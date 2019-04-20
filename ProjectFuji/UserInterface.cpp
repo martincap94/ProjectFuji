@@ -1251,6 +1251,14 @@ void UserInterface::constructDiagramControlsTab() {
 
 		nk_checkbox_label(ctx, "Show Particles in Diagram", &vars->drawOverlayDiagramParticles);
 		if (vars->drawOverlayDiagramParticles) {
+			if (nk_button_label(ctx, "Activate All")) {
+				particleSystem->activateAllDiagramParticles();
+			}
+			if (nk_button_label(ctx, "Deactivate All")) {
+				particleSystem->deactivateAllDiagramParticles();
+			}
+			nk_property_int(ctx, "Num Particles Drawn", 0, &particleSystem->numDiagramParticlesToDraw, particleSystem->numActiveParticles, 1, 1);
+			nk_property_color_rgb(ctx, particleSystem->diagramParticlesColor);
 
 		}
 	}

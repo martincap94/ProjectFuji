@@ -1319,7 +1319,7 @@ void STLPDiagram::drawText() {
 	textRend->renderText("EL2", OrographicELNormalized.x, OrographicELNormalized.y);
 
 	textRend->renderText(to_string((int)soundingData[0].data[PRES]), 0.0f - 0.04f, 1.0f);
-	for (i = 1000.0f; i >= MIN_P; i -= 100) {
+	for (i = MAX_P; i >= MIN_P; i -= 100) {
 		textRend->renderText(to_string(i), 0.0f - 0.04f, getNormalizedPres(i));
 		textRend->renderText(to_string((int)getAltitudeFromPressure(i)) + "[m]", 0.0f + 0.01f, getNormalizedPres(i));
 	}

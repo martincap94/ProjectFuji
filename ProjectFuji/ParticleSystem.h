@@ -109,6 +109,9 @@ public:
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);
 
+	int numDiagramParticlesToDraw = 0;
+	glm::vec3 diagramParticlesColor = glm::vec3(1.0f, 0.0f, 0.0f);
+
 
 	// EMITTER TEMPORARY DATA FOR CURRENT FRAME
 	std::vector<glm::vec3> particleVerticesToEmit;
@@ -151,6 +154,9 @@ public:
 
 	void activateAllParticles();
 	void deactivateAllParticles();
+
+	void activateAllDiagramParticles();
+	void deactivateAllDiagramParticles();
 
 	void enableAllEmitters();
 	void disableAllEmitters();

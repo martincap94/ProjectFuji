@@ -140,12 +140,15 @@ __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int num
 		}
 	}
 #else
+
+	
 	// clamp to max values - the previous (naive search) interpolates the top-most and bottom-most edges (even beyond the curve)
 	if (normP >= curveVertices[0].y) {
 		return curveVertices[0];
 	} else if (normP <= curveVertices[numCurveVertices - 1].y) {
 		return curveVertices[numCurveVertices - 1];
 	}
+	
 
 	int left = 0; // largest normP here
 	int right = numCurveVertices - 1; // smallest normP here
@@ -177,6 +180,69 @@ __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int num
 
 
 __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float delta_t, float *verticalVelocities, int *profileIndices, /*float *particlePressures, */glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles, glm::vec2 *diagramParticleVertices, bool dividePrevVelocity, float prevVelocityDivisor) {
+
+	int idx = threadIdx.x + blockDim.x * blockIdx.x;
+
+	if (idx < numParticles) {
+
+		float particlePressure = getPressureVal_dev(particleVertices[idx].y);
+
+
+
+		float normP = getNormalizedPres(particlePressure);
+
+		/*
+		Stop particles out of diagram bounds:
+			- the intersection with isobar test does work even beyond the diagram bounds but
+				-> but using Duarte's approach, particles that start directly on the moist adiabat
+				   will accelerate infinitely, thus crashing the application due to NaN and Inf operations
+		*/
+		if (normP > ambientTempCurve[0].y || normP < ambientTempCurve[numAmbientTempCurveVertices - 1].y) {
+			return;
+		}
+
+
+		glm::vec2 ambientIntersection = getIntersectionWithIsobar(ambientTempCurve, numAmbientTempCurveVertices, normP);
+
+
+		glm::vec2 particleCurveIntersection;
+		
+		if (particlePressure > CCLProfiles[profileIndices[idx]].y) {
+			particleCurveIntersection = getIntersectionWithIsobar(&dryAdiabatProfiles[dryAdiabatOffsetsAndLengths[profileIndices[idx]].x], dryAdiabatOffsetsAndLengths[profileIndices[idx]].y, normP);
+		} else {
+			particleCurveIntersection = getIntersectionWithIsobar(&moistAdiabatProfiles[moistAdiabatOffsetsAndLengths[profileIndices[idx]].x], moistAdiabatOffsetsAndLengths[profileIndices[idx]].y, normP);
+		}
+
+
+		float ambientTemp = getDenormalizedTemp(ambientIntersection.x, normP);
+		float particleTemp = getDenormalizedTemp(particleCurveIntersection.x, normP);
+
+		diagramParticleVertices[idx].x = particleCurveIntersection.x;
+		diagramParticleVertices[idx].y = normP;
+
+		toKelvin_dev(ambientTemp);
+		toKelvin_dev(particleTemp);
+
+		float ambientTheta = computeThetaFromAbsoluteK_dev(ambientTemp, particlePressure);
+		float particleTheta = computeThetaFromAbsoluteK_dev(particleTemp, particlePressure);
+
+		float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
+
+		if (dividePrevVelocity) {
+			verticalVelocities[idx] /= prevVelocityDivisor;
+		}
+		verticalVelocities[idx] = verticalVelocities[idx] + a * delta_t;
+		float deltaY = verticalVelocities[idx] * delta_t + 0.5f * a * delta_t * delta_t;
+
+		particleVertices[idx].y += deltaY;
+
+
+	}
+}
+
+
+
+__global__ void simulationStepKernel_backup(glm::vec3 *particleVertices, int numParticles, float delta_t, float *verticalVelocities, int *profileIndices, /*float *particlePressures, */glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles, glm::vec2 *diagramParticleVertices, bool dividePrevVelocity, float prevVelocityDivisor) {
 
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 
@@ -265,6 +331,7 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 	}
 }
+
 
 
 

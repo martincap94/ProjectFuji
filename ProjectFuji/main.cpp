@@ -469,7 +469,7 @@ int runApp() {
 	particleSystem->initParticlesOnTerrain();
 	particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
 	particleSystem->activateAllParticles();
-
+	particleSystem->activateAllDiagramParticles();
 
 	//particleSystem->initParticlePositions();
 	CHECK_ERROR(cudaPeekAtLastError());
