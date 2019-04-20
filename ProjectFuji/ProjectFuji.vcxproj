@@ -192,6 +192,10 @@
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="STLPDiagram_backup.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="STLPDiagram.cpp" />
     <ClCompile Include="STLPSimulator.cpp" />
     <CudaCompile Include="STLPSimulatorCUDA.cu">

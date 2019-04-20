@@ -340,37 +340,41 @@ void STLPDiagram::generateMixingRatioLine() {
 
 	float deltaP = 20.0f;
 
-	float segmentDeltaPVis = 10.0f; // should be a small integer - produces dashed line (logarithmic)
-	float segmentDeltaP = deltaP; // for intersection search, we need a continuous line
 
 	float x, y;
-
-	float fracPart = log((W * P * 100.0f) / (C * (W + eps)));
-	float computedT = (B * fracPart) / (A - fracPart);
-
-	y = getNormalizedPres(P);
-	x = getNormalizedTemp(computedT, y);
-
-	mixingCCL.vertices.push_back(glm::vec2(x, y));
-	vertices.push_back(glm::vec2(x, y));
-	
 	while (P >= MIN_P) {
 
-		float offsetP = P - segmentDeltaP; // produces continuous line
+
+		float fracPart = log((W * P * 100.0f) / (C * (W + eps)));
+		float computedT = (B * fracPart) / (A - fracPart);
+
+		//cout << "P = " << P << "[hPa], T = " << computedT << "[deg C]" << endl;
+
+		y = getNormalizedPres(P);
+		x = getNormalizedTemp(computedT, y);
+
+		//if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
+		//	break;
+		//}
+
+		vertices.push_back(glm::vec2(x, y));
+
+
+		float delta = 10.0f; // should be a small integer - produces dashed line (logarithmic)
+							 //float offsetP = P - delta;
+		float offsetP = P - deltaP; // produces continuous line
 		fracPart = log((W * offsetP * 100.0f) / (C * (W + eps)));
 		computedT = (B * fracPart) / (A - fracPart);
 
 		y = getNormalizedPres(offsetP);
 		x = getNormalizedTemp(computedT, y);
-
-		mixingCCL.vertices.push_back(glm::vec2(x, y));
 		vertices.push_back(glm::vec2(x, y));
 
 		P -= deltaP;
 
 	}
+	mixingCCL.vertices = vertices;
 
-	
 	glBindBuffer(GL_ARRAY_BUFFER, isohumesVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 }
@@ -758,6 +762,7 @@ void STLPDiagram::initCurves() {
 	cout << "// MOIST ADIABATS" << endl;
 	cout << "////////////////////////////////////////////////////" << endl;*/
 
+	float deltaP = 20.0f;
 
 	vertices.clear();
 
@@ -777,13 +782,12 @@ void STLPDiagram::initCurves() {
 
 	float currP;
 
-	// General moist adiabats (not part of the parameter calculations)
 	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += moistAdiabatDeltaT) {
 		generateMoistAdiabat(currT, MAX_P, vertices, P0, &moistAdiabatEdgeCount);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	// EL (regular) computation - special moist adiabat (goes through CCL)
+	// TESTING EL (regular) computation - special moist adiabat (goes through CCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_CCL_EL);
 
@@ -806,7 +810,7 @@ void STLPDiagram::initCurves() {
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	// EL (orographic) computation - special moist adiabat (goes through LCL)
+	// TESTING EL (orographic) computation - special moist adiabat (goes through LCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
 	{
@@ -820,9 +824,6 @@ void STLPDiagram::initCurves() {
 
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// Moist adiabat profiles - used in simulation
-	///////////////////////////////////////////////////////////////////////////////////////////////
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
 		//int counter = 0;
 		moistAdiabatProfiles.push_back(Curve());
@@ -1208,7 +1209,7 @@ void STLPDiagram::draw() {
 	if (showIsohumes) {
 		curveShader->setColor(isohumesColor);
 		glBindVertexArray(isohumesVAO);
-		glDrawArrays(GL_LINES, 0, mixingCCL.vertices.size());
+		glDrawArrays(GL_LINES, 0, soundingData.size() * 2);
 	}
 
 
@@ -1263,12 +1264,12 @@ void STLPDiagram::draw() {
 	yaxis.draw(curveShader);
 	groundIsobar.draw(curveShader);
 
-	/*
+
 	glPointSize(3.0f);
 	singleColorShaderVBO->use();
 	glBindVertexArray(visPointsVAO);
 	glDrawArrays(GL_POINTS, 0, visualizationPoints.size() / 2);
-	*/
+
 
 	glPointSize(6.0f);
 	glBindVertexArray(mainParameterPointsVAO);
@@ -1276,6 +1277,26 @@ void STLPDiagram::draw() {
 
 
 
+
+	// draw particles on top of everything
+	curveShader->use();
+	GLboolean depthTestEnabled;
+	glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
+	glDisable(GL_DEPTH_TEST);
+	if (particlePoints.size() > 0) {
+		//cout << "?" << endl;
+		glPointSize(2.0f);
+		curveShader->setVec3("u_Color", glm::vec3(1.0f, 0.0f, 0.0f));
+
+		glBindVertexArray(particlesVAO);
+		//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+		glNamedBufferData(particlesVBO, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
+		glDrawArrays(GL_POINTS, 0, particlePoints.size());
+	}
+	if (depthTestEnabled) {
+		glEnable(GL_DEPTH_TEST);
+	}
 
 	CHECK_GL_ERRORS();
 
@@ -1298,9 +1319,7 @@ void STLPDiagram::drawText() {
 	textRend->renderText("EL2", OrographicELNormalized.x, OrographicELNormalized.y);
 
 	textRend->renderText(to_string((int)soundingData[0].data[PRES]), 0.0f - 0.04f, 1.0f);
-	textRend->renderText(to_string((int)getAltitudeFromPressure(soundingData[0].data[PRES])) + "[m]", 0.0f + 0.01f, getNormalizedPres(i));
-
-	for (i = 1000.0f; i >= MIN_P; i -= 100) {
+	for (i = MAX_P; i >= MIN_P; i -= 100) {
 		textRend->renderText(to_string(i), 0.0f - 0.04f, getNormalizedPres(i));
 		textRend->renderText(to_string((int)getAltitudeFromPressure(i)) + "[m]", 0.0f + 0.01f, getNormalizedPres(i));
 	}

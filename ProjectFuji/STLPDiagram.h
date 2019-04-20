@@ -118,8 +118,6 @@ public:
 	vector<Curve> dryAdiabatProfiles;
 	vector<Curve> moistAdiabatProfiles;
 
-	vector<glm::vec2> particlePoints;
-
 
 
 	GLuint diagramTexture;
@@ -140,7 +138,7 @@ public:
 
 
 	float dryAdiabatDeltaT = 10.0f;
-	float moistAdiabatDeltaT = 5.0f;
+	float moistAdiabatDeltaT = 10.0f;
 
 	float P0;
 	float groundAltitude;
@@ -296,13 +294,13 @@ private:
 	GLuint dryAdiabatsVAO;
 	GLuint dryAdiabatsVBO;
 	int numDryAdiabats;
-	vector<int> dryAdiabatEdgeCount; // quick fix
+	vector<int> dryAdiabatEdgeCount;
 
 	GLuint moistAdiabatsVAO;
 	GLuint moistAdiabatsVBO;
 	int numMoistAdiabats;
 	int numMoistAdiabatEdges;
-	vector<int> moistAdiabatEdgeCount; // quick fix
+	vector<int> moistAdiabatEdgeCount;
 
 
 	// deprecated

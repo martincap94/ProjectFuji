@@ -214,6 +214,9 @@
     <ClCompile Include="MainFramebuffer.cpp" />
     <ClCompile Include="ProjectionSettings.cpp" />
     <ClCompile Include="PerlinNoiseSampler.cpp" />
+    <ClCompile Include="STLPDiagram_backup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
