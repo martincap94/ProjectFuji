@@ -83,8 +83,8 @@ public:
 	int showIsobars = 1;
 	int showIsotherms = 1;
 	int showIsohumes = 1;
-	int showDryAdiabats = 1;
-	int showMoistAdiabats = 1;
+	int showDryAdiabats[2] = { 1, 1 };
+	int showMoistAdiabats[2] = { 1, 1 };
 	int showDewpointCurve = 1;
 	int showAmbientCurve = 1;
 
@@ -93,8 +93,8 @@ public:
 	glm::vec3 ambientCurveColor = glm::vec3(0.7f, 0.1f, 0.15f);
 	glm::vec3 dewpointCurveColor = glm::vec3(0.1f, 0.7f, 0.15f);
 	glm::vec3 isohumesColor = glm::vec3(0.1f, 0.15f, 0.7f);
-	glm::vec3 dryAdiabatsColor = glm::vec3(0.6f, 0.6f, 0.6f);
-	glm::vec3 moistAdiabatsColor = glm::vec3(0.2f, 0.6f, 0.8f);
+	glm::vec3 dryAdiabatsColor[2] = { glm::vec3(0.6f, 0.6f, 0.6f), glm::vec3(1.0f, 0.6f, 0.6f) };
+	glm::vec3 moistAdiabatsColor[2] = { glm::vec3(0.2f, 0.6f, 0.8f), glm::vec3(0.2f, 0.8f, 0.9f) };
 
 
 	float minP;						//!< Minimum pressure in normalized (diagram) coordinates 
@@ -145,6 +145,8 @@ public:
 
 	int cropBounds = 1;
 
+	vector<glm::vec2> particlePoints; // deprecated!
+
 
 
 	STLPDiagram(VariableManager *vars);
@@ -182,10 +184,10 @@ public:
 		Rd is the gas constant for dry air [J kg^-1 K^-1]
 		k = Rd / cp = (cp - cv) / cp =(approx)= 0.286
 	*/
-	void generateDryAdiabat(float theta, vector<glm::vec2> &vertices, float P0 = 1000.0f, vector<int> *edgeCounter = nullptr, bool incrementCounter = true, float deltaP = 25.0f, Curve *curve = nullptr);
+	void generateDryAdiabat(float theta, vector<glm::vec2> &vertices, int mode, float P0 = 1000.0f, vector<int> *edgeCounter = nullptr, bool incrementCounter = true, float deltaP = 25.0f, Curve *curve = nullptr);
 
 
-	void generateMoistAdiabat(float theta, float startP, vector<glm::vec2> &vertices, float P0 = 1000.0f, vector<int> *edgeCounter = nullptr, bool incrementCounter = true, float deltaP = 25.0f, Curve *curve = nullptr, float smallDeltaP = 1.0f);
+	void generateMoistAdiabat(float theta, float startP, vector<glm::vec2> &vertices, int mode, float P0 = 1000.0f, vector<int> *edgeCounter = nullptr, bool incrementCounter = true, float deltaP = 25.0f, Curve *curve = nullptr, float smallDeltaP = 1.0f);
 
 
 	void recalculateAll();
@@ -265,7 +267,6 @@ private:
 	GLuint mainParameterPointsVBO;
 
 
-
 	vector<glm::vec2> temperaturePoints;
 
 	GLuint isobarsVAO;
@@ -291,16 +292,16 @@ private:
 	GLuint isohumesVBO;
 
 
-	GLuint dryAdiabatsVAO;
-	GLuint dryAdiabatsVBO;
-	int numDryAdiabats;
-	vector<int> dryAdiabatEdgeCount;
+	GLuint dryAdiabatsVAO[2];
+	GLuint dryAdiabatsVBO[2];
+	int numDryAdiabats[2];
+	vector<int> dryAdiabatEdgeCount[2];
 
-	GLuint moistAdiabatsVAO;
-	GLuint moistAdiabatsVBO;
-	int numMoistAdiabats;
-	int numMoistAdiabatEdges;
-	vector<int> moistAdiabatEdgeCount;
+	GLuint moistAdiabatsVAO[2];
+	GLuint moistAdiabatsVBO[2];
+	int numMoistAdiabats[2];
+	vector<int> moistAdiabatEdgeCount[2];
+
 
 
 	// deprecated

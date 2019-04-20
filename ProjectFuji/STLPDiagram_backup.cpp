@@ -379,7 +379,7 @@ void STLPDiagram::generateMixingRatioLine() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 }
 
-void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve) {
+void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, int mode, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve) {
 
 	int vertexCounter = 0;
 
@@ -406,7 +406,7 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, f
 	//cout << ((MAX_P - MIN_P) / CURVE_DELTA_P + 1) << endl;
 
 	if (incrementCounter && edgeCounter != nullptr) {
-		numDryAdiabats++;
+		numDryAdiabats[mode]++;
 		edgeCounter->push_back(vertexCounter);
 		//dryAdiabatEdgeCount.push_back(vertexCounter);
 	}
@@ -414,7 +414,7 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, f
 
 }
 
-void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::vec2>& vertices, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve, float smallDeltaP) {
+void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::vec2>& vertices, int mode, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve, float smallDeltaP) {
 
 	float T = getKelvin(theta);
 	int vertexCounter = 0;
@@ -441,7 +441,7 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 	}
 	//cout << "Counter = " << counter << ", num isobars = " << numIsobars << endl;
 	if (incrementCounter && edgeCounter != nullptr) {
-		numMoistAdiabats++;
+		numMoistAdiabats[mode]++;
 		edgeCounter->push_back(vertexCounter);
 	}
 
@@ -555,30 +555,33 @@ void STLPDiagram::initBuffers() {
 	///////////////////////////////////////////////////////////////////////////////////////
 	// DRY ADIABATS
 	///////////////////////////////////////////////////////////////////////////////////////
-	glGenVertexArrays(1, &dryAdiabatsVAO);
-	glBindVertexArray(dryAdiabatsVAO);
-	glGenBuffers(1, &dryAdiabatsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO);
+	for (int i = 0; i < 2; i++) {
+		glGenVertexArrays(1, &dryAdiabatsVAO[i]);
+		glBindVertexArray(dryAdiabatsVAO[i]);
+		glGenBuffers(1, &dryAdiabatsVBO[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO[i]);
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
 
-	glBindVertexArray(0);
+		glBindVertexArray(0);
+	}
 
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	// MOIST ADIABATS
 	///////////////////////////////////////////////////////////////////////////////////////
-	glGenVertexArrays(1, &moistAdiabatsVAO);
-	glBindVertexArray(moistAdiabatsVAO);
-	glGenBuffers(1, &moistAdiabatsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
+	for (int i = 0; i < 2; i++) {
+		glGenVertexArrays(1, &moistAdiabatsVAO[i]);
+		glBindVertexArray(moistAdiabatsVAO[i]);
+		glGenBuffers(1, &moistAdiabatsVBO[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO[i]);
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
 
-	glBindVertexArray(0);
-
+		glBindVertexArray(0);
+	}
 
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -1238,11 +1241,6 @@ void STLPDiagram::draw() {
 
 		counter = 0;
 		for (int i = 0; i < numMoistAdiabats; i++) {
-			//glDrawArrays(GL_LINE_STRIP, (numIsobars - 1) * profileIndex, numIsobars - 1);
-			//glDrawArrays(GL_POINTS, 2 * (numIsobars - 1) * profileIndex, 2 * (numIsobars - 1));
-			//glDrawArrays(GL_LINE_STRIP, numMoistAdiabatEdges * i, numMoistAdiabatEdges);
-			//glDrawArrays(GL_POINTS, 2 * numMoistAdiabatEdges * profileIndex, 2 * numMoistAdiabatEdges);
-
 			glDrawArrays(GL_LINE_STRIP, counter, moistAdiabatEdgeCount[i]);
 			counter += moistAdiabatEdgeCount[i];
 		}
@@ -2382,7 +2380,7 @@ void STLPDiagram::initBuffersOld() {
 			}
 		}
 		//cout << "Counter = " << counter << ", num isobars = " << numIsobars << endl;
-		numMoistAdiabatEdges = counter;
+		//numMoistAdiabatEdges = counter;
 		numMoistAdiabats++;
 		moistAdiabatEdgeCount.push_back(counter);
 

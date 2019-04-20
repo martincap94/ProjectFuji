@@ -198,7 +198,8 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 				   will accelerate infinitely, thus crashing the application due to NaN and Inf operations
 		*/
 		if (normP > ambientTempCurve[0].y || normP < ambientTempCurve[numAmbientTempCurveVertices - 1].y) {
-			return;
+			verticalVelocities[idx] = 0.0f;
+			//return;
 		}
 
 

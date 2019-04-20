@@ -242,11 +242,11 @@ void STLPDiagram::generateMixingRatioLineOld() {
 
 	float eps = Rd / Rm;
 	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	float satVP = getSaturationVaporPressure(T);
+	//float satVP = getSaturationVaporPressure(T) / 100.0f;
 	//float W = (eps * satVP) / (P - satVP);
-	float W = getMixingRatioOfWaterVapor(T, P);
+	float W = getMixingRatioOfWaterVapor(T, P * 100.0f);
 
-	cout << " -> Computed W = " << W << endl;
+	//cout << " -> Computed W = " << W << endl;
 
 	float deltaP = 20.0f;
 
@@ -255,15 +255,17 @@ void STLPDiagram::generateMixingRatioLineOld() {
 	while (P >= MIN_P) {
 
 
-		float fracPart = log((W * P) / (C * (W + eps)));
+		float fracPart = log((W * P * 100.0f) / (C * (W + eps)));
 		float computedT = (B * fracPart) / (A - fracPart);
 
-		y = getNormalizedPres(P);
-		x = getNormalizedTemp(T, y);
+		//cout << "P = " << P << "[hPa], T = " << computedT << "[deg C]" << endl;
 
-		if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
-			break;
-		}
+		y = getNormalizedPres(P);
+		x = getNormalizedTemp(computedT, y);
+
+		//if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
+		//	break;
+		//}
 
 		vertices.push_back(glm::vec2(x, y));
 
@@ -271,11 +273,11 @@ void STLPDiagram::generateMixingRatioLineOld() {
 		float delta = 10.0f; // should be a small integer - produces dashed line (logarithmic)
 							 //float offsetP = P - delta;
 		float offsetP = P - deltaP; // produces continuous line
-		fracPart = log((W * offsetP) / (C * (W + eps)));
+		fracPart = log((W * offsetP * 100.0f) / (C * (W + eps)));
 		computedT = (B * fracPart) / (A - fracPart);
 
 		y = getNormalizedPres(offsetP);
-		x = getNormalizedTemp(T, y);
+		x = getNormalizedTemp(computedT, y);
 		vertices.push_back(glm::vec2(x, y));
 
 		P -= deltaP;
@@ -375,7 +377,7 @@ void STLPDiagram::generateMixingRatioLine() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 }
 
-void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve) {
+void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, int mode, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve) {
 
 	int vertexCounter = 0;
 
@@ -402,7 +404,7 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, f
 	//cout << ((MAX_P - MIN_P) / CURVE_DELTA_P + 1) << endl;
 
 	if (incrementCounter && edgeCounter != nullptr) {
-		numDryAdiabats++;
+		numDryAdiabats[mode]++;
 		edgeCounter->push_back(vertexCounter);
 		//dryAdiabatEdgeCount.push_back(vertexCounter);
 	}
@@ -410,7 +412,7 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, f
 
 }
 
-void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::vec2>& vertices, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve, float smallDeltaP) {
+void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::vec2>& vertices, int mode, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve, float smallDeltaP) {
 
 	float T = getKelvin(theta);
 	int vertexCounter = 0;
@@ -437,7 +439,7 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 	}
 	//cout << "Counter = " << counter << ", num isobars = " << numIsobars << endl;
 	if (incrementCounter && edgeCounter != nullptr) {
-		numMoistAdiabats++;
+		numMoistAdiabats[mode]++;
 		edgeCounter->push_back(vertexCounter);
 	}
 
@@ -551,30 +553,32 @@ void STLPDiagram::initBuffers() {
 	///////////////////////////////////////////////////////////////////////////////////////
 	// DRY ADIABATS
 	///////////////////////////////////////////////////////////////////////////////////////
-	glGenVertexArrays(1, &dryAdiabatsVAO);
-	glBindVertexArray(dryAdiabatsVAO);
-	glGenBuffers(1, &dryAdiabatsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO);
+	for (int i = 0; i < 2; i++) {
+		glGenVertexArrays(1, &dryAdiabatsVAO[i]);
+		glBindVertexArray(dryAdiabatsVAO[i]);
+		glGenBuffers(1, &dryAdiabatsVBO[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO[i]);
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
 
-	glBindVertexArray(0);
-
+		glBindVertexArray(0);
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	// MOIST ADIABATS
 	///////////////////////////////////////////////////////////////////////////////////////
-	glGenVertexArrays(1, &moistAdiabatsVAO);
-	glBindVertexArray(moistAdiabatsVAO);
-	glGenBuffers(1, &moistAdiabatsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
+	for (int i = 0; i < 2; i++) {
+		glGenVertexArrays(1, &moistAdiabatsVAO[i]);
+		glBindVertexArray(moistAdiabatsVAO[i]);
+		glGenBuffers(1, &moistAdiabatsVBO[i]);
+		glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO[i]);
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
 
-	glBindVertexArray(0);
-
+		glBindVertexArray(0);
+	}
 
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -673,7 +677,7 @@ void STLPDiagram::initCurves() {
 	// ISOHUMES (MIXING RATIO LINES)
 	///////////////////////////////////////////////////////////////////////////////////////
 
-	generateMixingRatioLine();
+	generateMixingRatioLineOld();
 
 	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
@@ -683,24 +687,24 @@ void STLPDiagram::initCurves() {
 	// DRY ADIABATS
 	///////////////////////////////////////////////////////////////////////////////////////
 	vertices.clear();
-	numDryAdiabats = 0;
+	numDryAdiabats[0] = 0;
 	int counter;
 
 	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += dryAdiabatDeltaT) {
-		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount);
+		generateDryAdiabat(theta, vertices, 0, P0, &dryAdiabatEdgeCount[0]);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// DRY ADIABAT: T_c <-> CCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	float theta = computeThetaFromAbsoluteC(CCL.x, CCL.y, P0);
-	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &TcDryAdiabat);
+	generateDryAdiabat(theta, vertices, 0, P0, &dryAdiabatEdgeCount[0], true, CURVE_DELTA_P, &TcDryAdiabat);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// DRY ADIABAT: Ground ambient temperature <-> LCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	theta = computeThetaFromAbsoluteC(soundingData[0].data[TEMP], P0, P0);
-	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &LCLDryAdiabatCurve);
+	generateDryAdiabat(theta, vertices, 0, P0, &dryAdiabatEdgeCount[0], true, CURVE_DELTA_P, &LCLDryAdiabatCurve);
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -719,7 +723,7 @@ void STLPDiagram::initCurves() {
 
 
 
-	// Testing out profiles
+	// PROFILES
 	for (int i = 0; i < numProfiles; i++) {
 		TcProfiles.push_back(Tc + glm::vec2((i + 1) * profileDelta, 0.0f));
 		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(TcProfiles.back()), -2.0f)); // point
@@ -728,12 +732,20 @@ void STLPDiagram::initCurves() {
 		visualizationPoints.push_back(glm::vec3(tint, 0.0f, 0.0f)); // color	
 	}
 
+
+
+	glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+	vertices.clear();
+	numDryAdiabats[1] = 0;
+
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
 
 		dryAdiabatProfiles.push_back(Curve());
 
 		float theta = computeAbsoluteFromThetaC(TcProfiles[profileIndex].x, P0, P0);
-		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
+		generateDryAdiabat(theta, vertices, 1, P0, &dryAdiabatEdgeCount[1], true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
 
 
 		CCLProfiles.push_back(getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve)));
@@ -746,7 +758,7 @@ void STLPDiagram::initCurves() {
 	}
 
 
-	glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 
@@ -761,7 +773,7 @@ void STLPDiagram::initCurves() {
 
 	vertices.clear();
 
-	numMoistAdiabats = 0;
+	numMoistAdiabats[0] = 0;
 
 
 	/*float a = -6.14342f * 0.00001f;
@@ -779,13 +791,13 @@ void STLPDiagram::initCurves() {
 
 	// General moist adiabats (not part of the parameter calculations)
 	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += moistAdiabatDeltaT) {
-		generateMoistAdiabat(currT, MAX_P, vertices, P0, &moistAdiabatEdgeCount);
+		generateMoistAdiabat(currT, MAX_P, vertices, 0, P0, &moistAdiabatEdgeCount[0]);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// EL (regular) computation - special moist adiabat (goes through CCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_CCL_EL);
+	generateMoistAdiabat(CCL.x, CCL.y, vertices, 0, P0, &moistAdiabatEdgeCount[0], true, CURVE_DELTA_P, &moistAdiabat_CCL_EL);
 
 	{
 		///////////////////////////////////////////////////////////////////////////////////////////////
@@ -808,7 +820,7 @@ void STLPDiagram::initCurves() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// EL (orographic) computation - special moist adiabat (goes through LCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
+	generateMoistAdiabat(LCL.x, LCL.y, vertices, 0, P0, &moistAdiabatEdgeCount[0], true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
 	{
 
 		LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
@@ -820,13 +832,21 @@ void STLPDiagram::initCurves() {
 
 	}
 
+	glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+
+
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Moist adiabat profiles - used in simulation
 	///////////////////////////////////////////////////////////////////////////////////////////////
+	vertices.clear();
+	numMoistAdiabats[1] = 0;
+
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
 		//int counter = 0;
 		moistAdiabatProfiles.push_back(Curve());
-		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabatProfiles[profileIndex]);
+		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, 1, P0, &moistAdiabatEdgeCount[1], true, CURVE_DELTA_P, &moistAdiabatProfiles[profileIndex]);
 
 		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve, true);
 		ELProfiles.push_back(getDenormalizedCoords(tmp));
@@ -840,7 +860,7 @@ void STLPDiagram::initCurves() {
 
 
 	//numMoistAdiabats++;
-	glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 
@@ -977,7 +997,7 @@ void STLPDiagram::recalculateParameters() {
 	recalculateProfileDelta();
 
 
-	generateMixingRatioLine();
+	generateMixingRatioLineOld();
 
 	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
@@ -986,11 +1006,13 @@ void STLPDiagram::recalculateParameters() {
 	float P0 = soundingData[0].data[PRES];
 	vector<glm::vec2> vertices;
 
-	numDryAdiabats = 0;
-	dryAdiabatEdgeCount.clear();
+	for (int i = 0; i < 2; i++) {
+		numDryAdiabats[i] = 0;
+		dryAdiabatEdgeCount[i].clear();
+	}
 
 	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += dryAdiabatDeltaT) {
-		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount);
+		generateDryAdiabat(theta, vertices, 0, P0, &dryAdiabatEdgeCount[0]);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
@@ -998,14 +1020,14 @@ void STLPDiagram::recalculateParameters() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	float theta = computeThetaFromAbsoluteC(CCL.x, CCL.y, P0);
 	TcDryAdiabat.vertices.clear(); // hack
-	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &TcDryAdiabat);
+	generateDryAdiabat(theta, vertices, 0, P0, &dryAdiabatEdgeCount[0], true, CURVE_DELTA_P, &TcDryAdiabat);
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// DRY ADIABAT: Ground ambient temperature <-> LCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	theta = computeThetaFromAbsoluteC(soundingData[0].data[TEMP], P0, P0); // will need line-to-line intersection for the ground temperature
 	LCLDryAdiabatCurve.vertices.clear(); // hack
-	generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &LCLDryAdiabatCurve);
+	generateDryAdiabat(theta, vertices, 0, P0, &dryAdiabatEdgeCount[0], true, CURVE_DELTA_P, &LCLDryAdiabatCurve);
 
 
 
@@ -1019,6 +1041,9 @@ void STLPDiagram::recalculateParameters() {
 	LCL = getDenormalizedCoords(LCLNormalized);
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
+	glNamedBufferData(dryAdiabatsVBO[0], sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+	vertices.clear();
 
 	//// Profiles
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
@@ -1026,33 +1051,35 @@ void STLPDiagram::recalculateParameters() {
 
 		float theta = computeAbsoluteFromThetaC(TcProfiles[profileIndex].x, P0, P0);
 		dryAdiabatProfiles[profileIndex].vertices.clear();
-		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
+		generateDryAdiabat(theta, vertices, 1, P0, &dryAdiabatEdgeCount[1], true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
 
 		CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve));
 	}
 
-	int sum = 0;
-	for (int i = 0; i < numDryAdiabats - numProfiles - 2; i++) {
-		sum += dryAdiabatEdgeCount[i];
-	}
+	//int sum = 0;
+	//for (int i = 0; i < numDryAdiabats - numProfiles - 2; i++) {
+	//	sum += dryAdiabatEdgeCount[i];
+	//}
 
-	glNamedBufferData(dryAdiabatsVBO, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	glNamedBufferData(dryAdiabatsVBO[1], sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 
 
 
 	vertices.clear();
-	numMoistAdiabats = 0;
-	moistAdiabatEdgeCount.clear();
+	for (int i = 0; i < 2; i++) {
+		numMoistAdiabats[i] = 0;
+		moistAdiabatEdgeCount[i].clear();
+	}
 
 	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += moistAdiabatDeltaT) {
-		generateMoistAdiabat(currT, MAX_P, vertices, P0, &moistAdiabatEdgeCount);
+		generateMoistAdiabat(currT, MAX_P, vertices, 0, P0, &moistAdiabatEdgeCount[0]);
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	// TESTING EL (regular) computation - special moist adiabat (goes through CCL)
+	// EL (regular) computation - special moist adiabat (goes through CCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_CCL_EL);
+	generateMoistAdiabat(CCL.x, CCL.y, vertices, 0, P0, &moistAdiabatEdgeCount[0], true, CURVE_DELTA_P, &moistAdiabat_CCL_EL);
 
 
 	ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve, true);
@@ -1060,9 +1087,9 @@ void STLPDiagram::recalculateParameters() {
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	// TESTING EL (orographic) computation - special moist adiabat (goes through LCL)
+	// EL (orographic) computation - special moist adiabat (goes through LCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
+	generateMoistAdiabat(LCL.x, LCL.y, vertices, 0, P0, &moistAdiabatEdgeCount[0], true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
 
 	LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
 	LFC = getDenormalizedCoords(LFCNormalized);
@@ -1071,15 +1098,18 @@ void STLPDiagram::recalculateParameters() {
 	OrographicEL = getDenormalizedCoords(OrographicELNormalized);
 
 
+	glNamedBufferData(moistAdiabatsVBO[0], sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+	vertices.clear();
 
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
-		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabatProfiles[profileIndex]);
+		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, 1, P0, &moistAdiabatEdgeCount[1], true, CURVE_DELTA_P, &moistAdiabatProfiles[profileIndex]);
 
 		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve, true);
 		ELProfiles[profileIndex] = getDenormalizedCoords(tmp);
 	}
 
-	glNamedBufferData(moistAdiabatsVBO, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	glNamedBufferData(moistAdiabatsVBO[1], sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 
 	// very hacky - rewrite
@@ -1211,42 +1241,39 @@ void STLPDiagram::draw() {
 		glDrawArrays(GL_LINES, 0, mixingCCL.vertices.size());
 	}
 
+	for (int j = 0; j < 2; j++) {
+		if (showDryAdiabats[j]) {
+			curveShader->setColor(dryAdiabatsColor[j]);
+			glBindVertexArray(dryAdiabatsVAO[j]);
 
-	if (showDryAdiabats) {
-		curveShader->setColor(dryAdiabatsColor);
-		glBindVertexArray(dryAdiabatsVAO);
+			glLineWidth(0.01f);
 
-		glLineWidth(0.01f);
+			counter = 0;
+			for (int i = 0; i < numDryAdiabats[j]; i++) {
+				//glDrawArrays(GL_LINE_STRIP, (numIsobars-1) * i, numIsobars - 1);
 
-		counter = 0;
-		for (int i = 0; i < numDryAdiabats; i++) {
-			//glDrawArrays(GL_LINE_STRIP, (numIsobars-1) * i, numIsobars - 1);
-
-			glDrawArrays(GL_LINE_STRIP, counter, dryAdiabatEdgeCount[i]);
-			counter += dryAdiabatEdgeCount[i];
+				glDrawArrays(GL_LINE_STRIP, counter, dryAdiabatEdgeCount[j][i]);
+				counter += dryAdiabatEdgeCount[j][i];
+			}
 		}
 	}
 
+	for (int j = 0; j < 2; j++) {
+		if (showMoistAdiabats[j]) {
+			glPointSize(2.0f);
+			curveShader->setColor(moistAdiabatsColor[j]);
+			glBindVertexArray(moistAdiabatsVAO[j]);
+			//glDrawArrays(GL_LINE_STRIP, 0, 1000000);
+			//glDrawArrays(GL_POINTS, 0, 100000);
 
-	if (showMoistAdiabats) {
-		glPointSize(2.0f);
-		curveShader->setColor(moistAdiabatsColor);
-		glBindVertexArray(moistAdiabatsVAO);
-		//glDrawArrays(GL_LINE_STRIP, 0, 1000000);
-		//glDrawArrays(GL_POINTS, 0, 100000);
+			counter = 0;
+			for (int i = 0; i < numMoistAdiabats[j]; i++) {
 
-		counter = 0;
-		for (int i = 0; i < numMoistAdiabats; i++) {
-			//glDrawArrays(GL_LINE_STRIP, (numIsobars - 1) * profileIndex, numIsobars - 1);
-			//glDrawArrays(GL_POINTS, 2 * (numIsobars - 1) * profileIndex, 2 * (numIsobars - 1));
-			//glDrawArrays(GL_LINE_STRIP, numMoistAdiabatEdges * i, numMoistAdiabatEdges);
-			//glDrawArrays(GL_POINTS, 2 * numMoistAdiabatEdges * profileIndex, 2 * numMoistAdiabatEdges);
-
-			glDrawArrays(GL_LINE_STRIP, counter, moistAdiabatEdgeCount[i]);
-			counter += moistAdiabatEdgeCount[i];
+				glDrawArrays(GL_LINE_STRIP, counter, moistAdiabatEdgeCount[j][i]);
+				counter += moistAdiabatEdgeCount[j][i];
+			}
 		}
 	}
-
 
 	//glPointSize(9.0f);
 	//shader.setVec3("u_Color", glm::vec3(1.0f, 0.0f, 0.0f));
@@ -1464,14 +1491,24 @@ void STLPDiagram::constructDiagramCurvesToolbar(nk_context *ctx, UserInterface *
 		ui->nk_property_color_rgb(ctx, isohumesColor);
 	}
 
-	nk_checkbox_label(ctx, "Show Dry Adiabats", &showDryAdiabats);
+	nk_checkbox_label(ctx, "Show Dry Adiabats (General)", &showDryAdiabats[0]);
 	if (showDryAdiabats) {
-		ui->nk_property_color_rgb(ctx, dryAdiabatsColor);
+		ui->nk_property_color_rgb(ctx, dryAdiabatsColor[0]);
 	}
 
-	nk_checkbox_label(ctx, "Show Moist Adiabats", &showMoistAdiabats);
+	nk_checkbox_label(ctx, "Show Moist Adiabats (General)", &showMoistAdiabats[0]);
 	if (showMoistAdiabats) {
-		ui->nk_property_color_rgb(ctx, moistAdiabatsColor);
+		ui->nk_property_color_rgb(ctx, moistAdiabatsColor[0]);
+	}
+
+	nk_checkbox_label(ctx, "Show Dry Adiabat Profiles", &showDryAdiabats[1]);
+	if (showDryAdiabats) {
+		ui->nk_property_color_rgb(ctx, dryAdiabatsColor[1]);
+	}
+
+	nk_checkbox_label(ctx, "Show Moist Adiabat Profiles", &showMoistAdiabats[1]);
+	if (showMoistAdiabats) {
+		ui->nk_property_color_rgb(ctx, moistAdiabatsColor[1]);
 	}
 
 	nk_checkbox_label(ctx, "Show Dewpoint Curve", &showDewpointCurve);
@@ -1536,1087 +1573,1072 @@ void STLPDiagram::getWindDeltasForLattice(int latticeHeight, std::vector<glm::ve
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void STLPDiagram::initBuffersOld() {
-
-
-	// Initialize main variables
-
-	float xmin = 0.0f;
-	float xmax = 1.0f;
-
-	float ymin = getNormalizedPres(MIN_P);
-	float ymax = getNormalizedPres(MAX_P);
-
-	float P0 = soundingData[0].data[PRES];
-	float P;
-	float T;
-
-	xaxis.vertices.push_back(glm::vec2(xmin, ymax));
-	xaxis.vertices.push_back(glm::vec2(xmax, ymax));
-	yaxis.vertices.push_back(glm::vec2(xmin, ymin));
-	yaxis.vertices.push_back(glm::vec2(xmin, ymax));
-
-	xaxis.initBuffers();
-	yaxis.initBuffers();
-
-	TcProfiles.reserve(numProfiles);
-	CCLProfiles.reserve(numProfiles);
-	ELProfiles.reserve(numProfiles);
-	dryAdiabatProfiles.reserve(numProfiles);
-	moistAdiabatProfiles.reserve(numProfiles);
-
-	///////////////////////////////////////////////////////////////////////////////////////
-	// ISOBARS
-	///////////////////////////////////////////////////////////////////////////////////////
-
-	vector<glm::vec2> vertices;
-
-	numIsobars = 0;
-	for (P = MAX_P; P >= MIN_P; P -= CURVE_DELTA_P) {
-		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
-		//P = soundingData[profileIndex].data[PRES];
-		float y = getNormalizedPres(P);
-		vertices.push_back(glm::vec2(xmin, y));
-		vertices.push_back(glm::vec2(xmax, y));
-		numIsobars++;
-	}
-	float y;
-	P = soundingData[0].data[PRES];
-	y = getNormalizedPres(P);
-	vertices.push_back(glm::vec2(xmin, y));
-	vertices.push_back(glm::vec2(xmax, y));
-	numIsobars++;
-
-
-	glGenVertexArrays(1, &isobarsVAO);
-	glBindVertexArray(isobarsVAO);
-	glGenBuffers(1, &isobarsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, isobarsVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
-
-	///////////////////////////////////////////////////////////////////////////////////////
-	// TEMPERATURE POINTS
-	///////////////////////////////////////////////////////////////////////////////////////
-
-	//vertices.clear();
-	temperaturePointsCount = 0;
-	for (int i = MIN_TEMP; i <= MAX_TEMP; i += 10) {
-		T = getNormalizedTemp(i, ymax);
-		temperaturePoints.push_back(glm::vec2(T, ymax));
-		temperaturePointsCount++;
-	}
-
-	glGenVertexArrays(1, &temperaturePointsVAO);
-	glBindVertexArray(temperaturePointsVAO);
-	glGenBuffers(1, &temperaturePointsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, temperaturePointsVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * temperaturePoints.size(), &temperaturePoints[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
-
-	///////////////////////////////////////////////////////////////////////////////////////
-	// ISOTHERMS
-	///////////////////////////////////////////////////////////////////////////////////////
-
-	vertices.clear();
-
-	float x;
-	y;
-
-	isothermsCount = 0;
-	for (int i = MIN_TEMP - 80.0f; i <= MAX_TEMP; i += 10) {
-
-		y = ymax;
-		x = getNormalizedTemp(i, y);
-		vertices.push_back(glm::vec2(x, y));
-
-		y = ymin;
-		x = getNormalizedTemp(i, y);
-		vertices.push_back(glm::vec2(x, y));
-
-		isothermsCount++;
-	}
-
-
-	glGenVertexArrays(1, &isothermsVAO);
-	glBindVertexArray(isothermsVAO);
-	glGenBuffers(1, &isothermsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, isothermsVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
-
-
-	///////////////////////////////////////////////////////////////////////////////////////
-	// AMBIENT TEMPERATURE PIECE-WISE LINEAR CURVE
-	///////////////////////////////////////////////////////////////////////////////////////
-	vertices.clear();
-	for (int i = 0; i < soundingData.size(); i++) {
-
-		float P = soundingData[i].data[PRES];
-		float T = soundingData[i].data[TEMP];
-
-		y = getNormalizedPres(P);
-		x = getNormalizedTemp(T, y);
-
-		vertices.push_back(glm::vec2(x, y));
-	}
-
-	ambientCurve.vertices = vertices;
-
-	glGenVertexArrays(1, &ambientTemperatureVAO);
-	glBindVertexArray(ambientTemperatureVAO);
-	glGenBuffers(1, &ambientTemperatureVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, ambientTemperatureVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
-
-
-
-	///////////////////////////////////////////////////////////////////////////////////////
-	// DEWPOINT TEMPERATURE PIECE-WISE LINEAR CURVE
-	///////////////////////////////////////////////////////////////////////////////////////
-	vertices.clear();
-	for (int i = 0; i < soundingData.size(); i++) {
-
-		float P = soundingData[i].data[PRES];
-		float T = soundingData[i].data[DWPT];
-
-		y = getNormalizedPres(P);
-		x = getNormalizedTemp(T, y);
-
-		vertices.push_back(glm::vec2(x, y));
-	}
-	dewpointCurve.vertices = vertices;
-
-
-	glGenVertexArrays(1, &dewTemperatureVAO);
-	glBindVertexArray(dewTemperatureVAO);
-	glGenBuffers(1, &dewTemperatureVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, dewTemperatureVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
-
-
-	///////////////////////////////////////////////////////////////////////////////////////
-	// ISOHUMES (MIXING RATIO LINES)
-	///////////////////////////////////////////////////////////////////////////////////////
-	cout << "////////////////////////////////////////////////////" << endl;
-	cout << "// ISOHUMES (MIXING RATIO LINES)" << endl;
-	cout << "////////////////////////////////////////////////////" << endl;
-
-	vertices.clear();
-
-	float Rd = 287.05307f;	// gas constant for dry air [J kg^-1 K^-1]
-	float Rm = 461.5f;		// gas constant for moist air [J kg^-1 K^-1]
-
-							// w(T,P) = (eps * e(T)) / (P - e(T))
-							// where
-							//		eps = Rd / Rm
-							//		e(T) ... saturation vapor pressure (can be approx'd by August-Roche-Magnus formula
-							//		e(T) =(approx)= C exp( (A*T) / (T + B))
-							//		where
-							//				A = 17.625
-							//				B = 243.04
-							//				C = 610.94
-
-	float A = 17.625f;
-	float B = 243.04f;
-	float C = 610.94f;
-
-	// given that w(T,P) is const., let W = w(T,P), we can express T in terms of P (see Equation 3.13)
-
-	// to determine the mixing ratio line that passes through (T,P), we calculate the value of the temperature
-	// T(P + delta) where delta is a small integer
-	// -> the points (T,P) nad (T(P + delta), P + delta) define a mixing ratio line, whose points all have the same mixing ratio
-
-
-	// Compute CCL using a mixing ratio line
-	float w0 = soundingData[0].data[MIXR];
-	T = soundingData[0].data[DWPT];
-	P = soundingData[0].data[PRES];
-
-
-	float eps = Rd / Rm;
-	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	float satVP = getSaturationVaporPressure(T);
-	//float W = (eps * satVP) / (P - satVP);
-	float W = getMixingRatioOfWaterVapor(T, P);
-
-	cout << " -> Computed W = " << W << endl;
-
-	float deltaP = 20.0f;
-
-	while (P >= MIN_P) {
-
-
-		float fracPart = log((W * P) / (C * (W + eps)));
-		float computedT = (B * fracPart) / (A - fracPart);
-
-		cout << " -> Computed T = " << computedT << endl;
-
-		y = getNormalizedPres(P);
-		x = getNormalizedTemp(T, y);
-
-		if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
-			break;
-		}
-
-		vertices.push_back(glm::vec2(x, y));
-
-
-		float delta = 10.0f; // should be a small integer - produces dashed line (logarithmic)
-							 //float offsetP = P - delta;
-		float offsetP = P - deltaP; // produces continuous line
-		fracPart = log((W * offsetP) / (C * (W + eps)));
-		computedT = (B * fracPart) / (A - fracPart);
-		cout << " -> Second computed T = " << computedT << endl;
-
-
-		y = getNormalizedPres(offsetP);
-		x = getNormalizedTemp(T, y);
-		vertices.push_back(glm::vec2(x, y));
-
-		P -= deltaP;
-
-	}
-
-	mixingCCL.vertices = vertices;
-
-
-	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
-	cout << "CCL (normalized) = " << CCLNormalized.x << ", " << CCLNormalized.y << endl;
-
-	CCL = getDenormalizedCoords(CCLNormalized);
-
-	cout << "CCL = " << CCL.x << ", " << CCL.y << endl;
-
-
-
-	glGenVertexArrays(1, &CCLVAO);
-	glBindVertexArray(CCLVAO);
-	glGenBuffers(1, &CCLVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, CCLVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2), &CCLNormalized, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
-
-	glGenVertexArrays(1, &isohumesVAO);
-	glBindVertexArray(isohumesVAO);
-	glGenBuffers(1, &isohumesVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, isohumesVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
-
-
-	///////////////////////////////////////////////////////////////////////////////////////
-	// DRY ADIABATS
-	///////////////////////////////////////////////////////////////////////////////////////
-	cout << "////////////////////////////////////////////////////" << endl;
-	cout << "// DRY ADIABATS" << endl;
-	cout << "////////////////////////////////////////////////////" << endl;
-
-	vertices.clear();
-
-	/*
-	Dry adiabats feature the thermodynamic behaviour of unsaturated air parcels moving upwards (or downwards).
-	They represent the dry adiabatic lapse rate (DALR).
-	This thermodynamic behaviour is valid for all air parcels moving between the ground and the convective
-	condensation level (CCLNormalized).
-
-	T(P) = theta / ((P0 / P)^(Rd / cp))
-	where
-	P0 is the initial value of pressure (profileIndex.e. ground pressure)
-	cp is the heat capacity of dry air at constant pressure
-	(cv is the heat capacity of dry air at constant volume)
-	Rd is the gas constant for dry air [J kg^-1 K^-1]
-	k = Rd / cp = (cp - cv) / cp =(approx)= 0.286
-	*/
-
-	float k = 0.286f; // Rd / cp
-
-	numDryAdiabats = 0;
-	int counter;
-
-	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += 10.0f) {
-		counter = 0;
-
-		for (P = MAX_P; P >= MIN_P; P -= CURVE_DELTA_P) {
-			//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
-			//float P = soundingData[profileIndex].data[PRES];
-
-			float T = (theta + 273.16f) / pow((P0 / P), k);
-			T -= 273.16f;
-
-			y = getNormalizedPres(P);
-			x = getNormalizedTemp(T, y);
-
-			vertices.push_back(glm::vec2(x, y));
-			counter++;
-		}
-		numDryAdiabats++;
-		dryAdiabatEdgeCount.push_back(counter);
-	}
-
-
-
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// TESTING Tc computation - special dry adiabat (and its x axis intersection)
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	{
-		P0 = soundingData[0].data[PRES];
-
-		float theta = (CCL.x + 273.15f) * powf(P0 / CCL.y, k);
-		theta -= 273.15f;
-		cout << "CCL theta = " << theta << endl;
-		cout << "Tc Dry adiabat: " << endl;
-
-		counter = 0;
-
-
-		for (int i = 0; i < soundingData.size(); i++) {
-
-			float P = soundingData[i].data[PRES];
-
-			float T = (theta + 273.15f) * pow((P / P0), k); // do not forget to use Kelvin
-			T -= 273.15f; // convert back to Celsius
-
-			y = getNormalizedPres(P);
-			x = getNormalizedTemp(T, y);
-
-			TcDryAdiabat.vertices.push_back(glm::vec2(x, y));
-			vertices.push_back(glm::vec2(x, y));
-			counter++;
-
-			cout << " | " << x << ", " << y << endl;
-		}
-		cout << endl;
-		numDryAdiabats++;
-		dryAdiabatEdgeCount.push_back(counter);
-
-	}
-
-
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// TESTING LCL computation - special dry adiabat (starts in ground ambient temp.)
-	///////////////////////////////////////////////////////////////////////////////////////////////
-
-	{
-		P0 = soundingData[0].data[PRES];
-
-		float theta = (soundingData[0].data[TEMP] + 273.15f)/* * powf(P0 / P0, k)*/;
-		theta -= 273.15f;
-		cout << "LCL Dry adiabat theta = " << theta << endl;
-
-		for (int i = 0; i < soundingData.size(); i++) {
-
-			float P = soundingData[i].data[PRES];
-
-			float T = (theta + 273.15f) * pow((P / P0), k); // do not forget to use Kelvin
-			T -= 273.15f; // convert back to Celsius
-
-			y = getNormalizedPres(P);
-			x = getNormalizedTemp(T, y);
-
-			LCLDryAdiabatCurve.vertices.push_back(glm::vec2(x, y));
-			//vertices.push_back(glm::vec2(x, y));
-			cout << " | " << x << ", " << y << endl;
-		}
-		cout << endl;
-		//numDryAdiabats++;
-	}
-
-
-	//TcNormalized = findIntersectionNaive(xaxis, TcDryAdiabat);
-	TcNormalized = TcDryAdiabat.vertices[0]; // no need for intersection search here
-	cout << "TcNormalized: " << TcNormalized.x << ", " << TcNormalized.y << endl;
-	Tc = getDenormalizedCoords(TcNormalized);
-	cout << "Tc: " << Tc.x << ", " << Tc.y << endl;
-
-	// Check correctness by computing thetaCCL == Tc
-	float thetaCCL = (CCL.x + 273.15f) * pow((P0 / CCL.y), k);
-	thetaCCL -= 273.15f;
-	cout << "THETA CCL = " << thetaCCL << endl;
-
-	LCLNormalized = findIntersectionNaive(LCLDryAdiabatCurve, mixingCCL);
-	LCL = getDenormalizedCoords(LCLNormalized);
-
-
-	// Testing out profiles
-	for (int i = 0; i < numProfiles; i++) {
-		TcProfiles.push_back(Tc + glm::vec2((i + 1) * profileDelta, 0.0f));
-		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(TcProfiles.back()), -2.0f)); // point
-		float tint = (i + 1) * profileDelta;
-		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
-		visualizationPoints.push_back(glm::vec3(tint, 0.0f, 0.0f)); // color	
-	}
-
-	cout << "NUMBER OF PROFILES = " << numProfiles << ", profileDelta = " << profileDelta << endl;
-	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
-
-		dryAdiabatProfiles.push_back(Curve());
-
-		counter = 0;
-
-		P0 = soundingData[0].data[PRES];
-
-		float theta = (TcProfiles[profileIndex].x + 273.15f)/* * powf(P0 / P0, k)*/;
-		theta -= 273.15f;
-
-		for (int i = 0; i < soundingData.size(); i++) {
-
-			float P = soundingData[i].data[PRES];
-
-			float T = (theta + 273.15f) * pow((P / P0), k); // do not forget to use Kelvin
-			T -= 273.15f; // convert back to Celsius
-
-			y = getNormalizedPres(P);
-			x = getNormalizedTemp(T, y);
-
-			dryAdiabatProfiles[profileIndex].vertices.push_back(glm::vec2(x, y));
-			vertices.push_back(glm::vec2(x, y));
-			counter++;
-		}
-		numDryAdiabats++;
-		dryAdiabatEdgeCount.push_back(counter);
-
-		CCLProfiles.push_back(getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve)));
-
-		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(CCLProfiles.back()), -2.0f)); // point
-		float tint = (profileIndex + 1) * profileDelta;
-		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
-		visualizationPoints.push_back(glm::vec3(tint, 0.0f, 1.0f)); // color	
-
-	}
-
-
-
-	glGenVertexArrays(1, &TcVAO);
-	glBindVertexArray(TcVAO);
-	glGenBuffers(1, &TcVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, TcVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2), &TcNormalized, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
-
-	glGenVertexArrays(1, &dryAdiabatsVAO);
-	glBindVertexArray(dryAdiabatsVAO);
-	glGenBuffers(1, &dryAdiabatsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
-
-
-
-
-	///////////////////////////////////////////////////////////////////////////////////////
-	// MOIST ADIABATS
-	///////////////////////////////////////////////////////////////////////////////////////
-	cout << "////////////////////////////////////////////////////" << endl;
-	cout << "// MOIST ADIABATS" << endl;
-	cout << "////////////////////////////////////////////////////" << endl;
-
-	vertices.clear();
-
-
-	float a = -6.14342f * 0.00001f;
-	float b = 1.58927 * 0.001f;
-	float c = -2.36418f;
-	float d = 2500.79f;
-
-	float g = -9.81f;
-	numMoistAdiabats = 0;
-
-	// Lv(T) = (aT^3 + bT^2 + cT + d) * 1000
-	// Lv(T)	... latent heat of vaporisation/condensation
-
-	//for (float T = MIN_TEMP; T <= MAX_TEMP; T++) {
-	T = 30.0f; // for example - create first testing curvePtr
-			   //float Lv = (a*T*T*T + b*T*T + c*T + d) * 1000.0f;
-
-	float T_P0;
-	float T_P1;
-	float P1;
-	float currP;
-
-#define MOIST_ADIABAT_OPTION 5
-
-#if MOIST_ADIABAT_OPTION == 0
-	T_P0 = T;
-	// LooooooooooooooP
-	deltaP = 1.0f;
-	for (float p = P0; p >= MIN_P; p -= deltaP) {
-		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
-		//P = soundingData[profileIndex].data[PRES];
-
-		//T_P1 = ???
-		//P1 = P;
-		P1 = p;
-
-		toKelvin(T_P0);
-		toKelvin(T);
-
-
-		// integral pres P0 az P1
-		float integratedVal = 0.0f;
-		//for (int profileIndex = P0 + 0.1f; profileIndex < P1; profileIndex += 0.1f) {
-		//integratedVal += computePseudoadiabaticLapseRate(T, profileIndex);
-		//integratedVal /= computeRho(T, profileIndex) * (-9.81f);
-		//integratedVal += getMoistAdiabatIntegralVal(T_P0, profileIndex);
-		//}
-		//integratedVal += (getMoistAdiabatIntegralVal(T_P0, P0) + getMoistAdiabatIntegralVal(T_P0, P1)) / 2.0f;
-		//integratedVal *= (P1 - P0) / CURVE_DELTA_P;
-
-		//T_P1 = T_P0 + integratedVal;
-
-		P0 *= 100.0f;
-		P1 *= 100.0f;
-
-		integratedVal = (P1 - P0) * getMoistAdiabatIntegralVal(T_P0, P1);
-		T_P1 = T_P0 + integratedVal * 100.0f;
-
-		//cout << "Integrated val = " << integratedVal << endl;
-
-		P0 /= 100.0f;
-		P1 /= 100.0f;
-
-		toCelsius(T);
-		toCelsius(T_P0);
-		toCelsius(T_P1);
-
-		y = getNormalizedPres(P0);
-		x = getNormalizedTemp(T_P0, y);
-		//x = (T_P0 - MIN_TEMP) / (MAX_TEMP - MIN_TEMP);
-		vertices.push_back(glm::vec2(x, y));
-
-		y = getNormalizedPres(P1);
-		x = getNormalizedTemp(T_P1, y);
-		//x = (T_P1 - MIN_TEMP) / (MAX_TEMP - MIN_TEMP);
-
-		vertices.push_back(glm::vec2(x, y));
-
-
-		// jump to next
-		P0 = P1;
-		T_P0 = T_P1;
-	}
-#elif MOIST_ADIABAT_OPTION == 1 // Taken from existing code
-	/////////////////////////////
-	T_P0 = T;
-	float ept = computeEquivalentTheta(getKelvin(T_P0), getKelvin(T_P0), 1000.0f);
-	cout << "EPT = " << ept << endl;
-	//P0 = 1000.0f;
-
-	T_P0 = getSaturatedAirTemperature(ept, P0);
-	////////////////////////////////
-	for (int i = 0; i < soundingData.size(); i++) {
-		P = soundingData[i].data[PRES];
-		P1 = P;
-
-		T_P1 = getSaturatedAirTemperature(ept, P1);
-
-		toCelsius(T_P0);
-		toCelsius(T_P1);
-
-		y = getNormalizedPres(P0);
-		x = getNormalizedTemp(T_P0, y);
-
-		vertices.push_back(glm::vec2(x, y));
-
-		y = getNormalizedPres(P1);
-		x = getNormalizedTemp(T_P1, y);
-
-		vertices.push_back(glm::vec2(x, y));
-
-		toKelvin(T_P0);
-		toKelvin(T_P1);
-
-		// jump to next
-		P0 = P1;
-		T_P0 = T_P1;
-	}
-#elif MOIST_ADIABAT_OPTION == 2 // Bakhshaii iterative description
-	//T = 24.0f;
-	T_P0 = T;
-
-	float e_0 = 6.112f;
-	float e_s = e_0 * exp((17.67f * (T_P0 - 273.15f)) / T_P0 - 29.65f);
-	float r_s = 0.622f * e_s / (P0 - e_s);
-	float bApprox = 1.0;
-
-	float Lv = (a*T*T*T + b*T*T + c*T + d) * 1000.0f;
-	cout << "Lv = " << Lv << endl;
-
-	float dTdP = (bApprox / P0) * ((R_d * T_P0 + Lv * r_s) / (1004.0f + (Lv * Lv * r_s * EPS * bApprox) / (R_d * T_P0 * T_P0)));
-
-	for (int i = 0; i < soundingData.size(); i++) {
-		currP = soundingData[i].data[PRES];
-		P1 = currP;
-
-		float deltaP = P1 - P0;
-
-
-		toKelvin(T_P0);
-		toKelvin(T_P1);
-		toKelvin(T);
-		///////
-		float e_s = e_0 * exp((17.67f * (T_P0 - 273.15f)) / T_P0 - 29.65f);
-		float r_s = 0.622f * e_s / (P0 - e_s);
-		float Lv = (a*T_P0*T_P0*T_P0 + b*T_P0*T_P0 + c*T_P0 + d) * P0;
-
-		float dTdP = (bApprox / P0) * ((R_d * T_P0 + Lv * r_s) / (1004.0f + (Lv * Lv * r_s * EPS * bApprox) / (R_d * T_P0 * T_P0)));
-
-		/*float e_s = e_0 * exp((17.67f * (T - 273.15f)) / T - 29.65f);
-		float r_s = 0.622f * e_s / (P0 - e_s);
-		float dTdP = (bApprox / P0) * ((R_d * T + Lv * r_s) / (1004.0f + (Lv * Lv * r_s * EPS * bApprox) / (R_d * T * T)));*/
-		//////////////////////
-
-		T_P1 = T_P0 + deltaP * dTdP;
-
-
-		toCelsius(T_P0);
-		toCelsius(T_P1);
-		toCelsius(T);
-		//cout << "T_P0 = " << T_P0 << ", T_P1 = " << T_P1 << endl;
-		//cout << "P0 = " << P0 << ", P1 = " << P1 << endl;
-
-		y = getNormalizedPres(P0);
-		x = getNormalizedTemp(T_P0, y);
-
-		vertices.push_back(glm::vec2(x, y));
-
-
-		P0 = P1;
-		T_P0 = T_P1;
-
-	}
-#elif MOIST_ADIABAT_OPTION == 3 // Bakhshaii non-iterative approach
-	T = 9.0f; // Celsius
-	P = 800.0f; // 800hPa = 80kPa
-	float theta_w = getWetBulbPotentialTemperature(T, P);
-	cout << "THETA W = " << theta_w << endl;
-	/*
-	desired results:
-	g1 = -1.26
-	g2 = 53.24
-	g3 = 0.58
-	g4 = -8.84
-	g5 = -25.99
-	g6 = 0.15
-	theta_w = 17.9 degC
-	*/
-
-	theta_w = 28.0f;
-	P = 250.0f;
-	T = getPseudoadiabatTemperature(theta_w, P);
-	cout << "T = " << T << endl;
-
-	for (float theta_w = MIN_TEMP; theta_w <= MAX_TEMP; theta_w += 10.0f) {
-		for (int i = 0; i < soundingData.size(); i++) {
-			P = soundingData[i].data[PRES];
-			T = getPseudoadiabatTemperature(theta_w, P);
-			y = getNormalizedPres(P);
-			x = getNormalizedTemp(T, y);
-			vertices.push_back(glm::vec2(x, y));
-			numMoistAdiabats++;
-		}
-	}
-#elif MOIST_ADIABAT_OPTION == 4 // pyMeteo implementation
-
-	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += 5.0f) {
-		//T = -10.0f;
-		T = currT;
-		T += 273.15f;
-		float origT = T;
-
-		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
-		//	float p = soundingData[profileIndex].data[PRES];
-		deltaP = 1.0f;
-		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
-			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			y = getNormalizedPres(p);
-			x = getNormalizedTemp(getCelsius(T), y);
-			vertices.push_back(glm::vec2(x, y));
-		}
-		T = origT;
-		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
-			p *= 100.0f;
-			T += dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			y = getNormalizedPres(p);
-			x = getNormalizedTemp(getCelsius(T), y);
-			vertices.push_back(glm::vec2(x, y));
-		}
-		numMoistAdiabats++;
-
-	}
-
-#elif MOIST_ADIABAT_OPTION == 5 // pyMeteo implementation - with spacing
-
-	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += 5.0f) {
-		//T = -10.0f;
-		T = currT;
-		T += 273.15f;
-		float origT = T;
-
-		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
-		//	float p = soundingData[profileIndex].data[PRES];
-		deltaP = 1.0f;
-		int counter = 0;
-
-		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
-			p *= 100.0f;
-			T += dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			if ((int)p % 25 == 0 && p != 1000.0f) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				vertices.push_back(glm::vec2(x, y));
-				counter++;
-			}
-		}
-		reverse(vertices.end() - counter, vertices.end()); // to draw continuous line
-		T = origT;
-
-		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
-			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			if ((int)p % 25 == 0) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				vertices.push_back(glm::vec2(x, y));
-				counter++;
-			}
-		}
-		//cout << "Counter = " << counter << ", num isobars = " << numIsobars << endl;
-		numMoistAdiabatEdges = counter;
-		numMoistAdiabats++;
-		moistAdiabatEdgeCount.push_back(counter);
-
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// TESTING EL (regular) computation - special moist adiabat (goes through CCL)
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	{
-		int counter = 0;
-		T = CCL.x + 273.15f;
-		deltaP = 1.0f;
-		for (float p = CCL.y; p >= MIN_P; p -= deltaP) {
-			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			if ((int)p % 25 == 0 || p == CCL.y) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				vertices.push_back(glm::vec2(x, y));
-				moistAdiabat_CCL_EL.vertices.push_back(glm::vec2(x, y));
-				counter++;
-			}
-		}
-		numMoistAdiabats++;
-		moistAdiabatEdgeCount.push_back(counter);
-
-
-
-		///////////////////////////////////////////////////////////////////////////////////////////////
-		// Find EL 
-		///////////////////////////////////////////////////////////////////////////////////////////////
-
-		reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // temporary reverse for finding EL
-		ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve);
-		cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
-		EL = getDenormalizedCoords(ELNormalized);
-		cout << "EL: T = " << EL.x << ", P = " << EL.y << endl;
-		reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // reverse back for the simulation
-
-		visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
-		visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
-
-		visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
-		visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
-	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// TESTING EL (orographic) computation - special moist adiabat (goes through LCL)
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	{
-		T = LCL.x + 273.15f;
-		deltaP = 1.0f;
-		for (float p = LCL.y; p >= MIN_P; p -= deltaP) {
-			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			if ((int)p % 25 == 0 || p == LCL.y) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				//vertices.push_back(glm::vec2(x, y));
-				moistAdiabat_LCL_EL.vertices.push_back(glm::vec2(x, y));
-			}
-		}
-		//numMoistAdiabats++;
-
-
-		LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
-		LFC = getDenormalizedCoords(LFCNormalized);
-
-		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
-
-		OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
-		OrographicEL = getDenormalizedCoords(OrographicELNormalized);
-
-		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
-
-
-	}
-
-	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
-		int counter = 0;
-		moistAdiabatProfiles.push_back(Curve());
-		T = CCLProfiles[profileIndex].x + 273.15f;
-		deltaP = 1.0f;
-		for (float p = CCLProfiles[profileIndex].y; p >= MIN_P; p -= deltaP) {
-			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
-			p /= 100.0f;
-
-			if ((int)p % 25 == 0 || p == CCLProfiles[profileIndex].y) {
-				y = getNormalizedPres(p);
-				x = getNormalizedTemp(getCelsius(T), y);
-				vertices.push_back(glm::vec2(x, y));
-				//moistAdiabat_LCL_EL.vertices.push_back(glm::vec2(x, y));
-				moistAdiabatProfiles[profileIndex].vertices.push_back(glm::vec2(x, y));
-				counter++;
-			}
-		}
-		numMoistAdiabats++;
-		moistAdiabatEdgeCount.push_back(counter);
-
-
-
-		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
-
-		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve);
-		ELProfiles.push_back(getDenormalizedCoords(tmp));
-
-		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
-
-		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(ELProfiles.back()), -2.0f)); // point
-		float tint = (profileIndex + 1) * profileDelta;
-		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
-		visualizationPoints.push_back(glm::vec3(tint, 1.0f, 1.0f)); // color	
-	}
-
-#endif
-
-	//numMoistAdiabats++;
-
-	if (!vertices.empty()) {
-
-		glGenVertexArrays(1, &moistAdiabatsVAO);
-		glBindVertexArray(moistAdiabatsVAO);
-		glGenBuffers(1, &moistAdiabatsVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
-
-		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-		glBindVertexArray(0);
-	}
-
-
-
-
-	// trying out stuff
-	P = 432.2f;
-	float normP = getNormalizedPres(P);
-	cout << "Pressure = " << P << ", normalized pressure = " << normP << endl;
-	visualizationPoints.push_back(glm::vec3(ambientCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
-	visualizationPoints.push_back(glm::vec3(1.0f, 0.0f, 0.0f)); // color
-
-	visualizationPoints.push_back(glm::vec3(dewpointCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
-	visualizationPoints.push_back(glm::vec3(0.0f, 0.0f, 1.0f)); // color
-
-
-	glGenVertexArrays(1, &visPointsVAO);
-	glBindVertexArray(visPointsVAO);
-	glGenBuffers(1, &visPointsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, visPointsVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * visualizationPoints.size(), &visualizationPoints[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)0);
-
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)(sizeof(glm::vec3)));
-
-	glBindVertexArray(0);
-
-
-
-
-	// Main parameters visualization
-
-	mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-	mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-	mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-	mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-	mainParameterPoints.push_back(glm::vec3(OrographicELNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-
-	glGenVertexArrays(1, &mainParameterPointsVAO);
-	glBindVertexArray(mainParameterPointsVAO);
-	glGenBuffers(1, &mainParameterPointsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mainParameterPoints.size(), &mainParameterPoints[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)0);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)(sizeof(glm::vec3)));
-
-	glBindVertexArray(0);
-
-
-	// QUAD
-	glGenVertexArrays(1, &overlayDiagramVAO);
-	glGenBuffers(1, &overlayDiagramVBO);
-	glBindVertexArray(overlayDiagramVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-	glBindVertexArray(0);
-
-	// TEXTURE AND FRAMEBUFFER
-
-	glGenTextures(1, &diagramTexture);
-	glBindTexture(GL_TEXTURE_2D, diagramTexture);
-
-	//glTextureParameteri(diagramTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-
-	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
-
-	glGenFramebuffers(1, &diagramFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, diagramTexture, 0);
-
-
-	glGenTextures(1, &diagramMultisampledTexture);
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA16F, textureResolution, textureResolution, false);
-
-	glGenFramebuffers(1, &diagramMultisampledFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, diagramMultisampledFramebuffer);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture, 0);
-
-
-	GLfloat lineWidthRange[2] = { 0.0f, 0.0f };
-	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, lineWidthRange);
-	// Maximum supported line width is in lineWidthRange[1].
-	cout << lineWidthRange[0] << " , " << lineWidthRange[1] << endl;
-}
+//void STLPDiagram::initBuffersOld() {
+//
+//
+//	// Initialize main variables
+//
+//	float xmin = 0.0f;
+//	float xmax = 1.0f;
+//
+//	float ymin = getNormalizedPres(MIN_P);
+//	float ymax = getNormalizedPres(MAX_P);
+//
+//	float P0 = soundingData[0].data[PRES];
+//	float P;
+//	float T;
+//
+//	xaxis.vertices.push_back(glm::vec2(xmin, ymax));
+//	xaxis.vertices.push_back(glm::vec2(xmax, ymax));
+//	yaxis.vertices.push_back(glm::vec2(xmin, ymin));
+//	yaxis.vertices.push_back(glm::vec2(xmin, ymax));
+//
+//	xaxis.initBuffers();
+//	yaxis.initBuffers();
+//
+//	TcProfiles.reserve(numProfiles);
+//	CCLProfiles.reserve(numProfiles);
+//	ELProfiles.reserve(numProfiles);
+//	dryAdiabatProfiles.reserve(numProfiles);
+//	moistAdiabatProfiles.reserve(numProfiles);
+//
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	// ISOBARS
+//	///////////////////////////////////////////////////////////////////////////////////////
+//
+//	vector<glm::vec2> vertices;
+//
+//	numIsobars = 0;
+//	for (P = MAX_P; P >= MIN_P; P -= CURVE_DELTA_P) {
+//		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
+//		//P = soundingData[profileIndex].data[PRES];
+//		float y = getNormalizedPres(P);
+//		vertices.push_back(glm::vec2(xmin, y));
+//		vertices.push_back(glm::vec2(xmax, y));
+//		numIsobars++;
+//	}
+//	float y;
+//	P = soundingData[0].data[PRES];
+//	y = getNormalizedPres(P);
+//	vertices.push_back(glm::vec2(xmin, y));
+//	vertices.push_back(glm::vec2(xmax, y));
+//	numIsobars++;
+//
+//
+//	glGenVertexArrays(1, &isobarsVAO);
+//	glBindVertexArray(isobarsVAO);
+//	glGenBuffers(1, &isobarsVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, isobarsVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//	glBindVertexArray(0);
+//
+//
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	// TEMPERATURE POINTS
+//	///////////////////////////////////////////////////////////////////////////////////////
+//
+//	//vertices.clear();
+//	temperaturePointsCount = 0;
+//	for (int i = MIN_TEMP; i <= MAX_TEMP; i += 10) {
+//		T = getNormalizedTemp(i, ymax);
+//		temperaturePoints.push_back(glm::vec2(T, ymax));
+//		temperaturePointsCount++;
+//	}
+//
+//	glGenVertexArrays(1, &temperaturePointsVAO);
+//	glBindVertexArray(temperaturePointsVAO);
+//	glGenBuffers(1, &temperaturePointsVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, temperaturePointsVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * temperaturePoints.size(), &temperaturePoints[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//	glBindVertexArray(0);
+//
+//
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	// ISOTHERMS
+//	///////////////////////////////////////////////////////////////////////////////////////
+//
+//	vertices.clear();
+//
+//	float x;
+//	y;
+//
+//	isothermsCount = 0;
+//	for (int i = MIN_TEMP - 80.0f; i <= MAX_TEMP; i += 10) {
+//
+//		y = ymax;
+//		x = getNormalizedTemp(i, y);
+//		vertices.push_back(glm::vec2(x, y));
+//
+//		y = ymin;
+//		x = getNormalizedTemp(i, y);
+//		vertices.push_back(glm::vec2(x, y));
+//
+//		isothermsCount++;
+//	}
+//
+//
+//	glGenVertexArrays(1, &isothermsVAO);
+//	glBindVertexArray(isothermsVAO);
+//	glGenBuffers(1, &isothermsVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, isothermsVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//	glBindVertexArray(0);
+//
+//
+//
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	// AMBIENT TEMPERATURE PIECE-WISE LINEAR CURVE
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	vertices.clear();
+//	for (int i = 0; i < soundingData.size(); i++) {
+//
+//		float P = soundingData[i].data[PRES];
+//		float T = soundingData[i].data[TEMP];
+//
+//		y = getNormalizedPres(P);
+//		x = getNormalizedTemp(T, y);
+//
+//		vertices.push_back(glm::vec2(x, y));
+//	}
+//
+//	ambientCurve.vertices = vertices;
+//
+//	glGenVertexArrays(1, &ambientTemperatureVAO);
+//	glBindVertexArray(ambientTemperatureVAO);
+//	glGenBuffers(1, &ambientTemperatureVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, ambientTemperatureVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//	glBindVertexArray(0);
+//
+//
+//
+//
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	// DEWPOINT TEMPERATURE PIECE-WISE LINEAR CURVE
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	vertices.clear();
+//	for (int i = 0; i < soundingData.size(); i++) {
+//
+//		float P = soundingData[i].data[PRES];
+//		float T = soundingData[i].data[DWPT];
+//
+//		y = getNormalizedPres(P);
+//		x = getNormalizedTemp(T, y);
+//
+//		vertices.push_back(glm::vec2(x, y));
+//	}
+//	dewpointCurve.vertices = vertices;
+//
+//
+//	glGenVertexArrays(1, &dewTemperatureVAO);
+//	glBindVertexArray(dewTemperatureVAO);
+//	glGenBuffers(1, &dewTemperatureVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, dewTemperatureVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//	glBindVertexArray(0);
+//
+//
+//
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	// ISOHUMES (MIXING RATIO LINES)
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	cout << "////////////////////////////////////////////////////" << endl;
+//	cout << "// ISOHUMES (MIXING RATIO LINES)" << endl;
+//	cout << "////////////////////////////////////////////////////" << endl;
+//
+//	vertices.clear();
+//
+//	float Rd = 287.05307f;	// gas constant for dry air [J kg^-1 K^-1]
+//	float Rm = 461.5f;		// gas constant for moist air [J kg^-1 K^-1]
+//
+//							// w(T,P) = (eps * e(T)) / (P - e(T))
+//							// where
+//							//		eps = Rd / Rm
+//							//		e(T) ... saturation vapor pressure (can be approx'd by August-Roche-Magnus formula
+//							//		e(T) =(approx)= C exp( (A*T) / (T + B))
+//							//		where
+//							//				A = 17.625
+//							//				B = 243.04
+//							//				C = 610.94
+//
+//	float A = 17.625f;
+//	float B = 243.04f;
+//	float C = 610.94f;
+//
+//	// given that w(T,P) is const., let W = w(T,P), we can express T in terms of P (see Equation 3.13)
+//
+//	// to determine the mixing ratio line that passes through (T,P), we calculate the value of the temperature
+//	// T(P + delta) where delta is a small integer
+//	// -> the points (T,P) nad (T(P + delta), P + delta) define a mixing ratio line, whose points all have the same mixing ratio
+//
+//
+//	// Compute CCL using a mixing ratio line
+//	float w0 = soundingData[0].data[MIXR];
+//	T = soundingData[0].data[DWPT];
+//	P = soundingData[0].data[PRES];
+//
+//
+//	float eps = Rd / Rm;
+//	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
+//	float satVP = getSaturationVaporPressure(T);
+//	//float W = (eps * satVP) / (P - satVP);
+//	float W = getMixingRatioOfWaterVapor(T, P);
+//
+//	cout << " -> Computed W = " << W << endl;
+//
+//	float deltaP = 20.0f;
+//
+//	while (P >= MIN_P) {
+//
+//
+//		float fracPart = log((W * P) / (C * (W + eps)));
+//		float computedT = (B * fracPart) / (A - fracPart);
+//
+//		cout << " -> Computed T = " << computedT << endl;
+//
+//		y = getNormalizedPres(P);
+//		x = getNormalizedTemp(T, y);
+//
+//		if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
+//			break;
+//		}
+//
+//		vertices.push_back(glm::vec2(x, y));
+//
+//
+//		float delta = 10.0f; // should be a small integer - produces dashed line (logarithmic)
+//							 //float offsetP = P - delta;
+//		float offsetP = P - deltaP; // produces continuous line
+//		fracPart = log((W * offsetP) / (C * (W + eps)));
+//		computedT = (B * fracPart) / (A - fracPart);
+//		cout << " -> Second computed T = " << computedT << endl;
+//
+//
+//		y = getNormalizedPres(offsetP);
+//		x = getNormalizedTemp(T, y);
+//		vertices.push_back(glm::vec2(x, y));
+//
+//		P -= deltaP;
+//
+//	}
+//
+//	mixingCCL.vertices = vertices;
+//
+//
+//	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
+//	cout << "CCL (normalized) = " << CCLNormalized.x << ", " << CCLNormalized.y << endl;
+//
+//	CCL = getDenormalizedCoords(CCLNormalized);
+//
+//	cout << "CCL = " << CCL.x << ", " << CCL.y << endl;
+//
+//
+//
+//	glGenVertexArrays(1, &CCLVAO);
+//	glBindVertexArray(CCLVAO);
+//	glGenBuffers(1, &CCLVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, CCLVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2), &CCLNormalized, GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//	glBindVertexArray(0);
+//
+//
+//	glGenVertexArrays(1, &isohumesVAO);
+//	glBindVertexArray(isohumesVAO);
+//	glGenBuffers(1, &isohumesVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, isohumesVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//	glBindVertexArray(0);
+//
+//
+//
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	// DRY ADIABATS
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	cout << "////////////////////////////////////////////////////" << endl;
+//	cout << "// DRY ADIABATS" << endl;
+//	cout << "////////////////////////////////////////////////////" << endl;
+//
+//	vertices.clear();
+//
+//	/*
+//	Dry adiabats feature the thermodynamic behaviour of unsaturated air parcels moving upwards (or downwards).
+//	They represent the dry adiabatic lapse rate (DALR).
+//	This thermodynamic behaviour is valid for all air parcels moving between the ground and the convective
+//	condensation level (CCLNormalized).
+//
+//	T(P) = theta / ((P0 / P)^(Rd / cp))
+//	where
+//	P0 is the initial value of pressure (profileIndex.e. ground pressure)
+//	cp is the heat capacity of dry air at constant pressure
+//	(cv is the heat capacity of dry air at constant volume)
+//	Rd is the gas constant for dry air [J kg^-1 K^-1]
+//	k = Rd / cp = (cp - cv) / cp =(approx)= 0.286
+//	*/
+//
+//	float k = 0.286f; // Rd / cp
+//
+//	numDryAdiabats = 0;
+//	int counter;
+//
+//	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += 10.0f) {
+//		counter = 0;
+//
+//		for (P = MAX_P; P >= MIN_P; P -= CURVE_DELTA_P) {
+//			//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
+//			//float P = soundingData[profileIndex].data[PRES];
+//
+//			float T = (theta + 273.16f) / pow((P0 / P), k);
+//			T -= 273.16f;
+//
+//			y = getNormalizedPres(P);
+//			x = getNormalizedTemp(T, y);
+//
+//			vertices.push_back(glm::vec2(x, y));
+//			counter++;
+//		}
+//		numDryAdiabats++;
+//		dryAdiabatEdgeCount.push_back(counter);
+//	}
+//
+//
+//
+//	///////////////////////////////////////////////////////////////////////////////////////////////
+//	// TESTING Tc computation - special dry adiabat (and its x axis intersection)
+//	///////////////////////////////////////////////////////////////////////////////////////////////
+//	{
+//		P0 = soundingData[0].data[PRES];
+//
+//		float theta = (CCL.x + 273.15f) * powf(P0 / CCL.y, k);
+//		theta -= 273.15f;
+//		cout << "CCL theta = " << theta << endl;
+//		cout << "Tc Dry adiabat: " << endl;
+//
+//		counter = 0;
+//
+//
+//		for (int i = 0; i < soundingData.size(); i++) {
+//
+//			float P = soundingData[i].data[PRES];
+//
+//			float T = (theta + 273.15f) * pow((P / P0), k); // do not forget to use Kelvin
+//			T -= 273.15f; // convert back to Celsius
+//
+//			y = getNormalizedPres(P);
+//			x = getNormalizedTemp(T, y);
+//
+//			TcDryAdiabat.vertices.push_back(glm::vec2(x, y));
+//			vertices.push_back(glm::vec2(x, y));
+//			counter++;
+//
+//			cout << " | " << x << ", " << y << endl;
+//		}
+//		cout << endl;
+//		numDryAdiabats++;
+//		dryAdiabatEdgeCount.push_back(counter);
+//
+//	}
+//
+//
+//	///////////////////////////////////////////////////////////////////////////////////////////////
+//	// TESTING LCL computation - special dry adiabat (starts in ground ambient temp.)
+//	///////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	{
+//		P0 = soundingData[0].data[PRES];
+//
+//		float theta = (soundingData[0].data[TEMP] + 273.15f)/* * powf(P0 / P0, k)*/;
+//		theta -= 273.15f;
+//		cout << "LCL Dry adiabat theta = " << theta << endl;
+//
+//		for (int i = 0; i < soundingData.size(); i++) {
+//
+//			float P = soundingData[i].data[PRES];
+//
+//			float T = (theta + 273.15f) * pow((P / P0), k); // do not forget to use Kelvin
+//			T -= 273.15f; // convert back to Celsius
+//
+//			y = getNormalizedPres(P);
+//			x = getNormalizedTemp(T, y);
+//
+//			LCLDryAdiabatCurve.vertices.push_back(glm::vec2(x, y));
+//			//vertices.push_back(glm::vec2(x, y));
+//			cout << " | " << x << ", " << y << endl;
+//		}
+//		cout << endl;
+//		//numDryAdiabats++;
+//	}
+//
+//
+//	//TcNormalized = findIntersectionNaive(xaxis, TcDryAdiabat);
+//	TcNormalized = TcDryAdiabat.vertices[0]; // no need for intersection search here
+//	cout << "TcNormalized: " << TcNormalized.x << ", " << TcNormalized.y << endl;
+//	Tc = getDenormalizedCoords(TcNormalized);
+//	cout << "Tc: " << Tc.x << ", " << Tc.y << endl;
+//
+//	// Check correctness by computing thetaCCL == Tc
+//	float thetaCCL = (CCL.x + 273.15f) * pow((P0 / CCL.y), k);
+//	thetaCCL -= 273.15f;
+//	cout << "THETA CCL = " << thetaCCL << endl;
+//
+//	LCLNormalized = findIntersectionNaive(LCLDryAdiabatCurve, mixingCCL);
+//	LCL = getDenormalizedCoords(LCLNormalized);
+//
+//
+//	// Testing out profiles
+//	for (int i = 0; i < numProfiles; i++) {
+//		TcProfiles.push_back(Tc + glm::vec2((i + 1) * profileDelta, 0.0f));
+//		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(TcProfiles.back()), -2.0f)); // point
+//		float tint = (i + 1) * profileDelta;
+//		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
+//		visualizationPoints.push_back(glm::vec3(tint, 0.0f, 0.0f)); // color	
+//	}
+//
+//	cout << "NUMBER OF PROFILES = " << numProfiles << ", profileDelta = " << profileDelta << endl;
+//	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
+//
+//		dryAdiabatProfiles.push_back(Curve());
+//
+//		counter = 0;
+//
+//		P0 = soundingData[0].data[PRES];
+//
+//		float theta = (TcProfiles[profileIndex].x + 273.15f)/* * powf(P0 / P0, k)*/;
+//		theta -= 273.15f;
+//
+//		for (int i = 0; i < soundingData.size(); i++) {
+//
+//			float P = soundingData[i].data[PRES];
+//
+//			float T = (theta + 273.15f) * pow((P / P0), k); // do not forget to use Kelvin
+//			T -= 273.15f; // convert back to Celsius
+//
+//			y = getNormalizedPres(P);
+//			x = getNormalizedTemp(T, y);
+//
+//			dryAdiabatProfiles[profileIndex].vertices.push_back(glm::vec2(x, y));
+//			vertices.push_back(glm::vec2(x, y));
+//			counter++;
+//		}
+//		numDryAdiabats++;
+//		dryAdiabatEdgeCount.push_back(counter);
+//
+//		CCLProfiles.push_back(getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve)));
+//
+//		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(CCLProfiles.back()), -2.0f)); // point
+//		float tint = (profileIndex + 1) * profileDelta;
+//		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
+//		visualizationPoints.push_back(glm::vec3(tint, 0.0f, 1.0f)); // color	
+//
+//	}
+//
+//
+//
+//	glGenVertexArrays(1, &TcVAO);
+//	glBindVertexArray(TcVAO);
+//	glGenBuffers(1, &TcVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, TcVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2), &TcNormalized, GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//	glBindVertexArray(0);
+//
+//
+//	glGenVertexArrays(1, &dryAdiabatsVAO);
+//	glBindVertexArray(dryAdiabatsVAO);
+//	glGenBuffers(1, &dryAdiabatsVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, dryAdiabatsVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//	glBindVertexArray(0);
+//
+//
+//
+//
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	// MOIST ADIABATS
+//	///////////////////////////////////////////////////////////////////////////////////////
+//	cout << "////////////////////////////////////////////////////" << endl;
+//	cout << "// MOIST ADIABATS" << endl;
+//	cout << "////////////////////////////////////////////////////" << endl;
+//
+//	vertices.clear();
+//
+//
+//	float a = -6.14342f * 0.00001f;
+//	float b = 1.58927 * 0.001f;
+//	float c = -2.36418f;
+//	float d = 2500.79f;
+//
+//	float g = -9.81f;
+//	numMoistAdiabats = 0;
+//
+//	// Lv(T) = (aT^3 + bT^2 + cT + d) * 1000
+//	// Lv(T)	... latent heat of vaporisation/condensation
+//
+//	//for (float T = MIN_TEMP; T <= MAX_TEMP; T++) {
+//	T = 30.0f; // for example - create first testing curvePtr
+//			   //float Lv = (a*T*T*T + b*T*T + c*T + d) * 1000.0f;
+//
+//	float T_P0;
+//	float T_P1;
+//	float P1;
+//	float currP;
+//
+//#define MOIST_ADIABAT_OPTION 5
+//
+//#if MOIST_ADIABAT_OPTION == 0
+//	T_P0 = T;
+//	// LooooooooooooooP
+//	deltaP = 1.0f;
+//	for (float p = P0; p >= MIN_P; p -= deltaP) {
+//		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
+//		//P = soundingData[profileIndex].data[PRES];
+//
+//		//T_P1 = ???
+//		//P1 = P;
+//		P1 = p;
+//
+//		toKelvin(T_P0);
+//		toKelvin(T);
+//
+//
+//		// integral pres P0 az P1
+//		float integratedVal = 0.0f;
+//		//for (int profileIndex = P0 + 0.1f; profileIndex < P1; profileIndex += 0.1f) {
+//		//integratedVal += computePseudoadiabaticLapseRate(T, profileIndex);
+//		//integratedVal /= computeRho(T, profileIndex) * (-9.81f);
+//		//integratedVal += getMoistAdiabatIntegralVal(T_P0, profileIndex);
+//		//}
+//		//integratedVal += (getMoistAdiabatIntegralVal(T_P0, P0) + getMoistAdiabatIntegralVal(T_P0, P1)) / 2.0f;
+//		//integratedVal *= (P1 - P0) / CURVE_DELTA_P;
+//
+//		//T_P1 = T_P0 + integratedVal;
+//
+//		P0 *= 100.0f;
+//		P1 *= 100.0f;
+//
+//		integratedVal = (P1 - P0) * getMoistAdiabatIntegralVal(T_P0, P1);
+//		T_P1 = T_P0 + integratedVal * 100.0f;
+//
+//		//cout << "Integrated val = " << integratedVal << endl;
+//
+//		P0 /= 100.0f;
+//		P1 /= 100.0f;
+//
+//		toCelsius(T);
+//		toCelsius(T_P0);
+//		toCelsius(T_P1);
+//
+//		y = getNormalizedPres(P0);
+//		x = getNormalizedTemp(T_P0, y);
+//		//x = (T_P0 - MIN_TEMP) / (MAX_TEMP - MIN_TEMP);
+//		vertices.push_back(glm::vec2(x, y));
+//
+//		y = getNormalizedPres(P1);
+//		x = getNormalizedTemp(T_P1, y);
+//		//x = (T_P1 - MIN_TEMP) / (MAX_TEMP - MIN_TEMP);
+//
+//		vertices.push_back(glm::vec2(x, y));
+//
+//
+//		// jump to next
+//		P0 = P1;
+//		T_P0 = T_P1;
+//	}
+//#elif MOIST_ADIABAT_OPTION == 1 // Taken from existing code
+//	/////////////////////////////
+//	T_P0 = T;
+//	float ept = computeEquivalentTheta(getKelvin(T_P0), getKelvin(T_P0), 1000.0f);
+//	cout << "EPT = " << ept << endl;
+//	//P0 = 1000.0f;
+//
+//	T_P0 = getSaturatedAirTemperature(ept, P0);
+//	////////////////////////////////
+//	for (int i = 0; i < soundingData.size(); i++) {
+//		P = soundingData[i].data[PRES];
+//		P1 = P;
+//
+//		T_P1 = getSaturatedAirTemperature(ept, P1);
+//
+//		toCelsius(T_P0);
+//		toCelsius(T_P1);
+//
+//		y = getNormalizedPres(P0);
+//		x = getNormalizedTemp(T_P0, y);
+//
+//		vertices.push_back(glm::vec2(x, y));
+//
+//		y = getNormalizedPres(P1);
+//		x = getNormalizedTemp(T_P1, y);
+//
+//		vertices.push_back(glm::vec2(x, y));
+//
+//		toKelvin(T_P0);
+//		toKelvin(T_P1);
+//
+//		// jump to next
+//		P0 = P1;
+//		T_P0 = T_P1;
+//	}
+//#elif MOIST_ADIABAT_OPTION == 2 // Bakhshaii iterative description
+//	//T = 24.0f;
+//	T_P0 = T;
+//
+//	float e_0 = 6.112f;
+//	float e_s = e_0 * exp((17.67f * (T_P0 - 273.15f)) / T_P0 - 29.65f);
+//	float r_s = 0.622f * e_s / (P0 - e_s);
+//	float bApprox = 1.0;
+//
+//	float Lv = (a*T*T*T + b*T*T + c*T + d) * 1000.0f;
+//	cout << "Lv = " << Lv << endl;
+//
+//	float dTdP = (bApprox / P0) * ((R_d * T_P0 + Lv * r_s) / (1004.0f + (Lv * Lv * r_s * EPS * bApprox) / (R_d * T_P0 * T_P0)));
+//
+//	for (int i = 0; i < soundingData.size(); i++) {
+//		currP = soundingData[i].data[PRES];
+//		P1 = currP;
+//
+//		float deltaP = P1 - P0;
+//
+//
+//		toKelvin(T_P0);
+//		toKelvin(T_P1);
+//		toKelvin(T);
+//		///////
+//		float e_s = e_0 * exp((17.67f * (T_P0 - 273.15f)) / T_P0 - 29.65f);
+//		float r_s = 0.622f * e_s / (P0 - e_s);
+//		float Lv = (a*T_P0*T_P0*T_P0 + b*T_P0*T_P0 + c*T_P0 + d) * P0;
+//
+//		float dTdP = (bApprox / P0) * ((R_d * T_P0 + Lv * r_s) / (1004.0f + (Lv * Lv * r_s * EPS * bApprox) / (R_d * T_P0 * T_P0)));
+//
+//		/*float e_s = e_0 * exp((17.67f * (T - 273.15f)) / T - 29.65f);
+//		float r_s = 0.622f * e_s / (P0 - e_s);
+//		float dTdP = (bApprox / P0) * ((R_d * T + Lv * r_s) / (1004.0f + (Lv * Lv * r_s * EPS * bApprox) / (R_d * T * T)));*/
+//		//////////////////////
+//
+//		T_P1 = T_P0 + deltaP * dTdP;
+//
+//
+//		toCelsius(T_P0);
+//		toCelsius(T_P1);
+//		toCelsius(T);
+//		//cout << "T_P0 = " << T_P0 << ", T_P1 = " << T_P1 << endl;
+//		//cout << "P0 = " << P0 << ", P1 = " << P1 << endl;
+//
+//		y = getNormalizedPres(P0);
+//		x = getNormalizedTemp(T_P0, y);
+//
+//		vertices.push_back(glm::vec2(x, y));
+//
+//
+//		P0 = P1;
+//		T_P0 = T_P1;
+//
+//	}
+//#elif MOIST_ADIABAT_OPTION == 3 // Bakhshaii non-iterative approach
+//	T = 9.0f; // Celsius
+//	P = 800.0f; // 800hPa = 80kPa
+//	float theta_w = getWetBulbPotentialTemperature(T, P);
+//	cout << "THETA W = " << theta_w << endl;
+//	/*
+//	desired results:
+//	g1 = -1.26
+//	g2 = 53.24
+//	g3 = 0.58
+//	g4 = -8.84
+//	g5 = -25.99
+//	g6 = 0.15
+//	theta_w = 17.9 degC
+//	*/
+//
+//	theta_w = 28.0f;
+//	P = 250.0f;
+//	T = getPseudoadiabatTemperature(theta_w, P);
+//	cout << "T = " << T << endl;
+//
+//	for (float theta_w = MIN_TEMP; theta_w <= MAX_TEMP; theta_w += 10.0f) {
+//		for (int i = 0; i < soundingData.size(); i++) {
+//			P = soundingData[i].data[PRES];
+//			T = getPseudoadiabatTemperature(theta_w, P);
+//			y = getNormalizedPres(P);
+//			x = getNormalizedTemp(T, y);
+//			vertices.push_back(glm::vec2(x, y));
+//			numMoistAdiabats++;
+//		}
+//	}
+//#elif MOIST_ADIABAT_OPTION == 4 // pyMeteo implementation
+//
+//	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += 5.0f) {
+//		//T = -10.0f;
+//		T = currT;
+//		T += 273.15f;
+//		float origT = T;
+//
+//		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
+//		//	float p = soundingData[profileIndex].data[PRES];
+//		deltaP = 1.0f;
+//		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
+//			p *= 100.0f;
+//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			p /= 100.0f;
+//
+//			y = getNormalizedPres(p);
+//			x = getNormalizedTemp(getCelsius(T), y);
+//			vertices.push_back(glm::vec2(x, y));
+//		}
+//		T = origT;
+//		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
+//			p *= 100.0f;
+//			T += dTdp_moist(T, p) * deltaP * 100.0f;
+//			p /= 100.0f;
+//
+//			y = getNormalizedPres(p);
+//			x = getNormalizedTemp(getCelsius(T), y);
+//			vertices.push_back(glm::vec2(x, y));
+//		}
+//		numMoistAdiabats++;
+//
+//	}
+//
+//#elif MOIST_ADIABAT_OPTION == 5 // pyMeteo implementation - with spacing
+//
+//	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += 5.0f) {
+//		//T = -10.0f;
+//		T = currT;
+//		T += 273.15f;
+//		float origT = T;
+//
+//		//for (int profileIndex = 0; profileIndex < soundingData.size(); profileIndex++) {
+//		//	float p = soundingData[profileIndex].data[PRES];
+//		deltaP = 1.0f;
+//		int counter = 0;
+//
+//		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
+//			p *= 100.0f;
+//			T += dTdp_moist(T, p) * deltaP * 100.0f;
+//			p /= 100.0f;
+//
+//			if ((int)p % 25 == 0 && p != 1000.0f) {
+//				y = getNormalizedPres(p);
+//				x = getNormalizedTemp(getCelsius(T), y);
+//				vertices.push_back(glm::vec2(x, y));
+//				counter++;
+//			}
+//		}
+//		reverse(vertices.end() - counter, vertices.end()); // to draw continuous line
+//		T = origT;
+//
+//		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
+//			p *= 100.0f;
+//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			p /= 100.0f;
+//
+//			if ((int)p % 25 == 0) {
+//				y = getNormalizedPres(p);
+//				x = getNormalizedTemp(getCelsius(T), y);
+//				vertices.push_back(glm::vec2(x, y));
+//				counter++;
+//			}
+//		}
+//		//cout << "Counter = " << counter << ", num isobars = " << numIsobars << endl;
+//		//numMoistAdiabatEdges = counter;
+//		numMoistAdiabats++;
+//		moistAdiabatEdgeCount.push_back(counter);
+//
+//	}
+//
+//	///////////////////////////////////////////////////////////////////////////////////////////////
+//	// TESTING EL (regular) computation - special moist adiabat (goes through CCL)
+//	///////////////////////////////////////////////////////////////////////////////////////////////
+//	{
+//		int counter = 0;
+//		T = CCL.x + 273.15f;
+//		deltaP = 1.0f;
+//		for (float p = CCL.y; p >= MIN_P; p -= deltaP) {
+//			p *= 100.0f;
+//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			p /= 100.0f;
+//
+//			if ((int)p % 25 == 0 || p == CCL.y) {
+//				y = getNormalizedPres(p);
+//				x = getNormalizedTemp(getCelsius(T), y);
+//				vertices.push_back(glm::vec2(x, y));
+//				moistAdiabat_CCL_EL.vertices.push_back(glm::vec2(x, y));
+//				counter++;
+//			}
+//		}
+//		numMoistAdiabats++;
+//		moistAdiabatEdgeCount.push_back(counter);
+//
+//
+//
+//		///////////////////////////////////////////////////////////////////////////////////////////////
+//		// Find EL 
+//		///////////////////////////////////////////////////////////////////////////////////////////////
+//
+//		reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // temporary reverse for finding EL
+//		ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve);
+//		cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
+//		EL = getDenormalizedCoords(ELNormalized);
+//		cout << "EL: T = " << EL.x << ", P = " << EL.y << endl;
+//		reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // reverse back for the simulation
+//
+//		visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
+//		visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
+//
+//		visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
+//		visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
+//	}
+//
+//	///////////////////////////////////////////////////////////////////////////////////////////////
+//	// TESTING EL (orographic) computation - special moist adiabat (goes through LCL)
+//	///////////////////////////////////////////////////////////////////////////////////////////////
+//	{
+//		T = LCL.x + 273.15f;
+//		deltaP = 1.0f;
+//		for (float p = LCL.y; p >= MIN_P; p -= deltaP) {
+//			p *= 100.0f;
+//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			p /= 100.0f;
+//
+//			if ((int)p % 25 == 0 || p == LCL.y) {
+//				y = getNormalizedPres(p);
+//				x = getNormalizedTemp(getCelsius(T), y);
+//				//vertices.push_back(glm::vec2(x, y));
+//				moistAdiabat_LCL_EL.vertices.push_back(glm::vec2(x, y));
+//			}
+//		}
+//		//numMoistAdiabats++;
+//
+//
+//		LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+//		LFC = getDenormalizedCoords(LFCNormalized);
+//
+//		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
+//
+//		OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+//		OrographicEL = getDenormalizedCoords(OrographicELNormalized);
+//
+//		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
+//
+//
+//	}
+//
+//	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
+//		int counter = 0;
+//		moistAdiabatProfiles.push_back(Curve());
+//		T = CCLProfiles[profileIndex].x + 273.15f;
+//		deltaP = 1.0f;
+//		for (float p = CCLProfiles[profileIndex].y; p >= MIN_P; p -= deltaP) {
+//			p *= 100.0f;
+//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			p /= 100.0f;
+//
+//			if ((int)p % 25 == 0 || p == CCLProfiles[profileIndex].y) {
+//				y = getNormalizedPres(p);
+//				x = getNormalizedTemp(getCelsius(T), y);
+//				vertices.push_back(glm::vec2(x, y));
+//				//moistAdiabat_LCL_EL.vertices.push_back(glm::vec2(x, y));
+//				moistAdiabatProfiles[profileIndex].vertices.push_back(glm::vec2(x, y));
+//				counter++;
+//			}
+//		}
+//		numMoistAdiabats++;
+//		moistAdiabatEdgeCount.push_back(counter);
+//
+//
+//
+//		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
+//
+//		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve);
+//		ELProfiles.push_back(getDenormalizedCoords(tmp));
+//
+//		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
+//
+//		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(ELProfiles.back()), -2.0f)); // point
+//		float tint = (profileIndex + 1) * profileDelta;
+//		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
+//		visualizationPoints.push_back(glm::vec3(tint, 1.0f, 1.0f)); // color	
+//	}
+//
+//#endif
+//
+//	//numMoistAdiabats++;
+//
+//	if (!vertices.empty()) {
+//
+//		glGenVertexArrays(1, &moistAdiabatsVAO);
+//		glBindVertexArray(moistAdiabatsVAO);
+//		glGenBuffers(1, &moistAdiabatsVBO);
+//		glBindBuffer(GL_ARRAY_BUFFER, moistAdiabatsVBO);
+//
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+//
+//		glEnableVertexAttribArray(0);
+//		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+//
+//		glBindVertexArray(0);
+//	}
+//
+//
+//
+//
+//	// trying out stuff
+//	P = 432.2f;
+//	float normP = getNormalizedPres(P);
+//	cout << "Pressure = " << P << ", normalized pressure = " << normP << endl;
+//	visualizationPoints.push_back(glm::vec3(ambientCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
+//	visualizationPoints.push_back(glm::vec3(1.0f, 0.0f, 0.0f)); // color
+//
+//	visualizationPoints.push_back(glm::vec3(dewpointCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
+//	visualizationPoints.push_back(glm::vec3(0.0f, 0.0f, 1.0f)); // color
+//
+//
+//	glGenVertexArrays(1, &visPointsVAO);
+//	glBindVertexArray(visPointsVAO);
+//	glGenBuffers(1, &visPointsVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, visPointsVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * visualizationPoints.size(), &visualizationPoints[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)0);
+//
+//
+//	glEnableVertexAttribArray(1);
+//	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)(sizeof(glm::vec3)));
+//
+//	glBindVertexArray(0);
+//
+//
+//
+//
+//	// Main parameters visualization
+//
+//	mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
+//	mainParameterPoints.push_back(glm::vec3(0.0f));
+//	mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
+//	mainParameterPoints.push_back(glm::vec3(0.0f));
+//
+//	mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
+//	mainParameterPoints.push_back(glm::vec3(0.0f));
+//
+//	mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
+//	mainParameterPoints.push_back(glm::vec3(0.0f));
+//
+//	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
+//	mainParameterPoints.push_back(glm::vec3(0.0f));
+//
+//	mainParameterPoints.push_back(glm::vec3(OrographicELNormalized, 0.0f));
+//	mainParameterPoints.push_back(glm::vec3(0.0f));
+//
+//
+//	glGenVertexArrays(1, &mainParameterPointsVAO);
+//	glBindVertexArray(mainParameterPointsVAO);
+//	glGenBuffers(1, &mainParameterPointsVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mainParameterPoints.size(), &mainParameterPoints[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)0);
+//
+//	glEnableVertexAttribArray(1);
+//	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)(sizeof(glm::vec3)));
+//
+//	glBindVertexArray(0);
+//
+//
+//	// QUAD
+//	glGenVertexArrays(1, &overlayDiagramVAO);
+//	glGenBuffers(1, &overlayDiagramVBO);
+//	glBindVertexArray(overlayDiagramVAO);
+//	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+//	glEnableVertexAttribArray(1);
+//	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+//	glBindVertexArray(0);
+//
+//	// TEXTURE AND FRAMEBUFFER
+//
+//	glGenTextures(1, &diagramTexture);
+//	glBindTexture(GL_TEXTURE_2D, diagramTexture);
+//
+//	//glTextureParameteri(diagramTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+//
+//
+//	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+//	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+//
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
+//
+//	glGenFramebuffers(1, &diagramFramebuffer);
+//	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
+//	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, diagramTexture, 0);
+//
+//
+//	glGenTextures(1, &diagramMultisampledTexture);
+//	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
+//	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA16F, textureResolution, textureResolution, false);
+//
+//	glGenFramebuffers(1, &diagramMultisampledFramebuffer);
+//	glBindFramebuffer(GL_FRAMEBUFFER, diagramMultisampledFramebuffer);
+//	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture, 0);
+//
+//
+//	GLfloat lineWidthRange[2] = { 0.0f, 0.0f };
+//	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, lineWidthRange);
+//	// Maximum supported line width is in lineWidthRange[1].
+//	cout << lineWidthRange[0] << " , " << lineWidthRange[1] << endl;
+//}
+//
+//
