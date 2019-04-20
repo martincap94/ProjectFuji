@@ -81,6 +81,7 @@ uniform int u_EVSMMode = 0;
 uniform float u_ShadowBias;
 
 uniform bool u_ShadowOnly;
+uniform float u_ShadowDamping;
 
 
 
@@ -121,8 +122,13 @@ void main() {
 
     vec3 V = normalize(u_ViewPos - v_WorldPos);
 
-	//float shadow = calcShadow(v_LightSpacePos); // directional light only
-	
+	float shadow = calcShadow(v_LightSpacePos); // directional light only
+
+	if (u_ShadowOnly) {
+		fragColor = vec4(vec3(shadow), 1.0);
+		return;
+	}
+
 	vec3 result;
 
 
@@ -162,10 +168,10 @@ void main() {
 	vec3 color = Lo * ao;
 
 
-	result = color;
 
 
-
+	result = color * min(shadow + u_ShadowDamping, 1.0);
+	
     
     fragColor = vec4(result, 1.0);
 
