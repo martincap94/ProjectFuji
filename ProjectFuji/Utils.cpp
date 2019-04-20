@@ -2,6 +2,7 @@
 
 #include "DataStructures.h"
 
+#include <iostream>
 
 //#include <glad\glad.h>
 
@@ -211,4 +212,16 @@ GLuint createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GL
 
 	glTexImage2D(target, 0, internalFormat, w, h, 0, format, GL_FLOAT, 0);
 	return texid;
+}
+
+void printVec2(const glm::vec2 & v) {
+	printf("(%0.2f, %0.2f)\n", v.x, v.y);
+}
+
+void printVec3(const glm::vec3 & v) {
+	printf("(%0.2f, %0.2f, 0.2f)\n", v.x, v.y, v.z);
+}
+
+void printVec4(const glm::vec4 & v) {
+	printf("(%0.2f, %0.2f, %0.2f, %0.2f)\n", v.x, v.y, v.z, v.w);
 }

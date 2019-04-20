@@ -36,6 +36,7 @@ void VariableManager::init(int argc, char **argv) {
 	parseArguments(argc, argv);
 
 	loadSceneFilenames();
+	loadSoundingDataFilenames();
 
 	ready = true;
 }
@@ -98,6 +99,27 @@ void VariableManager::loadSceneFilenames() {
 	cout << "Possible Scenes:" << endl;
 	for (int i = 0; i < sceneFilenames.size(); i++) {
 		cout << " | " << sceneFilenames[i] << endl;
+	}
+
+
+}
+
+void VariableManager::loadSoundingDataFilenames() {
+
+	string path = SOUNDING_DATA_DIR;
+	string ext = "";
+	for (const auto &entry : fs::directory_iterator(path)) {
+		//cout << entry.path() << endl;
+		if (getFileExtension(entry.path().string(), ext)) {
+			transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+			if (ext == "txt") {
+				soundingDataFilenames.push_back(entry.path().string());
+			}
+		}
+	}
+	cout << "Possible Sounding Data Files:" << endl;
+	for (int i = 0; i < soundingDataFilenames.size(); i++) {
+		cout << " | " << soundingDataFilenames[i] << endl;
 	}
 
 

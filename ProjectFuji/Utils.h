@@ -199,3 +199,16 @@ int getIdx(int x, int y, int width);
 
 
 GLuint createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format);
+
+
+void printVec2(const glm::vec2 &v);
+void printVec3(const glm::vec3 &v);
+void printVec4(const glm::vec4 &v);
+
+
+
+
+
+
+
+

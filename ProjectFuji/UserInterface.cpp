@@ -1133,6 +1133,26 @@ void UserInterface::constructDiagramControlsTab() {
 	}
 
 
+	if (nk_combo_begin_label(ctx, stlpDiagram->soundingFilename.c_str(), nk_vec2(nk_widget_width(ctx), 200.0f))) {
+		if (vars->soundingDataFilenames.empty()) {
+			nk_label(ctx, "empty...", NK_TEXT_LEFT);
+		}
+
+		for (int i = 0; i < vars->soundingDataFilenames.size(); i++) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+			if (nk_combo_item_label(ctx, vars->soundingDataFilenames[i].c_str(), NK_TEXT_CENTERED)) {
+				stlpDiagram->soundingFilename = vars->soundingDataFilenames[i];
+			}
+		}
+		nk_combo_end(ctx);
+	}
+
+	if (nk_button_label(ctx, "Load Sounding File")) {
+		stlpDiagram->loadSoundingData();
+		stlpDiagram->recalculateAll();
+		stlpSimCUDA->uploadDataFromDiagramToGPU();
+	}
+
 
 	if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram controls", NK_MINIMIZED)) {
 		nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
@@ -1161,7 +1181,7 @@ void UserInterface::constructDiagramControlsTab() {
 	}
 
 	if (nk_button_label(ctx, "Reset to default")) {
-		stlpDiagram->resetToDefault();
+		stlpDiagram->recalculateAll();
 	}
 
 	//if (nk_button_label(ctx, "Reset simulation")) {
@@ -1749,6 +1769,11 @@ void UserInterface::constructGeneralDebugTab() {
 }
 
 void UserInterface::constructPropertiesTab() {
+
+	if (activeActors.empty()) {
+		nk_layout_row_dynamic(ctx, 60, 1);
+		nk_label_wrap(ctx, "Select objects in hierarchy to display their properties here...");
+	}
 
 	for (const auto &actor : activeActors) {
 

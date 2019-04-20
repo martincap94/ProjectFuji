@@ -26,6 +26,7 @@ public:
 
 	glm::vec2 getIntersectionWithIsobar(float normalizedPressure);
 
+	void printVertices();
 
 private:
 

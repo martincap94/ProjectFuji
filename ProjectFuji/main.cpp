@@ -228,6 +228,8 @@ int main(int argc, char **argv) {
 
 	runApp();
 
+	cout << "Finished..." << endl;
+
 	return 0;
 }
 

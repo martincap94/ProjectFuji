@@ -67,6 +67,12 @@ glm::vec2 Curve::getIntersectionWithIsobar(float normalizedPressure) {
 	return glm::vec2();
 }
 
+void Curve::printVertices() {
+	for (int i = 0; i < vertices.size(); i++) {
+		printVec2(vertices[i]);
+	}
+}
+
 
 
 

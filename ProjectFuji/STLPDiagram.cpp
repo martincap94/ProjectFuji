@@ -12,7 +12,7 @@
 
 
 STLPDiagram::STLPDiagram(VariableManager *vars) : vars(vars) {
-	init(vars->soundingFile);
+	init();
 }
 
 
@@ -20,7 +20,9 @@ STLPDiagram::~STLPDiagram() {
 	delete textRend;
 }
 
-void STLPDiagram::init(string filename) {
+void STLPDiagram::init() {
+
+	soundingFilename = string(SOUNDING_DATA_DIR) + vars->soundingFile;
 
 	curveShader = ShaderManager::getShaderPtr("curve");
 	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
@@ -29,7 +31,7 @@ void STLPDiagram::init(string filename) {
 	recalculateProfileDelta();
 
 
-	loadSoundingData(filename);
+	loadSoundingData();
 
 	initFreetype();
 
@@ -37,15 +39,13 @@ void STLPDiagram::init(string filename) {
 	initCurves();
 }
 
-void STLPDiagram::loadSoundingData(string filename) {
+void STLPDiagram::loadSoundingData() {
 
 	//cout << "Sounding filename = " << filename << endl;
-	soundingFile = filename;
-	filename = string(SOUNDING_DATA_DIR) + filename;
-	ifstream infile(filename);
+	ifstream infile(soundingFilename);
 
 	if (!infile.is_open()) {
-		cerr << filename << " could not be opened!" << endl;
+		cerr << soundingFilename << " could not be opened!" << endl;
 		exit(EXIT_FAILURE);
 		//return;
 	}
@@ -54,6 +54,13 @@ void STLPDiagram::loadSoundingData(string filename) {
 
 	// read first line (the header)
 	getline(infile, line);
+
+	if (soundingData.size() > 0) {
+		soundingData.clear();
+	}
+	if (windData.size() > 0) {
+		windData.clear();
+	}
 
 	SoundingDataItem tmp;
 	while (infile.good()) {
@@ -188,6 +195,7 @@ void STLPDiagram::initAmbientTemperatureCurve() {
 	}
 
 	ambientCurve.vertices = vertices;
+	//ambientCurve.printVertices();
 
 	glBindBuffer(GL_ARRAY_BUFFER, ambientTemperatureVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
@@ -445,7 +453,7 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 
 
 
-void STLPDiagram::resetToDefault() {
+void STLPDiagram::recalculateAll() {
 	cout << "Resetting diagram to default sounding data values" << endl;
 
 	initAmbientTemperatureCurve();
@@ -1187,14 +1195,14 @@ void STLPDiagram::draw() {
 	if (showAmbientTemperatureCurve) {
 		curveShader->setVec3("u_Color", glm::vec3(0.7f, 0.1f, 0.15f));
 		glBindVertexArray(ambientTemperatureVAO);
-		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
+		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size());
 	}
 
 
 	if (showDewpointCurve) {
 		curveShader->setVec3("u_Color", glm::vec3(0.1f, 0.7f, 0.15f));
 		glBindVertexArray(dewTemperatureVAO);
-		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size() * 2);
+		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size());
 	}
 
 
@@ -1319,7 +1327,7 @@ void STLPDiagram::drawText() {
 	textRend->renderText("Temperature (C)", 0.45f, 1.10f);
 	textRend->renderText("P (hPa)", -0.15f, 0.5f);
 
-	textRend->renderText("SkewT/LogP (" + soundingFile + ")", 0.4f, -0.05f, 0.0006f);
+	textRend->renderText("SkewT/LogP (" + soundingFilename + ")", 0.4f, -0.05f, 0.0006f);
 
 
 }

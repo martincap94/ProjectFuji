@@ -542,6 +542,8 @@ void STLPSimulatorCUDA::initCUDAGeneral() {
 
 
 	CHECK_ERROR(cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size()));
+	currAmbientCurveVertexCount = stlpDiagram->ambientCurve.vertices.size();
+
 	CHECK_ERROR(cudaMalloc((void**)&d_dryAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * vars->stlpMaxProfiles));
 	CHECK_ERROR(cudaMalloc((void**)&d_moistAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * vars->stlpMaxProfiles));
 	CHECK_ERROR(cudaMalloc((void**)&d_dryAdiabatProfiles, sizeof(glm::vec2) * vars->stlpMaxProfiles * stlpDiagram->maxVerticesPerCurve));
@@ -554,10 +556,15 @@ void STLPSimulatorCUDA::initCUDAGeneral() {
 
 void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 
+	if (currAmbientCurveVertexCount != stlpDiagram->ambientCurve.vertices.size()) {
+		CHECK_ERROR(cudaFree(d_ambientTempCurve));
+		CHECK_ERROR(cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size()));
+		currAmbientCurveVertexCount = stlpDiagram->ambientCurve.vertices.size();
+	}
+	cout << "Ambient curve length: " << stlpDiagram->ambientCurve.vertices.size() << endl;
 
 	// ambient temp curve can be mapped to VBO, no need for this
 	CHECK_ERROR(cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice));
-
 
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_numProfiles, &stlpDiagram->numProfiles, sizeof(int)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_const_P0, &stlpDiagram->P0, sizeof(float)));

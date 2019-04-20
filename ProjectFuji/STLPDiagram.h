@@ -44,6 +44,7 @@ public:
 
 	vector<SoundingDataItem> soundingData;	///< Sounding data loaded from file
 
+
 	glm::vec2 DewpointNormalized;	///< Normalized dewpoint temperature and pressure
 	glm::vec2 CCLNormalized;		///< Normalized convective condensation level
 	glm::vec2 TcNormalized;			///< Normalized convective temperature
@@ -92,7 +93,7 @@ public:
 	int maxVerticesPerCurve;
 
 
-	string soundingFile;			///< Filename of the sounding file that will be loaded and displayed
+	string soundingFilename;			///< Filename of the sounding file that will be loaded and displayed
 
 	pair<Curve *, int> selectedPoint;
 
@@ -143,10 +144,10 @@ public:
 	~STLPDiagram();
 
 	/// Initializes the diagram from given sounding data.
-	void init(string filename);
+	void init();
 
 	/// Loads the sounding data to the soundingData vector.
-	void loadSoundingData(string filename);
+	void loadSoundingData();
 
 
 	void generateIsobars();
@@ -178,7 +179,7 @@ public:
 	void generateMoistAdiabat(float theta, float startP, vector<glm::vec2> &vertices, float P0 = 1000.0f, vector<int> *edgeCounter = nullptr, bool incrementCounter = true, float deltaP = 25.0f, Curve *curve = nullptr, float smallDeltaP = 1.0f);
 
 
-	void resetToDefault();
+	void recalculateAll();
 
 
 	void initBuffers();

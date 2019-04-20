@@ -55,10 +55,8 @@ public:
 	float *d_verticalVelocities;
 	float *d_particlePressures;
 
-	// for now, let us have curves here (that are copied from the CPU precomputation)
-	glm::vec2 *d_ambientTempCurve;
-	
 
+	glm::vec2 *d_ambientTempCurve;
 	
 	// use flattened arrays (with offsets)
 	glm::vec2 *d_dryAdiabatProfiles;
@@ -119,6 +117,8 @@ private:
 
 	GLuint ELLevelVAO;
 	GLuint ELLevelVBO;
+
+	int currAmbientCurveVertexCount;
 
 
 };
