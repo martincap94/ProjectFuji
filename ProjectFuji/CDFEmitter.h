@@ -12,7 +12,7 @@ public:
 	std::string probabilityTexturePath = "";
 
 	CDFEmitter();
-	CDFEmitter(ParticleSystem *owner, std::string probabilityTexturePath);
+	CDFEmitter(std::string name, ParticleSystem *owner, std::string probabilityTexturePath);
 	CDFEmitter(const CDFEmitter &e, ParticleSystem *owner);
 	~CDFEmitter();
 

@@ -17,8 +17,10 @@ public:
 	std::string probabilityTexturePath = "";
 	const int numVisPoints = 4;
 
+	float scale = 1.0f;
+
 	PositionalCDFEmitter();
-	PositionalCDFEmitter(ParticleSystem *owner, std::string probabilityTexturePath);
+	PositionalCDFEmitter(std::string name, ParticleSystem *owner, std::string probabilityTexturePath);
 	PositionalCDFEmitter(const PositionalCDFEmitter &e, ParticleSystem *owner);
 	~PositionalCDFEmitter();
 

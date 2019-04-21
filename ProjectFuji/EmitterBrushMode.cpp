@@ -136,6 +136,10 @@ void EmitterBrushMode::constructBrushSelectionUIPanel(nk_context * ctx, UserInte
 		nk_combo_end(ctx);
 	}
 
+	if (activeBrush) {
+		activeBrush->constructEmitterPropertiesTab(ctx, ui);
+	}
+
 
 
 }

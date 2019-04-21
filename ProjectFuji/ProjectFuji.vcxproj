@@ -99,7 +99,10 @@
     <ClCompile Include="CDFSamplerMultiChannel.cpp" />
     <ClCompile Include="CircleEmitter.cpp" />
     <ClCompile Include="Curve.cpp" />
-    <ClCompile Include="CDFEmitterOld.cpp" />
+    <ClCompile Include="CDFEmitterOld.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="CDFEmitter.cpp">
       <FileType>CppCode</FileType>
     </ClCompile>
@@ -251,7 +254,10 @@
     <ClInclude Include="Cubemap.h" />
     <CudaCompile Include="CUDADataStructures.h" />
     <ClInclude Include="Curve.h" />
-    <ClInclude Include="CDFEmitterOld.h" />
+    <ClInclude Include="CDFEmitterOld.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="CDFEmitter.h" />
     <ClInclude Include="CDFSampler.h" />
     <ClInclude Include="DirectionalLight.h" />

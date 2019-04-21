@@ -5,11 +5,12 @@
 
 Emitter::Emitter() {}
 
-Emitter::Emitter(ParticleSystem *owner) : owner(owner) {
+Emitter::Emitter(string name, ParticleSystem *owner) : name(name), owner(owner) {
 	init();
 }
 
 Emitter::Emitter(const Emitter & e, ParticleSystem * owner) : owner(owner) {
+	name = e.name;
 	minProfileIndex = e.minProfileIndex;
 	maxProfileIndex = e.maxProfileIndex;
 	maxParticlesToEmit = e.maxParticlesToEmit;

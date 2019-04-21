@@ -24,16 +24,17 @@ using namespace std;
 
 CDFEmitter::CDFEmitter() : Emitter() {}
 
-CDFEmitter::CDFEmitter(const CDFEmitter & e, ParticleSystem * owner) : Emitter(e, owner) {
+// expects path to 16-bit grayscale png
+CDFEmitter::CDFEmitter(string name, ParticleSystem *owner, string probabilityTexturePath) : Emitter(name, owner), probabilityTexturePath(probabilityTexturePath) {
+	//sampler = new CDFSampler(this->probabilityTexturePath);
+	init();
+}
+
+CDFEmitter::CDFEmitter(const CDFEmitter &e, ParticleSystem *owner) : Emitter(e, owner) {
 	probabilityTexturePath = e.probabilityTexturePath;
 	init();
 }
 
-// expects path to 16-bit grayscale png
-CDFEmitter::CDFEmitter(ParticleSystem *owner, string probabilityTexturePath) : Emitter(owner), probabilityTexturePath(probabilityTexturePath) {
-	//sampler = new CDFSampler(this->probabilityTexturePath);
-	init();
-}
 
 
 
@@ -41,7 +42,7 @@ void CDFEmitter::init() {
 	sampler = new CDFSampler(probabilityTexturePath);
 }
 
-void CDFEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+void CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *ui) {
 	Texture *selectedTexture = nullptr;
 	ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
 	if (selectedTexture != nullptr) {

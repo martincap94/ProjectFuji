@@ -50,7 +50,7 @@ public:
 	int visible = 0;
 
 	Emitter();
-	Emitter(ParticleSystem *owner);
+	Emitter(std::string name, ParticleSystem *owner);
 	Emitter(const Emitter &e, ParticleSystem *owner);
 
 	~Emitter();

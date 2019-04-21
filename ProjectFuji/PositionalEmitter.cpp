@@ -7,7 +7,7 @@
 PositionalEmitter::PositionalEmitter() {
 }
 
-PositionalEmitter::PositionalEmitter(ParticleSystem * owner, glm::vec3 position) : Emitter(owner), position(position) {
+PositionalEmitter::PositionalEmitter(string name, ParticleSystem * owner, glm::vec3 position) : Emitter(name, owner), position(position) {
 	init();
 }
 

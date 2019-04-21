@@ -6,12 +6,13 @@
 PositionalCDFEmitter::PositionalCDFEmitter() {
 }
 
-PositionalCDFEmitter::PositionalCDFEmitter(ParticleSystem * owner, std::string probabilityTexturePath) : PositionalEmitter(owner), probabilityTexturePath(probabilityTexturePath) {
+PositionalCDFEmitter::PositionalCDFEmitter(string name, ParticleSystem * owner, std::string probabilityTexturePath) : PositionalEmitter(name, owner), probabilityTexturePath(probabilityTexturePath) {
 	init();
 }
 
 PositionalCDFEmitter::PositionalCDFEmitter(const PositionalCDFEmitter & e, ParticleSystem * owner) : PositionalEmitter(e, owner) {
 	probabilityTexturePath = e.probabilityTexturePath;
+	scale = e.scale;
 	init();
 }
 
@@ -38,12 +39,11 @@ void PositionalCDFEmitter::emitParticle() {
 
 	Particle p;
 	glm::ivec2 sample = sampler->getSample();
-	p.position.x = position.x + sample.x;
-	p.position.z = position.z + sample.y;
+	p.position.x = position.x + sample.x * scale;
+	p.position.z = position.z + sample.y * scale;
 	p.position.y = heightMap->getHeight(p.position.x, p.position.z);
 
 
-	//p.position = /*sampler->getSample();*/
 
 	p.profileIndex = getRandomProfileIndex();
 	p.velocity = glm::vec3(0.0f);
@@ -87,6 +87,8 @@ void PositionalCDFEmitter::initBuffers() {
 
 void PositionalCDFEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
 	PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
+	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_property_float(ctx, "Scale", 0.01f, &scale, 1000.0f, 0.01f, 0.01f);
 	Texture *selectedTexture = nullptr;
 	ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
 	if (selectedTexture != nullptr) {
@@ -103,15 +105,15 @@ void PositionalCDFEmitter::updateVBOPoints() {
 	v.y = heightMap->getHeight(v.x, v.z);
 	vertices.push_back(v);
 
-	v.x += sampler->getWidth();
+	v.x += sampler->getWidth() * scale;
 	v.y = heightMap->getHeight(v.x, v.z);
 	vertices.push_back(v);
 
-	v.z += sampler->getHeight();
+	v.z += sampler->getHeight() * scale;
 	v.y = heightMap->getHeight(v.x, v.z);
 	vertices.push_back(v);
 
-	v.x -= sampler->getWidth();
+	v.x -= sampler->getWidth() * scale;
 	v.y = heightMap->getHeight(v.x, v.z);
 	vertices.push_back(v);
 

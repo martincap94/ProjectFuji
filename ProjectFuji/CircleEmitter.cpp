@@ -15,7 +15,7 @@ using namespace std;
 CircleEmitter::CircleEmitter() : PositionalEmitter() {
 }
 
-CircleEmitter::CircleEmitter(ParticleSystem * owner, glm::vec3 position, float radius) : PositionalEmitter(owner, position), radius(radius) {
+CircleEmitter::CircleEmitter(string name, ParticleSystem * owner, glm::vec3 position, float radius) : PositionalEmitter(name, owner, position), radius(radius) {
 	init();
 }
 

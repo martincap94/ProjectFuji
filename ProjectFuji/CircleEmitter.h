@@ -15,7 +15,7 @@ public:
 	int numVisPoints = 120;
 
 	CircleEmitter();
-	CircleEmitter(ParticleSystem *owner, glm::vec3 position = glm::vec3(0.0f), float radius = 1000.0f);
+	CircleEmitter(std::string name, ParticleSystem *owner, glm::vec3 position = glm::vec3(0.0f), float radius = 1000.0f);
 	CircleEmitter(const CircleEmitter &e, ParticleSystem *owner);
 	~CircleEmitter();
 
