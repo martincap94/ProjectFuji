@@ -27,10 +27,11 @@
 #include "STLPSimulatorCUDA.h"
 #include "ShaderProgram.h"
 #include "Model.h"
+#include "CircleEmitter.h"
+#include "CDFEmitter.h"
 
 
 class Emitter;
-class CircleEmitter;
 
 class LBM;
 
@@ -41,9 +42,15 @@ private:
 		glm::vec3 size = glm::vec3(4000.0f, 1000.0f, 3000.0f);
 	};
 
+	struct EmitterCreationHelper {
+		CircleEmitter circleEmitter;
+		CDFEmitter cdfEmitter;
+	};
 
 
 public:
+	EmitterCreationHelper ech;
+
 
 	std::vector<Emitter *> emitters;
 
@@ -162,7 +169,7 @@ public:
 	void disableAllEmitters();
 
 	void createPredefinedEmitters();
-	void addEmitter();
+	void createEmitter(int emitterType);
 	void deleteEmitter(int idx);
 
 	

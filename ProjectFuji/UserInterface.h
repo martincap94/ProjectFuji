@@ -122,6 +122,9 @@ public:
 
 	void nk_value_vec3(struct nk_context *ctx, const glm::vec3 &target, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
 
+
+	void constructTextureSelection(Texture **targetTexturePtr, std::string nullTextureNameOverride = "");
+
 private:
 
 
@@ -154,7 +157,7 @@ private:
 
 
 	bool terrainGeneratorPopupOpened = false;
-
+	bool emitterCreationWindowOpened = false;
 
 
 	int hierarchyIdCounter = 0;
@@ -189,6 +192,8 @@ private:
 	void addSceneHierarchyActor(Actor *actor);
 
 	void constructEmittersTab();
+	void constructEmitterCreationWindow();
+
 	void constructGeneralDebugTab();
 	void constructPropertiesTab();
 
@@ -199,14 +204,13 @@ private:
 	void constructDirLightPositionPanel();
 	void constructFormBoxButtonPanel();
 
-	void constructTextureSelection(Texture **targetTexturePtr);
 
 
 	// small quick functions
 	void constructTauProperty();
 	void constructWalkingPanel();
 
-	std::string tryGetTextureFilename(Texture *tex);
+	const char *tryGetTextureFilename(Texture *tex, std::string nullTextureName = "");
 
 
 };

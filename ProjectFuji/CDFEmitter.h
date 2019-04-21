@@ -9,10 +9,14 @@
 class CDFEmitter : public Emitter {
 public:
 
+	std::string probabilityTexturePath = "";
 
+	CDFEmitter();
 	CDFEmitter(ParticleSystem *owner, std::string probabilityTexturePath);
+	CDFEmitter(const CDFEmitter &e, ParticleSystem *owner);
 	~CDFEmitter();
 
+	virtual void init();
 
 	virtual void emitParticle();
 
@@ -20,6 +24,9 @@ public:
 	virtual void draw();
 	virtual void draw(ShaderProgram *shader);
 	virtual void initBuffers();
+
+	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
+
 	
 protected:
 

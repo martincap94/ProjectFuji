@@ -57,6 +57,7 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
 	singleColorShader = ShaderManager::getShaderPtr("singleColor");
 
+
 	heightMap = vars->heightMap;
 	numParticles = vars->numParticles;
 
@@ -776,8 +777,28 @@ void ParticleSystem::disableAllEmitters() {
 }
 
 void ParticleSystem::createPredefinedEmitters() {
-	emitters.push_back(new CircleEmitter(this, glm::vec3(4000.0f, 0.0f, 4000.0f), 2000.0f, true));
+
+	//ech.circleEmitter = new CircleEmitter();
+	//ech.cdfEmitter = new CDFEmitter();
+
+
+	emitters.push_back(new CircleEmitter(this, glm::vec3(4000.0f, 0.0f, 4000.0f), 2000.0f));
 	emitters.push_back(new CDFEmitter(this, "textures/cdf2.png"));
+}
+
+void ParticleSystem::createEmitter(int emitterType) {
+
+	//switch (emitterType) {
+	//	case Emitter::eEmitterType::CIRCULAR:
+	//		emitters.push_back(new CircleEmitter());
+	//		break;
+	//	case Emitter::eEmitterType::CDF_TERRAIN:
+	//		emitters.push_back(new CDFEmitter());
+	//		break;
+
+	//}
+
+
 }
 
 void ParticleSystem::deleteEmitter(int idx) {
@@ -793,6 +814,8 @@ void ParticleSystem::deleteEmitter(int idx) {
 
 }
 
+
+
 void ParticleSystem::pushParticleToEmit(Particle p) {
 	particleVerticesToEmit.push_back(p.position);
 	particleProfilesToEmit.push_back(p.profileIndex);
@@ -800,7 +823,6 @@ void ParticleSystem::pushParticleToEmit(Particle p) {
 	numActiveParticles++; // each emitter already checks if numActiveParticles < numParticles, no need to check once more
 
 }
-
 
 
 //void ParticleSystem::generateParticleOnTerrain(std::vector<glm::vec3>& outVector) {

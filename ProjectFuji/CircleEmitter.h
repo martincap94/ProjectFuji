@@ -2,21 +2,24 @@
 
 //#include "Emitter.h"
 #include "PositionalEmitter.h"
-#include "ParticleSystem.h"
 
 //#include <random>
+
+class ParticleSystem;
 
 class CircleEmitter : public PositionalEmitter {
 public:
 
-	bool projectOntoTerrain;
 	float radius;
 
 	int numVisPoints = 120;
 
-
-	CircleEmitter(ParticleSystem *owner, glm::vec3 position = glm::vec3(0.0f), float radius = 1000.0f, bool projectOntoTerrain = true);
+	CircleEmitter();
+	CircleEmitter(ParticleSystem *owner, glm::vec3 position = glm::vec3(0.0f), float radius = 1000.0f);
+	CircleEmitter(const CircleEmitter &e, ParticleSystem *owner);
 	~CircleEmitter();
+
+	virtual void init();
 
 	virtual void emitParticle();
 
@@ -25,6 +28,8 @@ public:
 	virtual void draw(ShaderProgram *shader);
 
 	virtual void initBuffers();
+
+	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 protected:
 

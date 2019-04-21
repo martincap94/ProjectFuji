@@ -19,7 +19,7 @@ void main() {
 	if (a_ProfileIndex < u_NumProfiles) {
 		float CCL = u_ProfileCCLs[a_ProfileIndex];
 		float diff = a_Pos.y - CCL;
-		if (a_Pos.y - CCL < discardThreshold) {
+		if (a_Pos.y - CCL < -discardThreshold) {
 			g_DiscardParticle = 1;
 		}
 	}

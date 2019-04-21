@@ -109,6 +109,7 @@ void UserInterface::constructUserInterface() {
 	constructHorizontalBar();
 
 	constructTerrainGeneratorWindow();
+	constructEmitterCreationWindow();
 
 	if (vars->aboutWindowOpened) {
 
@@ -726,7 +727,7 @@ void UserInterface::constructTerrainTab() {
 
 	HeightMap *hm = vars->heightMap;
 
-	if (nk_combo_begin_label(ctx, tryGetTextureFilename(hm->materialMap).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+	if (nk_combo_begin_label(ctx, tryGetTextureFilename(hm->materialMap), nk_vec2(nk_widget_width(ctx), 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
 		for (const auto& kv : *textures) {
 			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
@@ -752,7 +753,7 @@ void UserInterface::constructTerrainTab() {
 	nk_property_float(ctx, "Grunge map min", 0.0f, &hm->grungeMapMin, 1.0f, 0.01f, 0.01f);
 	nk_property_float(ctx, "Grunge map tiling", 1.0f, &hm->grungeMapTiling, 1000.0f, 0.1f, 0.1f);
 
-	if (nk_combo_begin_label(ctx, tryGetTextureFilename(vars->heightMap->visTexture).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+	if (nk_combo_begin_label(ctx, tryGetTextureFilename(vars->heightMap->visTexture), nk_vec2(nk_widget_width(ctx), 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
 		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
 			vars->heightMap->visTexture = nullptr;
@@ -1645,6 +1646,13 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 
 void UserInterface::constructEmittersTab() {
 
+	nk_layout_row_dynamic(ctx, 15, 1);
+	if (nk_button_label(ctx, "Add Emitter")) {
+		emitterCreationWindowOpened = true;
+	}
+
+
+
 	vector<int> emitterIndicesToDelete;
 
 	for (int i = 0; i < particleSystem->emitters.size(); i++) {
@@ -1691,6 +1699,8 @@ void UserInterface::constructEmittersTab() {
 		}
 	}
 
+
+
 	for (const auto &i : emitterIndicesToDelete) {
 		particleSystem->deleteEmitter(i);
 	}
@@ -1712,6 +1722,86 @@ void UserInterface::constructEmittersTab() {
 
 	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
 
+
+}
+
+void UserInterface::constructEmitterCreationWindow() {
+	if (emitterCreationWindowOpened) {
+		float w = 500.0f;
+		float h = 500.0f;
+		if (nk_begin(ctx, "Emitter Creation", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+
+			static int selectedEmitterType = 0;
+
+			if (nk_combo_begin_label(ctx, Emitter::getEmitterTypeString(selectedEmitterType), nk_vec2(nk_widget_width(ctx), 400.0f))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+
+				for (int i = 0; i < Emitter::eEmitterType::_NUM_EMITTER_TYPES; i++) {
+					if (nk_combo_item_label(ctx, Emitter::getEmitterTypeString(i), NK_TEXT_CENTERED)) {
+						selectedEmitterType = i;
+						nk_combo_close(ctx);
+					}
+				}
+				nk_combo_end(ctx);
+			}
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+			switch (selectedEmitterType) {
+				case Emitter::eEmitterType::CIRCULAR: {
+					particleSystem->ech.circleEmitter.constructEmitterPropertiesTab(ctx, this);
+					break;
+				}
+				case Emitter::eEmitterType::CDF_TERRAIN: {
+					particleSystem->ech.cdfEmitter.constructEmitterPropertiesTab(ctx, this);
+					break;
+				}
+				case Emitter::eEmitterType::CDF_POSITIONAL: {
+					break;
+				}
+				default:
+					break;
+
+			}
+
+			nk_layout_row_dynamic(ctx, 15, 1);
+
+			if (nk_button_label(ctx, "Create Emitter")) {
+				cout << "Creating Emitter..." << endl;
+				Emitter *createdEmitter = nullptr;
+
+				switch (selectedEmitterType) {
+					case Emitter::eEmitterType::CIRCULAR: {
+						createdEmitter = new CircleEmitter(particleSystem->ech.circleEmitter, particleSystem);
+						break;
+					}
+					case Emitter::eEmitterType::CDF_TERRAIN: {
+						createdEmitter = new CDFEmitter(particleSystem->ech.cdfEmitter, particleSystem);
+						break;
+					}
+					case Emitter::eEmitterType::CDF_POSITIONAL: {
+						break;
+					}
+					default:
+						break;
+
+				}
+				if (createdEmitter != nullptr) {
+					particleSystem->emitters.push_back(createdEmitter);
+				}
+			}
+
+
+
+
+
+		} else {
+			emitterCreationWindowOpened = false;
+		}
+		nk_end(ctx);
+
+	}
 
 }
 
@@ -1974,8 +2064,8 @@ void UserInterface::constructFormBoxButtonPanel() {
 	nk_layout_row_dynamic(ctx, 15, 1);
 }
 
-void UserInterface::constructTextureSelection(Texture **targetTexturePtr) {
-	if (nk_combo_begin_label(ctx, getTextureName(*targetTexturePtr).c_str(), nk_vec2(400, 200))) {
+void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string nullTextureNameOverride) {
+	if (nk_combo_begin_label(ctx, tryGetTextureFilename(*targetTexturePtr, nullTextureNameOverride), nk_vec2(400, 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
 		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
 			*targetTexturePtr = nullptr;
@@ -2009,11 +2099,15 @@ void UserInterface::constructWalkingPanel() {
 	}
 }
 
-std::string UserInterface::tryGetTextureFilename(Texture * tex) {
+const char *UserInterface::tryGetTextureFilename(Texture * tex, std::string nullTextureName) {
 	if (tex == nullptr) {
-		return "NONE";
+		if (!nullTextureName.empty()) {
+			return nullTextureName.c_str();
+		} else {
+			return "NONE";
+		}
 	} else {
-		return tex->filename;
+		return tex->filename.c_str();
 	}
 }
 

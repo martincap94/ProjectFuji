@@ -2,28 +2,40 @@
 
 #include "Utils.h"
 #include "ShaderManager.h"
+#include "ParticleSystem.h"
 
 //#include <random>
 #include <vector>
 #include <glad\glad.h>
 
+#include <nuklear.h>
+
 using namespace std;
 
-CircleEmitter::CircleEmitter(ParticleSystem * owner, glm::vec3 position, float radius, bool projectOntoTerrain) : PositionalEmitter(owner, position), radius(radius), projectOntoTerrain(projectOntoTerrain) {
+CircleEmitter::CircleEmitter() : PositionalEmitter() {
+}
 
-	if (projectOntoTerrain && !heightMap) {
-		cerr << "Project onto terrain is set to true but no heightMap was set! Project onto terrain will be turned off." << endl;
-		projectOntoTerrain = false;
-	}
+CircleEmitter::CircleEmitter(ParticleSystem * owner, glm::vec3 position, float radius) : PositionalEmitter(owner, position), radius(radius) {
+	init();
+}
+
+CircleEmitter::CircleEmitter(const CircleEmitter & e, ParticleSystem *owner) : PositionalEmitter(e, owner) {
+	radius = e.radius;
+	numVisPoints = e.numVisPoints;
+	init();
+}
+
+
+CircleEmitter::~CircleEmitter() {
+}
+
+void CircleEmitter::init() {
 
 	initBuffers();
 	prevRadius = radius;
 
 	shader = ShaderManager::getShaderPtr("singleColor");
-}
 
-
-CircleEmitter::~CircleEmitter() {
 }
 
 void CircleEmitter::emitParticle() {
@@ -112,6 +124,12 @@ void CircleEmitter::initBuffers() {
 
 
 
+}
+
+void CircleEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+	PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
+	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_property_float(ctx, "Radius", 0.1f, &radius, 100000.0f, 0.1f, 0.1f);
 }
 
 void CircleEmitter::updateVBOPoints() {

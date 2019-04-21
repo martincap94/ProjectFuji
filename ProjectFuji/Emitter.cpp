@@ -3,7 +3,26 @@
 #include "ParticleSystem.h"
 
 
+Emitter::Emitter() {}
+
 Emitter::Emitter(ParticleSystem *owner) : owner(owner) {
+	init();
+}
+
+Emitter::Emitter(const Emitter & e, ParticleSystem * owner) : owner(owner) {
+	minProfileIndex = e.minProfileIndex;
+	maxProfileIndex = e.maxProfileIndex;
+	maxParticlesToEmit = e.maxParticlesToEmit;
+	numParticlesToEmitPerStep = e.numParticlesToEmitPerStep;
+	init();
+}
+
+Emitter::~Emitter() {
+}
+
+void Emitter::init() {
+	initialized = 1;
+
 	mt = mt19937_64(rd());
 	dist = uniform_real_distribution<float>(0.0f, 1.0f);
 	distRange = uniform_real_distribution<float>(-1.0f, 1.0f);
@@ -15,14 +34,8 @@ Emitter::Emitter(ParticleSystem *owner) : owner(owner) {
 
 }
 
-
-
-
-Emitter::~Emitter() {
-}
-
 bool Emitter::canEmitParticle() {
-	return (owner->numActiveParticles < owner->numParticles);
+	return (initialized && owner->numActiveParticles < owner->numParticles);
 }
 
 
@@ -45,6 +58,22 @@ void Emitter::emitParticles(int numParticles) {
 
 inline int Emitter::getRandomProfileIndex() {
 	return profileDist(mt);
+}
+
+const char * Emitter::getEmitterTypeString(int emitterType) {
+	switch (emitterType) {
+		case eEmitterType::CIRCULAR:
+			return "Circular";
+		case eEmitterType::CDF_TERRAIN:
+			return "CDF (Terrain)";
+		case eEmitterType::CDF_POSITIONAL:
+			return "CDF (Positional)";
+	}
+	return "None";
+}
+
+void Emitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+
 }
 
 inline void Emitter::updateProfileIndexDistribution() {
