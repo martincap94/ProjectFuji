@@ -76,6 +76,14 @@ void Emitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui
 
 }
 
+const char * Emitter::getEmitterName(Emitter *emitter) {
+	if (emitter == nullptr) {
+		return "None";
+	} else {
+		return emitter->name.empty() ? "Unnamed" : emitter->name.c_str();
+	}
+}
+
 inline void Emitter::updateProfileIndexDistribution() {
 	if (prevMinProfileIndex != minProfileIndex || prevMaxProfileIndex != maxProfileIndex) {
 		profileDist = uniform_int_distribution<int>(minProfileIndex, maxProfileIndex);

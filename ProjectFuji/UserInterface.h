@@ -45,6 +45,7 @@ class ParticleRenderer;
 class HosekSkyModel;
 class StreamlineParticleSystem;
 class SceneGraph;
+class EmitterBrushMode;
 
 //struct nk_context;
 //struct nk_image;
@@ -77,10 +78,10 @@ private:
 
 
 	enum eVecNaming {
-		DEFAULT = 0, // x, y, z, w
-		COLOR, // r, g, b, a
-		INDEX, // 0, 1, 2, 3
-		TEXTURE, // s, t, p, q
+		DEFAULT = 0,	// x, y, z, w
+		COLOR,			// r, g, b, a
+		INDEX,			// 0, 1, 2, 3
+		TEXTURE,		// s, t, p, q
 	};
 
 public:
@@ -97,6 +98,7 @@ public:
 	HosekSkyModel *hosek = nullptr;
 	StreamlineParticleSystem *sps = nullptr;
 	SceneGraph *scene = nullptr;
+	EmitterBrushMode *ebm = nullptr;
 
 
 	int viewportMode = eViewportMode::VIEWPORT_3D;

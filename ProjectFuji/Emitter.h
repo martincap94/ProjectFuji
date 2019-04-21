@@ -10,6 +10,7 @@
 #include <nuklear.h>
 
 #include <random>
+#include <string>
 
 class ParticleSystem;
 
@@ -23,6 +24,8 @@ public:
 
 		_NUM_EMITTER_TYPES
 	};
+
+	std::string name;
 
 	ParticleSystem *owner;
 	HeightMap *heightMap;
@@ -71,6 +74,9 @@ public:
 
 	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
+	static const char *getEmitterName(Emitter *emitter);
+
+
 protected:
 
 	// for refresh when UI changes some values
@@ -83,4 +89,5 @@ protected:
 	inline void updateProfileIndexDistribution();
 
 };
+
 

@@ -191,6 +191,9 @@ public:
 	int prevToggleSTLPState = GLFW_RELEASE;
 	int toggleSTLPState = GLFW_KEY_K;
 
+	bool generalKeyboardInputEnabled = true;
+
+
 
 	int projectionMode = eProjectionMode::PERSPECTIVE;
 	float fov = 90.0f;

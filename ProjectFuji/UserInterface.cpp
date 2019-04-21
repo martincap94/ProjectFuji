@@ -21,6 +21,7 @@
 #include "Utils.h"
 #include "PositionalEmitter.h"
 #include "SceneGraph.h"
+#include "EmitterBrushMode.h"
 
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL3_IMPLEMENTATION
@@ -1651,60 +1652,76 @@ void UserInterface::constructEmittersTab() {
 		emitterCreationWindowOpened = true;
 	}
 
+	if (ebm->isActive()) {
+
+		if (nk_button_label(ctx, "Disable Brush Mode")) {
+			ebm->setActive(false);
+		}
+
+		ebm->constructBrushSelectionUIPanel(ctx, this);
 
 
-	vector<int> emitterIndicesToDelete;
+	} else {
 
-	for (int i = 0; i < particleSystem->emitters.size(); i++) {
-		if (nk_tree_push_id(ctx, NK_TREE_NODE, ("#Emitter " + to_string(i)).c_str(), NK_MINIMIZED, i)) {
+
+		if (nk_button_label(ctx, "Enable Brush Mode")) {
+			ebm->setActive(true);
+		}
+
+
+		vector<int> emitterIndicesToDelete;
+
+		for (int i = 0; i < particleSystem->emitters.size(); i++) {
 			Emitter *e = particleSystem->emitters[i];
 
-			nk_layout_row_static(ctx, 15, 200, 1);
-			nk_checkbox_label(ctx, "#enabled", &e->enabled);
-			nk_checkbox_label(ctx, "#visible", &e->visible);
+			if (nk_tree_push_id(ctx, NK_TREE_NODE, Emitter::getEmitterName(e), NK_MINIMIZED, i)) {
 
-			nk_property_int(ctx, "#emit per step", 0, &e->numParticlesToEmitPerStep, 10000, 10, 10);
+				nk_layout_row_static(ctx, 15, 200, 1);
+				nk_checkbox_label(ctx, "#enabled", &e->enabled);
+				nk_checkbox_label(ctx, "#visible", &e->visible);
 
-			nk_property_int(ctx, "min profile index", 0, &e->minProfileIndex, e->maxProfileIndex, 1, 1);
-			nk_property_int(ctx, "max profile index", e->minProfileIndex, &e->maxProfileIndex, stlpDiagram->numProfiles - 1, 1, 1);
+				nk_property_int(ctx, "#emit per step", 0, &e->numParticlesToEmitPerStep, 10000, 10, 10);
 
-			PositionalEmitter *pe = dynamic_cast<PositionalEmitter *>(e);
-			if (pe) {
+				nk_property_int(ctx, "min profile index", 0, &e->minProfileIndex, e->maxProfileIndex, 1, 1);
+				nk_property_int(ctx, "max profile index", e->minProfileIndex, &e->maxProfileIndex, stlpDiagram->numProfiles - 1, 1, 1);
 
-				nk_checkbox_label(ctx, "#wiggle", &pe->wiggle);
-				nk_property_float(ctx, "#x wiggle", 0.1f, &pe->xWiggleRange, 10.0f, 0.1f, 0.1f);
-				nk_property_float(ctx, "#z wiggle", 0.1f, &pe->zWiggleRange, 10.0f, 0.1f, 0.1f);
+				PositionalEmitter *pe = dynamic_cast<PositionalEmitter *>(e);
+				if (pe) {
 
-				nk_property_float(ctx, "#x", -1000.0f, &pe->position.x, 1000.0f, 1.0f, 1.0f);
-				//nk_property_float(ctx, "#y", -1000.0f, &pe->position.y, 1000.0f, 1.0f, 1.0f);
-				nk_property_float(ctx, "#z", -1000.0f, &pe->position.z, 1000.0f, 1.0f, 1.0f);
+					nk_checkbox_label(ctx, "#wiggle", &pe->wiggle);
+					nk_property_float(ctx, "#x wiggle", 0.1f, &pe->xWiggleRange, 10.0f, 0.1f, 0.1f);
+					nk_property_float(ctx, "#z wiggle", 0.1f, &pe->zWiggleRange, 10.0f, 0.1f, 0.1f);
+
+					nk_property_float(ctx, "#x", -1000.0f, &pe->position.x, 1000.0f, 1.0f, 1.0f);
+					//nk_property_float(ctx, "#y", -1000.0f, &pe->position.y, 1000.0f, 1.0f, 1.0f);
+					nk_property_float(ctx, "#z", -1000.0f, &pe->position.z, 1000.0f, 1.0f, 1.0f);
 
 
-				CircleEmitter *ce = dynamic_cast<CircleEmitter *>(pe);
-				if (ce) {
-					nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
+					CircleEmitter *ce = dynamic_cast<CircleEmitter *>(pe);
+					if (ce) {
+						nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
+					}
+
+
+
 				}
 
+				if (nk_button_label(ctx, "Delete emitter")) {
+					//particleSystem->deleteEmitter(i);
+					emitterIndicesToDelete.push_back(i); // do not delete when iterating through the vector
+				}
 
-
+				nk_tree_pop(ctx);
+				//particleSystem->emitters[i]
 			}
+		}
 
-			if (nk_button_label(ctx, "Delete emitter")) {
-				//particleSystem->deleteEmitter(i);
-				emitterIndicesToDelete.push_back(i); // do not delete when iterating through the vector
-			}
 
-			nk_tree_pop(ctx);
-			//particleSystem->emitters[i]
+
+		for (const auto &i : emitterIndicesToDelete) {
+			particleSystem->deleteEmitter(i);
 		}
 	}
-
-
-
-	for (const auto &i : emitterIndicesToDelete) {
-		particleSystem->deleteEmitter(i);
-	}
-
 
 	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
 	if (nk_button_label(ctx, "Activate All Particles")) {
@@ -1749,64 +1766,12 @@ void UserInterface::constructEmitterCreationWindow() {
 
 			nk_layout_row_dynamic(ctx, 15, 1);
 
-			particleSystem->constructEmitterCreationWindow(ctx, this, selectedEmitterType);
+			bool closeWindowAfterwards = false;
+			particleSystem->constructEmitterCreationWindow(ctx, this, selectedEmitterType, closeWindowAfterwards);
 
-			//switch (selectedEmitterType) {
-			//	case Emitter::eEmitterType::CIRCULAR: {
-			//		cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
-			//		particleSystem->ech.circleEmitter.constructEmitterPropertiesTab(ctx, this);
-
-
-
-			//		break;
-			//	}
-			//	case Emitter::eEmitterType::CDF_TERRAIN: {
-
-			//		//particleSystem->ech.cdfEmitter.constructEmitterPropertiesTab(ctx, this); // this crashes the application!
-
-			//		//Texture *selectedTexture = nullptr;
-			//		//constructTextureSelection(&selectedTexture, particleSystem->ech.cdfEmitter.probabilityTexturePath);
-			//		//if (selectedTexture != nullptr) {
-			//		//	particleSystem->ech.cdfEmitter.probabilityTexturePath = selectedTexture->filename;
-			//		//}
-			//		break;
-			//	}
-			//	case Emitter::eEmitterType::CDF_POSITIONAL: {
-			//		break;
-			//	}
-			//	default:
-			//		break;
-			//}
-
-			//nk_layout_row_dynamic(ctx, 15, 1);
-
-			//if (nk_button_label(ctx, "Create Emitter")) {
-			//	cout << "Creating Emitter..." << endl;
-			//	Emitter *createdEmitter = nullptr;
-
-			//	switch (selectedEmitterType) {
-			//		case Emitter::eEmitterType::CIRCULAR: {
-			//			createdEmitter = new CircleEmitter(particleSystem->ech.circleEmitter, particleSystem);
-			//			break;
-			//		}
-			//		case Emitter::eEmitterType::CDF_TERRAIN: {
-			//			createdEmitter = new CDFEmitter(particleSystem->ech.cdfEmitter, particleSystem);
-			//			break;
-			//		}
-			//		case Emitter::eEmitterType::CDF_POSITIONAL: {
-			//			break;
-			//		}
-			//		default:
-			//			break;
-
-			//	}
-			//	if (createdEmitter != nullptr) {
-			//		particleSystem->emitters.push_back(createdEmitter);
-			//	}
-			//}
-
-
-
+			if (closeWindowAfterwards) {
+				emitterCreationWindowOpened = false;
+			}
 
 
 		} else {

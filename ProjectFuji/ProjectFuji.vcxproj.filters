@@ -217,6 +217,7 @@
     <ClCompile Include="STLPDiagram_backup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EmitterBrushMode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -392,6 +393,7 @@
     <ClInclude Include="MainFramebuffer.h" />
     <ClInclude Include="ProjectionSettings.h" />
     <ClInclude Include="PerlinNoiseSampler.h" />
+    <ClInclude Include="EmitterBrushMode.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

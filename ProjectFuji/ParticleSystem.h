@@ -29,11 +29,14 @@
 #include "Model.h"
 #include "CircleEmitter.h"
 #include "CDFEmitter.h"
+//#include "EmitterBrushMode.h"
 
 #include "UserInterface.h"
 #include <nuklear.h>
 
 
+
+class EmitterBrushMode;
 class Emitter;
 
 class LBM;
@@ -56,6 +59,7 @@ public:
 
 
 	std::vector<Emitter *> emitters;
+	EmitterBrushMode *ebm = nullptr;
 
 	HeightMap *heightMap;
 
@@ -135,7 +139,7 @@ public:
 	ParticleSystem(VariableManager *vars);
 	~ParticleSystem();
 
-	void doStep();
+
 	void update();
 
 	void initBuffers();
@@ -172,10 +176,11 @@ public:
 	void disableAllEmitters();
 
 	void createPredefinedEmitters();
-	void createEmitter(int emitterType);
+	void createEmitter(int emitterType, std::string emitterName);
 	void deleteEmitter(int idx);
 
-	void constructEmitterCreationWindow(struct nk_context *ctx, UserInterface *ui, int emitterType);
+	void constructEmitterCreationWindow(struct nk_context *ctx, UserInterface *ui, int emitterType, bool &closeWindowAfterwards);
+
 
 	
 	void pushParticleToEmit(Particle p);

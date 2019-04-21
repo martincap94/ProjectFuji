@@ -15,12 +15,13 @@ public:
 	TerrainPicker(VariableManager *vars);
 	~TerrainPicker();
 
+	void drawTerrain();
 	void drawTerrain(HeightMap *heightMap);
 	void initFramebuffer();
 
-	glm::vec4 getPixelData(int x, int y);
-	glm::vec4 getPixelData(glm::ivec2 screenPos);
 
+	glm::vec3 getPixelData(int x, int y, bool &outTerrainHit, bool invertY = true);
+	glm::vec3 getPixelData(glm::ivec2 screenPos, bool &outTerrainHit, bool invertY = true);
 
 private:
 

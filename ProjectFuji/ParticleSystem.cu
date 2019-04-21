@@ -14,6 +14,7 @@
 #include "CircleEmitter.h"
 //#include "CDFEmitter.h"
 #include "CDFEmitter.h"
+#include "EmitterBrushMode.h"
 
 
 #include "TextureManager.h"
@@ -115,17 +116,18 @@ ParticleSystem::~ParticleSystem() {
 
 }
 
-void ParticleSystem::doStep() {
-	update();
-
-	emitParticles();
-
-}
 
 void ParticleSystem::update() {
-	for (int i = 0; i < emitters.size(); i++) {
-		emitters[i]->update();
+	if (ebm->isActive()) {
+		if (ebm->hasActiveBrush()) {
+			ebm->getActiveBrushPtr()->update();
+		}
+	} else {
+		for (int i = 0; i < emitters.size(); i++) {
+			emitters[i]->update();
+		}
 	}
+	emitParticles();
 }
 
 
@@ -209,11 +211,18 @@ void ParticleSystem::emitParticles() {
 
 	int prevNumActiveParticles = numActiveParticles;
 
-	// go through all emitters and emit particles (each pushes them to this system)
-	for (int i = 0; i < emitters.size(); i++) {
-		emitters[i]->emitParticles();
-	}
 
+	if (ebm->isActive()) {
+		if (ebm->hasActiveBrush()) {
+			ebm->getActiveBrushPtr()->emitParticles();
+		}
+	} else {
+
+		// go through all emitters and emit particles (each pushes them to this system)
+		for (int i = 0; i < emitters.size(); i++) {
+			emitters[i]->emitParticles();
+		}
+	}
 
 	//cout << "num particles to upload = " << particleVerticesToEmit.size() << endl;
 
@@ -238,6 +247,10 @@ void ParticleSystem::emitParticles() {
 	verticalVelocitiesToEmit.clear();
 
 }
+
+
+
+
 
 // NOT USED ANYMORE
 void ParticleSystem::draw(glm::vec3 cameraPos) {
@@ -787,17 +800,29 @@ void ParticleSystem::createPredefinedEmitters() {
 	emitters.push_back(new CDFEmitter(this, "textures/cdf2.png"));
 }
 
-void ParticleSystem::createEmitter(int emitterType) {
+void ParticleSystem::createEmitter(int emitterType, string emitterName) {
+	Emitter *createdEmitter = nullptr;
 
-	//switch (emitterType) {
-	//	case Emitter::eEmitterType::CIRCULAR:
-	//		emitters.push_back(new CircleEmitter());
-	//		break;
-	//	case Emitter::eEmitterType::CDF_TERRAIN:
-	//		emitters.push_back(new CDFEmitter());
-	//		break;
+	switch (emitterType) {
+		case Emitter::eEmitterType::CIRCULAR: {
+			createdEmitter = new CircleEmitter(ech.circleEmitter, this);
+			break;
+		}
+		case Emitter::eEmitterType::CDF_TERRAIN: {
+			createdEmitter = new CDFEmitter(ech.cdfEmitter, this);
+			break;
+		}
+		case Emitter::eEmitterType::CDF_POSITIONAL: {
+			break;
+		}
+		default:
+			break;
+	}
 
-	//}
+	if (createdEmitter != nullptr) {
+		createdEmitter->name = emitterName;
+		emitters.push_back(createdEmitter);
+	}
 
 
 }
@@ -817,8 +842,24 @@ void ParticleSystem::deleteEmitter(int idx) {
 
 
 // Do not use this, it does not work with the CUDA compiler
-void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterface * ui, int emitterType) {
+void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterface * ui, int emitterType, bool &closeWindowAfterwards) {
+	nk_layout_row_dynamic(ctx, 30, 1);
+
+	static char nameBuffer[64];
+	static int nameLength;
+	nk_flags event = nk_edit_string(ctx, NK_EDIT_SIMPLE, &nameBuffer[0], &nameLength, 64, nk_filter_default);
+
+	if (event & NK_EDIT_ACTIVATED) {
+		vars->generalKeyboardInputEnabled = false;
+	}
+	if (event & NK_EDIT_DEACTIVATED) {
+		vars->generalKeyboardInputEnabled = true;
+	}
+	nameBuffer[nameLength] = '\0';
+	string eName = string(nameBuffer);
+	cout << "|" << eName << "|" << endl;
 	nk_layout_row_dynamic(ctx, 15, 1);
+
 	switch (emitterType) {
 		case Emitter::eEmitterType::CIRCULAR: {
 			ech.circleEmitter.constructEmitterPropertiesTab(ctx, ui);
@@ -839,29 +880,16 @@ void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterf
 	nk_layout_row_dynamic(ctx, 15, 1);
 
 	if (nk_button_label(ctx, "Create Emitter")) {
-		cout << "Creating Emitter..." << endl;
-		Emitter *createdEmitter = nullptr;
-
-		switch (emitterType) {
-			case Emitter::eEmitterType::CIRCULAR: {
-				createdEmitter = new CircleEmitter(ech.circleEmitter, this);
-				break;
-			}
-			case Emitter::eEmitterType::CDF_TERRAIN: {
-				createdEmitter = new CDFEmitter(ech.cdfEmitter, this);
-				break;
-			}
-			case Emitter::eEmitterType::CDF_POSITIONAL: {
-				break;
-			}
-			default:
-				break;
-		}
-
-		if (createdEmitter != nullptr) {
-			emitters.push_back(createdEmitter);
-		}
+		createEmitter(emitterType, eName);
 	}
+	if (nk_button_label(ctx, "Create and Close")) {
+		createEmitter(emitterType, eName);
+		closeWindowAfterwards = true;
+	}
+	if (nk_button_label(ctx, "Close")) {
+		closeWindowAfterwards = true;
+	}
+
 
 
 

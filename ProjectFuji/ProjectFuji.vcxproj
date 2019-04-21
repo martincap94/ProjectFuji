@@ -111,6 +111,7 @@
       <FileType>CppCode</FileType>
     </CudaCompile>
     <ClCompile Include="Emitter.cpp" />
+    <ClCompile Include="EmitterBrushMode.cpp" />
     <ClCompile Include="EVSMShadowMapper.cpp" />
     <ClCompile Include="FreeRoamCamera.cpp" />
     <ClCompile Include="GeneralGrid.cpp" />
@@ -255,6 +256,7 @@
     <ClInclude Include="DirectionalLight.h" />
     <ClInclude Include="DynamicCDFSampler.h" />
     <ClInclude Include="Emitter.h" />
+    <ClInclude Include="EmitterBrushMode.h" />
     <ClInclude Include="EVSMShadowMapper.h" />
     <ClInclude Include="FreeRoamCamera.h" />
     <ClInclude Include="GeneralGrid.h" />

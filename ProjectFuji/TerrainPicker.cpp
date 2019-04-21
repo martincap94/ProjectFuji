@@ -13,6 +13,10 @@ TerrainPicker::~TerrainPicker() {
 }
 
 
+void TerrainPicker::drawTerrain() {
+	drawTerrain(vars->heightMap);
+}
+
 void TerrainPicker::drawTerrain(HeightMap *heightMap) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -70,7 +74,10 @@ void TerrainPicker::initFramebuffer() {
 
 }
 
-glm::vec4 TerrainPicker::getPixelData(int x, int y) {
+glm::vec3 TerrainPicker::getPixelData(int x, int y, bool &outTerrainHit, bool invertY) {
+	if (invertY) {
+		y = vars->screenHeight - y;
+	}
 
 	GLfloat readData[4];
 
@@ -78,15 +85,18 @@ glm::vec4 TerrainPicker::getPixelData(int x, int y) {
 	glReadPixels(x, y, 1, 1, GL_RGBA, GL_FLOAT, readData);
 	vars->mainFramebuffer->bind();
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+	
+	/*
 	cout << readData[0] << endl;
 	cout << readData[1] << endl;
 	cout << readData[2] << endl;
 	cout << readData[3] << endl;
+	*/
 
-	return glm::vec4(readData[0], readData[1], readData[2], readData[3]);
+	outTerrainHit = ((float)readData[3] == 1.0f);
+	return glm::vec3(readData[0], readData[1], readData[2]);
 }
 
-glm::vec4 TerrainPicker::getPixelData(glm::ivec2 screenPos) {
-	return getPixelData(screenPos.x, screenPos.y);
+glm::vec3 TerrainPicker::getPixelData(glm::ivec2 screenPos, bool &outTerrainHit, bool invertY) {
+	return getPixelData(screenPos.x, screenPos.y, outTerrainHit, invertY);
 }

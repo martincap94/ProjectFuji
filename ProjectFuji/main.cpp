@@ -66,6 +66,7 @@
 #include "MainFramebuffer.h"
 #include "SceneGraph.h"
 #include "PerlinNoiseSampler.h"
+#include "EmitterBrushMode.h"
 
 //#include "ArHosekSkyModel.h"
 //#include "ArHosekSkyModel.c"
@@ -93,7 +94,9 @@
 int runApp();
 
 /// Process keyboard inputs of the window.
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow *window);
+
+void processKeyboardInput(GLFWwindow *window);
 
 /// Mouse scroll callback for the window.
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -137,8 +140,9 @@ StreamlineParticleSystem *streamlineParticleSystem;
 
 UserInterface *ui;
 
-TerrainPicker *tPicker;
+//TerrainPicker *tPicker;
 //HeightMap *heightMap;
+EmitterBrushMode *ebm;
 
 //Timer timer;
 Camera *viewportCamera;
@@ -196,7 +200,7 @@ int mouseCursorKey = GLFW_KEY_C;
 
 
 
-bool mouseDown = false;
+bool leftMouseButtonDown = false;
 
 
 float prevAvgFPS;
@@ -293,11 +297,12 @@ int runApp() {
 	ui = new UserInterface(window, &vars);
 
 	vars.heightMap = new HeightMap(&vars);
-	tPicker = new TerrainPicker(&vars);
+	//tPicker = new TerrainPicker(&vars);
 
 	particleSystem = new ParticleSystem(&vars);
 	particleRenderer = new ParticleRenderer(&vars, particleSystem);
 
+	ebm = new EmitterBrushMode(&vars, particleSystem);
 
 	stlpSimCUDA = new STLPSimulatorCUDA(&vars, stlpDiagram);
 
@@ -361,7 +366,10 @@ int runApp() {
 	viewportCamera = orbitCamera;
 	camera = viewportCamera;
 	diagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
+	diagramCamera->movementSpeed = 1.0f;
+	
 	overlayDiagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
+	
 	freeRoamCamera = new FreeRoamCamera(glm::vec3(30.0f, vars.terrainHeightRange.y, 30.0f), WORLD_UP, -35.0f, -35.0f);
 	((FreeRoamCamera *)freeRoamCamera)->heightMap = vars.heightMap;
 	freeRoamCamera->movementSpeed = vars.cameraSpeed;
@@ -511,6 +519,8 @@ int runApp() {
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[0]"), 0);
 	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("imageTexture"), 1);
 
+	ebm->loadBrushes();
+	particleSystem->ebm = ebm;
 
 	// Provisional settings
 	ui->dirLight = dirLight;
@@ -523,6 +533,7 @@ int runApp() {
 	ui->hosek = hosek;
 	ui->sps = streamlineParticleSystem;
 	ui->scene = &scene;
+	ui->ebm = ebm;
 
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
@@ -634,6 +645,10 @@ int runApp() {
 			stlpDiagram->draw();
 			stlpDiagram->drawText();
 
+			if (vars.drawOverlayDiagramParticles) {
+				particleSystem->drawDiagramParticles();
+			}
+
 		} else if (ui->viewportMode == eViewportMode::VIEWPORT_3D) {
 
 			// Update Hosek's sky model parameters using current sun elevation
@@ -641,7 +656,7 @@ int runApp() {
 			
 
 			// Update particle system (emit particles mainly)
-			particleSystem->doStep();
+			particleSystem->update();
 
 			// LBM simulation update
 			if (vars.applyLBM) {
@@ -726,7 +741,14 @@ int runApp() {
 			///////////////////////////////////////////////////////////////
 
 			vars.heightMap->draw();
-			tPicker->drawTerrain(vars.heightMap);
+
+
+			/*
+				Updating emitter brush mode requires drawing the terrain, hence why it is in the drawing
+				section of the main loop.
+			*/
+			ebm->update();
+			//tPicker->drawTerrain(vars.heightMap);
 
 			if (vars.visualizeTerrainNormals) {
 				vars.heightMap->drawGeometry(visualizeNormalsShader);
@@ -779,15 +801,15 @@ int runApp() {
 
 			if (!vars.renderMode) {
 				stlpSimCUDA->draw(camera->position);
+
 			}
 
 
 
-
-
-			if (vars.showOverlayDiagram) {
+			if (!vars.hideUI && vars.showOverlayDiagram) {
 				stlpDiagram->drawOverlayDiagram();
 			}
+
 
 
 			TextureManager::drawOverlayTextures();
@@ -823,7 +845,8 @@ int runApp() {
 	delete overlayDiagramCamera;
 	delete orbitCamera;
 	delete dirLight;
-	delete tPicker;
+	//delete tPicker;
+	delete ebm;
 	delete stlpDiagram;
 
 	delete scene.root;
@@ -869,10 +892,59 @@ void refreshProjectionMatrix() {
 
 
 void processInput(GLFWwindow* window) {
+	
+	processKeyboardInput(window);
+
+	if (leftMouseButtonDown) {
+
+
+		//cout << "mouse down" << endl;
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
+
+
+		if (ui->viewportMode == eViewportMode::DIAGRAM) {
+			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
+			//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
+			//Z_ndc = 2.0 * depth - 1.0;
+			xpos = xpos * 2.0f / (float)vars.screenWidth - 1.0f;
+			ypos = vars.screenHeight - ypos;
+			ypos = ypos * 2.0f / (float)vars.screenHeight - 1.0f;
+
+			glm::vec4 mouseCoords(xpos, ypos, 0.0f, 1.0f);
+			mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
+			//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
+
+			//stlpDiagram->findClosestSoundingPoint(mouseCoords);
+
+			stlpDiagram->moveSelectedPoint(mouseCoords);
+		} else {
+
+			ebm->onLeftMouseButtonDown(xpos, ypos);
+
+
+			/*
+			glm::vec4 pos = tPicker->getPixelData(xpos, vars.screenHeight - ypos);
+
+			if (pos.w == 1.0f) {
+				((PositionalEmitter*)particleSystem->emitters[0])->position = glm::vec3(pos);
+			}
+			*/
+		}
+
+	}
+}
+
+void processKeyboardInput(GLFWwindow *window) {
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
 
+	if (!vars.generalKeyboardInputEnabled) {
+		return;
+	}
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
 		//camera->processKeyboardMovement(Camera::UP, deltaTime);
@@ -967,7 +1039,7 @@ void processInput(GLFWwindow* window) {
 	}
 
 
-	
+
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
 		ui->viewportMode = 0;
 		refreshProjectionMatrix();
@@ -994,41 +1066,6 @@ void processInput(GLFWwindow* window) {
 		prevMouseCursorKeyState = GLFW_RELEASE;
 	}
 
-
-	if (mouseDown) {
-
-
-		//cout << "mouse down" << endl;
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-		//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
-
-
-		if (ui->viewportMode == eViewportMode::DIAGRAM) {
-			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
-			//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
-			//Z_ndc = 2.0 * depth - 1.0;
-			xpos = xpos * 2.0f / (float)vars.screenWidth - 1.0f;
-			ypos = vars.screenHeight - ypos;
-			ypos = ypos * 2.0f / (float)vars.screenHeight - 1.0f;
-
-			glm::vec4 mouseCoords(xpos, ypos, 0.0f, 1.0f);
-			mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
-			//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
-
-			//stlpDiagram->findClosestSoundingPoint(mouseCoords);
-
-			stlpDiagram->moveSelectedPoint(mouseCoords);
-		} else {
-
-			glm::vec4 pos = tPicker->getPixelData(xpos, vars.screenHeight - ypos);
-
-			if (pos.w == 1.0f) {
-				((PositionalEmitter*)particleSystem->emitters[0])->position = glm::vec3(pos);
-			}
-		}
-
-	}
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -1047,11 +1084,11 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		return;
 	}
 
-
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
+
 
 
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
@@ -1072,17 +1109,25 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		} else {
 			cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
+			ebm->onLeftMouseButtonPress(xpos, ypos);
+
+			/*
 			glm::vec4 pos = tPicker->getPixelData(xpos, vars.screenHeight - ypos);
 
 			if (pos.w == 1.0f) {
 				((PositionalEmitter*)particleSystem->emitters[0])->position = glm::vec3(pos);
 			}
+			*/
 		}
 
-		mouseDown = true;
+		leftMouseButtonDown = true;
 	} else if (action == GLFW_RELEASE) {
-		mouseDown = false;
+		leftMouseButtonDown = false;
 
+		if (ui->viewportMode == eViewportMode::VIEWPORT_3D) {
+
+			ebm->onLeftMouseButtonRelease(xpos, ypos);
+		}
 	}
 }
 
@@ -1109,15 +1154,15 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	lastMouseX = xpos;
 	lastMouseY = ypos;
 
-	//if (camera == freeRoamCamera) {
-	//	cout << "free roam camera???" << endl;
-	//	freeRoamCamera->processMouseMovement(xOffset, yOffset);
-	//}
+
 
 	// for easier controls
 	if (vars.consumeMouseCursor) {
 		camera->processMouseMovement(xOffset, yOffset, false);
 	}
+
+	ebm->updateMousePosition(xpos, ypos);
+
 }
 
 
