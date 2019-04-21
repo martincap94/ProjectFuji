@@ -10,7 +10,7 @@ class ParticleSystem;
 class CircleEmitter : public PositionalEmitter {
 public:
 
-	float radius;
+	float radius = 10000.0f;
 
 	int numVisPoints = 120;
 

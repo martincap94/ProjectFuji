@@ -69,7 +69,7 @@ public:
 
 	static const char *getEmitterTypeString(int emitterType);
 
-	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui) = 0;
+	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 protected:
 

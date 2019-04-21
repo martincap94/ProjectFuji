@@ -36,9 +36,14 @@ void PositionalEmitter::wigglePosition() {
 }
 
 void PositionalEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+	cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
+
 	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_checkbox_label(ctx, "Wiggle", &wiggle);
 	ui->nk_property_vec3(ctx, -1000000.0f, position, 1000000.0f, 1.0f, 1.0f, "Position");
+
+	cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
+
 
 
 }

@@ -127,9 +127,17 @@ void CircleEmitter::initBuffers() {
 }
 
 void CircleEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+	cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
+
 	PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
+
+	cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
+
 	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_property_float(ctx, "Radius", 0.1f, &radius, 100000.0f, 0.1f, 0.1f);
+
+	cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
+
 }
 
 void CircleEmitter::updateVBOPoints() {

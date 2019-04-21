@@ -1727,13 +1727,14 @@ void UserInterface::constructEmittersTab() {
 
 void UserInterface::constructEmitterCreationWindow() {
 	if (emitterCreationWindowOpened) {
+		cout << "Emitter creation window is open" << endl;
 		float w = 500.0f;
 		float h = 500.0f;
 		if (nk_begin(ctx, "Emitter Creation", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
 
-			nk_layout_row_dynamic(ctx, 15, 1);
+			cout << "Emitter Creation opened successfuly" << endl;
 
-			static int selectedEmitterType = 0;
+			nk_layout_row_dynamic(ctx, 15, 1);
 
 			if (nk_combo_begin_label(ctx, Emitter::getEmitterTypeString(selectedEmitterType), nk_vec2(nk_widget_width(ctx), 400.0f))) {
 				nk_layout_row_dynamic(ctx, 15, 1);
@@ -1741,56 +1742,68 @@ void UserInterface::constructEmitterCreationWindow() {
 				for (int i = 0; i < Emitter::eEmitterType::_NUM_EMITTER_TYPES; i++) {
 					if (nk_combo_item_label(ctx, Emitter::getEmitterTypeString(i), NK_TEXT_CENTERED)) {
 						selectedEmitterType = i;
-						nk_combo_close(ctx);
 					}
 				}
 				nk_combo_end(ctx);
 			}
 
 			nk_layout_row_dynamic(ctx, 15, 1);
-			switch (selectedEmitterType) {
-				case Emitter::eEmitterType::CIRCULAR: {
-					particleSystem->ech.circleEmitter.constructEmitterPropertiesTab(ctx, this);
-					break;
-				}
-				case Emitter::eEmitterType::CDF_TERRAIN: {
-					particleSystem->ech.cdfEmitter.constructEmitterPropertiesTab(ctx, this);
-					break;
-				}
-				case Emitter::eEmitterType::CDF_POSITIONAL: {
-					break;
-				}
-				default:
-					break;
 
-			}
+			particleSystem->constructEmitterCreationWindow(ctx, this, selectedEmitterType);
 
-			nk_layout_row_dynamic(ctx, 15, 1);
+			//switch (selectedEmitterType) {
+			//	case Emitter::eEmitterType::CIRCULAR: {
+			//		cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
+			//		particleSystem->ech.circleEmitter.constructEmitterPropertiesTab(ctx, this);
 
-			if (nk_button_label(ctx, "Create Emitter")) {
-				cout << "Creating Emitter..." << endl;
-				Emitter *createdEmitter = nullptr;
 
-				switch (selectedEmitterType) {
-					case Emitter::eEmitterType::CIRCULAR: {
-						createdEmitter = new CircleEmitter(particleSystem->ech.circleEmitter, particleSystem);
-						break;
-					}
-					case Emitter::eEmitterType::CDF_TERRAIN: {
-						createdEmitter = new CDFEmitter(particleSystem->ech.cdfEmitter, particleSystem);
-						break;
-					}
-					case Emitter::eEmitterType::CDF_POSITIONAL: {
-						break;
-					}
-					default:
-						break;
 
-				}
-				if (createdEmitter != nullptr) {
-					particleSystem->emitters.push_back(createdEmitter);
-				}
-			}
+			//		break;
+			//	}
+			//	case Emitter::eEmitterType::CDF_TERRAIN: {
+
+			//		//particleSystem->ech.cdfEmitter.constructEmitterPropertiesTab(ctx, this); // this crashes the application!
+
+			//		//Texture *selectedTexture = nullptr;
+			//		//constructTextureSelection(&selectedTexture, particleSystem->ech.cdfEmitter.probabilityTexturePath);
+			//		//if (selectedTexture != nullptr) {
+			//		//	particleSystem->ech.cdfEmitter.probabilityTexturePath = selectedTexture->filename;
+			//		//}
+			//		break;
+			//	}
+			//	case Emitter::eEmitterType::CDF_POSITIONAL: {
+			//		break;
+			//	}
+			//	default:
+			//		break;
+			//}
+
+			//nk_layout_row_dynamic(ctx, 15, 1);
+
+			//if (nk_button_label(ctx, "Create Emitter")) {
+			//	cout << "Creating Emitter..." << endl;
+			//	Emitter *createdEmitter = nullptr;
+
+			//	switch (selectedEmitterType) {
+			//		case Emitter::eEmitterType::CIRCULAR: {
+			//			createdEmitter = new CircleEmitter(particleSystem->ech.circleEmitter, particleSystem);
+			//			break;
+			//		}
+			//		case Emitter::eEmitterType::CDF_TERRAIN: {
+			//			createdEmitter = new CDFEmitter(particleSystem->ech.cdfEmitter, particleSystem);
+			//			break;
+			//		}
+			//		case Emitter::eEmitterType::CDF_POSITIONAL: {
+			//			break;
+			//		}
+			//		default:
+			//			break;
+
+			//	}
+			//	if (createdEmitter != nullptr) {
+			//		particleSystem->emitters.push_back(createdEmitter);
+			//	}
+			//}
 
 
 

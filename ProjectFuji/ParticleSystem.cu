@@ -25,6 +25,7 @@
 
 
 
+
 __global__ void computeParticleDistances(glm::vec3 *particleVertices, float *particleDistances, glm::vec3 referencePosition, int numParticles) {
 
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
@@ -815,6 +816,56 @@ void ParticleSystem::deleteEmitter(int idx) {
 }
 
 
+// Do not use this, it does not work with the CUDA compiler
+void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterface * ui, int emitterType) {
+	nk_layout_row_dynamic(ctx, 15, 1);
+	switch (emitterType) {
+		case Emitter::eEmitterType::CIRCULAR: {
+			ech.circleEmitter.constructEmitterPropertiesTab(ctx, ui);
+			break;
+		}
+		case Emitter::eEmitterType::CDF_TERRAIN: {
+			ech.cdfEmitter.constructEmitterPropertiesTab(ctx, ui);
+			break;
+		}
+		case Emitter::eEmitterType::CDF_POSITIONAL: {
+			break;
+		}
+		default:
+			break;
+
+	}
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+
+	if (nk_button_label(ctx, "Create Emitter")) {
+		cout << "Creating Emitter..." << endl;
+		Emitter *createdEmitter = nullptr;
+
+		switch (emitterType) {
+			case Emitter::eEmitterType::CIRCULAR: {
+				createdEmitter = new CircleEmitter(ech.circleEmitter, this);
+				break;
+			}
+			case Emitter::eEmitterType::CDF_TERRAIN: {
+				createdEmitter = new CDFEmitter(ech.cdfEmitter, this);
+				break;
+			}
+			case Emitter::eEmitterType::CDF_POSITIONAL: {
+				break;
+			}
+			default:
+				break;
+		}
+
+		if (createdEmitter != nullptr) {
+			emitters.push_back(createdEmitter);
+		}
+	}
+
+
+
+}
 
 void ParticleSystem::pushParticleToEmit(Particle p) {
 	particleVerticesToEmit.push_back(p.position);

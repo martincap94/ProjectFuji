@@ -158,6 +158,8 @@ private:
 
 	bool terrainGeneratorPopupOpened = false;
 	bool emitterCreationWindowOpened = false;
+	int selectedEmitterType = 0;
+
 
 
 	int hierarchyIdCounter = 0;

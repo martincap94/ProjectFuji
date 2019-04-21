@@ -30,6 +30,9 @@
 #include "CircleEmitter.h"
 #include "CDFEmitter.h"
 
+#include "UserInterface.h"
+#include <nuklear.h>
+
 
 class Emitter;
 
@@ -171,6 +174,8 @@ public:
 	void createPredefinedEmitters();
 	void createEmitter(int emitterType);
 	void deleteEmitter(int idx);
+
+	void constructEmitterCreationWindow(struct nk_context *ctx, UserInterface *ui, int emitterType);
 
 	
 	void pushParticleToEmit(Particle p);
