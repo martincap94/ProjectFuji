@@ -118,7 +118,7 @@ public:
 
 
 	int useSkySunColor = 1;
-
+	float skySunColorTintIntensity = 0.5f;
 
 	// Particle System variables
 	int maxPositionRecalculations;

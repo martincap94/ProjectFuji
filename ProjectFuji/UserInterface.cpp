@@ -1018,6 +1018,9 @@ void UserInterface::constructSkyTab() {
 	nk_property_float(ctx, "rotation radius:", 0.0f, &dirLight->radius, 10000.0f, 1.0f, 1.0f);
 
 	nk_checkbox_label(ctx, "Use sky sun color", &vars->useSkySunColor);
+	if (vars->useSkySunColor) {
+		nk_property_float(ctx, "Sky Sun Color Tint Intensity", 0.0f, &vars->skySunColorTintIntensity, 1.0f, 0.01f, 0.01f);
+	}
 
 }
 

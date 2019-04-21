@@ -707,8 +707,9 @@ int runApp() {
 				//cout << "sun color: " << sc.x << ", " << sc.y << ", " << sc.z << endl;
 				float maxColor = max(max(sc.x, sc.y), sc.z);
 				rangeToRange(sc, 0.0f, maxColor, 0.0f, 1.0f);
+				float t = vars.skySunColorTintIntensity;
 
-				dirLight->color = sc;
+				dirLight->color = (1.0f - t) * glm::vec3(1.0f) + t * sc;
 			}
 
 

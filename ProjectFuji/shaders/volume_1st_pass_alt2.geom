@@ -42,7 +42,7 @@ void main() {
 	vec3 right;
 	vec3 up;
 
-	if (u_Mode == 0) {
+	if (u_Mode > 0) {
 		right = normalize(vec3(goldNoise(pos.xy, pos.x), goldNoise(pos.xy, pos.y), goldNoise(pos.xy, pos.z))) * tmpscale;
 		up = normalize(cross(right, worldup)) * tmpscale;
 	} else {
