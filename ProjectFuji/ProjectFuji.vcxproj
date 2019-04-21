@@ -187,6 +187,7 @@
     <ClCompile Include="ParticleRenderer.cpp" />
     <ClCompile Include="PBRMaterial.cpp" />
     <ClCompile Include="PerlinNoiseSampler.cpp" />
+    <ClCompile Include="PositionalCDFEmitter.cpp" />
     <ClCompile Include="PositionalEmitter.cpp" />
     <ClCompile Include="ppmImage.cpp" />
     <ClCompile Include="ProjectionSettings.cpp" />
@@ -294,6 +295,7 @@
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PBRMaterial.h" />
     <ClInclude Include="PerlinNoiseSampler.h" />
+    <ClInclude Include="PositionalCDFEmitter.h" />
     <ClInclude Include="PositionalEmitter.h" />
     <ClInclude Include="ppmImage.h" />
     <ClInclude Include="ProjectionSettings.h" />

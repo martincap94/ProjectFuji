@@ -30,6 +30,7 @@
 #include "CircleEmitter.h"
 #include "CDFEmitter.h"
 //#include "EmitterBrushMode.h"
+#include "PositionalCDFEmitter.h"
 
 #include "UserInterface.h"
 #include <nuklear.h>
@@ -51,6 +52,7 @@ private:
 	struct EmitterCreationHelper {
 		CircleEmitter circleEmitter;
 		CDFEmitter cdfEmitter;
+		PositionalCDFEmitter pcdfEmitter;
 	};
 
 

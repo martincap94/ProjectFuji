@@ -218,6 +218,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EmitterBrushMode.cpp" />
+    <ClCompile Include="PositionalCDFEmitter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -394,6 +395,7 @@
     <ClInclude Include="ProjectionSettings.h" />
     <ClInclude Include="PerlinNoiseSampler.h" />
     <ClInclude Include="EmitterBrushMode.h" />
+    <ClInclude Include="PositionalCDFEmitter.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

@@ -27,6 +27,14 @@ void PositionalEmitter::init() {
 	prevPosition = position;
 }
 
+void PositionalEmitter::update() {
+	if (enabled) {
+		if (wiggle) {
+			wigglePosition();
+		}
+	}
+}
+
 
 void PositionalEmitter::wigglePosition() {
 

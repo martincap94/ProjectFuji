@@ -56,6 +56,26 @@ void Emitter::emitParticles(int numParticles) {
 	}
 }
 
+void Emitter::draw() {
+	if (!shader) {
+		return;
+	}
+	draw(shader);
+}
+
+void Emitter::initBuffers() {
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+	glBindVertexArray(0);
+}
+
 inline int Emitter::getRandomProfileIndex() {
 	return profileDist(mt);
 }
@@ -92,6 +112,7 @@ inline void Emitter::updateProfileIndexDistribution() {
 	}
 
 }
+
 
 
 

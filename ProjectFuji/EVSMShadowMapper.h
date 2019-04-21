@@ -13,7 +13,7 @@ class EVSMShadowMapper {
 public:
 
 	bool useBlurPass = true;
-	GLint resolution = 1024;
+	const GLint resolution = 1024;
 
 	float shadowBias = 0.001f;
 	float lightBleedReduction = 0.2f;

@@ -813,6 +813,7 @@ void ParticleSystem::createEmitter(int emitterType, string emitterName) {
 			break;
 		}
 		case Emitter::eEmitterType::CDF_POSITIONAL: {
+			createdEmitter = new PositionalCDFEmitter(ech.pcdfEmitter, this);
 			break;
 		}
 		default:
@@ -870,6 +871,7 @@ void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterf
 			break;
 		}
 		case Emitter::eEmitterType::CDF_POSITIONAL: {
+			ech.pcdfEmitter.constructEmitterPropertiesTab(ctx, ui);
 			break;
 		}
 		default:

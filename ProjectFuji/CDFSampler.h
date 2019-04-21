@@ -14,6 +14,9 @@ public:
 
 	glm::ivec2 getSample();
 
+	int getWidth();
+	int getHeight();
+
 protected:
 
 	float *sums = nullptr;

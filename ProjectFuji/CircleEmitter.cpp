@@ -71,11 +71,7 @@ void CircleEmitter::emitParticle() {
 
 
 void CircleEmitter::update() {
-	if (enabled) {
-		if (wiggle) {
-			wigglePosition();
-		}
-	}
+	PositionalEmitter::update();
 
 
 	if (prevPosition != position || prevRadius != radius) {
@@ -89,12 +85,6 @@ void CircleEmitter::update() {
 
 }
 
-void CircleEmitter::draw() {
-	if (!shader) {
-		return;
-	}
-	draw(shader);
-}
 
 void CircleEmitter::draw(ShaderProgram * shader) {
 	if (!visible) {
@@ -108,36 +98,15 @@ void CircleEmitter::draw(ShaderProgram * shader) {
 }
 
 void CircleEmitter::initBuffers() {
-
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
-
-	glBindVertexArray(0);
+	Emitter::initBuffers();
 
 	updateVBOPoints();
-
-
-
 }
 
 void CircleEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
-	cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
-
 	PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
-
-	cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
-
 	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_property_float(ctx, "Radius", 0.1f, &radius, 100000.0f, 0.1f, 0.1f);
-
-	cout << "HERE: " << __FILE__ << ":::" << __LINE__ << endl;
-
+	nk_property_float(ctx, "Radius", 1.0f, &radius, 100000.0f, 1.0f, 1.0f);
 }
 
 void CircleEmitter::updateVBOPoints() {

@@ -64,9 +64,9 @@ public:
 	virtual void emitParticles(int numParticles);
 
 	virtual void update() = 0;
-	virtual void draw() = 0;
+	virtual void draw();
 	virtual void draw(ShaderProgram *shader) = 0;
-	virtual void initBuffers() = 0;
+	virtual void initBuffers();
 
 	inline virtual int getRandomProfileIndex();
 

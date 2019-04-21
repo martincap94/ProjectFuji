@@ -24,7 +24,6 @@ public:
 	virtual void emitParticle();
 
 	virtual void update();
-	virtual void draw();
 	virtual void draw(ShaderProgram *shader);
 
 	virtual void initBuffers();
@@ -36,7 +35,7 @@ protected:
 	float prevRadius;
 
 
-	void updateVBOPoints();
+	virtual void updateVBOPoints();
 
 
 

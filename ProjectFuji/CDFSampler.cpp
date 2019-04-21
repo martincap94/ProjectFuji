@@ -61,6 +61,14 @@ glm::ivec2 CDFSampler::getSample() {
 	return glm::ivec2(selectedRow, selectedCol);
 }
 
+int CDFSampler::getWidth() {
+	return width;
+}
+
+int CDFSampler::getHeight() {
+	return height;
+}
+
 
 
 

@@ -42,7 +42,7 @@ public:
 
 	bool invertedView = false;
 
-	int lightBufferResolution = 1024;
+	const int lightBufferResolution = 1024;
 
 	int maxNumSlices = 4096;
 	int numSlices = 256;
@@ -60,8 +60,8 @@ public:
 
 	int useVolumetricRendering = 1;
 
-	int useBlurPass = 0;
-	float blurAmount = 1.0f;
+	int useBlurPass = 1;
+	float blurAmount = 0.4f;
 
 	// for easier testing
 	int firstPassShaderMode = 0;
