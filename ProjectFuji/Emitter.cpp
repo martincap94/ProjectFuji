@@ -18,6 +18,28 @@ Emitter::Emitter(const Emitter & e, ParticleSystem * owner) : owner(owner) {
 	init();
 }
 
+//Emitter::Emitter(const Emitter & e) {
+//	owner = e.owner;
+//
+//	name = e.name;
+//	minProfileIndex = e.minProfileIndex;
+//	maxProfileIndex = e.maxProfileIndex;
+//	maxParticlesToEmit = e.maxParticlesToEmit;
+//	numParticlesToEmitPerStep = e.numParticlesToEmitPerStep;
+//
+//	mt = e.mt;
+//	dist = e.dist;
+//	distRange = e.distRange;
+//	heightMap = e.heightMap;
+//	maxProfileIndex = e.maxProfileIndex;
+//	prevMinProfileIndex = e.prevMinProfileIndex;
+//	prevMaxProfileIndex = e.prevMaxProfileIndex;
+//	profileDist = e.profileDist;
+//
+//	initialized = e.initialized;
+//
+//}
+
 Emitter::~Emitter() {
 }
 
@@ -77,6 +99,33 @@ void Emitter::initBuffers() {
 	glBindVertexArray(0);
 }
 
+void Emitter::setProfileIndexPos(int changeAmount) {
+
+	minProfileIndex += changeAmount;
+	maxProfileIndex += changeAmount;
+
+	minProfileIndex = glm::clamp(minProfileIndex, 0, owner->stlpSim->stlpDiagram->numProfiles - 1);
+	maxProfileIndex = glm::clamp(maxProfileIndex, 0, owner->stlpSim->stlpDiagram->numProfiles - 1);
+
+	updateProfileIndexDistribution();
+}
+
+void Emitter::setProfileIndexRange(int changeAmount) {
+	if (minProfileIndex == maxProfileIndex && changeAmount < 0) {
+		return;
+	}
+	minProfileIndex -= changeAmount;
+	maxProfileIndex += changeAmount;
+	if (maxProfileIndex < minProfileIndex) {
+		maxProfileIndex = minProfileIndex;
+	}
+	minProfileIndex = glm::clamp(minProfileIndex, 0, owner->stlpSim->stlpDiagram->numProfiles - 1);
+	maxProfileIndex = glm::clamp(maxProfileIndex, 0, owner->stlpSim->stlpDiagram->numProfiles - 1);
+
+
+	updateProfileIndexDistribution();
+}
+
 inline int Emitter::getRandomProfileIndex() {
 	return profileDist(mt);
 }
@@ -94,6 +143,9 @@ const char * Emitter::getEmitterTypeString(int emitterType) {
 }
 
 void Emitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+
+	nk_property_int(ctx, "min profile index", 0, &minProfileIndex, maxProfileIndex, 1, 1);
+	nk_property_int(ctx, "max profile index", minProfileIndex, &maxProfileIndex, owner->stlpSim->stlpDiagram->numProfiles - 1, 1, 1);
 
 }
 

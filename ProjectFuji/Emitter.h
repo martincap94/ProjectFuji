@@ -51,7 +51,15 @@ public:
 
 	Emitter();
 	Emitter(std::string name, ParticleSystem *owner);
+	
+	/*
+		Copy before initialization of the copied emitter (initialized here)
+		used for creating emitter from dummy emitters that are used in UI only.
+	*/
 	Emitter(const Emitter &e, ParticleSystem *owner);
+
+	// Pure copy
+	//Emitter(const Emitter &e);
 
 	~Emitter();
 
@@ -67,6 +75,9 @@ public:
 	virtual void draw();
 	virtual void draw(ShaderProgram *shader) = 0;
 	virtual void initBuffers();
+
+	void setProfileIndexPos(int changeAmount);
+	void setProfileIndexRange(int changeAmount);
 
 	inline virtual int getRandomProfileIndex();
 

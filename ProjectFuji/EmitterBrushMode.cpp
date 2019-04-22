@@ -4,7 +4,12 @@
 #include <iostream>
 #include "Utils.h"
 
+#include <GLFW\glfw3.h>
+
+
 using namespace std;
+
+//int EmitterBrushMode::maxNumParticlesEmittedPerFrame = 10000;
 
 EmitterBrushMode::EmitterBrushMode(VariableManager * vars, ParticleSystem * ps) : vars(vars), ps(ps) {
 	tPicker = new TerrainPicker(vars);
@@ -74,6 +79,37 @@ void EmitterBrushMode::onLeftMouseButtonRelease(float x, float y) {
 	activeBrush->enabled = 0;
 }
 
+void EmitterBrushMode::processMouseWheelScroll(float yoffset, int glfwMods) {
+
+	if (glfwMods & GLFW_MOD_CONTROL) {
+		cout << "control was held" << endl;
+		cout << yoffset << endl;
+		numParticlesEmittedPerFrame += yoffset * glm::clamp(numParticlesEmittedPerFrame, 1, 100);
+		if (numParticlesEmittedPerFrame < 1) {
+			numParticlesEmittedPerFrame = 1;
+		}
+		if (numParticlesEmittedPerFrame > maxNumParticlesEmittedPerFrame) {
+			numParticlesEmittedPerFrame = maxNumParticlesEmittedPerFrame;
+		}
+
+	}
+	if (glfwMods & GLFW_MOD_ALT) {
+		cout << "alt was held" << endl;
+		activeBrush->setProfileIndexRange(yoffset);
+	}
+
+	if (glfwMods & GLFW_MOD_SHIFT) {
+		cout << "shift was held" << endl;
+		activeBrush->setProfileIndexPos(yoffset);
+
+
+	}
+
+
+
+
+}
+
 void EmitterBrushMode::loadBrushes() {
 	brushes.clear();
 	for (int i = 0; i < ps->emitters.size(); i++) {
@@ -139,7 +175,7 @@ void EmitterBrushMode::constructBrushSelectionUIPanel(nk_context * ctx, UserInte
 	if (activeBrush) {
 
 		//nk_value_int(ctx, "test", numParticlesEmittedPerFrame);
-		nk_slider_int(ctx, 0, &numParticlesEmittedPerFrame, 10000, 1);
+		nk_slider_int(ctx, 1, &numParticlesEmittedPerFrame, maxNumParticlesEmittedPerFrame, 1);
 		
 
 

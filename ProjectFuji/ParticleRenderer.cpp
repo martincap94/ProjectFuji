@@ -11,7 +11,6 @@
 using namespace std;
 
 
-
 ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) : vars(vars), ps(ps) {
 	initFramebuffers();
 

@@ -8,6 +8,7 @@
 
 #include <vector>
 
+
 #include "UserInterface.h"
 #include <nuklear.h>
 
@@ -20,6 +21,7 @@ class EmitterBrushMode {
 public:
 
 	int numParticlesEmittedPerFrame = 1000;
+	const int maxNumParticlesEmittedPerFrame = 10000;
 
 	EmitterBrushMode(VariableManager *vars, ParticleSystem *ps);
 	~EmitterBrushMode();
@@ -31,6 +33,8 @@ public:
 	void onLeftMouseButtonPress(float x, float y);
 	void onLeftMouseButtonDown(float x, float y);
 	void onLeftMouseButtonRelease(float x, float y);
+
+	void processMouseWheelScroll(float yoffset, int glfwMods);
 
 	/*
 		This is a quick hack - only call this when brush mode turned on!

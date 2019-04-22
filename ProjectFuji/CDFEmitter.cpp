@@ -42,15 +42,6 @@ void CDFEmitter::init() {
 	sampler = new CDFSampler(probabilityTexturePath);
 }
 
-void CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *ui) {
-	Texture *selectedTexture = nullptr;
-	ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
-	if (selectedTexture != nullptr) {
-		probabilityTexturePath = selectedTexture->filename;
-	}
-}
-
-
 
 CDFEmitter::~CDFEmitter() {
 	if (sampler) {
@@ -85,3 +76,12 @@ void CDFEmitter::draw(ShaderProgram * shader) {
 
 void CDFEmitter::initBuffers() {
 }
+
+void CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *ui) {
+	Texture *selectedTexture = nullptr;
+	ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
+	if (selectedTexture != nullptr) {
+		probabilityTexturePath = selectedTexture->filename;
+	}
+}
+

@@ -940,8 +940,6 @@ void processInput(GLFWwindow* window) {
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	
-
-
 	if (key == GLFW_KEY_T && action == GLFW_PRESS)  {
 		cout << "Key callback T pressed" << endl;
 	}
@@ -1138,7 +1136,34 @@ void processKeyboardInput(GLFWwindow *window) {
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-	camera->processMouseScroll(yoffset);
+
+	
+
+	// no need to poll these if ebm not active
+	if (ebm->isActive()) {
+		int glfwMods = 0;
+		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+			glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
+			glfwMods |= GLFW_MOD_CONTROL;
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+			glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
+			glfwMods |= GLFW_MOD_SHIFT;
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS ||
+			glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS) {
+			glfwMods |= GLFW_MOD_ALT;
+		}
+
+		ebm->processMouseWheelScroll(yoffset, glfwMods);
+
+		if (glfwMods == 0) {
+			camera->processMouseScroll(yoffset);
+		}
+
+	} else {
+		camera->processMouseScroll(yoffset);
+	}
 }
 
 

@@ -176,19 +176,13 @@ public:
 	int drawOverlayDiagramParticles = 1;
 
 
-	int prevHideUIKeyState = GLFW_RELEASE;
 	int hideUIKey = GLFW_KEY_F;
 	int hideUI = 0;
 
 	int viewportMode = 0;
 
 
-
-
-	int prevToggleLBMState = GLFW_RELEASE;
 	int toggleLBMState = GLFW_KEY_L;
-
-	int prevToggleSTLPState = GLFW_RELEASE;
 	int toggleSTLPState = GLFW_KEY_K;
 
 	bool generalKeyboardInputEnabled = true;

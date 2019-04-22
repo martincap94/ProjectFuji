@@ -15,6 +15,9 @@ public:
 	PositionalEmitter();
 	PositionalEmitter(std::string name, ParticleSystem *owner, glm::vec3 position = glm::vec3(0.0f));
 	PositionalEmitter(const PositionalEmitter &e, ParticleSystem *owner);
+
+	//PositionalEmitter(const PositionalEmitter &e);
+
 	~PositionalEmitter();
 
 	virtual void init();
