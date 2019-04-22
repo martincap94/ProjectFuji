@@ -96,6 +96,7 @@ int runApp();
 /// Process keyboard inputs of the window.
 void processInput(GLFWwindow *window);
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void processKeyboardInput(GLFWwindow *window);
 
 /// Mouse scroll callback for the window.
@@ -493,7 +494,7 @@ int runApp() {
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
-
+	glfwSetKeyCallback(window, key_callback);
 
 
 	stringstream ss;
@@ -937,7 +938,71 @@ void processInput(GLFWwindow* window) {
 	}
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	
+
+
+	if (key == GLFW_KEY_T && action == GLFW_PRESS)  {
+		cout << "Key callback T pressed" << endl;
+	}
+
+	if (action == GLFW_PRESS) {
+		if (key == GLFW_KEY_G) {
+			if (vars.useFreeRoamCamera) {
+				((FreeRoamCamera*)camera)->snapToGround();
+				//((FreeRoamCamera*)camera)->walking = !((FreeRoamCamera*)camera)->walking;
+			}
+		}
+		if (key == vars.hideUIKey) {
+			vars.hideUI = abs(vars.hideUI - 1);
+		}
+		if (key == vars.toggleLBMState) {
+			vars.applyLBM = abs(vars.applyLBM - 1);
+		}
+		if (key == vars.toggleSTLPState) {
+			vars.applySTLP = abs(vars.applySTLP - 1);
+		}
+		if (key == GLFW_KEY_I) {
+			camera->setView(Camera::VIEW_FRONT);
+		}
+		if (key == GLFW_KEY_O) {
+			camera->setView(Camera::VIEW_SIDE);
+		}
+		if (key == GLFW_KEY_P) {
+			camera->setView(Camera::VIEW_TOP);
+		}
+		if (key == resetKey) {
+			lbm->resetSimulation();
+		}
+		if (key == pauseKey) {
+			vars.paused = !vars.paused;
+		}
+		if (key == GLFW_KEY_1) {
+			ui->viewportMode = 0;
+			refreshProjectionMatrix();
+		}
+		if (key == GLFW_KEY_2) {
+			ui->viewportMode = 1;
+			refreshProjectionMatrix();
+		}
+		if (key == mouseCursorKey) {
+			vars.consumeMouseCursor = !vars.consumeMouseCursor;
+			if (vars.consumeMouseCursor) {
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			} else {
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			}
+		}
+	}
+
+
+}
+
 void processKeyboardInput(GLFWwindow *window) {
+
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+		cout << "Process keyboard input T pressed" << endl;
+	}
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
@@ -975,6 +1040,8 @@ void processKeyboardInput(GLFWwindow *window) {
 		//camera->processKeyboardMovement(Camera::ROTATE_RIGHT, deltaTime);
 		camera->processKeyboardMovement(GLFW_KEY_Q, deltaTime);
 	}
+
+	/*
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
 		if (vars.useFreeRoamCamera) {
 			((FreeRoamCamera*)camera)->snapToGround();
@@ -1067,6 +1134,7 @@ void processKeyboardInput(GLFWwindow *window) {
 		prevMouseCursorKeyState = GLFW_RELEASE;
 	}
 
+	*/
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {

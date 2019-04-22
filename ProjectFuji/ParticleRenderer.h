@@ -40,7 +40,7 @@ public:
 	glm::vec3 eyePos;
 	glm::vec3  halfVecEye;
 
-	bool invertedView = false;
+	bool invertedRendering = false;
 
 	const int lightBufferResolution = 1024;
 
@@ -82,8 +82,8 @@ public:
 
 	ePhaseFunction phaseFunction = ePhaseFunction::HENYEY_GREENSTEIN;
 	int multiplyPhaseByShadow = 1;
-	float symmetryParameter = 0.5f; // for Henyey-Greenstein phase function (only)
-	float symmetryParameter2 = -0.5f;
+	float symmetryParameter = 0.58f;
+	float symmetryParameter2 = -0.6f;
 	float dHenyeyGreensteinInterpolationParameter = 0.5f;
 
 	Texture *spriteTexture;

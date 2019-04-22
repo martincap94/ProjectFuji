@@ -38,11 +38,18 @@ void PositionalCDFEmitter::emitParticle() {
 	}
 
 	Particle p;
-	glm::ivec2 sample = sampler->getSample();
-	p.position.x = position.x + sample.x * scale;
-	p.position.z = position.z + sample.y * scale;
-	p.position.y = heightMap->getHeight(p.position.x, p.position.z);
+	glm::vec2 sample = (glm::vec2)sampler->getSample();
 
+	if (centered) {
+		sample.x -= sampler->getWidth() / 2.0f;
+		sample.y -= sampler->getHeight() / 2.0f;
+	}
+	sample *= scale;
+
+	p.position.x = position.x + sample.x;
+	p.position.z = position.z + sample.y;
+	p.position.y = heightMap->getHeight(p.position.x, p.position.z);
+	
 
 
 	p.profileIndex = getRandomProfileIndex();
@@ -100,20 +107,30 @@ void PositionalCDFEmitter::updateVBOPoints() {
 	vector<glm::vec3> vertices;
 
 	glm::vec3 v;
-	v.x = position.x;
-	v.z = position.z;
+
+	float ws = (float)sampler->getWidth() * scale;
+	float hs = (float)sampler->getHeight() * scale;
+
+	if (centered) {
+		v.x = position.x - (ws / 2.0f);
+		v.z = position.z - (hs / 2.0f);
+	} else {
+		v.x = position.x;
+		v.z = position.z;
+	}
+
 	v.y = heightMap->getHeight(v.x, v.z);
 	vertices.push_back(v);
 
-	v.x += sampler->getWidth() * scale;
+	v.x += ws;
 	v.y = heightMap->getHeight(v.x, v.z);
 	vertices.push_back(v);
 
-	v.z += sampler->getHeight() * scale;
+	v.z += hs;
 	v.y = heightMap->getHeight(v.x, v.z);
 	vertices.push_back(v);
 
-	v.x -= sampler->getWidth() * scale;
+	v.x -= ws;
 	v.y = heightMap->getHeight(v.x, v.z);
 	vertices.push_back(v);
 

@@ -1064,7 +1064,7 @@ void UserInterface::constructCloudVisualizationTab() {
 	nk_value_vec3(ctx, particleRenderer->viewVec, "View vector");
 	nk_value_float(ctx, "Dot product", glm::dot(particleRenderer->viewVec, particleRenderer->lightVec));
 	nk_property_float(ctx, "Inversion threshold", -1.0f, &particleRenderer->inversionThreshold, 1.0f, 0.01f, 0.01f);
-	nk_value_bool(ctx, "Inverted rendering", particleRenderer->invertedView);
+	nk_value_bool(ctx, "Inverted rendering", particleRenderer->invertedRendering);
 	nk_value_vec3(ctx, particleRenderer->halfVec, "Half vector");
 
 	nk_checkbox_label(ctx, "Half vector always faces camera", &particleRenderer->forceHalfVecToFaceCam);

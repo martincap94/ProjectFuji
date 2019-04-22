@@ -137,6 +137,12 @@ void EmitterBrushMode::constructBrushSelectionUIPanel(nk_context * ctx, UserInte
 	}
 
 	if (activeBrush) {
+
+		//nk_value_int(ctx, "test", numParticlesEmittedPerFrame);
+		nk_slider_int(ctx, 0, &numParticlesEmittedPerFrame, 10000, 1);
+		
+
+
 		activeBrush->constructEmitterPropertiesTab(ctx, ui);
 	}
 

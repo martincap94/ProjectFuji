@@ -214,7 +214,7 @@ void ParticleSystem::emitParticles() {
 
 	if (ebm->isActive()) {
 		if (ebm->hasActiveBrush()) {
-			ebm->getActiveBrushPtr()->emitParticles();
+			ebm->getActiveBrushPtr()->emitParticles(ebm->numParticlesEmittedPerFrame);
 		}
 	} else {
 

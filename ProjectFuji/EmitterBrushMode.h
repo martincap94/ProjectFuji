@@ -7,8 +7,9 @@
 #include "CircleEmitter.h"
 
 #include <vector>
-#include <nuklear.h>
+
 #include "UserInterface.h"
+#include <nuklear.h>
 
 //#include "ParticleSystem.h"
 class ParticleSystem;
@@ -18,6 +19,7 @@ typedef PositionalEmitter Brush;
 class EmitterBrushMode {
 public:
 
+	int numParticlesEmittedPerFrame = 1000;
 
 	EmitterBrushMode(VariableManager *vars, ParticleSystem *ps);
 	~EmitterBrushMode();
@@ -53,6 +55,7 @@ private:
 
 	bool active = false;
 
+
 	std::vector<Brush *> brushes;
 
 	Brush *prevActiveBrush = nullptr;
@@ -64,6 +67,7 @@ private:
 
 	bool terrainHit = false;
 	glm::vec3 pos = glm::vec3(0.0f);
+
 
 
 };

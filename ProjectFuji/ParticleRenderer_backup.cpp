@@ -163,14 +163,14 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 			halfVec.y = viewVec.y;
 			halfVec = glm::normalize(halfVec);
 		}
-		invertedView = false;
+		invertedRendering = false;
 	} else {
 		halfVec = glm::normalize(-viewVec + lightVec);
 		if (forceHalfVecToFaceCam) {
 			halfVec.y = -viewVec.y;
 			halfVec = glm::normalize(halfVec);
 		}
-		invertedView = true;
+		invertedRendering = true;
 	}
 
 	/*
@@ -181,10 +181,10 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 
 	if (glm::dot(viewVec, lightVec) > 0.0f) {
 		halfVec = glm::normalize(viewVec + lightVec);
-		invertedView = false;
+		invertedRendering = false;
 	} else {
 		halfVec = glm::normalize(-viewVec + lightVec);
-		invertedView = true;
+		invertedRendering = true;
 	}
 	*/
 
@@ -438,7 +438,7 @@ void ParticleRenderer::drawSlice(int i) {
 	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
 	glViewport(0, 0, imageWidth, imageHeight);
 	
-	if (invertedView) {
+	if (invertedRendering) {
 		glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE);
 	} else {
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
