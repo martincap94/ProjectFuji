@@ -116,7 +116,8 @@ void window_size_callback(GLFWwindow* window, int width, int height);
 
 
 void refreshProjectionMatrix();
-
+void refreshDiagramProjectionMatrix();
+void refreshDiagramProjectionMatrix(float aspectRatio);
 
 
 
@@ -892,8 +893,6 @@ void refreshProjectionMatrix() {
 }
 
 
-
-
 void processInput(GLFWwindow* window) {
 	
 	processKeyboardInput(window);
@@ -1140,30 +1139,42 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
 	
 
-	// no need to poll these if ebm not active
-	if (ebm->isActive()) {
-		int glfwMods = 0;
-		if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
-			glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
-			glfwMods |= GLFW_MOD_CONTROL;
+	if (ui->viewportMode == eViewportMode::DIAGRAM) {
+ 		vars.diagramProjectionOffset -= yoffset * 0.01f;
+		if (vars.diagramProjectionOffset < -0.45f) {
+			vars.diagramProjectionOffset = -0.45f;
 		}
-		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
-			glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
-			glfwMods |= GLFW_MOD_SHIFT;
-		}
-		if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS ||
-			glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS) {
-			glfwMods |= GLFW_MOD_ALT;
-		}
+		refreshDiagramProjectionMatrix();
+		camera->processMouseScroll(-(yoffset * 0.01f));
 
-		ebm->processMouseWheelScroll(yoffset, glfwMods);
 
-		//if (glfwMods == 0) {
-		//	camera->processMouseScroll(yoffset);
-		//}
 
 	} else {
-		camera->processMouseScroll(yoffset);
+		// no need to poll these if ebm not active
+		if (ebm->isActive()) {
+			int glfwMods = 0;
+			if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
+				glfwMods |= GLFW_MOD_CONTROL;
+			}
+			if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
+				glfwMods |= GLFW_MOD_SHIFT;
+			}
+			if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS ||
+				glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS) {
+				glfwMods |= GLFW_MOD_ALT;
+			}
+
+			ebm->processMouseWheelScroll(yoffset, glfwMods);
+
+			//if (glfwMods == 0) {
+			//	camera->processMouseScroll(yoffset);
+			//}
+
+		} else {
+			camera->processMouseScroll(yoffset);
+		}
 	}
 }
 
@@ -1269,10 +1280,7 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 	vars.screenWidth = width;
 	vars.screenHeight = height;
 
-	float offset = 0.2f;
-	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
-
-
+	refreshDiagramProjectionMatrix(aspectRatio);
 
 	projHeight = projectionRange;
 	projWidth = projHeight * aspectRatio;
@@ -1284,6 +1292,18 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 	TextureManager::refreshOverlayTextures();
 	stlpDiagram->refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
 }
+
+
+void refreshDiagramProjectionMatrix() {
+	float aspectRatio = (float)vars.screenWidth / (float)vars.screenHeight;
+	refreshDiagramProjectionMatrix(aspectRatio);
+}
+
+void refreshDiagramProjectionMatrix(float aspectRatio) {
+	float offset = vars.diagramProjectionOffset;
+	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
+}
+
 
 
 

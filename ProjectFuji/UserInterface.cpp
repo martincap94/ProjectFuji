@@ -1190,7 +1190,7 @@ void UserInterface::constructDiagramControlsTab() {
 	}
 
 
-	if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram controls", NK_MINIMIZED)) {
+	if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram Curves", NK_MINIMIZED)) {
 		nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
 		stlpDiagram->constructDiagramCurvesToolbar(ctx, this);
 		nk_tree_pop(ctx);
@@ -1202,6 +1202,9 @@ void UserInterface::constructDiagramControlsTab() {
 	if (nk_button_label(ctx, "Reset to default")) {
 		stlpDiagram->recalculateAll();
 	}
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_property_float(ctx, "Zoom", -1.0f, &vars->diagramProjectionOffset, 1.0f, 0.01f, 0.01f);
 
 	//if (nk_button_label(ctx, "Reset simulation")) {
 	//stlpSim->resetSimulation();
@@ -1679,6 +1682,8 @@ void UserInterface::constructEmittersTab() {
 
 			if (nk_tree_push_id(ctx, NK_TREE_NODE, Emitter::getEmitterName(e), NK_MINIMIZED, i)) {
 
+				e->constructEmitterPropertiesTab(ctx, this);
+				/*
 				nk_layout_row_static(ctx, 15, 200, 1);
 				nk_checkbox_label(ctx, "#enabled", &e->enabled);
 				nk_checkbox_label(ctx, "#visible", &e->visible);
@@ -1704,10 +1709,8 @@ void UserInterface::constructEmittersTab() {
 					if (ce) {
 						nk_property_float(ctx, "#radius", 1.0f, &ce->radius, 1000.0f, 1.0f, 1.0f);
 					}
-
-
-
 				}
+				*/
 
 				if (nk_button_label(ctx, "Delete emitter")) {
 					//particleSystem->deleteEmitter(i);

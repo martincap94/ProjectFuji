@@ -3,8 +3,10 @@
 #include "PositionalEmitter.h"
 #include "CDFSampler.h"
 #include "ShaderProgram.h"
+#include "Texture.h"
 
 #include "UserInterface.h"
+
 #include <nuklear.h>
 
 #include <string>
@@ -41,11 +43,15 @@ public:
 
 	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
+	Texture *getSamplerTexture();
+
 protected:
 
 	float prevScale;
 
 	CDFSampler *sampler = nullptr;
+
+	struct nk_image nkSamplerTexture;
 
 	virtual void updateVBOPoints();
 

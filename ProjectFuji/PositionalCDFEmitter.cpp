@@ -3,6 +3,8 @@
 #include "ShaderManager.h"
 #include "ParticleSystem.h"
 
+#include <nuklear.h>
+
 PositionalCDFEmitter::PositionalCDFEmitter() {
 }
 
@@ -25,6 +27,8 @@ PositionalCDFEmitter::~PositionalCDFEmitter() {
 
 void PositionalCDFEmitter::init() {
 	sampler = new CDFSampler(probabilityTexturePath);
+	nkSamplerTexture = nk_image_id(sampler->getTexture()->id);
+	
 	initBuffers();
 
 	shader = ShaderManager::getShaderPtr("singleColor");
@@ -108,6 +112,17 @@ void PositionalCDFEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserI
 	if (selectedTexture != nullptr) {
 		probabilityTexturePath = selectedTexture->filename;
 	}
+	//nk_draw_image(ctx->)
+	if (initialized) {
+		nk_layout_row_static(ctx, 100, 100, 1);
+		nk_button_image(ctx, nkSamplerTexture);
+		nk_layout_row_dynamic(ctx, 15, 1);
+	}
+
+}
+
+Texture *PositionalCDFEmitter::getSamplerTexture() {
+	return sampler->getTexture();
 }
 
 void PositionalCDFEmitter::updateVBOPoints() {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Texture.h"
 #include <glm\glm.hpp>
 
 #include <random>
@@ -17,6 +18,8 @@ public:
 	int getWidth();
 	int getHeight();
 
+	Texture *getTexture();
+
 protected:
 
 	float *sums = nullptr;
@@ -26,6 +29,8 @@ protected:
 	int height;
 	int numChannels;
 	int size;
+
+	Texture *tex = nullptr; // texture loaded in TextureManager - stored in OpenGL for drawing
 
 	bool initialized = false;
 

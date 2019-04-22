@@ -191,6 +191,7 @@ public:
 
 	int projectionMode = eProjectionMode::PERSPECTIVE;
 	float fov = 90.0f;
+	float diagramProjectionOffset = 0.2f;
 
 	int renderMode = 0; // disables rendering of all helper visualization structures (boxes, vectors, etc.)
 

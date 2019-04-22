@@ -69,6 +69,10 @@ int CDFSampler::getHeight() {
 	return height;
 }
 
+Texture * CDFSampler::getTexture() {
+	return tex;
+}
+
 
 
 
@@ -115,7 +119,7 @@ void CDFSampler::init(string probabilityTexturePath) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	TextureManager::pushCustomTexture(texId, width, height, 1, "CDF Emitter test");
+	tex = TextureManager::pushCustomTexture(texId, width, height, 1, probabilityTexturePath);
 
 	delete[] fimgData;
 

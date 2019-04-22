@@ -144,9 +144,10 @@ const char * Emitter::getEmitterTypeString(int emitterType) {
 
 void Emitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
 
-	nk_property_int(ctx, "min profile index", 0, &minProfileIndex, maxProfileIndex, 1, 1);
-	nk_property_int(ctx, "max profile index", minProfileIndex, &maxProfileIndex, owner->stlpSim->stlpDiagram->numProfiles - 1, 1, 1);
-
+	if (initialized) {
+		nk_property_int(ctx, "min profile index", 0, &minProfileIndex, maxProfileIndex, 1, 1);
+		nk_property_int(ctx, "max profile index", minProfileIndex, &maxProfileIndex, owner->stlpSim->stlpDiagram->numProfiles - 1, 1, 1);
+	}
 }
 
 const char * Emitter::getEmitterName(Emitter *emitter) {
