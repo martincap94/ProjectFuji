@@ -25,12 +25,16 @@ public:
 
 	virtual void wigglePosition();
 
+	virtual void changeScale(float scaleChange) = 0;
+
 	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 
 protected:
 
 	glm::vec3 prevPosition;
+
+	//virtual void updateVBOPoints() = 0;
 
 
 

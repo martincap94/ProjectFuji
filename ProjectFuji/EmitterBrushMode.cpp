@@ -81,16 +81,15 @@ void EmitterBrushMode::onLeftMouseButtonRelease(float x, float y) {
 
 void EmitterBrushMode::processMouseWheelScroll(float yoffset, int glfwMods) {
 
+	if (glfwMods == 0) {
+		activeBrush->changeScale(yoffset);
+		return;
+	}
+
 	if (glfwMods & GLFW_MOD_CONTROL) {
 		cout << "control was held" << endl;
-		cout << yoffset << endl;
-		numParticlesEmittedPerFrame += yoffset * glm::clamp(numParticlesEmittedPerFrame, 1, 100);
-		if (numParticlesEmittedPerFrame < 1) {
-			numParticlesEmittedPerFrame = 1;
-		}
-		if (numParticlesEmittedPerFrame > maxNumParticlesEmittedPerFrame) {
-			numParticlesEmittedPerFrame = maxNumParticlesEmittedPerFrame;
-		}
+		activeBrush->setProfileIndexPos(yoffset);
+
 
 	}
 	if (glfwMods & GLFW_MOD_ALT) {
@@ -100,8 +99,13 @@ void EmitterBrushMode::processMouseWheelScroll(float yoffset, int glfwMods) {
 
 	if (glfwMods & GLFW_MOD_SHIFT) {
 		cout << "shift was held" << endl;
-		activeBrush->setProfileIndexPos(yoffset);
-
+		numParticlesEmittedPerFrame += yoffset * glm::clamp(numParticlesEmittedPerFrame, 1, 100);
+		if (numParticlesEmittedPerFrame < 1) {
+			numParticlesEmittedPerFrame = 1;
+		}
+		if (numParticlesEmittedPerFrame > maxNumParticlesEmittedPerFrame) {
+			numParticlesEmittedPerFrame = maxNumParticlesEmittedPerFrame;
+		}
 
 	}
 

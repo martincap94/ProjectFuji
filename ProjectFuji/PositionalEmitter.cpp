@@ -53,6 +53,7 @@ void PositionalEmitter::wigglePosition() {
 
 }
 
+
 void PositionalEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
 	Emitter::constructEmitterPropertiesTab(ctx, ui);
 

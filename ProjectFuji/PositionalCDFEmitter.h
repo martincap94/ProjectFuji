@@ -36,9 +36,14 @@ public:
 	virtual void draw(ShaderProgram *shader);
 	virtual void initBuffers();
 
+	virtual void changeScale(float scaleChange);
+
+
 	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 protected:
+
+	float prevScale;
 
 	CDFSampler *sampler = nullptr;
 

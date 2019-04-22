@@ -26,11 +26,16 @@ public:
 	virtual void update();
 	virtual void draw(ShaderProgram *shader);
 
+
+	virtual void changeScale(float scaleChange);
+
 	virtual void initBuffers();
+
 
 	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 protected:
+
 
 	float prevRadius;
 

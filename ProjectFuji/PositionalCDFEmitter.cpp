@@ -28,6 +28,7 @@ void PositionalCDFEmitter::init() {
 	initBuffers();
 
 	shader = ShaderManager::getShaderPtr("singleColor");
+	prevScale = scale;
 
 }
 
@@ -62,8 +63,9 @@ void PositionalCDFEmitter::update() {
 	PositionalEmitter::update();
 
 
-	if (prevPosition != position) {
+	if (prevPosition != position || prevScale != scale) {
 		prevPosition = position;
+		prevScale = scale;
 
 		if (visible) {
 			updateVBOPoints();
@@ -90,6 +92,11 @@ void PositionalCDFEmitter::initBuffers() {
 
 	updateVBOPoints();
 
+}
+
+void PositionalCDFEmitter::changeScale(float scaleChange) {
+	scale += scaleChange * sqrt(scale) * 0.2f;
+	scale = glm::clamp(scale, 0.001f, 100.0f);
 }
 
 void PositionalCDFEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {

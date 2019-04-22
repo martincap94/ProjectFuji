@@ -477,7 +477,8 @@ int runApp() {
 	particleSystem->createPredefinedEmitters();
 	particleSystem->initParticlesOnTerrain();
 	particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
-	particleSystem->activateAllParticles();
+	//particleSystem->activateAllParticles();
+	particleSystem->numActiveParticles = 500000;
 	particleSystem->activateAllDiagramParticles();
 
 	//particleSystem->initParticlePositions();
@@ -1157,9 +1158,9 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
 		ebm->processMouseWheelScroll(yoffset, glfwMods);
 
-		if (glfwMods == 0) {
-			camera->processMouseScroll(yoffset);
-		}
+		//if (glfwMods == 0) {
+		//	camera->processMouseScroll(yoffset);
+		//}
 
 	} else {
 		camera->processMouseScroll(yoffset);

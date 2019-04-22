@@ -97,6 +97,17 @@ void CircleEmitter::draw(ShaderProgram * shader) {
 
 }
 
+void CircleEmitter::changeScale(float scaleChange) {
+	radius += scaleChange * sqrtf(radius) * 2.0f;
+	/*if (scaleChange < 0.0f) {
+		radius += glm::clamp(scaleChange * radius, -0.01f, -100.0f);
+	} else {
+		radius += glm::clamp(scaleChange * radius, 0.01f, 100.0f);
+	}*/
+	radius = glm::clamp(radius, 0.1f, 100000.0f);
+
+}
+
 void CircleEmitter::initBuffers() {
 	Emitter::initBuffers();
 
