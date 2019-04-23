@@ -9,6 +9,9 @@ public:
 	PerlinNoiseSampler pSampler;
 	float perlinProbabilityDecrease = 0.4f;
 
+	int useTimeAsSeed = 1;
+	int seed = 0;
+
 	DynamicCDFSampler(std::string probabilityTexturePath);
 	~DynamicCDFSampler();
 

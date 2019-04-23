@@ -75,16 +75,21 @@ DynamicCDFSampler::~DynamicCDFSampler() {
 }
 
 void DynamicCDFSampler::updatePerlinNoiseNaiveTestingCPU(bool onlyPerlin) {
-	float currSum = 0;
-	float seed = rand();
+	float currSum = 0.0f;
+	float currSeed = 0.0f;
+	if (useTimeAsSeed) {
+		currSeed = glfwGetTime();
+	} else {
+		currSeed = this->seed;
+	}
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			float val = 0.0f;
 			if (onlyPerlin) {
-				val = glm::clamp(pSampler.getSampleOctaves((float)x / (float)width, (float)y / (float)height, 1.0f) - perlinProbabilityDecrease, 0.0f, 1.0f);
+				val = glm::clamp(pSampler.getSampleOctaves((float)x / (float)width, (float)y / (float)height, currSeed) - perlinProbabilityDecrease, 0.0f, 1.0f);
 			} else {
-				val = arr[x + y * width] * glm::clamp(pSampler.getSampleOctaves((float)x / (float)width, (float)y / (float)height, 1.0f) - perlinProbabilityDecrease, 0.0f, 1.0f);
+				val = arr[x + y * width] * glm::clamp(pSampler.getSampleOctaves((float)x / (float)width, (float)y / (float)height, currSeed) - perlinProbabilityDecrease, 0.0f, 1.0f);
 			}
 			currSum += val;
 			sums[x + y * width] = currSum;

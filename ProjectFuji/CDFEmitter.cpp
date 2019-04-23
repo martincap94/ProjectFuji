@@ -99,6 +99,12 @@ void CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *u
 		dsampler->pSampler.constructUIPropertiesTab(ctx);
 		nk_property_float(ctx, "decrease perlin prob.", 0.0f, &dsampler->perlinProbabilityDecrease, 1.0f, 0.01f, 0.01f);
 
+
+		nk_checkbox_label(ctx, "Use Time as Seed", &dsampler->useTimeAsSeed);
+		if (!dsampler->useTimeAsSeed) {
+			nk_property_int(ctx, "Seed", 0, &dsampler->seed, 10000, 1, 1);
+		}
+
 		if (nk_button_label(ctx, "Generate New Noise Func. * CDF Texture")) {
 			dsampler->updatePerlinNoiseNaiveTestingCPU(false);
 		}
