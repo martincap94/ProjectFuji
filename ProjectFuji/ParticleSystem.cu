@@ -799,6 +799,7 @@ void ParticleSystem::createPredefinedEmitters() {
 	emitters.push_back(new CircleEmitter("Circle test", this, glm::vec3(4000.0f, 0.0f, 4000.0f), 2000.0f));
 	emitters.push_back(new CDFEmitter("CDF test", this, "textures/cdf2.png"));
 	emitters.push_back(new PositionalCDFEmitter("Positional CDF test", this, "icons/edit.png"));
+	emitters.push_back(new CDFEmitter("CDF Dynamic", this, "textures/cdf2.png", true));
 }
 
 void ParticleSystem::createEmitter(int emitterType, string emitterName) {

@@ -438,6 +438,7 @@ int runApp() {
 	PBRMaterial cerbmat(calbedo, cmetallic, cnormalMap, cao);
 	cerberus.pbrMaterial = &cerbmat;
 	cerberus.shader = pbrTest;
+	cerberus.visible = 0;
 
 
 	grassModel.makeInstanced(vars.heightMap, 500000, glm::vec2(0.5f, 2.0f), glm::vec2(10000.0f), glm::vec2(1000.0f));
@@ -939,9 +940,9 @@ void processInput(GLFWwindow* window) {
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	
-	if (key == GLFW_KEY_T && action == GLFW_PRESS)  {
-		cout << "Key callback T pressed" << endl;
+
+	if (!vars.generalKeyboardInputEnabled) {
+		return;
 	}
 
 	if (action == GLFW_PRESS) {
@@ -1140,12 +1141,12 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	
 
 	if (ui->viewportMode == eViewportMode::DIAGRAM) {
- 		vars.diagramProjectionOffset -= yoffset * 0.01f;
+ 		vars.diagramProjectionOffset -= yoffset * 0.04f;
 		if (vars.diagramProjectionOffset < -0.45f) {
 			vars.diagramProjectionOffset = -0.45f;
 		}
 		refreshDiagramProjectionMatrix();
-		camera->processMouseScroll(-(yoffset * 0.01f));
+		camera->processMouseScroll(-(yoffset * 0.04f));
 
 
 
@@ -1240,9 +1241,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
-	if (ui->viewportMode == eViewportMode::DIAGRAM) {
-		return;
-	}
 
 	static bool firstFrame = true;
 	if (firstFrame) {
@@ -1260,15 +1258,24 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	lastMouseX = xpos;
 	lastMouseY = ypos;
 
+	if (ui->viewportMode == eViewportMode::DIAGRAM) {
+
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE)) {
+			float offsetMultiplier = 0.001f * (vars.diagramProjectionOffset + 0.6f);
+			camera->processMouseMovement(xOffset * offsetMultiplier, yOffset * offsetMultiplier, false);
+			camera->printInfo();
+		}
 
 
-	// for easier controls
-	if (vars.consumeMouseCursor) {
-		camera->processMouseMovement(xOffset, yOffset, false);
+	} else {
+
+		// for easier controls
+		if (vars.consumeMouseCursor) {
+			camera->processMouseMovement(xOffset, yOffset, false);
+		}
+
+		ebm->updateMousePosition(xpos, ypos);
 	}
-
-	ebm->updateMousePosition(xpos, ypos);
-
 }
 
 

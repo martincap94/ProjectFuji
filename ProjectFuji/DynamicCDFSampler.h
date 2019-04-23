@@ -1,14 +1,22 @@
 #pragma once
 #include "CDFSampler.h"
+
+#include "PerlinNoiseSampler.h"
+
 class DynamicCDFSampler : public CDFSampler {
 public:
+
+	PerlinNoiseSampler pSampler;
+	float perlinProbabilityDecrease = 0.4f;
 
 	DynamicCDFSampler(std::string probabilityTexturePath);
 	~DynamicCDFSampler();
 
-	void update(bool memcpyArrHostToDevice = false);
+	void updatePerlinNoiseNaiveTestingCPU(bool onlyPerlin = false);
+
 
 protected:
+
 
 	float *arr = nullptr;
 
@@ -19,6 +27,7 @@ protected:
 	size_t bsize;
 
 
+	void updateSumsGPU(bool memcpyArrHostToDevice = false);
 	void initCUDA();
 
 

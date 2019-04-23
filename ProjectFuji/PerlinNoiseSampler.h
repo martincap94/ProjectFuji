@@ -32,11 +32,11 @@ public:
 
 
 	// beware that when x and y are integers, this noise function always returns 0.0!
-	static float getSampleStatic(glm::vec3 pos, float frequency = 1.0f, int samplingMode = 0);
+	static float getSampleStatic(glm::vec3 pos, float frequency = 1.0f, int samplingMode = 1);
 	// beware that when x and y are integers, this noise function always returns 0.0!
-	static float getSampleStatic(float x, float y, float z, float frequency = 1.0f, int samplingMode = 0);
-	static float getSampleOctavesStatic(glm::vec3 pos, float startFrequency = 1.0f, int numOctaves = 1, float persistence = 0.5f, int samplingMode = 0);
-	static float getSampleOctavesStatic(float x, float y, float z, float startFrequency = 1.0f, int numOctaves = 1, float persistence = 0.5f, int samplingMode = 0);
+	static float getSampleStatic(float x, float y, float z, float frequency = 1.0f, int samplingMode = 1);
+	static float getSampleOctavesStatic(glm::vec3 pos, float startFrequency = 1.0f, int numOctaves = 1, float persistence = 0.5f, int samplingMode = 1);
+	static float getSampleOctavesStatic(float x, float y, float z, float startFrequency = 1.0f, int numOctaves = 1, float persistence = 0.5f, int samplingMode = 1);
 
 	static void loadPermutationsData(std::string filename);
 

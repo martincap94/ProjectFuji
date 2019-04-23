@@ -3,16 +3,16 @@
 #include "Emitter.h"
 
 #include "CDFSampler.h"
+#include "DynamicCDFSampler.h"
 
 #include <string>
 
 class CDFEmitter : public Emitter {
 public:
 
-	std::string probabilityTexturePath = "";
 
 	CDFEmitter();
-	CDFEmitter(std::string name, ParticleSystem *owner, std::string probabilityTexturePath);
+	CDFEmitter(std::string name, ParticleSystem *owner, std::string probabilityTexturePath, bool useDynamicSampler = false);
 	CDFEmitter(const CDFEmitter &e, ParticleSystem *owner);
 	~CDFEmitter();
 
@@ -30,7 +30,11 @@ public:
 	
 protected:
 
+	std::string probabilityTexturePath = "";
+	int useDynamicSampler = 0;
+
 	CDFSampler *sampler = nullptr;
+	DynamicCDFSampler *dsampler = nullptr; // only set when useDynamicSampler is true - helper so we do not have to cast in each loop
 
 };
 

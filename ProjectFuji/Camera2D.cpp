@@ -82,6 +82,9 @@ void Camera2D::processMouseScroll(double yoffset) {
 }
 
 void Camera2D::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
+	position.x -= xoffset;
+	position.y += yoffset;
+
 }
 
 void Camera2D::printInfo() {

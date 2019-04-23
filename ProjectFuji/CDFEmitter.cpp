@@ -25,13 +25,15 @@ using namespace std;
 CDFEmitter::CDFEmitter() : Emitter() {}
 
 // expects path to 16-bit grayscale png
-CDFEmitter::CDFEmitter(string name, ParticleSystem *owner, string probabilityTexturePath) : Emitter(name, owner), probabilityTexturePath(probabilityTexturePath) {
+CDFEmitter::CDFEmitter(string name, ParticleSystem *owner, string probabilityTexturePath, bool useDynamicSampler) : Emitter(name, owner), probabilityTexturePath(probabilityTexturePath) {
 	//sampler = new CDFSampler(this->probabilityTexturePath);
+	this->useDynamicSampler = (int)useDynamicSampler;
 	init();
 }
 
 CDFEmitter::CDFEmitter(const CDFEmitter &e, ParticleSystem *owner) : Emitter(e, owner) {
 	probabilityTexturePath = e.probabilityTexturePath;
+	useDynamicSampler = e.useDynamicSampler;
 	init();
 }
 
@@ -39,7 +41,12 @@ CDFEmitter::CDFEmitter(const CDFEmitter &e, ParticleSystem *owner) : Emitter(e, 
 
 
 void CDFEmitter::init() {
-	sampler = new CDFSampler(probabilityTexturePath);
+	if (useDynamicSampler) {
+		dsampler = new DynamicCDFSampler(probabilityTexturePath);
+		sampler = (CDFSampler *)dsampler;
+	} else {
+		sampler = new CDFSampler(probabilityTexturePath);
+	}
 }
 
 
@@ -78,10 +85,27 @@ void CDFEmitter::initBuffers() {
 }
 
 void CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *ui) {
-	Texture *selectedTexture = nullptr;
-	ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
-	if (selectedTexture != nullptr) {
-		probabilityTexturePath = selectedTexture->filename;
+	Emitter::constructEmitterPropertiesTab(ctx, ui);
+
+	if (!initialized) {
+		nk_checkbox_label(ctx, "Dynamic Sampler", &useDynamicSampler);
+		Texture *selectedTexture = nullptr;
+		ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
+		if (selectedTexture != nullptr) {
+			probabilityTexturePath = selectedTexture->filename;
+		}
 	}
+	if (useDynamicSampler) {
+		dsampler->pSampler.constructUIPropertiesTab(ctx);
+		nk_property_float(ctx, "decrease perlin prob.", 0.0f, &dsampler->perlinProbabilityDecrease, 1.0f, 0.01f, 0.01f);
+
+		if (nk_button_label(ctx, "Generate New Noise Func. * CDF Texture")) {
+			dsampler->updatePerlinNoiseNaiveTestingCPU(false);
+		}
+		if (nk_button_label(ctx, "Generate New Noise Func.")) {
+			dsampler->updatePerlinNoiseNaiveTestingCPU(true);
+		}
+	}
+
 }
 

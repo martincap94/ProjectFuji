@@ -59,6 +59,8 @@ DynamicCDFSampler::DynamicCDFSampler(string probabilityTexturePath) : CDFSampler
 
 	initCUDA();
 
+	initialized = 1;
+
 
 }
 
@@ -72,17 +74,30 @@ DynamicCDFSampler::~DynamicCDFSampler() {
 	CHECK_ERROR(cudaFree(d_sums));
 }
 
-void DynamicCDFSampler::update(bool memcpyArrHostToDevice) {
+void DynamicCDFSampler::updatePerlinNoiseNaiveTestingCPU(bool onlyPerlin) {
+	float currSum = 0;
+	float seed = rand();
 
-	/*
-	// testing
-	float maxIntensity = (float)numeric_limits<unsigned short>().max();
-	for (int x = 10; x < 100; x++) {
-	for (int y = 10; y < 100; y++) {
-	arr[x + y * width] = maxIntensity;
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			float val = 0.0f;
+			if (onlyPerlin) {
+				val = glm::clamp(pSampler.getSampleOctaves((float)x / (float)width, (float)y / (float)height, 1.0f) - perlinProbabilityDecrease, 0.0f, 1.0f);
+			} else {
+				val = arr[x + y * width] * glm::clamp(pSampler.getSampleOctaves((float)x / (float)width, (float)y / (float)height, 1.0f) - perlinProbabilityDecrease, 0.0f, 1.0f);
+			}
+			currSum += val;
+			sums[x + y * width] = currSum;
+			//arr[x + y * width] = (float)val;
+		}
 	}
-	}
-	*/
+	maxTotalSum = currSum;
+	firstdist = uniform_real_distribution<float>(1, maxTotalSum);
+
+
+}
+
+void DynamicCDFSampler::updateSumsGPU(bool memcpyArrHostToDevice) {
 
 
 	if (memcpyArrHostToDevice) {
