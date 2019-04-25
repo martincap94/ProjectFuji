@@ -2064,7 +2064,7 @@ void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string
 }
 
 void UserInterface::constructTauProperty() {
-	nk_property_float(ctx, "Tau:", 0.5005f, &lbm->tau, 10.0f, 0.005f, 0.005f);
+	nk_property_float(ctx, "Tau:", 0.1f, &lbm->tau, 10.0f, 0.005f, 0.005f);
 }
 
 void UserInterface::constructWalkingPanel() {

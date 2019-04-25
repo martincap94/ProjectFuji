@@ -157,6 +157,8 @@ public:
 
 	void sortParticlesByDistance(glm::vec3 referencePoint, eSortPolicy sortPolicy);
 	void sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy sortPolicy);
+	void checkParticleValidity();
+
 
 	void initParticlesWithZeros();
 	void initParticlesOnTerrain();

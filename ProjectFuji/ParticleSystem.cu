@@ -51,6 +51,18 @@ __global__ void computeParticleProjectedDistances(glm::vec3 *particleVertices, f
 }
 
 
+__global__ void checkParticleValidityKernel(glm::vec3 *particleVertices, int numParticles) {
+	int idx = threadIdx.x + blockDim.x * blockIdx.x;
+
+	if (idx < numParticles) {
+		glm::vec3 pos = particleVertices[idx];
+		if (isnan(pos.x) || isnan(pos.y) || isnan(pos.z) || isinf(pos.x) || isinf(pos.y) || isinf(pos.z)) {
+			//printf("oh no");
+			particleVertices[idx] = glm::vec3(0.0f);
+		}
+	}
+}
+
 
 
 ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
@@ -255,7 +267,7 @@ void ParticleSystem::emitParticles() {
 // NOT USED ANYMORE
 void ParticleSystem::draw(glm::vec3 cameraPos) {
 
-	
+
 	/*
 	size_t num_bytes;
 	glm::vec3 *d_mappedParticleVerticesVBO;
@@ -282,7 +294,7 @@ void ParticleSystem::draw(glm::vec3 cameraPos) {
 	//thrust::device_ptr<float> thrustParticleDistancesPtr(d_particleDistances);
 
 	//thrust::sort_by_key(thrustParticleDistancesPtr, thrustParticleDistancesPtr + numActiveParticles, thrustParticleVerticesPtr, thrust::greater<float>());
-	
+
 
 	// NEW APPROACH
 	thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::greater<float>());
@@ -292,7 +304,7 @@ void ParticleSystem::draw(glm::vec3 cameraPos) {
 	//cudaDeviceSynchronize(); // if we do not synchronize, thrust will (?) throw a system error since we unmap the resource before it finishes sorting
 	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
 	*/
-	
+
 	ShaderProgram *shader;
 	if (vars->usePointSprites) {
 
@@ -335,7 +347,7 @@ void ParticleSystem::draw(glm::vec3 cameraPos) {
 	//glDrawArrays(GL_POINTS, 0, numActiveParticles);
 	glDrawElements(GL_POINTS, numActiveParticles, GL_UNSIGNED_INT, 0);
 
-	
+
 	glDepthMask(GL_TRUE);
 
 
@@ -380,7 +392,7 @@ void ParticleSystem::drawDiagramParticles() {
 	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
 	//glNamedBufferData(particlesVBO, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
 	glDrawArrays(GL_POINTS, 0, numDiagramParticlesToDraw);
-	
+
 	if (depthTestEnabled) {
 		glEnable(GL_DEPTH_TEST);
 	}
@@ -490,7 +502,7 @@ void ParticleSystem::sortParticlesByDistance(glm::vec3 referencePoint, eSortPoli
 }
 
 void ParticleSystem::sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy sortPolicy) {
-	
+
 
 	glm::vec3 *d_mappedParticleVerticesVBO;
 	unsigned int *d_mappedParticlesEBO;
@@ -511,7 +523,7 @@ void ParticleSystem::sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy
 	thrust::sequence(thrust::device, d_mappedParticlesEBO, d_mappedParticlesEBO + numActiveParticles);
 
 
-	
+
 	switch (sortPolicy) {
 		case GREATER:
 			thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO, thrust::greater<float>());
@@ -530,7 +542,7 @@ void ParticleSystem::sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy
 			//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticleVerticesVBO, thrust::less_equal<float>());
 			break;
 	}
-	
+
 	//thrust::sort_by_key(thrust::device, d_particleDistances, d_particleDistances + numActiveParticles, d_mappedParticlesEBO);
 
 	CHECK_ERROR(cudaGetLastError());
@@ -540,6 +552,22 @@ void ParticleSystem::sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy
 	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticlesEBO, 0));
 
 
+
+}
+
+void ParticleSystem::checkParticleValidity() {
+
+
+	glm::vec3 *d_mappedParticleVerticesVBO;
+
+	CHECK_ERROR(cudaGraphicsMapResources(1, &cudaParticleVerticesVBO, 0));
+	CHECK_ERROR(cudaGraphicsResourceGetMappedPointer((void **)&d_mappedParticleVerticesVBO, nullptr, cudaParticleVerticesVBO));
+
+	checkParticleValidityKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, numActiveParticles);
+	
+	CHECK_ERROR(cudaGetLastError());
+
+	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
 
 }
 
@@ -615,7 +643,7 @@ void ParticleSystem::refreshParticlesOnTerrain() {
 		} else {
 			p.profileIndex = rand() % (stlpDiagram->numProfiles - 1);
 		}
-		
+
 		p.updatePressureVal();
 
 		float normP = stlpDiagram->getNormalizedPres(p.pressure);

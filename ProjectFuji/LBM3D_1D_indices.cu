@@ -218,7 +218,19 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 
 		//glm::vec3 pos = particleVertices[idx];
 
+		if (isnan(particleVertices[idx].x) || isnan(particleVertices[idx].y) || isnan(particleVertices[idx].z) ||
+			isinf(particleVertices[idx].x) || isinf(particleVertices[idx].y) || isinf(particleVertices[idx].z)) {
+			//printf("oh no!");
+			continue;
+		}
+
 		glm::vec3 pos = getLatticePosition(particleVertices[idx]);
+
+
+		//if (isnan(pos.x) || isnan(pos.y) || isnan(pos.z) || isinf(pos.x) || isinf(pos.y) || isinf(pos.z)) {
+		//	printf("oh no");
+		//	continue;
+		//}
 
 
 		if (pos.x < 0.0f || pos.x > d_latticeWidth - 1 ||
@@ -252,16 +264,32 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 		}
 
 		int leftX = (int)pos.x;
+		if (leftX < 0) {
+			leftX = d_latticeWidth - 1;
+		}
+
 		int rightX = leftX + 1;
 		if (rightX > d_latticeWidth - 1) {
 			rightX = 0;
 		}
+
 		int bottomY = (int)pos.y;
+		if (bottomY < 0) {
+			bottomY = d_latticeHeight - 1;
+		}
+
+
 		int topY = bottomY + 1;
 		if (topY > d_latticeHeight - 1) {
 			topY = 0;
 		}
+
 		int frontZ = (int)pos.z;
+		if (frontZ < 0) {
+			frontZ = d_latticeDepth - 1;
+		}
+
+
 		int backZ = frontZ + 1;
 		if (backZ > d_latticeDepth - 1) {
 			backZ = 0;
@@ -285,7 +313,7 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 		glm::vec3 finalVelocity;
 		if (useCorrectInterpolation) {
 
-			finalVelocity = 
+			finalVelocity =
 				adjVelocities[2] * (1.0f - horizontalRatio) * (1.0f - verticalRatio) * (1.0f - depthRatio) +
 				adjVelocities[3] * horizontalRatio * (1.0f - verticalRatio) * (1.0f - depthRatio) +
 				adjVelocities[0] * (1.0f - horizontalRatio) * verticalRatio * (1.0f - depthRatio) +
@@ -294,7 +322,7 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 				adjVelocities[4] * (1.0f - horizontalRatio) * verticalRatio * depthRatio +
 				adjVelocities[1] * horizontalRatio * verticalRatio * (1.0f - depthRatio) +
 				adjVelocities[5] * horizontalRatio * verticalRatio * depthRatio;
-			
+
 
 			/*
 			glm::vec3 topBackVelocity = adjVelocities[1] * horizontalRatio + adjVelocities[0] * (1.0f - horizontalRatio);
@@ -333,6 +361,13 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 		particleVertices[idx] = getWorldPosition(pos);
 
 		idx += blockDim.x * blockDim.y * gridDim.x;
+
+		//if (isnan(particleVertices[idx].x) || isnan(particleVertices[idx].y) || isnan(particleVertices[idx].z) ||
+		//	isinf(particleVertices[idx].x) || isinf(particleVertices[idx].y) || isinf(particleVertices[idx].z)) {
+		//	printf("oh no!");
+		//	particleVertices[idx] = glm::vec3(0.0f);
+		//	continue;
+		//}
 
 	}
 }
@@ -755,7 +790,7 @@ __global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, g
 		}
 		if (shouldBeSet) {
 
-//#define USE_SOUNDING_VELOCITIES
+			//#define USE_SOUNDING_VELOCITIES
 #ifdef USE_SOUNDING_VELOCITIES
 			inletVelocity = inletVelocities[y];
 #endif
@@ -908,8 +943,8 @@ __global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, g
 				}
 			}*/
 		}
+		}
 	}
-}
 
 
 /// Kernel for calculating the collision operator.
@@ -2027,16 +2062,16 @@ __global__ void updateCollidersKernel(Node3D *backLattice, glm::vec3 *velocities
 
 #define USE_REGISTER_FRIENDLY_COLLIDERS
 #ifdef USE_REGISTER_FRIENDLY_COLLIDERS
-			
+
 			float tmp;
 			float *adj = backLattice[idx].adj;
-			
+
 			// left and right
 			tmp = adj[DIR_RIGHT_FACE];
 			adj[DIR_RIGHT_FACE] = adj[DIR_LEFT_FACE];
 			adj[DIR_LEFT_FACE] = tmp;
 
-			
+
 			// top and bottom
 			tmp = adj[DIR_TOP_FACE];
 			adj[DIR_TOP_FACE] = adj[DIR_BOTTOM_FACE];
@@ -2076,9 +2111,9 @@ __global__ void updateCollidersKernel(Node3D *backLattice, glm::vec3 *velocities
 			tmp = adj[DIR_TOP_LEFT_EDGE];
 			adj[DIR_TOP_LEFT_EDGE] = adj[DIR_BOTTOM_RIGHT_EDGE];
 			adj[DIR_BOTTOM_RIGHT_EDGE] = tmp;
-			
+
 #else // USE_REGISTER_FRIENDLY_COLLIDERS
-			
+
 			float right = backLattice[idx].adj[DIR_RIGHT_FACE];
 			float left = backLattice[idx].adj[DIR_LEFT_FACE];
 			float back = backLattice[idx].adj[DIR_BACK_FACE];
@@ -2201,7 +2236,7 @@ __global__ void streamingStepKernel(Node3D *backLattice, Node3D *frontLattice) {
 		backLattice[idx].adj[DIR_TOP_BACK_EDGE] = frontLattice[getIdxKer(x, bottom, front)].adj[DIR_TOP_BACK_EDGE];
 		backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] = frontLattice[getIdxKer(x, top, front)].adj[DIR_BOTTOM_BACK_EDGE];
 		*/
-		
+
 		backLattice[idx].adj[DIR_LEFT_FACE] += frontLattice[getIdxKer(right, y, z)].adj[DIR_LEFT_FACE];
 		backLattice[idx].adj[DIR_FRONT_FACE] += frontLattice[getIdxKer(x, y, back)].adj[DIR_FRONT_FACE];
 		backLattice[idx].adj[DIR_BOTTOM_FACE] += frontLattice[getIdxKer(x, top, z)].adj[DIR_BOTTOM_FACE];
@@ -2220,9 +2255,9 @@ __global__ void streamingStepKernel(Node3D *backLattice, Node3D *frontLattice) {
 		backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] += frontLattice[getIdxKer(left, top, z)].adj[DIR_BOTTOM_RIGHT_EDGE];
 		backLattice[idx].adj[DIR_TOP_BACK_EDGE] += frontLattice[getIdxKer(x, bottom, front)].adj[DIR_TOP_BACK_EDGE];
 		backLattice[idx].adj[DIR_BOTTOM_BACK_EDGE] += frontLattice[getIdxKer(x, top, front)].adj[DIR_BOTTOM_BACK_EDGE];
-		
 
-		
+
+
 		for (int i = 0; i < 19; i++) {
 			if (backLattice[idx].adj[i] < 0.0f) {
 				backLattice[idx].adj[i] = 0.0f;
@@ -2230,7 +2265,7 @@ __global__ void streamingStepKernel(Node3D *backLattice, Node3D *frontLattice) {
 				backLattice[idx].adj[i] = 1.0f;
 			}
 		}
-		
+
 	}
 
 }
@@ -2486,7 +2521,7 @@ void LBM3D_1D_indices::draw(ShaderProgram & shader) {
 
 	heightMap->draw();
 
-}
+	}
 
 
 
@@ -2511,20 +2546,30 @@ void LBM3D_1D_indices::doStepCUDA() {
 
 	// ============================================= clear back lattice CUDA
 	clearBackLatticeKernel << <gridDim, blockDim >> > (d_backLattice);
+
+	//cudaDeviceSynchronize(); // FOR FINDING ERROR - TESTING!
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= update inlets CUDA
 	//updateInletsKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, inletVelocity);
 	updateInletsKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, inletVelocity, d_inletVelocities, xLeftInlet, xRightInlet, yBottomInlet, yTopInlet, zLeftInlet, zRightInlet);
 
+
+	//cudaDeviceSynchronize(); // FOR FINDING ERROR - TESTING!
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= streaming step CUDA
 	streamingStepKernel << <gridDim, blockDim >> > (d_backLattice, d_frontLattice);
+
+
+	//cudaDeviceSynchronize(); // FOR FINDING ERROR - TESTING!
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= update colliders CUDA
 	updateCollidersKernel << <gridDim, blockDim >> > (d_backLattice, d_velocities, d_heightMap);
+
+
+	//cudaDeviceSynchronize(); // FOR FINDING ERROR - TESTING!
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	// ============================================= collision step CUDA
@@ -2537,6 +2582,8 @@ void LBM3D_1D_indices::doStepCUDA() {
 	}
 	//collisionStepKernelStreamlinedShared << <gridDim, blockDim, cacheSize >> > (d_backLattice, d_velocities);
 
+
+	//cudaDeviceSynchronize(); // FOR FINDING ERROR - TESTING!
 	CHECK_ERROR(cudaPeekAtLastError());
 
 
@@ -2554,15 +2601,19 @@ void LBM3D_1D_indices::doStepCUDA() {
 	cudaGraphicsMapResources(1, &cudaParticleColorsVBO, 0);
 	cudaGraphicsResourceGetMappedPointer((void **)&d_particleColorsVBO, &num_bytes, cudaParticleColorsVBO);
 	*/
+
+	//cudaDeviceSynchronize(); // FOR FINDING ERROR - TESTING!
 	CHECK_ERROR(cudaPeekAtLastError());
 
 	//moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode);
 	//moveParticlesKernelInteropNew << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode, vars->lbmVelocityMultiplier, (bool)vars->lbmUseCorrectInterpolation);
 	moveParticlesKernelInteropNew2 << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode, vars->lbmVelocityMultiplier, (bool)vars->lbmUseCorrectInterpolation);
+
+
+	//cudaDeviceSynchronize(); // FOR FINDING ERROR - TESTING!
 	CHECK_ERROR(cudaPeekAtLastError());
 
-	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0);
-	CHECK_ERROR(cudaPeekAtLastError());
+	CHECK_ERROR(cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleVerticesVBO, 0));
 
 
 
@@ -2593,7 +2644,7 @@ void LBM3D_1D_indices::doStepCUDA() {
 		}
 
 	}
-	
+
 
 
 
@@ -2610,6 +2661,8 @@ void LBM3D_1D_indices::doStepCUDA() {
 	//CHECK_ERROR(cudaPeekAtLastError());
 
 	frameId++;
+
+	//cudaDeviceSynchronize(); // FOR FINDING ERROR - TESTING!
 	CHECK_ERROR(cudaPeekAtLastError());
 
 
@@ -2704,11 +2757,11 @@ void LBM3D_1D_indices::streamingStep() {
 						backLattice[idx].adj[i] = 1.0f;
 					}
 				}
+					}
+				}
 			}
-		}
-	}
 
-}
+		}
 
 void LBM3D_1D_indices::collisionStep() {
 

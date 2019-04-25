@@ -788,6 +788,9 @@ int runApp() {
 				particleRenderer->recalcVectors(camera, dirLight);
 				glm::vec3 sortVec = particleRenderer->getSortVec();
 
+
+				particleSystem->checkParticleValidity();
+
 				// NOW sort particles using the sort vector
 				particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
 
