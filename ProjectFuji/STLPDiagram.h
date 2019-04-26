@@ -289,6 +289,9 @@ private:
 
 	const float temperatureNotchSize = 0.01f;
 
+	const float maxTextScale = 0.0005f;
+
+
 	VariableManager *vars = nullptr;
 	
 	ShaderProgram *curveShader = nullptr;
@@ -363,6 +366,9 @@ private:
 
 	void generateDryAdiabats();
 	void generateMoistAdiabats();
+
+
+	void uploadMainParameterPointsToBuffer();
 
 
 };

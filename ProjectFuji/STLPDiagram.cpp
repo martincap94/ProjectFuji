@@ -392,7 +392,7 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, i
 
 	float x, y, T, P;
 
-	for (P = MAX_P; P >= MIN_P; P -= deltaP) {
+	for (P = P0; P >= MIN_P; P -= deltaP) {
 
 		T = computeAbsoluteFromThetaC(theta, P, P0);
 
@@ -429,7 +429,7 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 
 	//cout << "Generating moist adiabat..." << endl;
 	//printf(" | delta P = %0.2f, small delta P = %0.2f\n", deltaP, smallDeltaP);
-
+	float pPa;
 	float accumulatedP = 0.0f;
 	for (float p = startP; p >= MIN_P - smallDeltaP; p -= smallDeltaP) {
 
@@ -453,9 +453,8 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 			vertexCounter++;
 		}
 
-		p *= 100.0f;
-		T -= dTdp_moist(T, p) * smallDeltaP * 100.0f;
-		p /= 100.0f;
+		pPa = p * 100.0f;
+		T -= dTdp_moist(T, pPa) * smallDeltaP * 100.0f;
 
 		accumulatedP += smallDeltaP;
 
@@ -622,6 +621,22 @@ void STLPDiagram::initBuffers() {
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
+
+	glBindVertexArray(0);
+
+
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// MAIN PARAMETER POINTS
+	///////////////////////////////////////////////////////////////////////////////////////
+
+	glGenVertexArrays(1, &mainParameterPointsVAO);
+	glBindVertexArray(mainParameterPointsVAO);
+	glGenBuffers(1, &mainParameterPointsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
 
 	glBindVertexArray(0);
 
@@ -923,29 +938,7 @@ void STLPDiagram::initCurves() {
 
 
 	// Main parameters visualization
-
-	mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
-
-
-	glGenVertexArrays(1, &mainParameterPointsVAO);
-	glBindVertexArray(mainParameterPointsVAO);
-	glGenBuffers(1, &mainParameterPointsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mainParameterPoints.size(), &mainParameterPoints[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)0);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)(sizeof(glm::vec3)));
-
-	glBindVertexArray(0);
+	uploadMainParameterPointsToBuffer();
 
 
 }
@@ -1071,31 +1064,8 @@ void STLPDiagram::recalculateParameters() {
 	glNamedBufferData(moistAdiabatsVBO[1], sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
 
-	// very hacky - rewrite
-	mainParameterPoints.clear();
-	mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-	mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
+	uploadMainParameterPointsToBuffer();
 
-	mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-	mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-	mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-
-	glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mainParameterPoints.size(), &mainParameterPoints[0], GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void STLPDiagram::recalculateProfileDelta() {
@@ -1252,6 +1222,7 @@ void STLPDiagram::draw() {
 
 
 	glPointSize(6.0f);
+	curveShader->setColor(glm::vec3(0.0f));
 	glBindVertexArray(mainParameterPointsVAO);
 	glDrawArrays(GL_POINTS, 0, mainParameterPoints.size());
 
@@ -1273,33 +1244,46 @@ void STLPDiagram::draw() {
 
 void STLPDiagram::drawText() {
 
-	float textScale = 0.0006f * (vars->diagramProjectionOffset + 0.5f);
+	float scaleZoomModifier = vars->diagramProjectionOffset + 0.5f;
+	float textScale = 0.0006f * powf(scaleZoomModifier, 0.8f);
+	textScale = glm::min(textScale, maxTextScale);
 
 	int i = 0;
 	for (int temp = MIN_TEMP; temp <= MAX_TEMP; temp += 10) {
-		textRend->renderText(to_string(temp), temperaturePoints[i].x, temperaturePoints[i].y + 0.02f);
+		textRend->renderText(to_string(temp), temperaturePoints[i].x, temperaturePoints[i].y + 0.02f, textScale);
 		i++;
 	}
 
-	textRend->renderText("CCL", CCLNormalized.x, CCLNormalized.y, textScale);
-	textRend->renderText("Tc", TcNormalized.x, TcNormalized.y, textScale);
-	textRend->renderText("EL", ELNormalized.x, ELNormalized.y, textScale);
-	textRend->renderText("LCL", LCLNormalized.x, LCLNormalized.y, textScale);
-	textRend->renderText("LFC", LFCNormalized.x, LFCNormalized.y, textScale);
-	textRend->renderText("EL2", orographicELNormalized.x, orographicELNormalized.y, textScale);
-
-	textRend->renderText(to_string((int)soundingData[0].data[PRES]), 0.0f - 0.04f, 1.0f);
-	textRend->renderText(to_string((int)getAltitudeFromPressure(soundingData[0].data[PRES])) + "[m]", 0.0f + 0.01f, getNormalizedPres(i));
-
-	for (i = 1000.0f; i >= MIN_P; i -= 100) {
-		textRend->renderText(to_string(i), 0.0f - 0.04f, getNormalizedPres(i));
-		textRend->renderText(to_string((int)getAltitudeFromPressure(i)) + "[m]", 0.0f + 0.01f, getNormalizedPres(i));
+	if (CCLFound) {
+		textRend->renderText("CCL", CCLNormalized.x, CCLNormalized.y, textScale);
+	}
+	if (TcFound) {
+		textRend->renderText("Tc", TcNormalized.x, TcNormalized.y, textScale);
+	}
+	if (ELFound) {
+		textRend->renderText("EL", ELNormalized.x, ELNormalized.y, textScale);
+	}
+	if (LCLFound) {
+		textRend->renderText("LCL", LCLNormalized.x, LCLNormalized.y, textScale);
+	}
+	if (LFCFound) {
+		textRend->renderText("LFC", LFCNormalized.x, LFCNormalized.y, textScale);
+	}
+	if (orographicELFound) {
+		textRend->renderText("OEL", orographicELNormalized.x, orographicELNormalized.y, textScale);
 	}
 
-	textRend->renderText("Temperature (C)", 0.45f, 1.10f);
-	textRend->renderText("P (hPa)", -0.15f, 0.5f);
+	textRend->renderText(to_string((int)getAltitudeFromPressure(P0)) + "[m]", 0.0f + 0.01f * scaleZoomModifier, getNormalizedPres(P0), textScale);
 
-	textRend->renderText("SkewT/LogP (" + soundingFilename + ")", 0.4f, -0.05f, 0.0006f);
+	for (i = 1000.0f; i >= MIN_P; i -= 100) {
+		textRend->renderText(to_string(i), 0.0f - 0.04f, getNormalizedPres(i), textScale);
+		textRend->renderText(to_string((int)getAltitudeFromPressure(i)) + "[m]", 0.0f + 0.01f * scaleZoomModifier, getNormalizedPres(i), textScale);
+	}
+
+	textRend->renderText("Temperature [degree C]", 0.45f, 1.10f, textScale);
+	textRend->renderText("P [hPa]", -0.15f, 0.5f, textScale);
+
+	textRend->renderText("SkewT/LogP (" + soundingFilename + ")", 0.4f, -0.05f, textScale);
 
 
 }
@@ -2686,4 +2670,36 @@ void STLPDiagram::generateTemperatureNotches() {
 }
 
 void STLPDiagram::generateDryAdiabats() {
+}
+
+void STLPDiagram::uploadMainParameterPointsToBuffer() {
+
+	if (!mainParameterPoints.empty()) {
+		mainParameterPoints.clear();
+	}
+
+
+	if (CCLFound) {
+		mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
+	}
+	if (TcFound) {
+		mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
+	}
+	if (ELFound) {
+		mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
+	}
+	if (LCLFound) {
+		mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
+	}
+	if (LFCFound) {
+		mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
+	}
+	if (orographicELFound) {
+		mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
+	}
+
+	if (!mainParameterPoints.empty()) {
+		glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mainParameterPoints.size(), &mainParameterPoints[0], GL_STATIC_DRAW);
+	}
 }
