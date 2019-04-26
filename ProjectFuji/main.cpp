@@ -646,6 +646,21 @@ int runApp() {
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			refreshProjectionMatrix();
 
+			// LBM simulation update
+			if (vars.applyLBM) {
+				if (totalFrameCounter % vars.lbmStepFrame == 0) {
+					lbm->doStepCUDA();
+				}
+				lbm->recalculateVariables(); // recalculate variables based on the updated values
+			}
+
+			// STLP simulation update
+			if (vars.applySTLP) {
+				if (totalFrameCounter % vars.stlpStepFrame == 0) {
+					stlpSimCUDA->doStep();
+				}
+			}
+
 			stlpDiagram->draw();
 			stlpDiagram->drawText();
 
@@ -1145,8 +1160,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
 	if (ui->viewportMode == eViewportMode::DIAGRAM) {
  		vars.diagramProjectionOffset -= yoffset * 0.04f;
-		if (vars.diagramProjectionOffset < -0.45f) {
-			vars.diagramProjectionOffset = -0.45f;
+		if (vars.diagramProjectionOffset < -0.48f) {
+			vars.diagramProjectionOffset = -0.48f;
 		}
 		refreshDiagramProjectionMatrix();
 		camera->processMouseScroll(-(yoffset * 0.04f));

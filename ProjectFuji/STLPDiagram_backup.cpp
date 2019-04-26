@@ -236,7 +236,7 @@ void STLPDiagram::generateMixingRatioLineOld() {
 
 
 	//float T = soundingData[0].data[DWPT]; // default computation from initial sounding data, does not take changes to curves into consideration
-	float T = getDenormalizedTemp(findIntersectionNaive(groundIsobar, dewpointCurve).x, getNormalizedPres(P));	// this is more general (when user changes dewpoint curve for example)
+	float T = getDenormalizedTemp(findIntersection(groundIsobar, dewpointCurve).x, getNormalizedPres(P));	// this is more general (when user changes dewpoint curve for example)
 
 
 
@@ -326,7 +326,7 @@ void STLPDiagram::generateMixingRatioLine() {
 
 
 	//float T = soundingData[0].data[DWPT]; // default computation from initial sounding data, does not take changes to curves into consideration
-	float T = getDenormalizedTemp(findIntersectionNaive(groundIsobar, dewpointCurve).x, getNormalizedPres(P));	// this is more general (when user changes dewpoint curve for example)
+	float T = getDenormalizedTemp(findIntersection(groundIsobar, dewpointCurve).x, getNormalizedPres(P));	// this is more general (when user changes dewpoint curve for example)
 
 
 
@@ -682,7 +682,7 @@ void STLPDiagram::initCurves() {
 
 	generateMixingRatioLine();
 
-	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
+	CCLNormalized = findIntersection(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
 
 
@@ -713,14 +713,14 @@ void STLPDiagram::initCurves() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Tc and LCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	TcNormalized = findIntersectionNaive(groundIsobar, TcDryAdiabat);
+	TcNormalized = findIntersection(groundIsobar, TcDryAdiabat);
 	Tc = getDenormalizedCoords(TcNormalized);
 
 	// Check correctness by computing thetaCCL == Tc
 	float thetaCCL = (CCL.x + 273.15f) * pow((P0 / CCL.y), k_ratio);
 	thetaCCL -= 273.15f;
 
-	LCLNormalized = findIntersectionNaive(LCLDryAdiabatCurve, mixingCCL);
+	LCLNormalized = findIntersection(LCLDryAdiabatCurve, mixingCCL);
 	LCL = getDenormalizedCoords(LCLNormalized);
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -743,7 +743,7 @@ void STLPDiagram::initCurves() {
 		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
 
 
-		CCLProfiles.push_back(getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve)));
+		CCLProfiles.push_back(getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], ambientCurve)));
 
 		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(CCLProfiles.back()), -2.0f)); // point
 		float tint = (profileIndex + 1) * profileDelta;
@@ -799,7 +799,7 @@ void STLPDiagram::initCurves() {
 		// Find EL 
 		///////////////////////////////////////////////////////////////////////////////////////////////
 
-		ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve, true);
+		ELNormalized = findIntersection(moistAdiabat_CCL_EL, ambientCurve, true);
 		//cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
 		EL = getDenormalizedCoords(ELNormalized);
 		//cout << "EL: T = " << EL.x << ", P = " << EL.y << endl;
@@ -818,10 +818,10 @@ void STLPDiagram::initCurves() {
 	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
 	{
 
-		LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+		LFCNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
 		LFC = getDenormalizedCoords(LFCNormalized);
 
-		OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve, true);
+		OrographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
 		OrographicEL = getDenormalizedCoords(OrographicELNormalized);
 
 
@@ -832,7 +832,7 @@ void STLPDiagram::initCurves() {
 		moistAdiabatProfiles.push_back(Curve());
 		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabatProfiles[profileIndex]);
 
-		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve, true);
+		glm::vec2 tmp = findIntersection(moistAdiabatProfiles[profileIndex], ambientCurve, true);
 		ELProfiles.push_back(getDenormalizedCoords(tmp));
 
 		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(ELProfiles.back()), -2.0f)); // point
@@ -983,7 +983,7 @@ void STLPDiagram::recalculateParameters() {
 
 	generateMixingRatioLine();
 
-	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
+	CCLNormalized = findIntersection(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
 
 
@@ -1016,10 +1016,10 @@ void STLPDiagram::recalculateParameters() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Tc and LCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	TcNormalized = findIntersectionNaive(groundIsobar, TcDryAdiabat);
+	TcNormalized = findIntersection(groundIsobar, TcDryAdiabat);
 	Tc = getDenormalizedCoords(TcNormalized);
 
-	LCLNormalized = findIntersectionNaive(LCLDryAdiabatCurve, mixingCCL);
+	LCLNormalized = findIntersection(LCLDryAdiabatCurve, mixingCCL);
 	LCL = getDenormalizedCoords(LCLNormalized);
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1032,7 +1032,7 @@ void STLPDiagram::recalculateParameters() {
 		dryAdiabatProfiles[profileIndex].vertices.clear();
 		generateDryAdiabat(theta, vertices, P0, &dryAdiabatEdgeCount, true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
 
-		CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve));
+		CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], ambientCurve));
 	}
 
 	int sum = 0;
@@ -1059,7 +1059,7 @@ void STLPDiagram::recalculateParameters() {
 	generateMoistAdiabat(CCL.x, CCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_CCL_EL);
 
 
-	ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve, true);
+	ELNormalized = findIntersection(moistAdiabat_CCL_EL, ambientCurve, true);
 	EL = getDenormalizedCoords(ELNormalized);
 
 
@@ -1068,10 +1068,10 @@ void STLPDiagram::recalculateParameters() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	generateMoistAdiabat(LCL.x, LCL.y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
 
-	LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+	LFCNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
 	LFC = getDenormalizedCoords(LFCNormalized);
 
-	OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve, true);
+	OrographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
 	OrographicEL = getDenormalizedCoords(OrographicELNormalized);
 
 
@@ -1079,7 +1079,7 @@ void STLPDiagram::recalculateParameters() {
 	for (int profileIndex = 0; profileIndex < numProfiles; profileIndex++) {
 		generateMoistAdiabat(CCLProfiles[profileIndex].x, CCLProfiles[profileIndex].y, vertices, P0, &moistAdiabatEdgeCount, true, CURVE_DELTA_P, &moistAdiabatProfiles[profileIndex]);
 
-		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve, true);
+		glm::vec2 tmp = findIntersection(moistAdiabatProfiles[profileIndex], ambientCurve, true);
 		ELProfiles[profileIndex] = getDenormalizedCoords(tmp);
 	}
 
@@ -1847,7 +1847,7 @@ void STLPDiagram::initBuffersOld() {
 	mixingCCL.vertices = vertices;
 
 
-	CCLNormalized = findIntersectionNaive(mixingCCL, ambientCurve);
+	CCLNormalized = findIntersection(mixingCCL, ambientCurve);
 	cout << "CCL (normalized) = " << CCLNormalized.x << ", " << CCLNormalized.y << endl;
 
 	CCL = getDenormalizedCoords(CCLNormalized);
@@ -2001,7 +2001,7 @@ void STLPDiagram::initBuffersOld() {
 	}
 
 
-	//TcNormalized = findIntersectionNaive(xaxis, TcDryAdiabat);
+	//TcNormalized = findIntersection(xaxis, TcDryAdiabat);
 	TcNormalized = TcDryAdiabat.vertices[0]; // no need for intersection search here
 	cout << "TcNormalized: " << TcNormalized.x << ", " << TcNormalized.y << endl;
 	Tc = getDenormalizedCoords(TcNormalized);
@@ -2012,7 +2012,7 @@ void STLPDiagram::initBuffersOld() {
 	thetaCCL -= 273.15f;
 	cout << "THETA CCL = " << thetaCCL << endl;
 
-	LCLNormalized = findIntersectionNaive(LCLDryAdiabatCurve, mixingCCL);
+	LCLNormalized = findIntersection(LCLDryAdiabatCurve, mixingCCL);
 	LCL = getDenormalizedCoords(LCLNormalized);
 
 
@@ -2054,7 +2054,7 @@ void STLPDiagram::initBuffersOld() {
 		numDryAdiabats++;
 		dryAdiabatEdgeCount.push_back(counter);
 
-		CCLProfiles.push_back(getDenormalizedCoords(findIntersectionNaive(dryAdiabatProfiles[profileIndex], ambientCurve)));
+		CCLProfiles.push_back(getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], ambientCurve)));
 
 		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(CCLProfiles.back()), -2.0f)); // point
 		float tint = (profileIndex + 1) * profileDelta;
@@ -2416,7 +2416,7 @@ void STLPDiagram::initBuffersOld() {
 		///////////////////////////////////////////////////////////////////////////////////////////////
 
 		reverse(moistAdiabat_CCL_EL.vertices.begin(), moistAdiabat_CCL_EL.vertices.end()); // temporary reverse for finding EL
-		ELNormalized = findIntersectionNaive(moistAdiabat_CCL_EL, ambientCurve);
+		ELNormalized = findIntersection(moistAdiabat_CCL_EL, ambientCurve);
 		cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
 		EL = getDenormalizedCoords(ELNormalized);
 		cout << "EL: T = " << EL.x << ", P = " << EL.y << endl;
@@ -2450,12 +2450,12 @@ void STLPDiagram::initBuffersOld() {
 		//numMoistAdiabats++;
 
 
-		LFCNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+		LFCNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
 		LFC = getDenormalizedCoords(LFCNormalized);
 
 		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
 
-		OrographicELNormalized = findIntersectionNaive(moistAdiabat_LCL_EL, ambientCurve);
+		OrographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
 		OrographicEL = getDenormalizedCoords(OrographicELNormalized);
 
 		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
@@ -2489,7 +2489,7 @@ void STLPDiagram::initBuffersOld() {
 
 		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());
 
-		glm::vec2 tmp = findIntersectionNaive(moistAdiabatProfiles[profileIndex], ambientCurve);
+		glm::vec2 tmp = findIntersection(moistAdiabatProfiles[profileIndex], ambientCurve);
 		ELProfiles.push_back(getDenormalizedCoords(tmp));
 
 		reverse(moistAdiabatProfiles[profileIndex].vertices.begin(), moistAdiabatProfiles[profileIndex].vertices.end());

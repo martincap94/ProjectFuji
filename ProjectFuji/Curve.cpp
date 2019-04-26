@@ -76,10 +76,49 @@ void Curve::printVertices() {
 
 
 
+// Based on: http://paulbourke.net/geometry/pointlineplane
+// & http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
+bool findIntersectionNew(const Curve & c1, const Curve & c2, glm::vec2 &outIntersection, bool reverseFirst, bool reverseSecond) {
+
+	int iStart, jStart, iEnd, jEnd, iDelta, jDelta;
+	if (reverseFirst) {
+		iStart = c1.vertices.size() - 1;
+		iEnd = 0;
+		iDelta = -1;
+	} else {
+		iStart = 0;
+		iEnd = c1.vertices.size() - 1;
+		iDelta = 1;
+	}
+
+	if (reverseSecond) {
+		jStart = c2.vertices.size() - 1;
+		jEnd = 0;
+		jDelta = -1;
+	} else {
+		jStart = 0;
+		jEnd = c2.vertices.size() - 1;
+		jDelta = 1;
+	}
+
+	for (int i = iStart; i != iEnd; i += iDelta) {
+		for (int j = jStart; j != jEnd; j += jDelta) {
+			glm::vec2 intersection;
+			if (getIntersectionPoint(c1.vertices[i], c1.vertices[i + iDelta], c2.vertices[j], c2.vertices[j + jDelta], intersection)) {
+				outIntersection = intersection;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+
 
 // Based on: http://paulbourke.net/geometry/pointlineplane
 // & http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
-glm::vec2 findIntersectionNaive(const Curve & c1, const Curve & c2, bool reverseFirst, bool reverseSecond) {
+glm::vec2 findIntersection(const Curve & c1, const Curve & c2, bool reverseFirst, bool reverseSecond) {
 	// Test each edge pair ( O(|E|^2) )
 
 	//static bool firstFlag = false;

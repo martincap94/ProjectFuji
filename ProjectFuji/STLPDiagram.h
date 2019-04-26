@@ -252,6 +252,8 @@ public:
 
 private:
 
+	const float temperatureNotchSize = 0.01f;
+
 	VariableManager *vars = nullptr;
 	
 	ShaderProgram *curveShader = nullptr;
@@ -318,7 +320,6 @@ private:
 	float ymin;
 	float ymax;
 
-	float sP0;
 
 };
 

@@ -37,7 +37,8 @@ private:
 };
 
 
+bool findIntersectionNew(const Curve &first, const Curve &second, glm::vec2 &outIntersection, bool reverseFirst = false, bool reverseSecond = false);
 
-glm::vec2 findIntersectionNaive(const Curve &first, const Curve &second, bool reverseFirst = false, bool reverseSecond = false);
+glm::vec2 findIntersection(const Curve &first, const Curve &second, bool reverseFirst = false, bool reverseSecond = false);
 glm::vec2 findIntersectionOld(const Curve &first, const Curve &second);
 
