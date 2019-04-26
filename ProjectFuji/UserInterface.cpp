@@ -584,17 +584,31 @@ void UserInterface::constructLBMTab() {
 	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_label(ctx, "LBM Respawn Mode", NK_TEXT_CENTERED);
 	nk_layout_row_dynamic(ctx, 15, 2);
-	if (nk_option_label(ctx, "Keep Position", lbm->respawnMode == LBM3D_1D_indices::KEEP_POSITION)) {
-		lbm->respawnMode = LBM3D_1D_indices::KEEP_POSITION;
-	}
-	if (nk_option_label(ctx, "Random (Uniform)", lbm->respawnMode == LBM3D_1D_indices::RANDOM_UNIFORM)) {
-		lbm->respawnMode = LBM3D_1D_indices::RANDOM_UNIFORM;
+
+	if (nk_combo_begin_label(ctx, lbm->getRespawnModeString(lbm->respawnMode), nk_vec2(nk_widget_width(ctx), 300.0f))) {
+		nk_layout_row_dynamic(ctx, 15, 1);
+		for (int i = 0; i < LBM3D_1D_indices::eRespawnMode::_NUM_RESPAWN_MODES; i++) {
+			if (nk_combo_item_label(ctx, lbm->getRespawnModeString(i), NK_TEXT_LEFT)) {
+				lbm->respawnMode = i;
+			}
+		}
+		nk_combo_end(ctx);
 	}
 
+	/*
+	if (nk_option_label(ctx, "Keep Position", lbm->respawnMode == LBM3D_1D_indices::eRespawnMode::CYCLE_ALL)) {
+		lbm->respawnMode = LBM3D_1D_indices::eRespawnMode::CYCLE_ALL;
+	}
+	if (nk_option_label(ctx, "Random (Uniform)", lbm->respawnMode == LBM3D_1D_indices::eRespawnMode::RANDOM_UNIFORM)) {
+		lbm->respawnMode = LBM3D_1D_indices::eRespawnMode::RANDOM_UNIFORM;
+	}
+	*/
+
+	/*
 	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_label(ctx, "LBM Out of Bounds Mode", NK_TEXT_CENTERED);
 	nk_layout_row_dynamic(ctx, 15, 2);
-	if (nk_option_label(ctx, "Ignore Particles", lbm->outOfBoundsMode == LBM3D_1D_indices::KEEP_POSITION)) {
+	if (nk_option_label(ctx, "Ignore Particles", lbm->outOfBoundsMode == LBM3D_1D_indices::CYCLE_ALL)) {
 		lbm->outOfBoundsMode = LBM3D_1D_indices::IGNORE_PARTICLES;
 	}
 	if (nk_option_label(ctx, "Deactivate Particles", lbm->outOfBoundsMode == LBM3D_1D_indices::DEACTIVATE_PARTICLES)) {
@@ -603,6 +617,8 @@ void UserInterface::constructLBMTab() {
 	if (nk_option_label(ctx, "Respawn Particles in Inlet", lbm->outOfBoundsMode == LBM3D_1D_indices::RESPAWN_PARTICLES_INLET)) {
 		lbm->outOfBoundsMode = LBM3D_1D_indices::RESPAWN_PARTICLES_INLET;
 	}
+	*/
+
 	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_checkbox_label(ctx, "x left inlet", &lbm->xLeftInlet);
 	nk_checkbox_label(ctx, "x right inlet", &lbm->xRightInlet);

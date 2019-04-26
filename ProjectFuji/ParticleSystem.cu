@@ -60,6 +60,15 @@ __global__ void checkParticleValidityKernel(glm::vec3 *particleVertices, int num
 			//printf("oh no");
 			particleVertices[idx] = glm::vec3(0.0f);
 		}
+
+		
+		/*
+		// DO NOT USE THIS - it is much more readable, but it doesn't seem to work correctly on GPU!
+		if (glm::any(glm::isnan(pos)) || glm::any(glm::isinf(pos))) {
+			particleVertices[idx] = glm::vec3(0.0f);
+		}
+		*/
+
 	}
 }
 

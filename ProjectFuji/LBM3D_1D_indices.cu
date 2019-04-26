@@ -221,6 +221,7 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 		if (isnan(particleVertices[idx].x) || isnan(particleVertices[idx].y) || isnan(particleVertices[idx].z) ||
 			isinf(particleVertices[idx].x) || isinf(particleVertices[idx].y) || isinf(particleVertices[idx].z)) {
 			//printf("oh no!");
+			particleVertices[idx] = glm::vec3(0.0f);
 			continue;
 		}
 
@@ -238,20 +239,29 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 			pos.z < 0.0f || pos.z > d_latticeDepth - 1) {
 
 
-			if (respawnMode == 0) {
+			if (respawnMode <= 1) {
 
 				if (pos.x < 0.0f || pos.x > d_latticeWidth - 1) {
 					pos.x = fmodf(pos.x + d_latticeWidth - 1, d_latticeWidth - 1);
 				}
-				if (pos.y < 0.0f) {
-					pos.y = 0.0f;
+
+				if (respawnMode == 0) {
+					if (pos.y < 0.0f || pos.y > d_latticeHeight - 1) {
+						pos.y = fmodf(pos.y + d_latticeHeight - 1, d_latticeHeight - 1);
+					}
+				} else {
+					if (pos.y < 0.0f) {
+						pos.y = 0.0f;
+					}
+					if (pos.y > d_latticeHeight - 1) {
+						// respawn
+						pos.x = 0.0f;
+						pos.y = rand(idx, pos.y) * (d_latticeHeight - 1);
+						pos.z = rand(idx, pos.z) * (d_latticeDepth - 1);
+					}
+					
 				}
-				if (pos.y > d_latticeHeight - 1) {
-					// respawn
-					pos.x = 0.0f;
-					pos.y = rand(idx, pos.y) * (d_latticeHeight - 1);
-					pos.z = rand(idx, pos.z) * (d_latticeDepth - 1);
-				}
+
 				if (pos.z < 0.0f || pos.z > d_latticeDepth - 1) {
 					pos.z = fmodf(pos.z + d_latticeDepth - 1, d_latticeDepth - 1);
 				}
@@ -364,7 +374,7 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 
 		//if (isnan(particleVertices[idx].x) || isnan(particleVertices[idx].y) || isnan(particleVertices[idx].z) ||
 		//	isinf(particleVertices[idx].x) || isinf(particleVertices[idx].y) || isinf(particleVertices[idx].z)) {
-		//	printf("oh no!");
+		//	//printf("oh no!");
 		//	particleVertices[idx] = glm::vec3(0.0f);
 		//	continue;
 		//}
@@ -3359,6 +3369,20 @@ void LBM3D_1D_indices::snapToGround() {
 	miny = min(miny, heightMap->getHeight(position.x, position.z + wd));
 
 	position.y = miny;
+}
+
+const char * LBM3D_1D_indices::getRespawnModeString(int mode) {
+	switch (mode) {
+		case eRespawnMode::CYCLE_ALL:
+			return "Cycle All (x, y, z)";
+		case eRespawnMode::CYCLE_XZ:
+			return "Cycle x and z";
+		case eRespawnMode::RANDOM_UNIFORM:
+			return "Random (uniform respawn)";
+		default:
+			return "None";
+	}
+	return "None";
 }
 
 glm::mat4 LBM3D_1D_indices::getModelMatrix() {

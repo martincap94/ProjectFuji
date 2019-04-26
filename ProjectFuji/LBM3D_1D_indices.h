@@ -96,8 +96,10 @@ class LBM3D_1D_indices /*: public LBM*/ {
 public:
 
 	enum eRespawnMode {
-		KEEP_POSITION = 0,
-		RANDOM_UNIFORM
+		CYCLE_ALL = 0,
+		CYCLE_XZ,
+		RANDOM_UNIFORM,
+		_NUM_RESPAWN_MODES
 	};
 
 	enum eOutOfBoundsMode {
@@ -152,7 +154,7 @@ public:
 	int visualizeVelocity = 0;  ///< Whether the velocity of the particles should be visualized, currently only in 2D
 	int respawnLinearly = 0;	///< NOT USED YET! Whether particles should respawn linearly or randomly in the inlet nodes
 
-	int respawnMode = KEEP_POSITION;
+	int respawnMode = CYCLE_ALL;
 	int outOfBoundsMode = RESPAWN_PARTICLES_INLET;
 
 	string sceneFilename;		///< Filename of the scene that is used for the simulation
@@ -234,6 +236,9 @@ public:
 	float getWorldDepth();
 
 	void snapToGround();
+
+
+	const char *getRespawnModeString(int mode);
 
 	//float getWorld
 
