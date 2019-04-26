@@ -201,7 +201,7 @@ void STLPDiagram::initAmbientTemperatureCurve() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 }
 
-void STLPDiagram::generateMixingRatioLineOld() {
+void STLPDiagram::generateMixingRatioLine() {
 	vector<glm::vec2> vertices;
 
 
@@ -291,7 +291,7 @@ void STLPDiagram::generateMixingRatioLineOld() {
 
 
 
-void STLPDiagram::generateMixingRatioLine() {
+void STLPDiagram::generateMixingRatioLineExperimental() {
 	vector<glm::vec2> vertices;
 
 
@@ -680,7 +680,7 @@ void STLPDiagram::initCurves() {
 	// ISOHUMES (MIXING RATIO LINES)
 	///////////////////////////////////////////////////////////////////////////////////////
 
-	generateMixingRatioLine();
+	generateMixingRatioLineExperimental();
 
 	CCLNormalized = findIntersection(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
@@ -821,8 +821,8 @@ void STLPDiagram::initCurves() {
 		LFCNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
 		LFC = getDenormalizedCoords(LFCNormalized);
 
-		OrographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
-		OrographicEL = getDenormalizedCoords(OrographicELNormalized);
+		orographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
+		orographicEL = getDenormalizedCoords(orographicELNormalized);
 
 
 	}
@@ -897,7 +897,7 @@ void STLPDiagram::initCurves() {
 	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
 	mainParameterPoints.push_back(glm::vec3(0.0f));
 
-	mainParameterPoints.push_back(glm::vec3(OrographicELNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
 	mainParameterPoints.push_back(glm::vec3(0.0f));
 
 
@@ -981,7 +981,7 @@ void STLPDiagram::recalculateParameters() {
 	recalculateProfileDelta();
 
 
-	generateMixingRatioLine();
+	generateMixingRatioLineExperimental();
 
 	CCLNormalized = findIntersection(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
@@ -1071,8 +1071,8 @@ void STLPDiagram::recalculateParameters() {
 	LFCNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
 	LFC = getDenormalizedCoords(LFCNormalized);
 
-	OrographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
-	OrographicEL = getDenormalizedCoords(OrographicELNormalized);
+	orographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
+	orographicEL = getDenormalizedCoords(orographicELNormalized);
 
 
 
@@ -1102,7 +1102,7 @@ void STLPDiagram::recalculateParameters() {
 	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
 	mainParameterPoints.push_back(glm::vec3(0.0f));
 
-	mainParameterPoints.push_back(glm::vec3(OrographicELNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
 	mainParameterPoints.push_back(glm::vec3(0.0f));
 
 
@@ -1314,7 +1314,7 @@ void STLPDiagram::drawText() {
 	textRend->renderText("EL", ELNormalized.x, ELNormalized.y);
 	textRend->renderText("LCL", LCLNormalized.x, LCLNormalized.y);
 	textRend->renderText("LFC", LFCNormalized.x, LFCNormalized.y);
-	textRend->renderText("EL2", OrographicELNormalized.x, OrographicELNormalized.y);
+	textRend->renderText("EL2", orographicELNormalized.x, orographicELNormalized.y);
 
 	textRend->renderText(to_string((int)soundingData[0].data[PRES]), 0.0f - 0.04f, 1.0f);
 	for (i = MAX_P; i >= MIN_P; i -= 100) {
@@ -2455,8 +2455,8 @@ void STLPDiagram::initBuffersOld() {
 
 		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
 
-		OrographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
-		OrographicEL = getDenormalizedCoords(OrographicELNormalized);
+		orographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
+		orographicEL = getDenormalizedCoords(orographicELNormalized);
 
 		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
 
@@ -2568,7 +2568,7 @@ void STLPDiagram::initBuffersOld() {
 	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
 	mainParameterPoints.push_back(glm::vec3(0.0f));
 
-	mainParameterPoints.push_back(glm::vec3(OrographicELNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
 	mainParameterPoints.push_back(glm::vec3(0.0f));
 
 

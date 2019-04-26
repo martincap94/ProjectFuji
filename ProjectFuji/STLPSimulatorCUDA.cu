@@ -191,16 +191,16 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 
 		float normP = getNormalizedPres(particlePressure);
 
-		/*
-		Stop particles out of diagram bounds:
-			- the intersection with isobar test does work even beyond the diagram bounds but
-				-> but using Duarte's approach, particles that start directly on the moist adiabat
-				   will accelerate infinitely, thus crashing the application due to NaN and Inf operations
-		*/
-		if (normP > ambientTempCurve[0].y || normP < ambientTempCurve[numAmbientTempCurveVertices - 1].y) {
-			verticalVelocities[idx] = 0.0f;
-			//return;
-		}
+		///*
+		//Stop particles out of diagram bounds:
+		//	- the intersection with isobar test does work even beyond the diagram bounds but
+		//		-> but using Duarte's approach, particles that start directly on the moist adiabat
+		//		   will accelerate infinitely, thus crashing the application due to NaN and Inf operations
+		//*/
+		//if (normP > ambientTempCurve[0].y || normP < ambientTempCurve[numAmbientTempCurveVertices - 1].y) {
+		//	verticalVelocities[idx] = 0.0f;
+		//	//return;
+		//}
 
 
 		glm::vec2 ambientIntersection = getIntersectionWithIsobar(ambientTempCurve, numAmbientTempCurveVertices, normP);
@@ -228,6 +228,41 @@ __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticl
 		float particleTheta = computeThetaFromAbsoluteK_dev(particleTemp, particlePressure);
 
 		float a = 9.81f * (particleTheta - ambientTheta) / ambientTheta;
+
+		/*
+			Stop particles out of diagram bounds:
+			- the intersection with isobar test does work even beyond the diagram bounds but
+			-> but using Duarte's approach, particles that start directly on the moist adiabat
+			will accelerate infinitely, thus crashing the application due to NaN and Inf operations.
+		
+			Checking here (after acceleration was computed) gives us the option to determine whether the particle
+			would accelerate further out of bounds and go to infinity (making the simulator unstable) or not. 
+			If not, we continue with computation. One important thing is the fact that getIntersectionWithIsobar
+			function clamps the returned vector to the last valid values in the diagram, making this whole process valid.
+		*/
+
+		// Particle below diagram that has negative acceleration is not permitted!
+		if (normP > ambientTempCurve[0].y && a < 0.0f) {
+			return;
+		}
+		// Particle above diagram that has positive acceleration is not permitted!
+		if (normP < ambientTempCurve[numAmbientTempCurveVertices - 1].y && a > 0.0f) {
+			return;
+		}
+
+
+
+		//if (normP > ambientTempCurve[0].y || normP < ambientTempCurve[numAmbientTempCurveVertices - 1].y) {
+
+		//	///*
+		//	//	x * y > 0.0f returns true if x and y have the same sign
+		//	//	Note: This does not work for infinity since 0 * infinity is NaN.
+		//	//	We can have it here since this is exactly the thing preventing infinity and NaN values.
+		//	//*/
+		//	//if (verticalVelocities[idx] * a > 0.0f) {
+		//	//	return; // do nothing if the particle would accelerate to infinity
+		//	//}
+		//}
 
 		if (dividePrevVelocity) {
 			verticalVelocities[idx] /= prevVelocityDivisor;

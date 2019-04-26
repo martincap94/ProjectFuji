@@ -20,6 +20,12 @@ public:
 	~Curve();
 
 	void initBuffers();
+	void uploadToBuffers();
+
+	/**
+		Initializes the curve buffers and uploads the curve vertex data.
+	*/
+	void init();
 
 	void draw(ShaderProgram &shader);
 	void draw(ShaderProgram *shader);

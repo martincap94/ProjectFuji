@@ -1397,6 +1397,22 @@ void UserInterface::constructDiagramControlsTab() {
 		vars->bgClearColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
 		nk_combo_end(ctx);
 	}
+
+	nk_value_bool(ctx, "Tc Found", stlpDiagram->TcFound);
+	nk_value_bool(ctx, "EL Found", stlpDiagram->ELFound);
+	nk_value_bool(ctx, "CCL Found", stlpDiagram->CCLFound);
+	nk_value_bool(ctx, "LCL Found", stlpDiagram->LCLFound);
+	nk_value_bool(ctx, "LFC Found", stlpDiagram->LFCFound);
+	nk_value_bool(ctx, "Orographic EL Found", stlpDiagram->orographicELFound);
+
+
+	nk_checkbox_label(ctx, "Sounding Curves Editing Enabled", &stlpDiagram->soundingCurveEditingEnabled);
+
+
+
+
+
+
 }
 
 

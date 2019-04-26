@@ -595,9 +595,11 @@ int runApp() {
 			stlpDiagram->draw();
 			stlpDiagram->drawText();
 
+
 			if (vars.drawOverlayDiagramParticles) {
 				particleSystem->drawDiagramParticles();
 			}
+
 
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stlpDiagram->diagramFramebuffer);
@@ -925,7 +927,7 @@ void processInput(GLFWwindow* window) {
 		//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
 
-		if (ui->viewportMode == eViewportMode::DIAGRAM) {
+		if (ui->viewportMode == eViewportMode::DIAGRAM && stlpDiagram->soundingCurveEditingEnabled) {
 			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
 			//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
 			//Z_ndc = 2.0 * depth - 1.0;
@@ -1160,8 +1162,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
 	if (ui->viewportMode == eViewportMode::DIAGRAM) {
  		vars.diagramProjectionOffset -= yoffset * 0.04f;
-		if (vars.diagramProjectionOffset < -0.48f) {
-			vars.diagramProjectionOffset = -0.48f;
+		if (vars.diagramProjectionOffset < -0.45f) {
+			vars.diagramProjectionOffset = -0.45f;
 		}
 		refreshDiagramProjectionMatrix();
 		camera->processMouseScroll(-(yoffset * 0.04f));
@@ -1216,7 +1218,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 
 
-		if (ui->viewportMode == eViewportMode::DIAGRAM) {
+		if (ui->viewportMode == eViewportMode::DIAGRAM && stlpDiagram->soundingCurveEditingEnabled) {
 			//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
 			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;

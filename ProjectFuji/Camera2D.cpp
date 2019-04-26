@@ -78,7 +78,6 @@ void Camera2D::processKeyboardMovement(int glfwKey, double deltaTime) {
 void Camera2D::processMouseScroll(double yoffset) {
 	movementSpeed += yoffset;
 	movementSpeed = glm::max(movementSpeed, 0.01f);
-	cout << movementSpeed << endl;
 }
 
 void Camera2D::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {

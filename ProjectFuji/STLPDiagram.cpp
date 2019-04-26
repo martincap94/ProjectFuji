@@ -28,7 +28,7 @@ void STLPDiagram::init() {
 	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
 	overlayDiagramShader = ShaderManager::getShaderPtr("overlayTexture");
 
-	recalculateProfileDelta();
+
 
 
 	loadSoundingData();
@@ -36,7 +36,11 @@ void STLPDiagram::init() {
 	initFreetype();
 
 	initBuffers();
+	CHECK_GL_ERRORS();
 	initCurves();
+	CHECK_GL_ERRORS();
+	initOverlayDiagram();
+	CHECK_GL_ERRORS();
 }
 
 void STLPDiagram::loadSoundingData() {
@@ -119,11 +123,11 @@ void STLPDiagram::generateIsobars() {
 		vertices.push_back(glm::vec2(xmax, y));
 		numIsobars++;
 	}
-	float y;
-	P = soundingData[0].data[PRES];
-	y = getNormalizedPres(P);
-	vertices.push_back(glm::vec2(xmin, y));
-	vertices.push_back(glm::vec2(xmax, y));
+	//float y;
+	//P = soundingData[0].data[PRES];
+	//y = getNormalizedPres(P);
+	//vertices.push_back(glm::vec2(xmin, y));
+	//vertices.push_back(glm::vec2(xmax, y));
 	numIsobars++;
 
 
@@ -150,7 +154,8 @@ void STLPDiagram::generateIsotherms() {
 
 		isothermsCount++;
 	}
-
+	
+	
 	glBindBuffer(GL_ARRAY_BUFFER, isothermsVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
@@ -201,7 +206,7 @@ void STLPDiagram::initAmbientTemperatureCurve() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 }
 
-void STLPDiagram::generateMixingRatioLineOld() {
+void STLPDiagram::generateMixingRatioLine() {
 	vector<glm::vec2> vertices;
 
 
@@ -293,7 +298,7 @@ void STLPDiagram::generateMixingRatioLineOld() {
 
 
 
-void STLPDiagram::generateMixingRatioLine() {
+void STLPDiagram::generateMixingRatioLineExperimental() {
 	vector<glm::vec2> vertices;
 
 
@@ -473,6 +478,13 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 void STLPDiagram::recalculateAll() {
 	cout << "Resetting diagram to default sounding data values" << endl;
 
+
+
+
+
+	//initCurves();
+
+
 	initAmbientTemperatureCurve();
 	initDewpointCurve();
 
@@ -617,11 +629,10 @@ void STLPDiagram::initBuffers() {
 
 void STLPDiagram::initCurves() {
 
-	float x, y;
+	recalculateProfileDelta();
+
 	// Initialize main variables
 
-	xmin = 0.0f;
-	xmax = 1.0f;
 
 	// Show diagram between minimal & maximal pressure values
 	ymin = getNormalizedPres(MIN_P);
@@ -629,55 +640,36 @@ void STLPDiagram::initCurves() {
 
 
 	P0 = soundingData[0].data[PRES];
-	float P;
-	float T;
 	float y0 = getNormalizedPres(P0);
+
+
+	float T;
+	float P;
 
 	xaxis.vertices.push_back(glm::vec2(xmin, ymax));
 	xaxis.vertices.push_back(glm::vec2(xmax, ymax));
 	yaxis.vertices.push_back(glm::vec2(xmin, ymin));
 	yaxis.vertices.push_back(glm::vec2(xmin, ymax));
 
-	xaxis.initBuffers();
-	yaxis.initBuffers();
+	xaxis.init();
+	yaxis.init();
 
 	groundIsobar.vertices.push_back(glm::vec2(xmin, y0));
 	groundIsobar.vertices.push_back(glm::vec2(xmax * 10.0f, y0)); // we want it to be long for Tc computation (intersection beyond xmax)
 
-	groundIsobar.initBuffers();
+	groundIsobar.init();
 
-	TcProfiles.reserve(numProfiles);
-	CCLProfiles.reserve(numProfiles);
-	ELProfiles.reserve(numProfiles);
-	dryAdiabatProfiles.reserve(numProfiles);
-	moistAdiabatProfiles.reserve(numProfiles);
+
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	// ISOBARS
 	///////////////////////////////////////////////////////////////////////////////////////
-
 	generateIsobars();
-
-	vector<glm::vec2> vertices;
-
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	// TEMPERATURE POINTS
 	///////////////////////////////////////////////////////////////////////////////////////
-
-	vertices.clear();
-	temperaturePointsCount = 0;
-	for (int i = MIN_TEMP; i <= MAX_TEMP; i += 10) {
-		T = getNormalizedTemp(i, ymax);
-		temperaturePoints.push_back(glm::vec2(T, ymax));
-		vertices.push_back(glm::vec2(T, ymax + temperatureNotchSize / 2.0f));
-		vertices.push_back(glm::vec2(T, ymax - temperatureNotchSize / 2.0f));
-		temperaturePointsCount++;
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, temperaturePointsVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-	vertices.clear();
+	generateTemperatureNotches();
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	// ISOTHERMS
@@ -698,15 +690,18 @@ void STLPDiagram::initCurves() {
 	// ISOHUMES (MIXING RATIO LINES)
 	///////////////////////////////////////////////////////////////////////////////////////
 
-	generateMixingRatioLineOld();
+	generateMixingRatioLine();
 
-	CCLNormalized = findIntersection(mixingCCL, ambientCurve);
-	CCL = getDenormalizedCoords(CCLNormalized);
-
+	CCLFound = findIntersectionNew(mixingCCL, ambientCurve, CCLNormalized);
+	if (CCLFound) {
+		CCL = getDenormalizedCoords(CCLNormalized);
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////
 	// DRY ADIABATS
 	///////////////////////////////////////////////////////////////////////////////////////
+	vector<glm::vec2> vertices;
+
 	vertices.clear();
 	numDryAdiabats[0] = 0;
 	int counter;
@@ -731,15 +726,19 @@ void STLPDiagram::initCurves() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Tc and LCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	TcNormalized = findIntersection(groundIsobar, TcDryAdiabat);
-	Tc = getDenormalizedCoords(TcNormalized);
+	TcFound = findIntersectionNew(groundIsobar, TcDryAdiabat, TcNormalized);
+	if (TcFound) {
+		Tc = getDenormalizedCoords(TcNormalized);
+	}
 
 	// Check correctness by computing thetaCCL == Tc
 	float thetaCCL = (CCL.x + 273.15f) * pow((P0 / CCL.y), k_ratio);
 	thetaCCL -= 273.15f;
 
-	LCLNormalized = findIntersection(LCLDryAdiabatCurve, mixingCCL);
-	LCL = getDenormalizedCoords(LCLNormalized);
+	LCLFound = findIntersectionNew(LCLDryAdiabatCurve, mixingCCL, LCLNormalized);
+	if (LCLFound) {
+		LCL = getDenormalizedCoords(LCLNormalized);
+	}
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -825,9 +824,11 @@ void STLPDiagram::initCurves() {
 		// Find EL 
 		///////////////////////////////////////////////////////////////////////////////////////////////
 
-		ELNormalized = findIntersection(moistAdiabat_CCL_EL, ambientCurve, true);
+		ELFound = findIntersectionNew(moistAdiabat_CCL_EL, ambientCurve, ELNormalized, true);
 		//cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
-		EL = getDenormalizedCoords(ELNormalized);
+		if (ELFound) {
+			EL = getDenormalizedCoords(ELNormalized);
+		}
 		//cout << "EL: T = " << EL.x << ", P = " << EL.y << endl;
 
 		visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
@@ -844,12 +845,15 @@ void STLPDiagram::initCurves() {
 	generateMoistAdiabat(LCL.x, LCL.y, vertices, 0, P0, &moistAdiabatEdgeCount[0], true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
 	{
 
-		LFCNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
-		LFC = getDenormalizedCoords(LFCNormalized);
+		LFCFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, LFCNormalized);
+		if (LFCFound) {
+			LFC = getDenormalizedCoords(LFCNormalized);
+		}
 
-		OrographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
-		OrographicEL = getDenormalizedCoords(OrographicELNormalized);
-
+	    orographicELFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, orographicELNormalized, true);
+		if (orographicELFound) {
+			orographicEL = getDenormalizedCoords(orographicELNormalized);
+		}
 
 	}
 
@@ -921,21 +925,11 @@ void STLPDiagram::initCurves() {
 	// Main parameters visualization
 
 	mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
 	mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
 	mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
 	mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
 	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
-
-	mainParameterPoints.push_back(glm::vec3(OrographicELNormalized, 0.0f));
-	mainParameterPoints.push_back(glm::vec3(0.0f));
+	mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
 
 
 	glGenVertexArrays(1, &mainParameterPointsVAO);
@@ -954,62 +948,6 @@ void STLPDiagram::initCurves() {
 	glBindVertexArray(0);
 
 
-	// Overlay DIAGRAM
-
-	glm::vec4 vp;
-	glGetFloatv(GL_VIEWPORT, &vp.x);
-
-	glGenVertexArrays(1, &overlayDiagramVAO);
-	glGenBuffers(1, &overlayDiagramVBO);
-	glBindVertexArray(overlayDiagramVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-	glBindVertexArray(0);
-
-	refreshOverlayDiagram(vp.z, vp.w, vp.x, vp.y);
-
-
-
-	// TEXTURE AND FRAMEBUFFER
-
-	glGenTextures(1, &diagramTexture);
-	glBindTexture(GL_TEXTURE_2D, diagramTexture);
-
-	//glTextureParameteri(diagramTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-
-	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
-
-	glGenFramebuffers(1, &diagramFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, diagramTexture, 0);
-	
-
-	glGenTextures(1, &diagramMultisampledTexture);
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA16F, textureResolution, textureResolution, false);
-
-	glGenFramebuffers(1, &diagramMultisampledFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, diagramMultisampledFramebuffer);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture, 0);
-
-
-	GLfloat lineWidthRange[2] = { 0.0f, 0.0f };
-	glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, lineWidthRange);
-	// Maximum supported line width is in lineWidthRange[1].
-	//cout << lineWidthRange[0] << " , " << lineWidthRange[1] << endl;
 }
 
 void STLPDiagram::recalculateParameters() {
@@ -1018,7 +956,7 @@ void STLPDiagram::recalculateParameters() {
 	recalculateProfileDelta();
 
 
-	generateMixingRatioLineOld();
+	generateMixingRatioLine();
 
 	CCLNormalized = findIntersection(mixingCCL, ambientCurve);
 	CCL = getDenormalizedCoords(CCLNormalized);
@@ -1115,8 +1053,8 @@ void STLPDiagram::recalculateParameters() {
 	LFCNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
 	LFC = getDenormalizedCoords(LFCNormalized);
 
-	OrographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
-	OrographicEL = getDenormalizedCoords(OrographicELNormalized);
+	orographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
+	orographicEL = getDenormalizedCoords(orographicELNormalized);
 
 
 	glNamedBufferData(moistAdiabatsVBO[0], sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
@@ -1149,7 +1087,7 @@ void STLPDiagram::recalculateParameters() {
 	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
 	mainParameterPoints.push_back(glm::vec3(0.0f));
 
-	mainParameterPoints.push_back(glm::vec3(OrographicELNormalized, 0.0f));
+	mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
 	mainParameterPoints.push_back(glm::vec3(0.0f));
 
 
@@ -1311,17 +1249,20 @@ void STLPDiagram::draw() {
 	yaxis.draw(curveShader);
 	groundIsobar.draw(curveShader);
 
+
+
+	glPointSize(6.0f);
+	glBindVertexArray(mainParameterPointsVAO);
+	glDrawArrays(GL_POINTS, 0, mainParameterPoints.size());
+
+
+
 	
 	glPointSize(3.0f);
 	singleColorShaderVBO->use();
 	glBindVertexArray(visPointsVAO);
 	glDrawArrays(GL_POINTS, 0, visualizationPoints.size() / 2);
 	
-
-	glPointSize(6.0f);
-	glBindVertexArray(mainParameterPointsVAO);
-	glDrawArrays(GL_POINTS, 0, mainParameterPoints.size() / 2);
-
 
 
 
@@ -1332,18 +1273,20 @@ void STLPDiagram::draw() {
 
 void STLPDiagram::drawText() {
 
+	float textScale = 0.0006f * (vars->diagramProjectionOffset + 0.5f);
+
 	int i = 0;
 	for (int temp = MIN_TEMP; temp <= MAX_TEMP; temp += 10) {
 		textRend->renderText(to_string(temp), temperaturePoints[i].x, temperaturePoints[i].y + 0.02f);
 		i++;
 	}
 
-	textRend->renderText("CCL", CCLNormalized.x, CCLNormalized.y);
-	textRend->renderText("Tc", TcNormalized.x, TcNormalized.y);
-	textRend->renderText("EL", ELNormalized.x, ELNormalized.y);
-	textRend->renderText("LCL", LCLNormalized.x, LCLNormalized.y);
-	textRend->renderText("LFC", LFCNormalized.x, LFCNormalized.y);
-	textRend->renderText("EL2", OrographicELNormalized.x, OrographicELNormalized.y);
+	textRend->renderText("CCL", CCLNormalized.x, CCLNormalized.y, textScale);
+	textRend->renderText("Tc", TcNormalized.x, TcNormalized.y, textScale);
+	textRend->renderText("EL", ELNormalized.x, ELNormalized.y, textScale);
+	textRend->renderText("LCL", LCLNormalized.x, LCLNormalized.y, textScale);
+	textRend->renderText("LFC", LFCNormalized.x, LFCNormalized.y, textScale);
+	textRend->renderText("EL2", orographicELNormalized.x, orographicELNormalized.y, textScale);
 
 	textRend->renderText(to_string((int)soundingData[0].data[PRES]), 0.0f - 0.04f, 1.0f);
 	textRend->renderText(to_string((int)getAltitudeFromPressure(soundingData[0].data[PRES])) + "[m]", 0.0f + 0.01f, getNormalizedPres(i));
@@ -2479,8 +2422,8 @@ void STLPDiagram::getWindDeltasForLattice(int latticeHeight, std::vector<glm::ve
 //
 //		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
 //
-//		OrographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
-//		OrographicEL = getDenormalizedCoords(OrographicELNormalized);
+//		orographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
+//		orographicEL = getDenormalizedCoords(orographicELNormalized);
 //
 //		reverse(moistAdiabat_LCL_EL.vertices.begin(), moistAdiabat_LCL_EL.vertices.end());
 //
@@ -2592,7 +2535,7 @@ void STLPDiagram::getWindDeltasForLattice(int latticeHeight, std::vector<glm::ve
 //	mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
 //	mainParameterPoints.push_back(glm::vec3(0.0f));
 //
-//	mainParameterPoints.push_back(glm::vec3(OrographicELNormalized, 0.0f));
+//	mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
 //	mainParameterPoints.push_back(glm::vec3(0.0f));
 //
 //
@@ -2663,3 +2606,84 @@ void STLPDiagram::getWindDeltasForLattice(int latticeHeight, std::vector<glm::ve
 //}
 //
 //
+
+void STLPDiagram::initOverlayDiagram() {
+
+	// Overlay DIAGRAM
+
+	glm::vec4 vp;
+	glGetFloatv(GL_VIEWPORT, &vp.x);
+
+	glGenVertexArrays(1, &overlayDiagramVAO);
+	glGenBuffers(1, &overlayDiagramVBO);
+	glBindVertexArray(overlayDiagramVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	glBindVertexArray(0);
+
+	refreshOverlayDiagram(vp.z, vp.w, vp.x, vp.y);
+
+
+
+	// TEXTURE AND FRAMEBUFFER
+
+	glGenTextures(1, &diagramTexture);
+	glBindTexture(GL_TEXTURE_2D, diagramTexture);
+
+	//glTextureParameteri(diagramTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+	glGenFramebuffers(1, &diagramFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, diagramTexture, 0);
+
+
+	glGenTextures(1, &diagramMultisampledTexture);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA16F, textureResolution, textureResolution, false);
+
+	glGenFramebuffers(1, &diagramMultisampledFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, diagramMultisampledFramebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture, 0);
+
+
+
+
+
+}
+
+void STLPDiagram::generateTemperatureNotches() {
+	vector<glm::vec2> vertices;
+
+	float T;
+
+	temperaturePointsCount = 0;
+	for (int i = MIN_TEMP; i <= MAX_TEMP; i += 10) {
+		T = getNormalizedTemp(i, ymax);
+		temperaturePoints.push_back(glm::vec2(T, ymax));
+		vertices.push_back(glm::vec2(T, ymax + temperatureNotchSize / 2.0f));
+		vertices.push_back(glm::vec2(T, ymax - temperatureNotchSize / 2.0f));
+		temperaturePointsCount++;
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, temperaturePointsVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+}
+
+void STLPDiagram::generateDryAdiabats() {
+}

@@ -48,21 +48,31 @@ public:
 	vector<SoundingDataItem> soundingData;	///< Sounding data loaded from file
 
 
-	glm::vec2 DewpointNormalized;	///< Normalized dewpoint temperature and pressure
-	glm::vec2 CCLNormalized;		///< Normalized convective condensation level
-	glm::vec2 TcNormalized;			///< Normalized convective temperature
-	glm::vec2 ELNormalized;			///< Normalized equilibrium level
-	glm::vec2 LCLNormalized;
-	glm::vec2 LFCNormalized;
-	glm::vec2 OrographicELNormalized;
+	glm::vec2 CCLNormalized = glm::vec2(0.0f);		///< Normalized convective condensation level
+	glm::vec2 TcNormalized = glm::vec2(0.0f);			///< Normalized convective temperature
+	glm::vec2 ELNormalized = glm::vec2(0.0f);			///< Normalized equilibrium level
+	glm::vec2 LCLNormalized = glm::vec2(0.0f);
+	glm::vec2 LFCNormalized = glm::vec2(0.0f);
+	glm::vec2 orographicELNormalized = glm::vec2(0.0f);
 
-	glm::vec2 Dewpoint;				///< Dewpoint temperature and pressure
-	glm::vec2 CCL;					///< Convective condensation level
-	glm::vec2 Tc;					///< Convective temperature
-	glm::vec2 EL;					///< Equilibrium level
-	glm::vec2 LCL;
-	glm::vec2 LFC;
-	glm::vec2 OrographicEL;
+	glm::vec2 CCL = glm::vec2(0.0f);					///< Convective condensation level
+	glm::vec2 Tc = glm::vec2(0.0f);					///< Convective temperature
+	glm::vec2 EL = glm::vec2(0.0f);					///< Equilibrium level
+	glm::vec2 LCL = glm::vec2(0.0f);
+	glm::vec2 LFC = glm::vec2(0.0f);
+	glm::vec2 orographicEL = glm::vec2(0.0f);
+
+	bool dewpointFound = false;
+	bool CCLFound = false;
+	bool TcFound = false;
+	bool ELFound = false;
+	bool LCLFound = false;
+	bool LFCFound = false;
+	bool orographicELFound = false;
+
+
+	int soundingCurveEditingEnabled = 0;
+
 
 	// helper curves
 	Curve xaxis;					///< x axis curve (single line)
@@ -161,12 +171,33 @@ public:
 	void loadSoundingData();
 
 
+	/**
+		Generates isobars and uploads their data to the VBO for drawing.
+		This function does not save any data on CPU, only OpenGL VBO is updated.
+		The VBO is assumed to be ready for data upload.
+	*/
 	void generateIsobars();
+
+	/**
+		Generates isotherms and uploads their data to the VBO for drawing.
+		This function does not save any data on CPU, only OpenGL VBO is updated.
+		The VBO is assumed to be ready for data upload.
+	*/
 	void generateIsotherms();
+
+	/**
+		Initializes the dewpoint sounding curve and uploads it to the VBO for rendering.
+	*/
 	void initDewpointCurve();
+
+	/**
+	Initializes the ambient temperature sounding curve and uploads it to the VBO for rendering.
+	*/
 	void initAmbientTemperatureCurve();
-	void generateMixingRatioLineOld();
+
+
 	void generateMixingRatioLine();
+	void generateMixingRatioLineExperimental();
 
 
 
@@ -195,6 +226,7 @@ public:
 
 	void initBuffers();
 	void initCurves();
+	void initOverlayDiagram();
 
 	void recalculateParameters();
 	void recalculateProfileDelta();
@@ -248,6 +280,9 @@ public:
 
 
 	void constructDiagramCurvesToolbar(struct nk_context *ctx, UserInterface *ui);
+	//void constructParametersFoundTab(struct nk_context *ctx, UserInterface *ui);
+
+
 
 
 private:
@@ -315,10 +350,19 @@ private:
 	GLuint TcVBO;
 
 
-	float xmin;
-	float xmax;
+	const float xmin = 0.0f;
+	const float xmax = 1.0f;
 	float ymin;
 	float ymax;
+
+	//bool initialized = false; //!< Whether the diagram has already been initialized
+
+
+
+	void generateTemperatureNotches();
+
+	void generateDryAdiabats();
+	void generateMoistAdiabats();
 
 
 };
