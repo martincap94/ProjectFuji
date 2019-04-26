@@ -72,6 +72,14 @@ __global__ void checkParticleValidityKernel(glm::vec3 *particleVertices, int num
 	}
 }
 
+__global__ void clearVerticalVelocitiesKernel(float *verticalVelocities, int numParticles) {
+	int idx = threadIdx.x + blockDim.x * blockIdx.x;
+
+	if (idx < numParticles) {
+		verticalVelocities[idx] = 0.0f;
+	}
+}
+
 
 
 ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
@@ -628,6 +636,7 @@ void ParticleSystem::formBox(glm::vec3 pos, glm::vec3 size) {
 
 
 	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
+	clearVerticalVelocities();
 }
 
 void ParticleSystem::refreshParticlesOnTerrain() {
@@ -797,6 +806,10 @@ void ParticleSystem::refreshParticlesOnTerrain() {
 
 	glNamedBufferData(diagramParticleVerticesVBO, sizeof(glm::vec2) * numParticles, diagramParticleVertices.data(), GL_STATIC_DRAW);
 
+}
+
+void ParticleSystem::clearVerticalVelocities(bool clearActiveOnly) {
+	clearVerticalVelocitiesKernel << <gridDim.x, blockDim.x >> > (d_verticalVelocities, clearActiveOnly ? numActiveParticles : numParticles);
 }
 
 void ParticleSystem::activateAllParticles() {

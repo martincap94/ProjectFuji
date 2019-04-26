@@ -1182,6 +1182,7 @@ void UserInterface::constructDiagramControlsTab() {
 		//lbm->resetSimulation();
 		stlpDiagram->recalculateParameters();
 		stlpSimCUDA->uploadDataFromDiagramToGPU();
+		particleSystem->clearVerticalVelocities();
 	}
 
 
@@ -1203,6 +1204,7 @@ void UserInterface::constructDiagramControlsTab() {
 		stlpDiagram->loadSoundingData();
 		stlpDiagram->recalculateAll();
 		stlpSimCUDA->uploadDataFromDiagramToGPU();
+		particleSystem->clearVerticalVelocities();
 	}
 
 
@@ -1217,6 +1219,9 @@ void UserInterface::constructDiagramControlsTab() {
 
 	if (nk_button_label(ctx, "Reset to default")) {
 		stlpDiagram->recalculateAll();
+		stlpSimCUDA->uploadDataFromDiagramToGPU();
+		particleSystem->clearVerticalVelocities();
+
 	}
 
 	nk_layout_row_dynamic(ctx, 15, 1);

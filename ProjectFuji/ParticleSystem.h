@@ -169,6 +169,8 @@ public:
 
 	void refreshParticlesOnTerrain();
 
+	void clearVerticalVelocities(bool clearActiveOnly = false);
+
 
 	void activateAllParticles();
 	void deactivateAllParticles();

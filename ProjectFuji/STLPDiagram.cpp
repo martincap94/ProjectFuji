@@ -329,7 +329,7 @@ void STLPDiagram::generateMixingRatioLineExperimental() {
 	// Compute CCL using a mixing ratio line
 	float w0 = soundingData[0].data[MIXR];
 
-	float P = soundingData[0].data[PRES];
+	float P = P0;
 
 
 	//float T = soundingData[0].data[DWPT]; // default computation from initial sounding data, does not take changes to curves into consideration
@@ -382,7 +382,7 @@ void STLPDiagram::generateMixingRatioLineExperimental() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 }
 
-void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, int mode, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve) {
+void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2> &vertices, int mode, float P0, vector<int> *edgeCounter, bool incrementCounter, float deltaP, Curve *curve) {
 
 	int vertexCounter = 0;
 
@@ -392,9 +392,39 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2>& vertices, i
 
 	float x, y, T, P;
 
-	for (P = P0; P >= MIN_P; P -= deltaP) {
+	/*
+		We want the dry adiabat to adhere to the given range (P0 to MIN_P) for calculation purposes.
+		This is only meant for extreme cases when the particles are out of bounds. In these cases, we clamp
+		the adiabat minus ambient temperature computation to their last viable values. For this we need these
+		last values to be in the same pressure level (on the same isobar).
+	*/
 
-		T = computeAbsoluteFromThetaC(theta, P, P0);
+	// We need to compute the initial step to snap to the isobars.
+
+
+	printf(" P0 = %0.1f\n deltaP = %0.1f\n ", P0, deltaP);
+
+	float nextMultipleP = P0 + (deltaP - fmodf(P0, deltaP)) - deltaP;
+	float firstDeltaP = P0 - nextMultipleP;
+
+	printf(" next multiple P = %0.1f\n first delta P = %0.1f\n ", nextMultipleP, firstDeltaP);
+
+	P = P0;
+	T = computeAbsoluteFromThetaC(theta, P, this->P0);
+
+	y = getNormalizedPres(P);
+	x = getNormalizedTemp(T, y);
+
+	vertices.push_back(glm::vec2(x, y));
+	if (curve != nullptr) {
+		curve->vertices.push_back(glm::vec2(x, y));
+	}
+	vertexCounter++;
+
+
+	for (P = nextMultipleP; P >= MIN_P; P -= deltaP) {
+
+		T = computeAbsoluteFromThetaC(theta, P, this->P0);
 
 		y = getNormalizedPres(P);
 		x = getNormalizedTemp(T, y);
@@ -726,7 +756,7 @@ void STLPDiagram::initCurves() {
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	// DRY ADIABAT: T_c <-> CCL
+	// DRY ADIABAT: Tc <-> CCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	float theta = computeThetaFromAbsoluteC(CCL.x, CCL.y, P0);
 	generateDryAdiabat(theta, vertices, 0, P0, &dryAdiabatEdgeCount[0], true, CURVE_DELTA_P, &TcDryAdiabat);
@@ -739,12 +769,9 @@ void STLPDiagram::initCurves() {
 
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	// Tc and LCL
+	// LCL and Tc
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	TcFound = findIntersectionNew(groundIsobar, TcDryAdiabat, TcNormalized);
-	if (TcFound) {
-		Tc = getDenormalizedCoords(TcNormalized);
-	}
+
 
 	// Check correctness by computing thetaCCL == Tc
 	float thetaCCL = (CCL.x + 273.15f) * pow((P0 / CCL.y), k_ratio);
@@ -754,13 +781,23 @@ void STLPDiagram::initCurves() {
 	if (LCLFound) {
 		LCL = getDenormalizedCoords(LCLNormalized);
 	}
+
+	if (useOrographicParameters) {
+		TcFound = true;
+		TcNormalized = ambientCurve.vertices[0];
+	} else {
+		TcFound = findIntersectionNew(groundIsobar, TcDryAdiabat, TcNormalized);
+	}
+	if (TcFound) {
+		Tc = getDenormalizedCoords(TcNormalized);
+	}
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 	// PROFILES
 	for (int i = 0; i < numProfiles; i++) {
-		TcProfiles.push_back(Tc + glm::vec2((i + 1) * profileDelta, 0.0f));
+		TcProfiles.push_back(Tc + glm::vec2(i * profileDelta, 0.0f));
 		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(TcProfiles.back()), -2.0f)); // point
 		float tint = (i + 1) * profileDelta;
 		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
@@ -782,8 +819,11 @@ void STLPDiagram::initCurves() {
 		float theta = computeAbsoluteFromThetaC(TcProfiles[profileIndex].x, P0, P0);
 		generateDryAdiabat(theta, vertices, 1, P0, &dryAdiabatEdgeCount[1], true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
 
-
-		CCLProfiles.push_back(getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], ambientCurve)));
+		if (useOrographicParameters) {
+			CCLProfiles.push_back(getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], mixingCCL)));
+		} else {
+			CCLProfiles.push_back(getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], ambientCurve)));
+		}
 
 		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(CCLProfiles.back()), -2.0f)); // point
 		float tint = (profileIndex + 1) * profileDelta;

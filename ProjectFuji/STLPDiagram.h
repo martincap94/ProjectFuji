@@ -71,8 +71,10 @@ public:
 	bool orographicELFound = false;
 
 
+
 	int soundingCurveEditingEnabled = 0;
 
+	int useOrographicParameters = 1;
 
 	// helper curves
 	Curve xaxis;					///< x axis curve (single line)
