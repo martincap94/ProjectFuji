@@ -100,9 +100,9 @@ float computeAbsoluteFromThetaC(float theta, float P, float P0) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 double theta_dry(double t, double p) {
-	double	u, diff, diff2, diff3;
+	double u, diff, diff2, diff3;
 
-	u = 1000. / p;
+	u = 1000.0 / p;
 	/*
 	* Use Taylor series expansion about 700mb for pressures down to 500mb
 	*/
@@ -155,8 +155,9 @@ double theta_dry(double t, double p) {
 	/*
 	* Otherwise, use the exact form
 	*/
-	else
+	else {
 		return (t * pow(u, .28537338));
+	}
 }
 
 
@@ -337,9 +338,6 @@ float dTdz_moist(float T, float p) {
 	float num = 1.0f + (L_v * w_vs(T, pd)) / (R_d * T);
 	float den = 1.0f + (L_v * L_v * w_vs(T, pd)) / (c_pd * R_m * T * T);
 	return (-9.81f / c_pd) * (num / den);
-
-
-	return 0.0f;
 }
 
 float dTdp_moist(float T, float p) {

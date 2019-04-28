@@ -850,6 +850,8 @@ void ParticleSystem::createPredefinedEmitters() {
 	emitters.push_back(new CDFEmitter("CDF test", this, "textures/cdf2.png"));
 	emitters.push_back(new PositionalCDFEmitter("Positional CDF test", this, "icons/edit.png"));
 	emitters.push_back(new CDFEmitter("CDF Dynamic", this, "textures/cdf2.png", true));
+	emitters.push_back(new PositionalCDFEmitter("DCGI", this, "textures/dcgi_cdf_mirrored.png"));
+	TextureManager::loadTexture("textures/dcgi_cdf.png");
 }
 
 void ParticleSystem::createEmitter(int emitterType, string emitterName) {

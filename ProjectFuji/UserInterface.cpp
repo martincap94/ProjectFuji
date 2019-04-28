@@ -2007,6 +2007,23 @@ void UserInterface::constructFavoritesMenu() {
 		// temporary
 		nk_checkbox_label(ctx, "cloud shadows", &vars->cloudsCastShadows);
 
+		if (vars->fullscreen) {
+			if (nk_button_label(ctx, "Windowed")) {
+				const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+				glfwSetWindowMonitor(mainWindow, NULL, 10, 20, vars->windowWidth, vars->windowHeight, GLFW_DONT_CARE);
+				vars->fullscreen = false;
+			}
+		} else {
+			if (nk_button_label(ctx, "Fullscreen")) {
+				GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+				const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+				glfwSetWindowMonitor(mainWindow, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+				vars->fullscreen = true;
+			}
+			
+		}
+
+
 
 		nk_menu_end(ctx);
 	}

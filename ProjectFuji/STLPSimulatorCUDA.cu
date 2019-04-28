@@ -431,12 +431,16 @@ void STLPSimulatorCUDA::initBuffers() {
 	glBindBuffer(GL_ARRAY_BUFFER, CCLLevelVBO);
 
 	float altitude;
+
+	float w = vars->heightMap->getWorldWidth();
+	float d = vars->heightMap->getWorldDepth();
+
 	altitude = getAltitudeFromPressure(stlpDiagram->CCL.y);
 	//mapToSimulationBox(altitude);
 	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
-	vertices.push_back(glm::vec3(0.0f, altitude, vars->latticeDepth));
-	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, vars->latticeDepth));
-	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, 0.0f));
+	vertices.push_back(glm::vec3(0.0f, altitude, d));
+	vertices.push_back(glm::vec3(w, altitude, d));
+	vertices.push_back(glm::vec3(w, altitude, 0.0f));
 
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, &vertices[0], GL_STATIC_DRAW);
@@ -457,9 +461,9 @@ void STLPSimulatorCUDA::initBuffers() {
 	altitude = getAltitudeFromPressure(stlpDiagram->EL.y);
 	//mapToSimulationBox(altitude);
 	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
-	vertices.push_back(glm::vec3(0.0f, altitude, vars->latticeDepth));
-	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, vars->latticeDepth));
-	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, 0.0f));
+	vertices.push_back(glm::vec3(0.0f, altitude, d));
+	vertices.push_back(glm::vec3(w, altitude, d));
+	vertices.push_back(glm::vec3(w, altitude, 0.0f));
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, &vertices[0], GL_STATIC_DRAW);
 
@@ -780,6 +784,15 @@ void STLPSimulatorCUDA::doStep() {
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaParticleProfilesVBO, 0);
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaDiagramParticleVerticesVBO, 0);
 
+
+	// Upload uniforms
+	ShaderProgram *s = ShaderManager::getShaderPtr("pointSpriteTest");
+	uploadProfileIndicesUniforms(s);
+	s = ShaderManager::getShaderPtr("volume_1st_pass_alt2");
+	uploadProfileIndicesUniforms(s);
+	s = ShaderManager::getShaderPtr("volume_2nd_pass_alt2");
+	uploadProfileIndicesUniforms(s);
+
 }
 
 
@@ -885,6 +898,10 @@ void STLPSimulatorCUDA::draw(glm::vec3 cameraPos) {
 		glGetBooleanv(GL_CULL_FACE, &cullFaceEnabled);
 		glDisable(GL_CULL_FACE);
 
+		GLboolean blendEnabled;
+		glGetBooleanv(GL_BLEND, &blendEnabled);
+		glEnable(GL_BLEND);
+
 		layerVisShader->use();
 
 		if (vars->showCCLLevelLayer) {
@@ -904,6 +921,9 @@ void STLPSimulatorCUDA::draw(glm::vec3 cameraPos) {
 
 		if (cullFaceEnabled) {
 			glEnable(GL_CULL_FACE);
+		}
+		if (!blendEnabled) {
+			glDisable(GL_BLEND);
 		}
 	}
 }

@@ -1561,6 +1561,136 @@ void STLPDiagram::getWindDeltasForLattice(int latticeHeight, std::vector<glm::ve
 }
 
 
+
+
+
+void STLPDiagram::initOverlayDiagram() {
+
+	// Overlay DIAGRAM
+
+	glm::vec4 vp;
+	glGetFloatv(GL_VIEWPORT, &vp.x);
+
+	glGenVertexArrays(1, &overlayDiagramVAO);
+	glGenBuffers(1, &overlayDiagramVBO);
+	glBindVertexArray(overlayDiagramVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	glBindVertexArray(0);
+
+	refreshOverlayDiagram(vp.z, vp.w, vp.x, vp.y);
+
+
+
+	// TEXTURE AND FRAMEBUFFER
+
+	glGenTextures(1, &diagramTexture);
+	glBindTexture(GL_TEXTURE_2D, diagramTexture);
+
+	//glTextureParameteri(diagramTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
+
+	glGenFramebuffers(1, &diagramFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, diagramTexture, 0);
+
+
+	glGenTextures(1, &diagramMultisampledTexture);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA16F, textureResolution, textureResolution, false);
+
+	glGenFramebuffers(1, &diagramMultisampledFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, diagramMultisampledFramebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture, 0);
+
+
+
+
+
+}
+
+void STLPDiagram::generateTemperatureNotches() {
+	vector<glm::vec2> vertices;
+
+	float T;
+
+	temperaturePointsCount = 0;
+	for (int i = MIN_TEMP; i <= MAX_TEMP; i += 10) {
+		T = getNormalizedTemp(i, ymax);
+		temperaturePoints.push_back(glm::vec2(T, ymax));
+		vertices.push_back(glm::vec2(T, ymax + temperatureNotchSize / 2.0f));
+		vertices.push_back(glm::vec2(T, ymax - temperatureNotchSize / 2.0f));
+		temperaturePointsCount++;
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, temperaturePointsVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+}
+
+void STLPDiagram::generateDryAdiabats() {
+}
+
+void STLPDiagram::uploadMainParameterPointsToBuffer() {
+
+	if (!mainParameterPoints.empty()) {
+		mainParameterPoints.clear();
+	}
+
+
+	if (CCLFound) {
+		mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
+	}
+	if (TcFound) {
+		mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
+	}
+	if (ELFound) {
+		mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
+	}
+	if (LCLFound) {
+		mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
+	}
+	if (LFCFound) {
+		mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
+	}
+	if (orographicELFound) {
+		mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
+	}
+
+	if (!mainParameterPoints.empty()) {
+		glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mainParameterPoints.size(), &mainParameterPoints[0], GL_STATIC_DRAW);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //void STLPDiagram::initBuffersOld() {
 //
 //
@@ -2631,115 +2761,4 @@ void STLPDiagram::getWindDeltasForLattice(int latticeHeight, std::vector<glm::ve
 //
 //
 
-void STLPDiagram::initOverlayDiagram() {
 
-	// Overlay DIAGRAM
-
-	glm::vec4 vp;
-	glGetFloatv(GL_VIEWPORT, &vp.x);
-
-	glGenVertexArrays(1, &overlayDiagramVAO);
-	glGenBuffers(1, &overlayDiagramVBO);
-	glBindVertexArray(overlayDiagramVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, overlayDiagramVBO);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-	glBindVertexArray(0);
-
-	refreshOverlayDiagram(vp.z, vp.w, vp.x, vp.y);
-
-
-
-	// TEXTURE AND FRAMEBUFFER
-
-	glGenTextures(1, &diagramTexture);
-	glBindTexture(GL_TEXTURE_2D, diagramTexture);
-
-	//glTextureParameteri(diagramTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-
-	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, textureResolution, textureResolution, 0, GL_RGBA, GL_FLOAT, nullptr);
-
-	glGenFramebuffers(1, &diagramFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, diagramFramebuffer);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, diagramTexture, 0);
-
-
-	glGenTextures(1, &diagramMultisampledTexture);
-	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture);
-	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 12, GL_RGBA16F, textureResolution, textureResolution, false);
-
-	glGenFramebuffers(1, &diagramMultisampledFramebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, diagramMultisampledFramebuffer);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, diagramMultisampledTexture, 0);
-
-
-
-
-
-}
-
-void STLPDiagram::generateTemperatureNotches() {
-	vector<glm::vec2> vertices;
-
-	float T;
-
-	temperaturePointsCount = 0;
-	for (int i = MIN_TEMP; i <= MAX_TEMP; i += 10) {
-		T = getNormalizedTemp(i, ymax);
-		temperaturePoints.push_back(glm::vec2(T, ymax));
-		vertices.push_back(glm::vec2(T, ymax + temperatureNotchSize / 2.0f));
-		vertices.push_back(glm::vec2(T, ymax - temperatureNotchSize / 2.0f));
-		temperaturePointsCount++;
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, temperaturePointsVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-
-}
-
-void STLPDiagram::generateDryAdiabats() {
-}
-
-void STLPDiagram::uploadMainParameterPointsToBuffer() {
-
-	if (!mainParameterPoints.empty()) {
-		mainParameterPoints.clear();
-	}
-
-
-	if (CCLFound) {
-		mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
-	}
-	if (TcFound) {
-		mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
-	}
-	if (ELFound) {
-		mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
-	}
-	if (LCLFound) {
-		mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
-	}
-	if (LFCFound) {
-		mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
-	}
-	if (orographicELFound) {
-		mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
-	}
-
-	if (!mainParameterPoints.empty()) {
-		glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mainParameterPoints.size(), &mainParameterPoints[0], GL_STATIC_DRAW);
-	}
-}

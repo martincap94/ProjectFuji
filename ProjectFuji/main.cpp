@@ -538,6 +538,7 @@ int runApp() {
 	ui->sps = streamlineParticleSystem;
 	ui->scene = &scene;
 	ui->ebm = ebm;
+	ui->mainWindow = window;
 
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {

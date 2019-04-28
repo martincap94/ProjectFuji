@@ -99,6 +99,7 @@ public:
 	StreamlineParticleSystem *sps = nullptr;
 	SceneGraph *scene = nullptr;
 	EmitterBrushMode *ebm = nullptr;
+	GLFWwindow *mainWindow = nullptr;
 
 
 	int viewportMode = eViewportMode::VIEWPORT_3D;

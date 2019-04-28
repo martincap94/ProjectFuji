@@ -74,7 +74,7 @@ public:
 
 	int soundingCurveEditingEnabled = 0;
 
-	int useOrographicParameters = 1;
+	int useOrographicParameters = 0;
 
 	// helper curves
 	Curve xaxis;					///< x axis curve (single line)
