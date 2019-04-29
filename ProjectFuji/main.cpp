@@ -542,6 +542,12 @@ int runApp() {
 
 
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
+
+		if (vars.windowMinimized) {
+			glfwPollEvents();
+			continue;
+		}
+
 		// enable flags each frame because nuklear disables them when it is rendered	
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_BLEND);
@@ -1305,8 +1311,17 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 void window_size_callback(GLFWwindow* window, int width, int height) {
 	float aspectRatio = (float)width / (float)height;
 
+	vars.windowMinimized = (width == 0 || height == 0);
+
+	if (!vars.fullscreen) {
+		vars.windowWidth = width;
+		vars.windowHeight = height;
+	}
+
 	vars.screenWidth = width;
 	vars.screenHeight = height;
+
+	
 
 	refreshDiagramProjectionMatrix(aspectRatio);
 

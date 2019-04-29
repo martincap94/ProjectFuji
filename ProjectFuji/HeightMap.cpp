@@ -746,8 +746,8 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 
 	int xLeft = x - offset;
 	int xRight = x + offset;
-	int zBottom = z + offset;
-	int zTop = z - offset;
+	int zBottom = z -  offset;
+	int zTop = z + offset;
 
 	if (xLeft < 0) {
 		xLeft = 0;
@@ -755,11 +755,11 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 	if (xRight > width - 1) {
 		xRight = width - 1;
 	}
-	if (zBottom > height - 1) {
-		zBottom = height - 1;
+	if (zTop > height - 1) {
+		zTop = height - 1;
 	}
-	if (zTop < 0) {
-		zTop = 0;
+	if (zBottom < 0) {
+		zBottom = 0;
 	}
 	float hLeft = data[xLeft + z * width];
 	float hRight = data[xRight + z * width];
@@ -781,7 +781,7 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 	//normal.z = -2.0f;
 	normal.y = 2.0f/* * vars->texelWorldSize * 10.0f*/;
 	//rangeToRange(normal.y, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
-	normal.z = (hTop - hBottom) / vars->texelWorldSize;
+	normal.z = (hBottom - hTop) / vars->texelWorldSize;
 	//normal.z = (hTop - hBottom);
 
 

@@ -181,6 +181,8 @@ public:
 
 	int viewportMode = 0;
 
+	bool windowMinimized = false;
+
 
 	int toggleLBMState = GLFW_KEY_L;
 	int toggleSTLPState = GLFW_KEY_K;

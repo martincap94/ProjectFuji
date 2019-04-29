@@ -327,7 +327,7 @@ void ParticleRenderer::initFramebuffers() {
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		printf("Creation of framebuffers failed, glCheckFramebufferStatus() = 0x%x\n", status);
+		printf("Creation of framebuffers failed in %s:%d, glCheckFramebufferStatus() = 0x%x\n", __FILE__, __LINE__, status);
 	}
 	// LIGHT FRAMEBUFFER
 
@@ -356,7 +356,7 @@ void ParticleRenderer::initFramebuffers() {
 
 	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		printf("Creation of framebuffers failed, glCheckFramebufferStatus() = 0x%x\n", status);
+		printf("Creation of framebuffers failed in %s:%d, glCheckFramebufferStatus() = 0x%x\n", __FILE__, __LINE__, status);
 	}
 
 

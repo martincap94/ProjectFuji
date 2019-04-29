@@ -144,7 +144,7 @@ void EVSMShadowMapper::init() {
 	status |= glCheckNamedFramebufferStatus(secondPassBlurFramebuffer, GL_FRAMEBUFFER);
 
 	if (!((status == GL_FRAMEBUFFER_COMPLETE) && (error == GL_NO_ERROR))) {
-		printf("Creation of framebuffers failed, glCheckFramebufferStatus() = 0x%x, glGetError() = 0x%x\n", status, error);
+		printf("Creation of framebuffers failed in %s:%d, glCheckFramebufferStatus() = 0x%x\n", __FILE__, __LINE__, status);
 	}
 
 
