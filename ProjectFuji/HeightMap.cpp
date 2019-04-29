@@ -627,6 +627,9 @@ float HeightMap::getWorldDepth() {
 }
 
 void HeightMap::draw() {
+	if (!visible) {
+		return;
+	}
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	//glUseProgram(shader->id);
@@ -639,6 +642,9 @@ void HeightMap::draw() {
 }
 
 void HeightMap::draw(ShaderProgram *shader) {
+	if (!visible) {
+		return;
+	}
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	shader->use();
@@ -724,6 +730,9 @@ void HeightMap::draw(ShaderProgram *shader) {
 }
 
 void HeightMap::drawGeometry(ShaderProgram * shader) {
+	if (!visible) {
+		return;
+	}
 	shader->use();
 
 	shader->setModelMatrix(glm::mat4(1.0f));

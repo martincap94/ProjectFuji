@@ -110,7 +110,7 @@ void main() {
 		} else if (u_PhaseFunction == 4) {
 
 			// Schlick
-			phaseFunc = calculateSchlick(cosphi, -u_g);
+			phaseFunc = calculateSchlick(cosphi, u_g);
 
 		} else if (u_PhaseFunction == 5) {
 
@@ -157,7 +157,7 @@ float calculateDoubleHenyeyGreenstein(float cosphi, float g1, float g2, float f)
 
 float calculateSchlick(float cosphi, float k) {
 	float schlick = 1.0 / (4.0 * PI);
-	schlick *= (1.0 - k) / ((1.0 + k * cosphi) * (1.0 + k * cosphi));
+	schlick *= (1.0 - k * k) / ((1.0 + k * cosphi) * (1.0 + k * cosphi));
 	return schlick;
 }
 

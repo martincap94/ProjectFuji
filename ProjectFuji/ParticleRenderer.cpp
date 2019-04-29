@@ -76,7 +76,12 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	shader->setBool("u_ShowParticleTextureIdx", (bool)showParticleTextureIdx);
 	shader->setInt("u_PhaseFunction", (int)phaseFunction);
 	shader->setBool("u_MultiplyPhaseByShadow", (bool)multiplyPhaseByShadow);
-	shader->setFloat("u_g", symmetryParameter);
+
+	if (phaseFunction == SCHLICK) {
+		shader->setFloat("u_g", -1.55f * symmetryParameter + 0.55f * symmetryParameter * symmetryParameter * symmetryParameter);
+	} else {
+		shader->setFloat("u_g", symmetryParameter);
+	}
 	shader->setFloat("u_g2", symmetryParameter2);
 	shader->setFloat("u_f", dHenyeyGreensteinInterpolationParameter);
 	shader->setBool("u_ShowParticlesBelowCCL", (bool)showParticlesBelowCCL);

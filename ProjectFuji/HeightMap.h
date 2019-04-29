@@ -93,6 +93,8 @@ public:
 	int visualizeTextureMode = 0;
 	Texture *visTexture = nullptr;
 
+	int visible = 1;
+
 
 	ShaderProgram *shader;		///< Shader reference (that is used to render the height map terrain)
 	//ShaderProgram *wireframeShader;

@@ -742,6 +742,8 @@ void UserInterface::constructTerrainTab() {
 
 	nk_layout_row_dynamic(ctx, 15, 1);
 
+	nk_checkbox_label(ctx, "Visible", &vars->heightMap->visible);
+
 	HeightMap *hm = vars->heightMap;
 
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(hm->materialMap), nk_vec2(nk_widget_width(ctx), 200))) {
