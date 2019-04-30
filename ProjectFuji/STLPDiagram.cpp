@@ -29,6 +29,8 @@ void STLPDiagram::init() {
 	overlayDiagramShader = ShaderManager::getShaderPtr("overlayTexture");
 
 
+	cout << "Lv at 0 Celius = " << computeLatentHeatOfVaporisationC(0.0f) << endl;
+	cout << "Lv at 0 Kelvin = " << computeLatentHeatOfVaporisationK(0.0f) << endl;
 
 
 	loadSoundingData();
@@ -247,9 +249,9 @@ void STLPDiagram::generateMixingRatioLine() {
 
 	float eps = Rd / Rm;
 	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	//float satVP = getSaturationVaporPressure(T) / 100.0f;
+	//float satVP = e_s_degC(T) / 100.0f;
 	//float W = (eps * satVP) / (P - satVP);
-	float W = getMixingRatioOfWaterVapor(T, P * 100.0f);
+	float W = w_vs_degC(T, P * 100.0f);
 
 	//cout << " -> Computed W = " << W << endl;
 
@@ -339,9 +341,9 @@ void STLPDiagram::generateMixingRatioLineExperimental() {
 
 	float eps = Rd / Rm;
 	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	//float satVP = getSaturationVaporPressure(T) / 100.0f;
+	//float satVP = e_s_degC(T) / 100.0f;
 	//float W = (eps * satVP) / (P - satVP);
-	float W = getMixingRatioOfWaterVapor(T, P * 100.0f);
+	float W = w_vs_degC(T, P * 100.0f);
 
 	//cout << " -> Computed W = " << W << endl;
 
@@ -450,6 +452,7 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2> &vertices, i
 void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::vec2>& vertices, int mode, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve, float smallDeltaP) {
 
 	float T = getKelvin(theta);
+
 	int vertexCounter = 0;
 	float x, y;
 
@@ -484,7 +487,7 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 		}
 
 		pPa = p * 100.0f;
-		T -= dTdp_moist(T, pPa) * smallDeltaP * 100.0f;
+		T -= dTdp_moist_degK_Bakhshaii(T, pPa) * smallDeltaP * 100.0f;
 
 		accumulatedP += smallDeltaP;
 
@@ -1923,7 +1926,7 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //
 //	float eps = Rd / Rm;
 //	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-//	float satVP = getSaturationVaporPressure(T);
+//	float satVP = e_s_degC(T);
 //	//float W = (eps * satVP) / (P - satVP);
 //	float W = getMixingRatioOfWaterVapor(T, P);
 //
@@ -2398,7 +2401,7 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //#elif MOIST_ADIABAT_OPTION == 3 // Bakhshaii non-iterative approach
 //	T = 9.0f; // Celsius
 //	P = 800.0f; // 800hPa = 80kPa
-//	float theta_w = getWetBulbPotentialTemperature(T, P);
+//	float theta_w = getWetBulbPotentialTemperature_degC_hPa(T, P);
 //	cout << "THETA W = " << theta_w << endl;
 //	/*
 //	desired results:
@@ -2413,13 +2416,13 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //
 //	theta_w = 28.0f;
 //	P = 250.0f;
-//	T = getPseudoadiabatTemperature(theta_w, P);
+//	T = getPseudoadiabatTemperature_degC_hPa(theta_w, P);
 //	cout << "T = " << T << endl;
 //
 //	for (float theta_w = MIN_TEMP; theta_w <= MAX_TEMP; theta_w += 10.0f) {
 //		for (int i = 0; i < soundingData.size(); i++) {
 //			P = soundingData[i].data[PRES];
-//			T = getPseudoadiabatTemperature(theta_w, P);
+//			T = getPseudoadiabatTemperature_degC_hPa(theta_w, P);
 //			y = getNormalizedPres(P);
 //			x = getNormalizedTemp(T, y);
 //			vertices.push_back(glm::vec2(x, y));
@@ -2439,7 +2442,7 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //		deltaP = 1.0f;
 //		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
 //			p *= 100.0f;
-//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 //			p /= 100.0f;
 //
 //			y = getNormalizedPres(p);
@@ -2449,7 +2452,7 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //		T = origT;
 //		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
 //			p *= 100.0f;
-//			T += dTdp_moist(T, p) * deltaP * 100.0f;
+//			T += dTdp_moist_degK(T, p) * deltaP * 100.0f;
 //			p /= 100.0f;
 //
 //			y = getNormalizedPres(p);
@@ -2475,7 +2478,7 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //
 //		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
 //			p *= 100.0f;
-//			T += dTdp_moist(T, p) * deltaP * 100.0f;
+//			T += dTdp_moist_degK(T, p) * deltaP * 100.0f;
 //			p /= 100.0f;
 //
 //			if ((int)p % 25 == 0 && p != 1000.0f) {
@@ -2490,7 +2493,7 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //
 //		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
 //			p *= 100.0f;
-//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 //			p /= 100.0f;
 //
 //			if ((int)p % 25 == 0) {
@@ -2516,7 +2519,7 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //		deltaP = 1.0f;
 //		for (float p = CCL.y; p >= MIN_P; p -= deltaP) {
 //			p *= 100.0f;
-//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 //			p /= 100.0f;
 //
 //			if ((int)p % 25 == 0 || p == CCL.y) {
@@ -2558,7 +2561,7 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //		deltaP = 1.0f;
 //		for (float p = LCL.y; p >= MIN_P; p -= deltaP) {
 //			p *= 100.0f;
-//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 //			p /= 100.0f;
 //
 //			if ((int)p % 25 == 0 || p == LCL.y) {
@@ -2591,7 +2594,7 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 //		deltaP = 1.0f;
 //		for (float p = CCLProfiles[profileIndex].y; p >= MIN_P; p -= deltaP) {
 //			p *= 100.0f;
-//			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+//			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 //			p /= 100.0f;
 //
 //			if ((int)p % 25 == 0 || p == CCLProfiles[profileIndex].y) {

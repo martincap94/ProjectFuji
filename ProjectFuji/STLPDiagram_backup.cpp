@@ -242,7 +242,7 @@ void STLPDiagram::generateMixingRatioLine() {
 
 	float eps = Rd / Rm;
 	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	float satVP = getSaturationVaporPressure(T);
+	float satVP = e_s_degC(T);
 	//float W = (eps * satVP) / (P - satVP);
 	float W = getMixingRatioOfWaterVapor(T, P);
 
@@ -332,7 +332,7 @@ void STLPDiagram::generateMixingRatioLineExperimental() {
 
 	float eps = Rd / Rm;
 	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	//float satVP = getSaturationVaporPressure(T) / 100.0f;
+	//float satVP = e_s_degC(T) / 100.0f;
 	//float W = (eps * satVP) / (P - satVP);
 	float W = getMixingRatioOfWaterVapor(T, P * 100.0f);
 
@@ -426,7 +426,7 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 
 	for (float p = startP; p >= MIN_P; p -= smallDeltaP) {
 		p *= 100.0f;
-		T -= dTdp_moist(T, p) * smallDeltaP * 100.0f;
+		T -= dTdp_moist_degK(T, p) * smallDeltaP * 100.0f;
 		p /= 100.0f;
 
 		if ((int)p % (int)deltaP == 0 || (int)p % (int)startP == 0) {
@@ -1802,7 +1802,7 @@ void STLPDiagram::initBuffersOld() {
 
 	float eps = Rd / Rm;
 	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	float satVP = getSaturationVaporPressure(T);
+	float satVP = e_s_degC(T);
 	//float W = (eps * satVP) / (P - satVP);
 	float W = getMixingRatioOfWaterVapor(T, P);
 
@@ -2277,7 +2277,7 @@ void STLPDiagram::initBuffersOld() {
 #elif MOIST_ADIABAT_OPTION == 3 // Bakhshaii non-iterative approach
 	T = 9.0f; // Celsius
 	P = 800.0f; // 800hPa = 80kPa
-	float theta_w = getWetBulbPotentialTemperature(T, P);
+	float theta_w = getWetBulbPotentialTemperature_degC_hPa(T, P);
 	cout << "THETA W = " << theta_w << endl;
 	/*
 	desired results:
@@ -2292,13 +2292,13 @@ void STLPDiagram::initBuffersOld() {
 
 	theta_w = 28.0f;
 	P = 250.0f;
-	T = getPseudoadiabatTemperature(theta_w, P);
+	T = getPseudoadiabatTemperature_degC_hPa(theta_w, P);
 	cout << "T = " << T << endl;
 
 	for (float theta_w = MIN_TEMP; theta_w <= MAX_TEMP; theta_w += 10.0f) {
 		for (int i = 0; i < soundingData.size(); i++) {
 			P = soundingData[i].data[PRES];
-			T = getPseudoadiabatTemperature(theta_w, P);
+			T = getPseudoadiabatTemperature_degC_hPa(theta_w, P);
 			y = getNormalizedPres(P);
 			x = getNormalizedTemp(T, y);
 			vertices.push_back(glm::vec2(x, y));
@@ -2318,7 +2318,7 @@ void STLPDiagram::initBuffersOld() {
 		deltaP = 1.0f;
 		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			y = getNormalizedPres(p);
@@ -2328,7 +2328,7 @@ void STLPDiagram::initBuffersOld() {
 		T = origT;
 		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
 			p *= 100.0f;
-			T += dTdp_moist(T, p) * deltaP * 100.0f;
+			T += dTdp_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			y = getNormalizedPres(p);
@@ -2354,7 +2354,7 @@ void STLPDiagram::initBuffersOld() {
 
 		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
 			p *= 100.0f;
-			T += dTdp_moist(T, p) * deltaP * 100.0f;
+			T += dTdp_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0 && p != 1000.0f) {
@@ -2369,7 +2369,7 @@ void STLPDiagram::initBuffersOld() {
 
 		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0) {
@@ -2395,7 +2395,7 @@ void STLPDiagram::initBuffersOld() {
 		deltaP = 1.0f;
 		for (float p = CCL.y; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0 || p == CCL.y) {
@@ -2437,7 +2437,7 @@ void STLPDiagram::initBuffersOld() {
 		deltaP = 1.0f;
 		for (float p = LCL.y; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0 || p == LCL.y) {
@@ -2470,7 +2470,7 @@ void STLPDiagram::initBuffersOld() {
 		deltaP = 1.0f;
 		for (float p = CCLProfiles[profileIndex].y; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist(T, p) * deltaP * 100.0f;
+			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0 || p == CCLProfiles[profileIndex].y) {

@@ -26,14 +26,13 @@
 #define c_pv 1875.0f;
 //////////////////////////////////////////////////////////////////////////////
 
-// T is in degC, pressure is in Pa
-float getSaturationVaporPressure(float T);
+//float getMixingRatioOfWaterVapor(float T, float P);
 
-// T is in degC, pressure is in Pa (?)
-float getMixingRatioOfWaterVapor(float T, float P);
 
 float computeRho(float T, float P);
-float computeLatentHeatOfVaporisation(float T);
+float computeLatentHeatOfVaporisationC(float T);
+float computeLatentHeatOfVaporisationK(float T);
+
 float computePseudoadiabaticLapseRate(float T, float P);
 float getMoistAdiabatIntegralVal(float T, float P);
 
@@ -59,15 +58,15 @@ float computeAbsoluteFromThetaC(float theta, float P, float P0 = 1000.0f);
 // Moist adiabats and utility functions taken from: https://github.com/NCAR/skewt
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-double theta_dry(double t, double p);
-
-float getLCL(float T, float dewPoint);
-float computeEquivalentTheta(float T, float dewPoint, float P);
-
-# define E_3	6.1078
-# define T_3	273.15
-
-float getSaturatedAirTemperature(float ept, float P);
+//double theta_dry(double t, double p);
+//
+//float getLCL(float T, float dewPoint);
+//float computeEquivalentTheta(float T, float dewPoint, float P);
+//
+//# define E_3	6.1078
+//# define T_3	273.15
+//
+//float getSaturatedAirTemperature(float ept, float P);
 
 
 
@@ -76,11 +75,11 @@ float getSaturatedAirTemperature(float ept, float P);
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// T is in degC! P is in hPa, will be converted to kPa automatically...
-float getWetBulbPotentialTemperature(float T, float P);
+float getWetBulbPotentialTemperature_degC_hPa(float T, float P);
 
 // According to Bahkshaii: https://journals.ametsoc.org/doi/pdf/10.1175/JAMC-D-12-062.1
 /// theta_w is in degC! P is in hPa, will be converted to kPa automatically...
-float getPseudoadiabatTemperature(double theta_w, double P);
+float getPseudoadiabatTemperature_degC_hPa(double theta_w, double P);
 
 
 
@@ -89,11 +88,19 @@ float getPseudoadiabatTemperature(double theta_w, double P);
 // According to pyMeteo implementation
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// T is in degC, pressure is in Pa
+float e_s_degC(float T);
+float e_s_degK(float T);
 
-float e_s(float T);
-float w_vs(float T, float pd);
-float dTdz_moist(float T, float p);
-float dTdp_moist(float T, float p);
+// Mixing ratio of water vapor
+
+float w_vs_degK(float T, float P);
+float w_vs_degC(float T, float P);
+
+float dTdz_moist_degK(float T, float P);
+float dTdp_moist_degK(float T, float P);
+
+float dTdp_moist_degK_Bakhshaii(float T, float P);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // Others
