@@ -94,13 +94,13 @@ float e_s_degK(float T);
 
 // Mixing ratio of water vapor
 
-float w_vs_degK(float T, float P);
-float w_vs_degC(float T, float P);
+float w_degK(float T, float P);
+float w_degC(float T, float P);
 
 float dTdz_moist_degK(float T, float P);
-float dTdp_moist_degK(float T, float P);
+float dTdP_moist_degK(float T, float P);
 
-float dTdp_moist_degK_Bakhshaii(float T, float P);
+float dTdP_moist_degK_Bakhshaii(float T, float P);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // Others

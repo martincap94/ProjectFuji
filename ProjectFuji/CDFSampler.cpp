@@ -55,8 +55,8 @@ glm::ivec2 CDFSampler::getSample() {
 	//cout << "idx = " << idx << endl;
 
 
-	int selectedRow = idx / width;
-	int selectedCol = idx % width;
+	int selectedRow = idx % width;
+	int selectedCol = idx / width;
 
 	return glm::ivec2(selectedRow, selectedCol);
 }

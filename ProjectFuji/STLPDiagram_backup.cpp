@@ -426,7 +426,7 @@ void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::ve
 
 	for (float p = startP; p >= MIN_P; p -= smallDeltaP) {
 		p *= 100.0f;
-		T -= dTdp_moist_degK(T, p) * smallDeltaP * 100.0f;
+		T -= dTdP_moist_degK(T, p) * smallDeltaP * 100.0f;
 		p /= 100.0f;
 
 		if ((int)p % (int)deltaP == 0 || (int)p % (int)startP == 0) {
@@ -2318,7 +2318,7 @@ void STLPDiagram::initBuffersOld() {
 		deltaP = 1.0f;
 		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
+			T -= dTdP_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			y = getNormalizedPres(p);
@@ -2328,7 +2328,7 @@ void STLPDiagram::initBuffersOld() {
 		T = origT;
 		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
 			p *= 100.0f;
-			T += dTdp_moist_degK(T, p) * deltaP * 100.0f;
+			T += dTdP_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			y = getNormalizedPres(p);
@@ -2354,7 +2354,7 @@ void STLPDiagram::initBuffersOld() {
 
 		for (float p = 1000.0f; p <= MAX_P; p += deltaP) {
 			p *= 100.0f;
-			T += dTdp_moist_degK(T, p) * deltaP * 100.0f;
+			T += dTdP_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0 && p != 1000.0f) {
@@ -2369,7 +2369,7 @@ void STLPDiagram::initBuffersOld() {
 
 		for (float p = 1000.0f; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
+			T -= dTdP_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0) {
@@ -2395,7 +2395,7 @@ void STLPDiagram::initBuffersOld() {
 		deltaP = 1.0f;
 		for (float p = CCL.y; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
+			T -= dTdP_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0 || p == CCL.y) {
@@ -2437,7 +2437,7 @@ void STLPDiagram::initBuffersOld() {
 		deltaP = 1.0f;
 		for (float p = LCL.y; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
+			T -= dTdP_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0 || p == LCL.y) {
@@ -2470,7 +2470,7 @@ void STLPDiagram::initBuffersOld() {
 		deltaP = 1.0f;
 		for (float p = CCLProfiles[profileIndex].y; p >= MIN_P; p -= deltaP) {
 			p *= 100.0f;
-			T -= dTdp_moist_degK(T, p) * deltaP * 100.0f;
+			T -= dTdP_moist_degK(T, p) * deltaP * 100.0f;
 			p /= 100.0f;
 
 			if ((int)p % 25 == 0 || p == CCLProfiles[profileIndex].y) {

@@ -42,7 +42,7 @@ float computeRho(float T, float P) {
 
 float computePseudoadiabaticLapseRate(float T, float P) {
 
-	float w = w_vs_degK(T, P);
+	float w = w_degK(T, P);
 	float L_v = computeLatentHeatOfVaporisationK(T);
 
 
@@ -230,38 +230,38 @@ float e_s_degK(float T) {
 	return e_s_degC(getCelsius(T));
 }
 
-float w_vs_degK(float T, float P) {
+float w_degK(float T, float P) {
 	float e_s = e_s_degK(T);
 	return EPS * (e_s / (P - e_s));
 }
 
-float w_vs_degC(float T, float P) {
+float w_degC(float T, float P) {
 	float e_s = e_s_degC(T);
 	return EPS * (e_s / (P - e_s));
 }
 
 float dTdz_moist_degK(float T, float P) {
 	float L_v = computeLatentHeatOfVaporisationK(T);
-	float w_vs = w_vs_degK(T, P);
+	float w = w_degK(T, P);
 
-	float num = 1.0f + (L_v * w_vs) / (R_d * T);
-	float den = 1.0f + (L_v * L_v * w_vs) / (c_pd * R_m * T * T);
+	float num = 1.0f + (L_v * w) / (R_d * T);
+	float den = 1.0f + (L_v * L_v * w) / (c_pd * R_m * T * T);
 	return (-9.81f / c_pd) * (num / den);
 }
 
-float dTdp_moist_degK(float T, float P) {
+float dTdP_moist_degK(float T, float P) {
 	return dTdz_moist_degK(T, P) * -(R_d * T) / (P * 9.81f);
 }
 
 
 // Bakhshaii iterative
-float dTdp_moist_degK_Bakhshaii(float T, float P) {
+float dTdP_moist_degK_Bakhshaii(float T, float P) {
 	float L_v = computeLatentHeatOfVaporisationK(T);
-	float w_vs = w_vs_degK(T, P);
+	float w = w_degK(T, P);
 
 	float res = 1.0f / P;
-	res *= (R_d * T + L_v * w_vs);
-	res /= (c_pd + (L_v * L_v * w_vs * EPS / (R_d * T * T)));
+	res *= (R_d * T + L_v * w);
+	res /= (c_pd + (L_v * L_v * w * EPS / (R_d * T * T)));
 	return res;
 }
 
@@ -369,7 +369,7 @@ float getLCL(float T, float dewPoint) {
 
 float computeEquivalentTheta(float T, float dewPoint, float P) {
 
-	float w = w_vs_degC(dewPoint, P);
+	float w = w_degC(dewPoint, P);
 	//float theta = computeThetaFromAbsolute(T, P);
 	float theta = (float)theta_dry(T, P);
 	float t_l = getLCL(T, dewPoint);
