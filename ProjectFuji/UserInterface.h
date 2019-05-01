@@ -128,8 +128,14 @@ public:
 
 	void constructTextureSelection(Texture **targetTexturePtr, std::string nullTextureNameOverride = "");
 
+	void nk_property_string(struct nk_context *ctx, std::string &target, char *buffer, int bufferLength, int &length);
+
+	void setButtonStyle(struct nk_context *ctx, bool active = true);
+
 private:
 
+	struct nk_style_button activeButtonStyle;
+	struct nk_style_button inactiveButtonStyle;
 
 	//enum eTabPosition {
 	//	HIDDEN = 0,
@@ -161,6 +167,9 @@ private:
 
 	bool terrainGeneratorPopupOpened = false;
 	bool emitterCreationWindowOpened = false;
+	bool saveParticlesWindowOpened = false;
+	bool loadParticlesWindowOpened = false;
+
 	int selectedEmitterType = 0;
 
 
@@ -201,6 +210,9 @@ private:
 
 	void constructGeneralDebugTab();
 	void constructPropertiesTab();
+
+	void constructSaveParticlesWindow();
+	void constructLoadParticlesWindow();
 
 	
 	void constructDebugTab();

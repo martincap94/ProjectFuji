@@ -22,6 +22,7 @@
 #define SHADERS_DIR "shaders/"			///< Shaders directory
 #define LOG_FILENAME_BASE "logs/"		///< Logs directory
 #define SOUNDING_DATA_DIR "sounding_data/"	///< Directory in which sounding data files reside
+#define PARTICLE_DATA_DIR "particle_system/"	//!< Directory in which particle data files reside
 
 #define MIN_X -40.0f	///< Minimum x value for the diagram
 #define MAX_X 40.0f		///< Maximum x value for the diagram

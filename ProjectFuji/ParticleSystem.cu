@@ -24,6 +24,10 @@
 #include <thrust\execution_policy.h>
 #include <thrust\sequence.h>
 
+#include <stdio.h>
+
+#include <filesystem>
+namespace fs = std::experimental::filesystem;
 
 
 
@@ -83,6 +87,8 @@ __global__ void clearVerticalVelocitiesKernel(float *verticalVelocities, int num
 
 
 ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
+
+	loadParticleSaveFiles();
 
 	curveShader = ShaderManager::getShaderPtr("curve");
 	pointSpriteTestShader = ShaderManager::getShaderPtr("pointSpriteTest");
@@ -956,6 +962,208 @@ void ParticleSystem::pushParticleToEmit(Particle p) {
 	particleProfilesToEmit.push_back(p.profileIndex);
 	verticalVelocitiesToEmit.push_back(p.velocity.y);
 	numActiveParticles++; // each emitter already checks if numActiveParticles < numParticles, no need to check once more
+
+}
+
+void ParticleSystem::saveParticlesToFile(std::string filename) {
+
+	if (!fs::exists(PARTICLE_DATA_DIR)) {
+		fs::create_directory(PARTICLE_DATA_DIR);
+
+	} else {
+		if (!fs::is_directory(PARTICLE_DATA_DIR)) {
+			cout << "Cannot save particles! Please make sure " << PARTICLE_DATA_DIR << " is a directory!" << endl;
+			return;
+		}
+	}
+
+	string fullFilename = PARTICLE_DATA_DIR + filename + ".txt";
+	if (fs::exists(fullFilename)) {
+		cout << "File " << fullFilename << " exists, will be rewritten!" << endl;
+	}
+
+
+
+	glm::vec3 *vertexData = (glm::vec3 *)glMapNamedBuffer(particleVerticesVBO, GL_READ_ONLY);
+	int *profileData = (int *)glMapNamedBuffer(particleProfilesVBO, GL_READ_ONLY);
+
+	//FILE* pFile;
+	//pFile = fopen((PARTICLE_DATA_DIR + filename + ".binary").c_str(), "wb");
+	//fclose(pFile);
+
+	//fwrite(&numParticles, sizeof(int), sizeof(int), pFile);
+	//fwrite(vertexData, sizeof(glm::vec3), numParticles * sizeof(glm::vec3), pFile);
+	//fwrite(profileData, sizeof(int), numParticles * sizeof(int), pFile);
+
+
+	
+	ofstream out(fullFilename);
+	out << numParticles << endl;
+	out << numActiveParticles << endl;
+	//out.write(&vertexData[0], numParticles);
+
+	for (int i = 0; i < numParticles; i++) {
+		out << vertexData[i].x << ' ' << vertexData[i].y << ' ' << vertexData[i].z << ' ' << profileData[i] << endl;
+	}
+	
+
+	glUnmapNamedBuffer(particleVerticesVBO);
+	glUnmapNamedBuffer(particleProfilesVBO);
+
+
+
+}
+
+void ParticleSystem::constructSaveParticlesWindow(nk_context * ctx, UserInterface * ui, bool & closeWindowAfterwards) {
+
+	static string particleSaveName;
+	const static int bufferLength = 32;
+	static char nameBuffer[bufferLength];
+	static int nameLength;
+
+	ui->nk_property_string(ctx, particleSaveName, nameBuffer, bufferLength, nameLength);
+
+	if (nameLength == 0) {
+		ui->setButtonStyle(ctx, false);
+		nk_button_label(ctx, "Save");
+		nk_button_label(ctx, "Save and Close");
+		ui->setButtonStyle(ctx, true);
+	} else {
+		if (nk_button_label(ctx, "Save")) {
+			saveParticlesToFile(particleSaveName);
+		}
+		if (nk_button_label(ctx, "Save and Close")) {
+			saveParticlesToFile(particleSaveName);
+			closeWindowAfterwards = true;
+		}
+	}
+	if (nk_button_label(ctx, "Close")) {
+		closeWindowAfterwards = true;
+	}
+
+}
+
+void ParticleSystem::constructLoadParticlesWindow(nk_context * ctx, UserInterface * ui, bool & closeWindowAfterwards) {
+	
+	static bool fileSelected = false;
+	static string selectedFile;
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+	if (nk_combo_begin_label(ctx, fileSelected ? selectedFile.c_str() : "Select file...", nk_vec2(nk_widget_width(ctx), 200))) {
+		nk_layout_row_dynamic(ctx, 15, 1);
+		if (nk_combo_item_label(ctx, "None", NK_TEXT_LEFT)) {
+			fileSelected = false;
+			nk_combo_close(ctx);
+		}
+		for (int i = 0; i < particleSaveFiles.size(); i++) {
+			if (nk_combo_item_label(ctx, particleSaveFiles[i].c_str(), NK_TEXT_LEFT)) {
+				selectedFile = particleSaveFiles[i];
+				fileSelected = true;
+				nk_combo_close(ctx);
+			}
+		}
+		nk_combo_end(ctx);
+	}
+
+	if (!fileSelected) {
+		ui->setButtonStyle(ctx, false);
+		nk_button_label(ctx, "Load");
+		ui->setButtonStyle(ctx, true);
+	} else {
+		if (nk_button_label(ctx, "Load")) {
+			loadParticlesFromFile(selectedFile);
+		}
+	}
+	if (nk_button_label(ctx, "Close")) {
+		closeWindowAfterwards = true;
+	}
+
+}
+
+void ParticleSystem::loadParticlesFromFile(std::string filename) {
+	
+	if (!fs::exists(filename) || !fs::is_regular_file(filename)) {
+		cout << "Particle file " << filename << " could not be loaded!" << endl;
+		return;
+	}
+
+	ifstream infile(filename);
+	int inNumParticles;
+	int inNumActiveParticles;
+	infile >> inNumParticles;
+	infile >> inNumActiveParticles;
+
+	bool loadFailed = false;
+
+	if (inNumActiveParticles > inNumParticles) {
+		printf("There is something wrong with the loaded file: numParticles (%d) < numActiveParticles (%d)!\n", inNumParticles, inNumActiveParticles);
+		return;
+	} else if (inNumActiveParticles <= 0 || inNumParticles <= 0) {
+		printf("There is something wrong with the loaded file: numParticles (%d) <= 0 || numActiveParticles (%d) <= 0!\n", inNumParticles, inNumActiveParticles);
+		return;
+	}
+
+	bool bufferSubData = false;
+	if (inNumParticles > numParticles) {
+		cout << "We do not support loading more particles than the application was configured with!" << endl;
+		cout << " | Current configuration = " << numParticles << endl;
+		cout << " | Loaded configuration  = " << inNumActiveParticles << endl;
+		cout << " | ---> Only " << numParticles << " will be loaded instead..." << endl;
+		inNumParticles = numParticles;
+	} else if (inNumParticles < numParticles) {
+		bufferSubData = true;
+	}
+
+	if (inNumActiveParticles > numParticles) {
+		inNumActiveParticles = numParticles;
+	}
+	numActiveParticles = inNumActiveParticles;
+
+
+	glm::vec3 pPos;
+	int pIdx;
+
+	vector<glm::vec3> vertexPositions;
+	vector<int> vertexProfiles;
+
+	for (int i = 0; i < inNumParticles; i++) {
+		infile >> pPos.x;
+		infile >> pPos.y;
+		infile >> pPos.z;
+		infile >> pIdx;
+
+		vertexPositions.push_back(pPos);
+		vertexProfiles.push_back(pIdx);
+	}
+
+	if (bufferSubData) {
+		glNamedBufferSubData(particleVerticesVBO, 0, sizeof(glm::vec3) * inNumParticles, vertexPositions.data());
+		glNamedBufferSubData(particleProfilesVBO, 0, sizeof(int) * inNumParticles, vertexProfiles.data());
+	} else {
+		glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, vertexPositions.data(), GL_STATIC_DRAW);
+		glNamedBufferData(particleProfilesVBO, sizeof(int) * numParticles, vertexProfiles.data(), GL_STATIC_DRAW);
+	}
+
+
+
+
+}
+
+void ParticleSystem::loadParticleSaveFiles() {
+	particleSaveFiles.clear();
+	string path = PARTICLE_DATA_DIR;
+	string ext = "";
+	for (const auto &entry : fs::directory_iterator(path)) {
+		if (getFileExtension(entry.path().string(), ext)) {
+			if (ext == "txt") {
+				particleSaveFiles.push_back(entry.path().string());
+			}
+		}
+	}
+	//cout << "Possible Particle Save Files:" << endl;
+	//for (int i = 0; i < particleSaveFiles.size(); i++) {
+	//	cout << " | " << particleSaveFiles[i] << endl;
+	//}
 
 }
 

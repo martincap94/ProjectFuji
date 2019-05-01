@@ -67,12 +67,24 @@ UserInterface::UserInterface(GLFWwindow *window, VariableManager *vars) : vars(v
 
 	ctx_in = &ctx->input;
 
-	ctx->style.button.rounding = 0.0f;
-	ctx->style.button.image_padding = nk_vec2(0.0f, 0.0f);
 
 	leftSidebarEditButtonRatio[0] = leftSidebarWidth - 20.0f;
 	leftSidebarEditButtonRatio[1] = 15.0f;
 
+
+	ctx->style.button.rounding = 0.0f;
+	ctx->style.button.image_padding = nk_vec2(0.0f, 0.0f);
+	activeButtonStyle = ctx->style.button;
+
+	inactiveButtonStyle = activeButtonStyle;
+	inactiveButtonStyle.normal = nk_style_item_color(nk_rgb(40, 40, 40));
+	inactiveButtonStyle.hover = nk_style_item_color(nk_rgb(40, 40, 40));
+	inactiveButtonStyle.active = nk_style_item_color(nk_rgb(40, 40, 40));
+	inactiveButtonStyle.border_color = nk_rgb(60, 60, 60);
+	inactiveButtonStyle.text_background = nk_rgb(60, 60, 60);
+	inactiveButtonStyle.text_normal = nk_rgb(60, 60, 60);
+	inactiveButtonStyle.text_hover = nk_rgb(60, 60, 60);
+	inactiveButtonStyle.text_active = nk_rgb(60, 60, 60);
 }
 
 UserInterface::~UserInterface() {
@@ -111,6 +123,8 @@ void UserInterface::constructUserInterface() {
 
 	constructTerrainGeneratorWindow();
 	constructEmitterCreationWindow();
+	constructSaveParticlesWindow();
+	constructLoadParticlesWindow();
 
 	if (vars->aboutWindowOpened) {
 
@@ -1693,6 +1707,14 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 void UserInterface::constructEmittersTab() {
 
 	nk_layout_row_dynamic(ctx, 15, 1);
+	if (nk_button_label(ctx, "Save Particles to File")) {
+		saveParticlesWindowOpened = true;
+	}
+	if (nk_button_label(ctx, "Load Particles from File")) {
+		loadParticlesWindowOpened = true;
+		particleSystem->loadParticleSaveFiles();
+	}
+
 	if (nk_button_label(ctx, "Add Emitter")) {
 		emitterCreationWindowOpened = true;
 	}
@@ -1984,6 +2006,55 @@ void UserInterface::constructPropertiesTab() {
 
 }
 
+void UserInterface::constructSaveParticlesWindow() {
+	if (saveParticlesWindowOpened) {
+		float w = 500.0f;
+		float h = 500.0f;
+		if (nk_begin(ctx, "Save Particles to File", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
+
+
+
+			bool closeWindowAfterwards = false;
+			particleSystem->constructSaveParticlesWindow(ctx, this, closeWindowAfterwards);
+
+			if (closeWindowAfterwards) {
+				saveParticlesWindowOpened = false;
+			}
+
+
+		} else {
+			saveParticlesWindowOpened = false;
+		}
+		nk_end(ctx);
+
+	}
+
+
+}
+
+void UserInterface::constructLoadParticlesWindow() {
+	if (loadParticlesWindowOpened) {
+		float w = 500.0f;
+		float h = 500.0f;
+		if (nk_begin(ctx, "Load Particles from File", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
+
+			bool closeWindowAfterwards = false;
+			particleSystem->constructLoadParticlesWindow(ctx, this, closeWindowAfterwards);
+
+			if (closeWindowAfterwards) {
+				loadParticlesWindowOpened = false;
+			}
+
+
+		} else {
+			loadParticlesWindowOpened = false;
+		}
+		nk_end(ctx);
+
+	}
+
+}
+
 
 void UserInterface::constructDebugTab() {
 }
@@ -2117,6 +2188,27 @@ void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string
 		}
 		nk_combo_end(ctx);
 	}
+}
+
+void UserInterface::nk_property_string(nk_context * ctx, std::string & target, char *buffer, int bufferLength, int &length) {
+
+	nk_layout_row_dynamic(ctx, 30, 1);
+	nk_flags event = nk_edit_string(ctx, NK_EDIT_SIMPLE, &buffer[0], &length, bufferLength, nk_filter_default);
+
+	if (event & NK_EDIT_ACTIVATED) {
+		vars->generalKeyboardInputEnabled = false;
+	}
+	if (event & NK_EDIT_DEACTIVATED) {
+		vars->generalKeyboardInputEnabled = true;
+	}
+	buffer[length] = '\0';
+	target = string(buffer);
+
+}
+
+void UserInterface::setButtonStyle(nk_context *ctx, bool active) {
+	ctx->style.button = active ? activeButtonStyle : inactiveButtonStyle;
+	
 }
 
 void UserInterface::constructTauProperty() {

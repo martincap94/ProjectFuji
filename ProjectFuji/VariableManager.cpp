@@ -89,8 +89,8 @@ void VariableManager::loadSceneFilenames() {
 	string ext = "";
 	for (const auto &entry : fs::directory_iterator(path)) {
 		//cout << entry.path() << endl;
+
 		if (getFileExtension(entry.path().string(), ext)) {
-			transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 			if (ext == "png" || ext == "jpg" || ext == "jpeg") {
 				sceneFilenames.push_back(entry.path().string());
 			}
@@ -111,7 +111,6 @@ void VariableManager::loadSoundingDataFilenames() {
 	for (const auto &entry : fs::directory_iterator(path)) {
 		//cout << entry.path() << endl;
 		if (getFileExtension(entry.path().string(), ext)) {
-			transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 			if (ext == "txt") {
 				soundingDataFilenames.push_back(entry.path().string());
 			}

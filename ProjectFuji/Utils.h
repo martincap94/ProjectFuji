@@ -192,7 +192,7 @@ float getRandFloat(float min = 0.0f, float max = 1.0f);
 
 
 // only suitable for filenames, not paths! (PathFindExtensionA for windows is suitable for paths e.g.)
-bool getFileExtension(const std::string &filename, std::string &outExtension);
+bool getFileExtension(const std::string &filename, std::string &outExtension, bool to_lower = true);
 
 
 int getIdx(int x, int y, int width);

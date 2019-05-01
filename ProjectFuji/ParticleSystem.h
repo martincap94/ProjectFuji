@@ -198,6 +198,14 @@ public:
 	//void copyDataFromVBOtoCPU();
 
 
+	void saveParticlesToFile(std::string filename);
+	void constructSaveParticlesWindow(struct nk_context *ctx, UserInterface *ui, bool &closeWindowAfterwards);
+
+	void constructLoadParticlesWindow(struct nk_context *ctx, UserInterface *ui, bool &closeWindowAfterwards);
+	void loadParticlesFromFile(std::string filename);
+	void loadParticleSaveFiles();
+
+
 
 private:
 
@@ -209,11 +217,15 @@ private:
 	ShaderProgram *pointSpriteTestShader = nullptr;
 	ShaderProgram *singleColorShader = nullptr;
 
+	std::vector<std::string> particleSaveFiles;
+
+
 
 	GLuint streamLinesVAO;	///< Streamlines VAO
 	GLuint streamLinesVBO;	///< Streamlines VBO
 
 	void generateParticleOnTerrain(std::vector<glm::vec3> &outVector);
+
 
 };
 

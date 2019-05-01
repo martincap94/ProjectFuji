@@ -3,6 +3,8 @@
 #include "DataStructures.h"
 
 #include <iostream>
+#include <algorithm>
+
 
 //#include <glad\glad.h>
 
@@ -183,13 +185,16 @@ float getRandFloat(float min, float max) {
 
 
 // https://stackoverflow.com/questions/51949/how-to-get-file-extension-from-string-in-c/51993#51993
-bool getFileExtension(const std::string &filename, std::string &outExtension) {
+bool getFileExtension(const std::string &filename, std::string &outExtension, bool to_lower) {
 
 	std::string::size_type idx;
 
 	idx = filename.rfind('.');
 	if (idx != std::string::npos) {
 		outExtension = filename.substr(idx + 1);
+		if (to_lower) {
+			transform(outExtension.begin(), outExtension.end(), outExtension.begin(), ::tolower);
+		}
 		return true;
 	}
 	return false;
