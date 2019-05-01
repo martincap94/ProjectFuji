@@ -1,10 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       GeneralGrid.h
 * \author     Martin Cap
-* \date       2018/12/23
-* \brief      General grid showing main axes.
+* \brief      GeneralGrid class declaration.
 * 
+*	Describes the GeneralGrid class that is used to draw main axes and helper groud grid.
+*	
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once

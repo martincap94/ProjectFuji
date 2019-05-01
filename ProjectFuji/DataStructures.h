@@ -2,10 +2,9 @@
 /**
 * \file       DataStructures.h
 * \author     Martin Cap
-* \date       2018/12/23
 * \brief      Class containing important data structures for the application.
 *
-*  Class containing important data structures for the application.
+*	Class containing important data structures for the application.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,24 +18,24 @@
 #include <iostream>
 
 
-/// Enum of all possible sounding data parameters.
+//! Enum of all possible sounding data parameters.
 enum eSTLPAttribute {
-	PRES,	// pressure,				in [hPa]
-	HGHT,	// height,					in [m]
-	TEMP,	// temperature,				in [°C]
-	DWPT,	// dew-point temperature,	in [°C]
-	RELH,	// relative humidity,		in [%]
-	MIXR,	// mixing ratio,			in [g/kg]
-	DRCT,	// wind direction,			in [°]
-	SKNT,	// wind speed,				in [knots]
-	TWTB,	// [°C]
-	TVRT,	// [°C]
-	THTA,	// [K]
-	THTE,	// [K]
-	THTV	// [K]
+	PRES,	//!< Pressure;				in [hPa]
+	HGHT,	//!< Height;				in [m]
+	TEMP,	//!< Temperature;			in [°C]
+	DWPT,	//!< Dew-point temperature;	in [°C]
+	RELH,	//!< Relative humidity;		in [%]
+	MIXR,	//!< Mixing ratio;			in [g/kg]
+	DRCT,	//!< Wind direction;		in [°]
+	SKNT,	//!< Wind speed;			in [knots]
+	TWTB,	//!< [°C]
+	TVRT,	//!< [°C]
+	THTA,	//!< [K]
+	THTE,	//!< [K]
+	THTV	//!< [K]
 };
 
-/// Single sounding data row item.
+//! Single sounding data row item.
 struct SoundingDataItem {
 	float data[13];
 

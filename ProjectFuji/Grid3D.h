@@ -1,8 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       Grid3D.h
 * \author     Martin Cap
-* \date       2018/12/23
 * \brief      Grid that is used for LBM 3D visualization.
 *
 *  Grid that is used when LBM 3D is drawn. It creates a 3D grid of dark grey lines with the given step

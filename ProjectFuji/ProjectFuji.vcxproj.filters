@@ -42,10 +42,16 @@
     <CudaCompile Include="ParticleSystem.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="StreamlineParticleSystem.cu" />
     <CudaCompile Include="CDFEmitter - Copy.cu" />
-    <CudaCompile Include="DynamicCDFSampler.cu" />
-    <CudaCompile Include="CUDADataStructures.h" />
+    <CudaCompile Include="StreamlineParticleSystem.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="DynamicCDFSampler.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="CUDADataStructures.h">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -184,42 +190,67 @@
     <ClCompile Include="TextureManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OverlayTexture.cpp" />
-    <ClCompile Include="HarrisCloudVisualizer.cpp" />
     <ClCompile Include="ArHosekSkyModel.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HosekSkyModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleRenderer.cpp" />
     <ClCompile Include="HeightMapOld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GridLBM.cpp" />
-    <ClCompile Include="UserInterface.cpp" />
-    <ClCompile Include="GPUVBO.cpp" />
-    <ClCompile Include="Actor.cpp" />
-    <ClCompile Include="PositionalEmitter.cpp" />
-    <ClCompile Include="TerrainPicker.cpp" />
     <ClCompile Include="CDFEmitterOld.cpp" />
-    <ClCompile Include="CDFEmitter.cpp" />
-    <ClCompile Include="CDFSampler.cpp" />
     <ClCompile Include="HeightMap_backup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CDFSamplerMultiChannel.cpp" />
-    <ClCompile Include="ParticleRenderer_backup.cpp" />
-    <ClCompile Include="PBRMaterial.cpp" />
-    <ClCompile Include="MainFramebuffer.cpp" />
-    <ClCompile Include="ProjectionSettings.cpp" />
-    <ClCompile Include="PerlinNoiseSampler.cpp" />
-    <ClCompile Include="STLPDiagram_backup.cpp">
+    <ClCompile Include="UserInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EmitterBrushMode.cpp" />
-    <ClCompile Include="PositionalCDFEmitter.cpp" />
-    <ClCompile Include="UIWindow.cpp" />
+    <ClCompile Include="TerrainPicker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectionSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PositionalEmitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PositionalCDFEmitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PerlinNoiseSampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PBRMaterial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlayTexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFramebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GridLBM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EmitterBrushMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CDFSamplerMultiChannel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CDFSampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CDFEmitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -354,8 +385,6 @@
     <ClInclude Include="TextureManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OverlayTexture.h" />
-    <ClInclude Include="HarrisCloudVisualizer.h" />
     <ClInclude Include="ArHosekSkyModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -371,33 +400,70 @@
     <ClInclude Include="HosekSkyModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleRenderer.h" />
     <ClInclude Include="HeightMapOld.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GridLBM.h" />
     <ClInclude Include="UIConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UserInterface.h" />
-    <ClInclude Include="StreamlineParticleSystem.h" />
-    <ClInclude Include="GPUVBO.h" />
-    <ClInclude Include="Actor.h" />
-    <ClInclude Include="PositionalEmitter.h" />
-    <ClInclude Include="TerrainPicker.h" />
-    <ClInclude Include="CDFSampler.h" />
-    <ClInclude Include="CDFEmitterOld.h" />
-    <ClInclude Include="CDFEmitter.h" />
     <ClInclude Include="CDFEmitter - Copy.h" />
-    <ClInclude Include="DynamicCDFSampler.h" />
-    <ClInclude Include="CDFSamplerMultiChannel.h" />
-    <ClInclude Include="PBRMaterial.h" />
-    <ClInclude Include="MainFramebuffer.h" />
-    <ClInclude Include="ProjectionSettings.h" />
-    <ClInclude Include="PerlinNoiseSampler.h" />
-    <ClInclude Include="EmitterBrushMode.h" />
-    <ClInclude Include="PositionalCDFEmitter.h" />
-    <ClInclude Include="UIWindow.h" />
+    <ClInclude Include="CDFEmitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CDFEmitterOld.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CDFSampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CDFSamplerMultiChannel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DynamicCDFSampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EmitterBrushMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridLBM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlayTexture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PBRMaterial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PerlinNoiseSampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PositionalCDFEmitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PositionalEmitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectionSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StreamlineParticleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainPicker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFramebuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

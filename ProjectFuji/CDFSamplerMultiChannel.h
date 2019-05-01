@@ -1,3 +1,13 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       CDFSamplerMultiChannel.h
+* \author     Martin Cap
+* \brief      Describes CDFSamplerMultiChannel class.
+*
+*	This file describes the CDFSamplerMultiChannel class. The sampler is an extension of regular
+*	CDF sampler that uses all texture channels as individual samplers.
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <glm\glm.hpp>

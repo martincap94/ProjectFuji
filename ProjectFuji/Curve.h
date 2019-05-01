@@ -1,3 +1,15 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       Curve.h
+* \author     Martin Cap
+* \brief      Very simple curve class & general curve-to-curve operations.
+*
+*	This file describes a very simple curve class that is used in the SkewT/LogP diagram.
+*	The curve intersection is based on theroy from http://paulbourke.net/geometry/pointlineplane 
+*	& http://www.cs.swan.ac.uk/~cssimon/line_intersection.html. 
+*
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <glm\glm.hpp>
@@ -9,6 +21,7 @@
 
 
 using namespace std;
+
 
 class Curve {
 public:

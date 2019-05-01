@@ -1,11 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       STLPDiagram.h
 * \author     Martin Cap
 * \date       2019/01/18
-* \brief	  Describes the SkewT/LogP class.
+* \brief	  Describes the STLPDiagram class.
 *
-*  Describes the SkewT/LogP class that is drawn on the screen.
+*	Describes the SkewT/LogP class that is drawn to the screen.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////

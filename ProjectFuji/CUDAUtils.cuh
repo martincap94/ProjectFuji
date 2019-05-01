@@ -2,11 +2,10 @@
 /**
 * \file       CUDAUtils.h
 * \author     Martin Cap
-* \date       2018/12/23
 * \brief      Utility header file that contains helper functions for CUDA usage.
 *
-*  Utility header file that contains helper functions for CUDA usage.
-*  At this moment it contains the 
+*	Utility header file that contains helper functions for CUDA usage.
+*	At this moment it contains the error handling only.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -21,9 +20,11 @@
 
 #include <iostream>
 
-/// Handle and print CUDA errors. Adapted from slides.
-/**
-	Prints and handles given CUDA errors. This function and its helper macro were adapted from slides.
+//! Handle and print CUDA errors. Adapted from slides.
+/*!
+	Prints and handles given CUDA errors. This function and its helper macro were adapted from slides
+	of GPGPU course: https://cent.felk.cvut.cz/courses/GPU/ by Ing. Jaroslav Sloup.
+
 	\param[in] error	The error to handle.
 	\param[in] file		The source file the error may have occured in.
 	\param[in] line		The line where the error was processed.

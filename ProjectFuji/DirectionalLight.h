@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       DirectionalLight.h
 * \author     Martin Cap
 * \date       2018/12/23
-* \brief      Directional light object for scene lighting.
+* \brief      DirectionalLight class.
 *
 *  Basic directional light representation that is used to light the scene.
 *

@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       DynamicCDFSampler.h
+* \author     Martin Cap
+* \brief      DynamicCDFSampler class.
+*
+*	Description of the DynamicCDFSampler class. It is a subclass of the CDFSampler. It offers
+*	recalculation of the prefix sum scan on GPU.
+*
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "CDFSampler.h"
 

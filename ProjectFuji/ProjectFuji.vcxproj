@@ -118,7 +118,6 @@
     <ClCompile Include="EVSMShadowMapper.cpp" />
     <ClCompile Include="FreeRoamCamera.cpp" />
     <ClCompile Include="GeneralGrid.cpp" />
-    <ClCompile Include="GPUVBO.cpp" />
     <ClCompile Include="Grid.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -128,7 +127,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GridLBM.cpp" />
-    <ClCompile Include="HarrisCloudVisualizer.cpp" />
     <ClCompile Include="HeightMap_backup.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -183,10 +181,6 @@
     <CudaCompile Include="ParticleSystem.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
-    <ClCompile Include="ParticleRenderer_backup.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="ParticleRenderer.cpp" />
     <ClCompile Include="PBRMaterial.cpp" />
     <ClCompile Include="PerlinNoiseSampler.cpp" />
@@ -197,10 +191,6 @@
     <ClCompile Include="SceneGraph.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Skybox.cpp" />
-    <ClCompile Include="STLPDiagram_backup.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="STLPDiagram.cpp" />
     <ClCompile Include="STLPSimulator.cpp" />
     <CudaCompile Include="STLPSimulatorCUDA.cu">
@@ -216,7 +206,6 @@
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Transform.cpp" />
-    <ClCompile Include="UIWindow.cpp" />
     <ClCompile Include="UserInterface.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VariableManager.cpp" />
@@ -268,7 +257,6 @@
     <ClInclude Include="EVSMShadowMapper.h" />
     <ClInclude Include="FreeRoamCamera.h" />
     <ClInclude Include="GeneralGrid.h" />
-    <ClInclude Include="GPUVBO.h" />
     <ClInclude Include="Grid.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -278,7 +266,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="GridLBM.h" />
-    <ClInclude Include="HarrisCloudVisualizer.h" />
     <ClInclude Include="HeightMapOld.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -320,7 +307,6 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="UIConfig.h" />
-    <ClInclude Include="UIWindow.h" />
     <ClInclude Include="UserInterface.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="VariableManager.h" />

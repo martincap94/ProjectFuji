@@ -1,8 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       Grid.h
 * \author     Martin Cap
-* \date       2018/12/23
 * \brief      Abstract class describing the grid to be used in LBM visualization.
 *
 *  Abstract class describing the grid to be used in LBM visualization. Provides polymorphism when

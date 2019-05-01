@@ -142,51 +142,40 @@ void main() {
 
 
 	vec3 viewDir = normalize(u_ViewPos - v_FragPos.xyz);
-	//vec3 viewDir = normalize(v_FragPos.xyz - u_ViewPos);
 
-	
-	//if (u_DirLight.direction.y > 0.0) {
-	//	fragColor = vec4(calcNightAmbientLight(materialMap, vec3(0.2)), 1.0);
-	//} else {
 
-		float shadow = calcShadow(v_LightSpacePos);
+	float shadow = calcShadow(v_LightSpacePos);
 
-		vec3 result;
+	vec3 result;
 
-		if (u_ShadowOnly) {
-			result = vec3(shadow);
-		} else {
-			vec3 color = calcDirLight(u_DirLight, norm, viewDir, materialContributions);
-			result = color * min(shadow + u_ShadowDamping, 1.0);
-		}
+	if (u_ShadowOnly) {
+		result = vec3(shadow);
+	} else {
+		vec3 color = calcDirLight(u_DirLight, norm, viewDir, materialContributions);
+		result = color * min(shadow + u_ShadowDamping, 1.0);
+	}
 
 
 
 
-		if (u_CloudsCastShadows) {
+	if (u_CloudsCastShadows) {
 
-			vec3 projCoords = v_PrevLightSpacePos.xyz / v_PrevLightSpacePos.w;
-			projCoords = projCoords * 0.5 + vec3(0.5);
+		vec3 projCoords = v_PrevLightSpacePos.xyz / v_PrevLightSpacePos.w;
+		projCoords = projCoords * 0.5 + vec3(0.5);
 
-			vec3 cloudShadow = vec3(1.0);
-			vec4 cloudShadowVals =  texture(u_CloudShadowTexture, projCoords.xy);
+		vec3 cloudShadow = vec3(1.0);
+		vec4 cloudShadowVals = texture(u_CloudShadowTexture, projCoords.xy);
 
-			cloudShadow -= min(cloudShadowVals.xyz + cloudShadowVals.a * u_CloudCastShadowAlphaMultiplier, 0.8); // testing out ideas
-			//cloudShadow -= cloudShadowVals.xyz; // simple
-
-			//if (cloudShadowVals.a > 0.9) {
-			//	cloudShadow -= min(cloudShadowVals.xyz, 0.8);
-			//}
-
-			result *= cloudShadow;
-
-		}
-
-		fragColor = vec4(result, 1.0);
+		cloudShadow -= min(cloudShadowVals.xyz * u_CloudCastShadowAlphaMultiplier, vec3(1.0));
 
 
 
-	//}
+		result *= cloudShadow;
+
+	}
+
+	fragColor = vec4(result, 1.0);
+
 
 	float dist = distance(v_FragPos.xyz, u_ViewPos);
 

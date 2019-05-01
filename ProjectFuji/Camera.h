@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
-* @file       Camera.h
-* @author     Martin Cap
-* @brief      The abstract camera class.
+/*!
+* \file       Camera.h
+* \author     Martin Cap
+* \brief      The abstract camera class.
 *
 *  Abstract camera class that provides basic functionality interface for more specific camera types.
 *

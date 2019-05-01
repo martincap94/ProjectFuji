@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       CDFSampler.h
+* \author     Martin Cap
+* \brief      Describes emitter that uses CDF sampler.
+*
+*	This file describes the CDFEmitter class that uses CDFSampler class to generate particles in a
+*	pattern given by a probability grayscale texture.
+*
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include "Texture.h"

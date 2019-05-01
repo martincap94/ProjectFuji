@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       Actor.h
+* \author     Martin Cap
+* \brief      Contains Actor class.
+*
+*	This file describes the Actor class. An actor is any object that is part of the scene hierarchy
+*	of our engine (i.e. it is the same as Actor in Unreal Engine or GameObject in Unity).
+*
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <vector>

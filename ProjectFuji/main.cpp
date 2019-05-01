@@ -323,14 +323,14 @@ int runApp() {
 	///// SHADERS
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	visualizeNormalsShader = ShaderManager::getShaderPtr("visualize_normals");
-
 	normalsInstancedShader = ShaderManager::getShaderPtr("normals_instanced");
 	grassShader = ShaderManager::getShaderPtr("grass_instanced");
-
 	pbrTest = ShaderManager::getShaderPtr("pbr_test");
 
 
-
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	///// CAMERAS AND PROJECTION MATRICES SETUP
+	//////////////////////////////////////////////////////////////////////////////////////////////////
 	float aspectRatio = (float)vars.screenWidth / (float)vars.screenHeight;
 
 	float offset = 0.2f;
@@ -353,23 +353,13 @@ int runApp() {
 	viewportProjection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
 
 
-	int maxNumTextureUnits;
+	/*int maxNumTextureUnits;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxNumTextureUnits);
-	cout << "Maximum number of texture units (combined) = " << maxNumTextureUnits << endl;
+	cout << "Maximum number of texture units (combined) = " << maxNumTextureUnits << endl;*/
 
-	// Create and configure the simulator
-	{
+	float cameraRadius = sqrtf((float)(tww * tww + twd * twd)) + 10.0f;
 
-		lbm = new LBM3D_1D_indices(&vars, particleSystem, stlpDiagram);
-
-
-
-		float cameraRadius = sqrtf((float)(vars.heightMap->getWorldWidth() * vars.heightMap->getWorldWidth() + vars.heightMap->getWorldDepth() * vars.heightMap->getWorldDepth())) + 10.0f;
-
-		orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, (vars.heightMap->terrainHeightRange.x + vars.heightMap->terrainHeightRange.y) / 2.0f, vars.heightMap->getWorldDepth() / 2.0f), cameraRadius);
-	}
-
-	CHECK_ERROR(cudaPeekAtLastError());
+	orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(tww / 2.0f, (vars.heightMap->terrainHeightRange.x + vars.heightMap->terrainHeightRange.y) / 2.0f, twd / 2.0f), cameraRadius);
 
 	viewportCamera = orbitCamera;
 	camera = viewportCamera;
@@ -382,10 +372,16 @@ int runApp() {
 	((FreeRoamCamera *)freeRoamCamera)->heightMap = vars.heightMap;
 	freeRoamCamera->movementSpeed = vars.cameraSpeed;
 
-
 	camera->movementSpeed = vars.cameraSpeed;
 
 	dirLight->focusPoint = glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, 0.0f, vars.heightMap->getWorldDepth() / 2.0f);
+
+
+
+	// Create and configure the simulator
+	lbm = new LBM3D_1D_indices(&vars, particleSystem, stlpDiagram);
+
+
 
 	// TODO - cleanup this hack
 	streamlineParticleSystem = new StreamlineParticleSystem(&vars, lbm);

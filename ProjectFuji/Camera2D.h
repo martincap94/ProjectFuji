@@ -5,7 +5,7 @@
 * \date       2018/12/23
 * \brief      Camera class for 2D LBM visualization.
 *
-*  Camera class that is used when the 2D LBM is used.
+*  Camera class that is used when the 2D view is used (e.g. diagram view).
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////

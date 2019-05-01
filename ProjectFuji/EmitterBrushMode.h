@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       EmitterBrushMode.h
+* \author     Martin Cap
+* \brief      Describes the EmitterBrushMode class.
+*
+*	Describes the EmitterBrushMode class that is used to manipulate positional emitters as brushes
+*	when the brush mode is turned on.
+*
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include "VariableManager.h"

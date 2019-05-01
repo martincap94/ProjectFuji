@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       CircleEmitter.h
+* \author     Martin Cap
+* \brief      Describes emitter that generates particles in a circular pattern.
+*
+*	This file contains the CircleEmitter class. It is a type of positional emitter that generates
+*	particles in a circular pattern that is projected onto the ground.
+*
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 //#include "Emitter.h"

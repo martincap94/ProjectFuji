@@ -1,8 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       Grid2D.h
 * \author     Martin Cap
-* \date       2018/12/23
 * \brief      Grid that is used for LBM 2D visualization.
 *
 *  Grid that is used for LBM 2D visualization. Implements the Grid abstract class.
