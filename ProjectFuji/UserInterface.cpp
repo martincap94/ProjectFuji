@@ -125,8 +125,9 @@ void UserInterface::constructUserInterface() {
 	constructEmitterCreationWindow();
 	constructSaveParticlesWindow();
 	constructLoadParticlesWindow();
+	constructHUD();
 
-	if (vars->aboutWindowOpened) {
+	if (aboutWindowOpened) {
 
 
 		if (nk_begin(ctx, "About Window", nk_rect(vars->screenWidth / 2 - 250, vars->screenHeight / 2 - 250, 500, 500), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE)) {
@@ -138,7 +139,7 @@ void UserInterface::constructUserInterface() {
 
 
 		} else {
-			vars->aboutWindowOpened = false;
+			aboutWindowOpened = false;
 		}
 		nk_end(ctx);
 	}
@@ -282,15 +283,19 @@ void UserInterface::constructHorizontalBar() {
 		nk_layout_row_begin(ctx, NK_STATIC, vars->toolbarHeight, 5);
 		nk_layout_row_push(ctx, 120);
 		if (nk_menu_begin_label(ctx, "File", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
-			static size_t prog = 40;
-			static int slider = 10;
-			static int check = nk_true;
-			nk_layout_row_dynamic(ctx, 25, 1);
-			nk_menu_item_label(ctx, "Hide", NK_TEXT_LEFT);
-			nk_menu_item_label(ctx, "About", NK_TEXT_LEFT);
-			nk_progress(ctx, &prog, 100, NK_MODIFIABLE);
-			nk_slider_int(ctx, 0, &slider, 16, 1);
-			nk_checkbox_label(ctx, "check", &check);
+			nk_layout_row_dynamic(ctx, 15, 1);
+
+
+
+			if (nk_button_label(ctx, "Load Particles from File")) {
+				openPopupWindow(loadParticlesWindowOpened);
+				particleSystem->loadParticleSaveFiles();
+			}
+			if (nk_button_label(ctx, "Save Particles to File")) {
+				openPopupWindow(saveParticlesWindowOpened);
+			}
+
+
 
 			if (nk_button_label(ctx, "EXIT")) {
 				vars->appRunning = false;
@@ -352,7 +357,7 @@ void UserInterface::constructHorizontalBar() {
 		if (nk_menu_begin_label(ctx, "About", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
 			nk_layout_row_dynamic(ctx, 15.0f, 1);
 			if (nk_menu_item_label(ctx, "Show About", NK_TEXT_CENTERED)) {
-				vars->aboutWindowOpened = true;
+				openPopupWindow(aboutWindowOpened);
 			}
 
 			nk_menu_end(ctx);
@@ -772,7 +777,7 @@ void UserInterface::constructTerrainTab() {
 	}
 
 	if (nk_button_label(ctx, "Terrain Generator")) {
-		terrainGeneratorPopupOpened = true;
+		openPopupWindow(terrainGeneratorWindowOpened);
 	}
 
 
@@ -916,7 +921,7 @@ void UserInterface::constructTerrainTab() {
 }
 
 void UserInterface::constructTerrainGeneratorWindow() {
-	if (terrainGeneratorPopupOpened) {
+	if (terrainGeneratorWindowOpened) {
 		float w = 500.0f;
 		float h = 500.0f;
 		HeightMap *hm = vars->heightMap;
@@ -962,15 +967,15 @@ void UserInterface::constructTerrainGeneratorWindow() {
 			if (nk_button_label(ctx, "Generate & Close")) {
 				vars->heightMap->loadAndUpload();
 				lbm->refreshHeightMap();
-				terrainGeneratorPopupOpened = false;
+				terrainGeneratorWindowOpened = false;
 			}
 			if (nk_button_label(ctx, "Close")) {
-				terrainGeneratorPopupOpened = false;
+				terrainGeneratorWindowOpened = false;
 			}
 
 			nk_end(ctx);
 		} else {
-			terrainGeneratorPopupOpened = false;
+			terrainGeneratorWindowOpened = false;
 		}
 	}
 }
@@ -1707,16 +1712,17 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 void UserInterface::constructEmittersTab() {
 
 	nk_layout_row_dynamic(ctx, 15, 1);
-	if (nk_button_label(ctx, "Save Particles to File")) {
-		saveParticlesWindowOpened = true;
-	}
+
 	if (nk_button_label(ctx, "Load Particles from File")) {
-		loadParticlesWindowOpened = true;
+		openPopupWindow(loadParticlesWindowOpened);
 		particleSystem->loadParticleSaveFiles();
+	}
+	if (nk_button_label(ctx, "Save Particles to File")) {
+		openPopupWindow(saveParticlesWindowOpened);
 	}
 
 	if (nk_button_label(ctx, "Add Emitter")) {
-		emitterCreationWindowOpened = true;
+		openPopupWindow(emitterCreationWindowOpened);
 	}
 
 	if (ebm->isActive()) {
@@ -2175,6 +2181,29 @@ void UserInterface::constructFormBoxButtonPanel() {
 	nk_layout_row_dynamic(ctx, 15, 1);
 }
 
+void UserInterface::constructHUD() {
+	nk_style_item wfb = ctx->style.window.fixed_background;
+	ctx->style.window.fixed_background = nk_style_item_hide();
+
+
+	//if (nk_begin(ctx, "TEST", nk_rect(vars->screenWidth / 2 - 250, vars->screenHeight / 2 - 250, 500, 500), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE)) {
+	//	nk_layout_row_dynamic(ctx, 20.0f, 1);
+
+	//	nk_label(ctx, "Orographic Cloud Simulator", NK_TEXT_CENTERED);
+	//	nk_label(ctx, "Author: Martin Cap", NK_TEXT_CENTERED);
+	//	nk_label(ctx, "Email: martincap94@gmail.com", NK_TEXT_CENTERED);
+
+
+	//}
+
+	//nk_end(ctx);
+
+
+
+	ctx->style.window.fixed_background = wfb;
+
+}
+
 void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string nullTextureNameOverride) {
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(*targetTexturePtr, nullTextureNameOverride), nk_vec2(400, 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
@@ -2241,5 +2270,18 @@ const char *UserInterface::tryGetTextureFilename(Texture * tex, std::string null
 	} else {
 		return tex->filename.c_str();
 	}
+}
+
+void UserInterface::openPopupWindow(bool &target) {
+	closeAllPopupWindows();
+	target = true;
+}
+
+void UserInterface::closeAllPopupWindows() {
+	aboutWindowOpened = false;
+	terrainGeneratorWindowOpened = false;
+	emitterCreationWindowOpened = false;
+	saveParticlesWindowOpened = false;
+	loadParticlesWindowOpened = false;
 }
 

@@ -164,8 +164,8 @@ private:
 	int leftSidebarContentMode = CLOUD_VIS;
 	int rightSidebarContentMode = PROPERTIES;
 
-
-	bool terrainGeneratorPopupOpened = false;
+	bool aboutWindowOpened = false;
+	bool terrainGeneratorWindowOpened = false;
 	bool emitterCreationWindowOpened = false;
 	bool saveParticlesWindowOpened = false;
 	bool loadParticlesWindowOpened = false;
@@ -221,6 +221,8 @@ private:
 	void constructDirLightPositionPanel();
 	void constructFormBoxButtonPanel();
 
+	void constructHUD();
+
 
 
 	// small quick functions
@@ -228,6 +230,9 @@ private:
 	void constructWalkingPanel();
 
 	const char *tryGetTextureFilename(Texture *tex, std::string nullTextureName = "");
+
+	void openPopupWindow(bool &target);
+	void closeAllPopupWindows();
 
 
 };
