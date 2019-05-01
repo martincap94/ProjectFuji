@@ -977,7 +977,7 @@ void ParticleSystem::saveParticlesToFile(std::string filename) {
 		}
 	}
 
-	string fullFilename = PARTICLE_DATA_DIR + filename + ".txt";
+	string fullFilename = PARTICLE_DATA_DIR + filename + ".bin";
 	if (fs::exists(fullFilename)) {
 		cout << "File " << fullFilename << " exists, will be rewritten!" << endl;
 	}
@@ -987,25 +987,21 @@ void ParticleSystem::saveParticlesToFile(std::string filename) {
 	glm::vec3 *vertexData = (glm::vec3 *)glMapNamedBuffer(particleVerticesVBO, GL_READ_ONLY);
 	int *profileData = (int *)glMapNamedBuffer(particleProfilesVBO, GL_READ_ONLY);
 
-	//FILE* pFile;
-	//pFile = fopen((PARTICLE_DATA_DIR + filename + ".binary").c_str(), "wb");
-	//fclose(pFile);
-
-	//fwrite(&numParticles, sizeof(int), sizeof(int), pFile);
-	//fwrite(vertexData, sizeof(glm::vec3), numParticles * sizeof(glm::vec3), pFile);
-	//fwrite(profileData, sizeof(int), numParticles * sizeof(int), pFile);
-
 
 	
-	ofstream out(fullFilename);
-	out << numParticles << endl;
-	out << numActiveParticles << endl;
-	//out.write(&vertexData[0], numParticles);
+	ofstream out(fullFilename, ios::binary | ios::out);
+	//out << numParticles << endl;
+	//out << numActiveParticles << endl;
+	out.write((char *)&numParticles, sizeof(int));
+	out.write((char *)&numActiveParticles, sizeof(int));
 
-	for (int i = 0; i < numParticles; i++) {
-		out << vertexData[i].x << ' ' << vertexData[i].y << ' ' << vertexData[i].z << ' ' << profileData[i] << endl;
-	}
-	
+	out.write((char *)&vertexData[0], numParticles * sizeof(glm::vec3));
+	out.write((char *)&profileData[0], numParticles * sizeof(int));
+
+	//for (int i = 0; i < numParticles; i++) {
+	//	out << vertexData[i].x << ' ' << vertexData[i].y << ' ' << vertexData[i].z << ' ' << profileData[i] << endl;
+	//}
+	//
 
 	glUnmapNamedBuffer(particleVerticesVBO);
 	glUnmapNamedBuffer(particleProfilesVBO);
@@ -1087,13 +1083,14 @@ void ParticleSystem::loadParticlesFromFile(std::string filename) {
 		return;
 	}
 
-	ifstream infile(filename);
+	ifstream infile(filename, ios::binary | ios::in);
 	int inNumParticles;
 	int inNumActiveParticles;
-	infile >> inNumParticles;
-	infile >> inNumActiveParticles;
+	//infile >> inNumParticles;
+	//infile >> inNumActiveParticles;
+	infile.read((char *)&inNumParticles, sizeof(int));
+	infile.read((char *)&inNumActiveParticles, sizeof(int));
 
-	bool loadFailed = false;
 
 	if (inNumActiveParticles > inNumParticles) {
 		printf("There is something wrong with the loaded file: numParticles (%d) < numActiveParticles (%d)!\n", inNumParticles, inNumActiveParticles);
@@ -1119,7 +1116,10 @@ void ParticleSystem::loadParticlesFromFile(std::string filename) {
 	}
 	numActiveParticles = inNumActiveParticles;
 
+	int numToUpload = bufferSubData ? inNumActiveParticles : numParticles;
 
+
+	/*
 	glm::vec3 pPos;
 	int pIdx;
 
@@ -1137,14 +1137,34 @@ void ParticleSystem::loadParticlesFromFile(std::string filename) {
 	}
 
 	if (bufferSubData) {
-		glNamedBufferSubData(particleVerticesVBO, 0, sizeof(glm::vec3) * inNumParticles, vertexPositions.data());
-		glNamedBufferSubData(particleProfilesVBO, 0, sizeof(int) * inNumParticles, vertexProfiles.data());
+		glNamedBufferSubData(particleVerticesVBO, 0, sizeof(glm::vec3) * numToUpload, vertexPositions.data());
+		glNamedBufferSubData(particleProfilesVBO, 0, sizeof(int) * numToUpload, vertexProfiles.data());
 	} else {
-		glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, vertexPositions.data(), GL_STATIC_DRAW);
-		glNamedBufferData(particleProfilesVBO, sizeof(int) * numParticles, vertexProfiles.data(), GL_STATIC_DRAW);
+		glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numToUpload, vertexPositions.data(), GL_STATIC_DRAW);
+		glNamedBufferData(particleProfilesVBO, sizeof(int) * numToUpload, vertexProfiles.data(), GL_STATIC_DRAW);
 	}
+	*/
+
+	
+	glm::vec3 *vertexPositions = new glm::vec3[numToUpload];
+	int *vertexProfiles = new int[numToUpload];
+
+	infile.read((char *)&vertexPositions[0], numToUpload * sizeof(glm::vec3));
+	infile.read((char *)&vertexProfiles[0], numToUpload * sizeof(int));
+
+	if (bufferSubData) {
+		glNamedBufferSubData(particleVerticesVBO, 0, sizeof(glm::vec3) * numToUpload, vertexPositions);
+		glNamedBufferSubData(particleProfilesVBO, 0, sizeof(int) * numToUpload, vertexProfiles);
+	} else {
+		glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numToUpload, vertexPositions, GL_STATIC_DRAW);
+		glNamedBufferData(particleProfilesVBO, sizeof(int) * numToUpload, vertexProfiles, GL_STATIC_DRAW);
+	}
+	delete[] vertexPositions;
+	delete[] vertexProfiles;
+	
 
 
+	
 
 
 }
@@ -1155,7 +1175,7 @@ void ParticleSystem::loadParticleSaveFiles() {
 	string ext = "";
 	for (const auto &entry : fs::directory_iterator(path)) {
 		if (getFileExtension(entry.path().string(), ext)) {
-			if (ext == "txt") {
+			if (ext == "bin") {
 				particleSaveFiles.push_back(entry.path().string());
 			}
 		}
