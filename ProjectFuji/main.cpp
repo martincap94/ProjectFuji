@@ -337,6 +337,21 @@ int runApp() {
 	diagramProjection = glm::ortho(-aspectRatio / 2.0f + 0.5f - aspectRatio * offset, aspectRatio / 2.0f + 0.5f + aspectRatio * offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
 	overlayDiagramProjection = glm::ortho(0.0f - offset, 1.0f + offset, 1.0f + offset, 0.0f - offset, nearPlane, farPlane);
 
+	float tww = vars.heightMap->getWorldWidth();
+	float twh = vars.heightMap->terrainHeightRange.y - vars.heightMap->terrainHeightRange.x;
+	float twd = vars.heightMap->getWorldDepth();
+
+
+
+	projectionRange = (tww > twd) ? tww : twd;
+	projectionRange = (projectionRange > twh) ? projectionRange : twh;
+	projectionRange /= 2.0f;
+
+	projHeight = projectionRange;
+	projWidth = projHeight * aspectRatio;
+
+	viewportProjection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
+
 
 	int maxNumTextureUnits;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxNumTextureUnits);
@@ -347,15 +362,6 @@ int runApp() {
 
 		lbm = new LBM3D_1D_indices(&vars, particleSystem, stlpDiagram);
 
-
-		projectionRange = (float)((vars.latticeWidth > vars.latticeHeight) ? vars.latticeWidth : vars.latticeHeight);
-		projectionRange = (projectionRange > vars.latticeDepth) ? projectionRange : vars.latticeDepth;
-		projectionRange /= 2.0f;
-
-		projHeight = projectionRange;
-		projWidth = projHeight * aspectRatio;
-
-		projection = glm::ortho(-projWidth, projWidth, -projHeight, projHeight, nearPlane, farPlane);
 
 
 		float cameraRadius = sqrtf((float)(vars.heightMap->getWorldWidth() * vars.heightMap->getWorldWidth() + vars.heightMap->getWorldDepth() * vars.heightMap->getWorldDepth())) + 10.0f;
@@ -376,9 +382,7 @@ int runApp() {
 	((FreeRoamCamera *)freeRoamCamera)->heightMap = vars.heightMap;
 	freeRoamCamera->movementSpeed = vars.cameraSpeed;
 
-	viewportProjection = projection;
 
-	camera->setLatticeDimensions(vars.latticeWidth, vars.latticeHeight, vars.latticeDepth);
 	camera->movementSpeed = vars.cameraSpeed;
 
 	dirLight->focusPoint = glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, 0.0f, vars.heightMap->getWorldDepth() / 2.0f);
@@ -972,7 +976,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		return;
 	}
 
-	if (action == GLFW_PRESS) {
+	if (action == GLFW_PRESS && mods == 0) {
 		if (key == GLFW_KEY_G) {
 			if (vars.useFreeRoamCamera) {
 				((FreeRoamCamera*)camera)->snapToGround();
@@ -982,12 +986,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == vars.hideUIKey) {
 			vars.hideUI = abs(vars.hideUI - 1);
 		}
+
 		if (key == vars.toggleLBMState) {
 			vars.applyLBM = abs(vars.applyLBM - 1);
 		}
 		if (key == vars.toggleSTLPState) {
 			vars.applySTLP = abs(vars.applySTLP - 1);
 		}
+
 		if (key == GLFW_KEY_I) {
 			camera->setView(Camera::VIEW_FRONT);
 		}
@@ -1019,16 +1025,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
 		}
+	} else if (action == GLFW_PRESS && mods & GLFW_MOD_SHIFT) {
+
+		if (key == GLFW_KEY_F) {
+			ui->setFullscreen(!vars.fullscreen);
+		}
+
 	}
 
 
 }
 
 void processKeyboardInput(GLFWwindow *window) {
-
-	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
-		cout << "Process keyboard input T pressed" << endl;
-	}
 
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
@@ -1334,6 +1342,7 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 	particleRenderer->refreshImageBuffer();
 	TextureManager::refreshOverlayTextures();
 	stlpDiagram->refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
+	ui->refreshWidgets();
 }
 
 

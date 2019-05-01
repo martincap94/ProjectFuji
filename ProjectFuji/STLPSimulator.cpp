@@ -191,7 +191,7 @@ void STLPSimulator::doStep() {
 
 				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
 																										// we need to map it to our system
-				windDeltas /= GRID_WIDTH; // just testing
+				windDeltas /= vars->latticeWidth; // just testing
 				//rangeToRange(windDeltas.x, )
 
 				particles[i].position.x += windDeltas.x;
@@ -242,7 +242,7 @@ void STLPSimulator::doStep() {
 			if (simulateWind) {
 				glm::vec2 windDeltas = stlpDiagram->getWindDeltasFromAltitude(particles[i].position.y); // this is in meters per second
 				// we need to map it to our system
-				windDeltas /= GRID_WIDTH; // just testing
+				windDeltas /= vars->latticeWidth; // just testing
 
 				particles[i].position.x += windDeltas.x;
 				particles[i].position.z += windDeltas.y;

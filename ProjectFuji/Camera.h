@@ -1,11 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /**
-* \file       Camera.h
-* \author     Martin Cap
-* \date       2018/12/23
-* \brief      The abstract camera class.
+* @file       Camera.h
+* @author     Martin Cap
+* @brief      The abstract camera class.
 *
-*  Abstract camera class that provides basic functionality descriptions for the application.
+*  Abstract camera class that provides basic functionality interface for more specific camera types.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,15 +19,15 @@
 
 const glm::vec3 WORLD_UP = glm::vec3(0.0f, 1.0f, 0.0f); ///< 
 
-/// Abstract camera class.
-/**
-	This class defines the basic functionality of the camera.
+//! Abstract camera class.
+/*!
+	Abstract camera class that provides basic functionality interface for other camera types.
 */
 class Camera {
 
 public:
 
-	/// Enumeration of possible camera movement directions for keyboard controls.
+	//! Enumeration of possible camera movement directions for keyboard controls.
 	enum eCameraMovementDirection {
 		FORWARD,
 		BACKWARD,
@@ -40,7 +39,7 @@ public:
 		ROTATE_RIGHT
 	};
 
-	/// Enumeration of possible camera views that can be selected.
+	//! Enumeration of possible camera views that can be selected.
 	enum eCameraView {
 		VIEW_FRONT,
 		VIEW_SIDE,
@@ -58,18 +57,15 @@ public:
 	float pitch;			///< Pitch angle
 	float roll;				///< Roll angle
 
-	int latticeWidth;		///< Width of the lattice for computations
-	int latticeHeight;		///< Height of the lattice for computations
-	int latticeDepth;		///< Depth of the lattice for computations
 
 	float movementSpeed = DEFAULT_CAMERA_SPEED;	///< Movement speed of the camera
 
 
-	/// Default camera constructor
+	//! Default camera constructor
 	Camera();
 
-	/// Camera constructor
-	/**
+	//! Camera constructor
+	/*!
 		Creates a new camera with given position, up vector, yaw and pitch angles.
 		\param[in] position		Camera position.
 		\param[in] up			Initial up vector.
@@ -108,8 +104,6 @@ public:
 	/// Prints information about the camera position.
 	virtual void printInfo();
 
-	/// Setter for lattice dimensions.
-	void setLatticeDimensions(int latticeWidth, int latticeHeight, int latticeDepth);
 
 protected:
 

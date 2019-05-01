@@ -6,6 +6,7 @@
 #include <vector>
 #include "ShaderProgram.h"
 
+using namespace std;
 
 LatticeCollider::LatticeCollider(string filename) {
 

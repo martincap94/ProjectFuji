@@ -465,7 +465,7 @@ void HeightMap::initMaterials() {
 
 	if (vars->terrainUsesPBR) {
 
-		activeMaterialCount = MAX_TERRAIN_MATERIALS - 1;
+		activeMaterialCount = MAX_TERRAIN_PBR_MATERIALS;
 
 		shader = ShaderManager::getShaderPtr("terrain_pbr");
 

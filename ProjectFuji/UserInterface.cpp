@@ -85,6 +85,8 @@ UserInterface::UserInterface(GLFWwindow *window, VariableManager *vars) : vars(v
 	inactiveButtonStyle.text_normal = nk_rgb(60, 60, 60);
 	inactiveButtonStyle.text_hover = nk_rgb(60, 60, 60);
 	inactiveButtonStyle.text_active = nk_rgb(60, 60, 60);
+
+	hudRect = nk_rect(vars->screenWidth - vars->rightSidebarWidth - hudWidth, vars->toolbarHeight, hudWidth, hudHeight);
 }
 
 UserInterface::~UserInterface() {
@@ -2088,16 +2090,11 @@ void UserInterface::constructFavoritesMenu() {
 
 		if (vars->fullscreen) {
 			if (nk_button_label(ctx, "Windowed")) {
-				const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-				glfwSetWindowMonitor(mainWindow, NULL, 10, 20, vars->windowWidth, vars->windowHeight, GLFW_DONT_CARE);
-				vars->fullscreen = false;
+				setFullscreen(false);
 			}
 		} else {
 			if (nk_button_label(ctx, "Fullscreen")) {
-				GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-				const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-				glfwSetWindowMonitor(mainWindow, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-				vars->fullscreen = true;
+				setFullscreen(true);
 			}
 			
 		}
@@ -2186,17 +2183,21 @@ void UserInterface::constructHUD() {
 	ctx->style.window.fixed_background = nk_style_item_hide();
 
 
-	//if (nk_begin(ctx, "TEST", nk_rect(vars->screenWidth / 2 - 250, vars->screenHeight / 2 - 250, 500, 500), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE)) {
-	//	nk_layout_row_dynamic(ctx, 20.0f, 1);
-
-	//	nk_label(ctx, "Orographic Cloud Simulator", NK_TEXT_CENTERED);
-	//	nk_label(ctx, "Author: Martin Cap", NK_TEXT_CENTERED);
-	//	nk_label(ctx, "Email: martincap94@gmail.com", NK_TEXT_CENTERED);
+	if (nk_begin(ctx, "HUD", hudRect, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NOT_INTERACTIVE | NK_WINDOW_NO_INPUT)) {
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 
 
-	//}
+		stringstream ss;
 
-	//nk_end(ctx);
+		ss << fixed << setprecision(4) << prevAvgDeltaTime << " [ms]";
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_RIGHT);
+
+		stringstream().swap(ss);
+		ss << fixed << setprecision(0) << prevAvgFPS << " FPS";
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_RIGHT);
+	}
+
+	nk_end(ctx);
 
 
 
@@ -2238,6 +2239,22 @@ void UserInterface::nk_property_string(nk_context * ctx, std::string & target, c
 void UserInterface::setButtonStyle(nk_context *ctx, bool active) {
 	ctx->style.button = active ? activeButtonStyle : inactiveButtonStyle;
 	
+}
+
+void UserInterface::refreshWidgets() {
+	hudRect = nk_rect(vars->screenWidth - vars->rightSidebarWidth - hudWidth, vars->toolbarHeight, hudWidth, hudHeight);
+}
+
+void UserInterface::setFullscreen(bool useFullscreen) {
+	vars->fullscreen = useFullscreen;
+	if (vars->fullscreen) {
+		GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+		glfwSetWindowMonitor(mainWindow, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+	} else {
+		const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		glfwSetWindowMonitor(mainWindow, NULL, 10, 20, vars->windowWidth, vars->windowHeight, GLFW_DONT_CARE);
+	}
 }
 
 void UserInterface::constructTauProperty() {

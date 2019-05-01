@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-
+using namespace std;
 
 Mesh::Mesh(std::vector<MeshVertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures) : vertices(vertices), indices(indices), textures(textures) {
 	setupMesh();

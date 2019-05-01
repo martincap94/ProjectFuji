@@ -132,6 +132,12 @@ public:
 
 	void setButtonStyle(struct nk_context *ctx, bool active = true);
 
+	void refreshWidgets();
+
+	// All this functionality should be moved to special Window class, no time to do that now...
+	void setFullscreen(bool useFullscreen);
+
+
 private:
 
 	struct nk_style_button activeButtonStyle;
@@ -172,6 +178,9 @@ private:
 
 	int selectedEmitterType = 0;
 
+	const int hudWidth = 100;
+	const int hudHeight = 200;
+	struct nk_rect hudRect;
 
 
 	int hierarchyIdCounter = 0;

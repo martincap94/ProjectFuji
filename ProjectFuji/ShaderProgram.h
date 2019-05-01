@@ -72,7 +72,7 @@ public:
 
 	void setFloat(const std::string &name, float value) const;
 	/// Set 4x4 float matrix uniform.
-	void setMat4fv(const string &name, glm::mat4 value) const;
+	void setMat4fv(const std::string &name, glm::mat4 value) const;
 
 	/// Set vec3 uniform with 3 float values.
 	void setVec3(const std::string &name, float x, float y, float z) const;
@@ -83,14 +83,14 @@ public:
 	/// Set vec4 unfirom with glm::vec4.
 	void setVec4(const std::string &name, glm::vec4 value) const;
 
-	void setProjectionMatrix(glm::mat4 projectionMatrix, string uniformName = "u_Projection");
+	void setProjectionMatrix(glm::mat4 projectionMatrix, std::string uniformName = "u_Projection");
 
-	void setViewMatrix(glm::mat4 viewMatrix, string uniformName = "u_View");
+	void setViewMatrix(glm::mat4 viewMatrix, std::string uniformName = "u_View");
 
-	void setModelMatrix(glm::mat4 modelMatrix, string uniformName = "u_Model");
+	void setModelMatrix(glm::mat4 modelMatrix, std::string uniformName = "u_Model");
 
-	void setColor(glm::vec3 color, string uniformName = "u_Color");
-	void setColorAlpha(glm::vec4 color, string uniformName = "u_Color");
+	void setColor(glm::vec3 color, std::string uniformName = "u_Color");
+	void setColorAlpha(glm::vec4 color, std::string uniformName = "u_Color");
 
 	void setupMaterialUniforms(bool useShader = true);
 

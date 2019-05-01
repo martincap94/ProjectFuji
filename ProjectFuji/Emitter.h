@@ -32,11 +32,11 @@ public:
 
 	ShaderProgram *shader;
 
-	random_device rd;
-	mt19937_64 mt;
-	uniform_real_distribution<float> dist;
-	uniform_real_distribution<float> distRange;
-	uniform_int_distribution<int> profileDist;
+	std::random_device rd;
+	std::mt19937_64 mt;
+	std::uniform_real_distribution<float> dist;
+	std::uniform_real_distribution<float> distRange;
+	std::uniform_int_distribution<int> profileDist;
 
 	int minProfileIndex = 0;
 	int maxProfileIndex = 0;

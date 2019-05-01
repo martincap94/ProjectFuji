@@ -35,13 +35,13 @@ public:
 	int width;					///< Width of the texture image
 	int height;					///< Height of the texture image
 	int numChannels;			///< Number of channels of the texture image
-	string filename;
+	std::string filename;
 
 	/// Default constructor.
 	Texture();
 	
 	/// Constructor that does not load the texture (assumes the user wants to load it manually with specific properties).
-	Texture(unsigned int id, int width, int height, int numChannels, string filename = "", unsigned int textureUnit = 0);
+	Texture(unsigned int id, int width, int height, int numChannels, std::string filename = "", unsigned int textureUnit = 0);
 
 	/// Constructs Texture instance and loads the texture right away.
 	/**

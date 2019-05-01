@@ -5,7 +5,7 @@
 * \date       2018/12/23
 * \brief      Camera class for 3D LBM visualization.
 *
-*  Camera class that is used when the 3D LBM is used. Subclass of Camera.
+*  Camera class that is used for orbiting a fixed focus point. Subclass of Camera.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,11 +19,9 @@
 #include "Camera2D.h"
 #include "Camera.h"
 
-/// Camera that orbits around the given focus point.
 /**
-	Camera that is used in 3D simulation. It orbits around the given focus point.
-	Can be rotated around the focus point.
-	Furthermore, it supports setting front, side and top orthogonal views.
+	Camera that is used in 3D simulation that orbits around a given focus point.
+	It supports setting front, side and top orthogonal views.
 */
 class OrbitCamera : public Camera {
 public:
@@ -60,7 +58,6 @@ public:
 	virtual void setView(eCameraView camView);
 	virtual void processMouseScroll(double yoffset);
 	virtual void processMouseMovement(float xoffset, float yoffset, bool constrainPitch = false);
-	virtual void printInfo();
 
 private:
 

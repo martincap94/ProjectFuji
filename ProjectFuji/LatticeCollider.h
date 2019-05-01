@@ -38,7 +38,7 @@ public:
 		Constructs the collider from the given file.
 		\param[in] filename		Name of the file to be used.
 	*/
-	LatticeCollider(string filename);
+	LatticeCollider(std::string filename);
 
 	/// Destructs the collider by deleting the area array.
 	~LatticeCollider();

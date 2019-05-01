@@ -5,8 +5,7 @@
 * \date       2018/12/23
 * \brief      Configuration file.
 *
-*  Configuration header file that contains some of the variables that or not modifiable at runtime 
-*  (but at compile time).
+*  Configuration header file that contains some of the variables that are not modifiable at runtime.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -17,58 +16,49 @@
 
 
 
-#define TEXTURES_DIR "textures/"		///< Textures directory
-#define SCENES_DIR "scenes/"			///< Scenes directory
-#define SHADERS_DIR "shaders/"			///< Shaders directory
-#define LOG_FILENAME_BASE "logs/"		///< Logs directory
-#define SOUNDING_DATA_DIR "sounding_data/"	///< Directory in which sounding data files reside
+#define TEXTURES_DIR "textures/"				//!< Textures directory
+#define SCENES_DIR "scenes/"					//!< Scenes directory
+#define SHADERS_DIR "shaders/"					//!< Shaders directory
+#define LOG_FILENAME_BASE "logs/"				//!< Logs directory
+#define SOUNDING_DATA_DIR "sounding_data/"		//!< Directory in which sounding data files reside
 #define PARTICLE_DATA_DIR "particle_system/"	//!< Directory in which particle data files reside
 
-#define MIN_X -40.0f	///< Minimum x value for the diagram
-#define MAX_X 40.0f		///< Maximum x value for the diagram
+#define MIN_X -40.0f							//!< Minimum x value for the diagram
+#define MAX_X 40.0f								//!< Maximum x value for the diagram
 
-#define MIN_TEMP MIN_X	///< Minimum temperature shown in the diagram
-#define MAX_TEMP MAX_X	///< Maximum temperature shown in the diagram
+#define MIN_TEMP MIN_X							//!< Minimum temperature shown in the diagram
+#define MAX_TEMP MAX_X							//!< Maximum temperature shown in the diagram
 
-#define MIN_P 100.0f	///< Minimum pressure shown in the diagram, should be constant for all soundings
-#define MAX_P 1025.0f
+#define MIN_P 100.0f							//!< Minimum pressure shown in the diagram, should be constant for all soundings
+#define MAX_P 1025.0f							//!< Maximum pressure shown in the diagram, should be constant for all soundings
 
-#define MAX_PARTICLE_COUNT 10000	///< Maximum amount of particles to be generated
-
-#define CURVE_DELTA_P 25.0f
-
-// For SkewT/LogP integration (delete later)
-#define GRID_WIDTH 50	///< Old setting for lattice width
-#define GRID_HEIGHT 50	///< Old setting for lattice height
-#define GRID_DEPTH 50	///< Old setting for lattice depth
+#define CURVE_DELTA_P 25.0f						//!< Distance of pressure [hPa] between curve vertices for adiabats
 
 
-#define TEXTURE_UNIT_DEPTH_MAP 14
-#define TEXTURE_UNIT_CLOUD_SHADOW_MAP 15
+#define TEXTURE_UNIT_DEPTH_MAP 14				//!< Texture unit to be used for depth map binding
+#define TEXTURE_UNIT_CLOUD_SHADOW_MAP 15		//!< Texture unit to be used for cloud shadow map binding
 
-#define MAX_TERRAIN_MATERIALS 4
+#define MAX_TERRAIN_MATERIALS 4					//!< Maximum amount of Blinn-Phong materials used on terrain
+#define MAX_TERRAIN_PBR_MATERIALS (MAX_TERRAIN_MATERIALS - 1)		//!< Maximum amount of PBR materials used on terrain
 
-//#define LBM_EXPERIMENTAL // experimental features
-
-
+// Old defines from LBM 2D implementation, may be useful in future updates when we incorporate old functions back to the framework
 //#define DRAW_VELOCITY_ARROWS
 //#define DRAW_PARTICLE_VELOCITY_ARROWS
 
-#define CONFIG_FILE "config.ini"		///< Configuration filename
+#define CONFIG_FILE "config.ini"		//!< Name of the configuration file that loads initialization data
 
 
-#define MAX_STREAMLINE_LENGTH 200		///< Maximum streamline length
+#define MAX_STREAMLINE_LENGTH 200		//!< Maximum streamline length for the old framework! Not used anymore
 
 
-#define LAT_SPEED 1.0f					///< Lattice speed (experimental)
-#define LAT_SPEED_SQ (LAT_SPEED * LAT_SPEED)	///< Square root of lattice speed (experimental)
+#define LAT_SPEED 1.0f					//!< Lattice speed (experimental) from the old framework - parametrization of the LBM
+#define LAT_SPEED_SQ (LAT_SPEED * LAT_SPEED)	//!< Square root of lattice speed (experimental) from the old framework
 
 
-#define DEFAULT_CAMERA_SPEED 60.0f		///< Default camera movement speed
+#define DEFAULT_CAMERA_SPEED 60.0f		//!< Default camera movement speed
 
 
-//#define SUBGRID_EXPERIMENTAL
-#define SMAG_C 0.3f						///< Smagorinsky constant (experimental)
+#define SMAG_C 0.3f						//!< Smagorinsky constant (experimental) - used in LBM subgrid model
 
 
-using namespace std;
+//using namespace std;

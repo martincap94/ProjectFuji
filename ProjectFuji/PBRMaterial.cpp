@@ -1,5 +1,6 @@
 #include "PBRMaterial.h"
 
+using namespace std;
 
 namespace {
 	enum ePrepMatUniformsIndices {

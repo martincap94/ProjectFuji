@@ -2,6 +2,7 @@
 
 #include <sstream>
 
+
 namespace {
 	enum ePrepMatUniformsIndices {
 		DIFFUSE = 0,
@@ -12,7 +13,7 @@ namespace {
 	};
 
 	// very simply prepare uniform names instead of building them all the time - it would be nicer to precompute them as some kind of static global variable, but this will suffice for now
-	const string preparedMaterialUniforms[4][5] = {
+	const std::string preparedMaterialUniforms[4][5] = {
 		{ "u_Materials[0].diffuse", "u_Materials[0].specular", "u_Materials[0].normalMap", "u_Materials[0].shininess", "u_Materials[0].tiling" },
 		{ "u_Materials[1].diffuse", "u_Materials[1].specular", "u_Materials[1].normalMap", "u_Materials[1].shininess", "u_Materials[1].tiling" },
 		{ "u_Materials[2].diffuse", "u_Materials[2].specular", "u_Materials[2].normalMap", "u_Materials[2].shininess", "u_Materials[2].tiling" },

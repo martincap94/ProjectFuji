@@ -3,6 +3,7 @@
 #include "HeightMap.h"
 #include <algorithm>
 
+using namespace std;
 
 Actor::Actor() {
 	transform.setOwner(this);

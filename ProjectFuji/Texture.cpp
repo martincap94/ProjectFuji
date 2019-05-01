@@ -6,6 +6,8 @@
 
 #include "Utils.h"
 
+using namespace std;
+
 Texture::Texture() {
 	textureUnit = 0;
 	//loadTexture("SP_MissingThumbnail.png");

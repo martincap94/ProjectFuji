@@ -84,7 +84,7 @@ public:
 
 
 	Material materials[MAX_TERRAIN_MATERIALS];
-	PBRMaterial pbrMaterials[MAX_TERRAIN_MATERIALS - 1];
+	PBRMaterial pbrMaterials[MAX_TERRAIN_PBR_MATERIALS];
 
 	Texture *terrainNormalMap;
 	Texture *materialMap;
