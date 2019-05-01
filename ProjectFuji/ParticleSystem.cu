@@ -965,7 +965,7 @@ void ParticleSystem::pushParticleToEmit(Particle p) {
 
 }
 
-void ParticleSystem::saveParticlesToFile(std::string filename) {
+void ParticleSystem::saveParticlesToFile(std::string filename, bool saveOnlyActive) {
 
 	if (!fs::exists(PARTICLE_DATA_DIR)) {
 		fs::create_directory(PARTICLE_DATA_DIR);
@@ -992,11 +992,17 @@ void ParticleSystem::saveParticlesToFile(std::string filename) {
 	ofstream out(fullFilename, ios::binary | ios::out);
 	//out << numParticles << endl;
 	//out << numActiveParticles << endl;
-	out.write((char *)&numParticles, sizeof(int));
+
+	int numParticlesToSave = numParticles;
+	if (saveOnlyActive) {
+		numParticlesToSave = numActiveParticles;
+	}
+
+	out.write((char *)&numParticlesToSave, sizeof(int));
 	out.write((char *)&numActiveParticles, sizeof(int));
 
-	out.write((char *)&vertexData[0], numParticles * sizeof(glm::vec3));
-	out.write((char *)&profileData[0], numParticles * sizeof(int));
+	out.write((char *)&vertexData[0], numParticlesToSave * sizeof(glm::vec3));
+	out.write((char *)&profileData[0], numParticlesToSave * sizeof(int));
 
 	//for (int i = 0; i < numParticles; i++) {
 	//	out << vertexData[i].x << ' ' << vertexData[i].y << ' ' << vertexData[i].z << ' ' << profileData[i] << endl;
@@ -1016,8 +1022,10 @@ void ParticleSystem::constructSaveParticlesWindow(nk_context * ctx, UserInterfac
 	const static int bufferLength = 32;
 	static char nameBuffer[bufferLength];
 	static int nameLength;
+	static int saveActiveParticlesOnly = 0;
 
 	ui->nk_property_string(ctx, particleSaveName, nameBuffer, bufferLength, nameLength);
+	nk_checkbox_label(ctx, "Save Active Particles Only", &saveActiveParticlesOnly);
 
 	if (nameLength == 0) {
 		ui->setButtonStyle(ctx, false);
@@ -1026,10 +1034,10 @@ void ParticleSystem::constructSaveParticlesWindow(nk_context * ctx, UserInterfac
 		ui->setButtonStyle(ctx, true);
 	} else {
 		if (nk_button_label(ctx, "Save")) {
-			saveParticlesToFile(particleSaveName);
+			saveParticlesToFile(particleSaveName, saveActiveParticlesOnly);
 		}
 		if (nk_button_label(ctx, "Save and Close")) {
-			saveParticlesToFile(particleSaveName);
+			saveParticlesToFile(particleSaveName, saveActiveParticlesOnly);
 			closeWindowAfterwards = true;
 		}
 	}

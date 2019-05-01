@@ -198,7 +198,7 @@ public:
 	//void copyDataFromVBOtoCPU();
 
 
-	void saveParticlesToFile(std::string filename);
+	void saveParticlesToFile(std::string filename, bool saveOnlyActive = false);
 	void constructSaveParticlesWindow(struct nk_context *ctx, UserInterface *ui, bool &closeWindowAfterwards);
 
 	void constructLoadParticlesWindow(struct nk_context *ctx, UserInterface *ui, bool &closeWindowAfterwards);
