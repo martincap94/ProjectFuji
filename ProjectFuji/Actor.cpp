@@ -83,7 +83,7 @@ void Actor::addChild(Actor *child) {
 }
 
 void Actor::unparent(bool keepWorldPosition) {
-	if (isRootChild()) {
+	if (isChildOfRoot()) {
 		cerr << "Cannot unparent since the current parent is root." << endl;
 		return;
 	}
@@ -103,7 +103,7 @@ void Actor::unparent(bool keepWorldPosition) {
 
 }
 
-bool Actor::isRootChild() {
+bool Actor::isChildOfRoot() {
 	return (parent->parent == nullptr);
 }
 

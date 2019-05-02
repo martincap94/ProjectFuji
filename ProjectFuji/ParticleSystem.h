@@ -1,16 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
-* \file       ParticleSystemLBM.h
+/*!
+* \file       ParticleSystem.h
 * \author     Martin Cap
-* \date       2018/12/23
-* \brief      Defines ParticleSystemLBM class that is used in both 2D and 3D simulations.
 *
-*  Defines ParticleSystemLBM class that is used in both 2D and 3D simulations.
-*  As you may notice, the class uses glm::vec3 for particle vertices representation which is
-*  very inefficient when 2D simulation is used. This stems from the fact that I originally
-*  planned to remove 2D simulation in the process but it proved very useful for testing concepts
-*  and for visualizing scenes that are difficult to debug in 3D.
-*
+*	Defines ParticleSystem class that manages all particle data on the GPU. Particle vertices and
+*	convective temperature indices are stored in OpenGL VBOs, while other data such as their velocities
+*	are stored in CUDA global memory on the GPU.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -100,8 +95,6 @@ public:
 	int *d_numParticles;
 
 	float *d_verticalVelocities;
-	int *d_profileIndices;
-	//float *d_particlePressures;
 
 	Texture *spriteTexture;
 	Texture *secondarySpriteTexture;

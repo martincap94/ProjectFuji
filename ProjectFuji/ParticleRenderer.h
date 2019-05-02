@@ -1,5 +1,14 @@
 // Particle Renderer based on the sample CUDA project - add proper citations!
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       ParticleRenderer.h
+* \author     Martin Cap
+*
+*	ParticleRenderer renders particles of the set ParticleSystem using the volumetric half-vector
+*	slicing method described in: https://developer.download.nvidia.com/assets/cuda/files/smokeParticles.pdf
+*	Based on the CUDA sample provided with CUDA toolkit installation.
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <glad\glad.h>

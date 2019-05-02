@@ -2,10 +2,8 @@
 /*!
 * \file       PerlinNoiseSampler.h
 * \author     Martin Cap
-* \brief      Describes 3D perlin noise sampler.
 *
 *	This file describes the 3D perlin noise sampler that provides both static and instance options.
-*
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once

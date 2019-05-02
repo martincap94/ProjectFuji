@@ -5,6 +5,7 @@
 * \brief      Describes the STLPSimulatorCUDA class.
 *
 *	Describes the STLPSimulatorCUDA class that runs the SkewT/LogP simulation on the GPU.
+*	The diagram data is obtained from STLPDiagram class.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////

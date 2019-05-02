@@ -2,11 +2,9 @@
 /*!
 * \file       STLPUtils.h
 * \author     Martin Cap
-* \brief      Contains utility STLP functions.
 *
 *	Contains utility SkewT/LogP (STLP) functions and definitions that are used in STLP diagram creation.
 *	The functions are mainly used in adiabat creation (dry and moist adiabats).
-*
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once

@@ -3,9 +3,8 @@
 * \file       HeightMap.h
 * \author     Martin Cap
 * \date       2018/12/23
-* \brief      The height map that is used for terrain creation in 3D.
 *
-*  Describes the height map class that is used for terrain creation and rendering in 3D.
+*  Describes the HeightMap class that is used for terrain creation and rendering in 3D.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////

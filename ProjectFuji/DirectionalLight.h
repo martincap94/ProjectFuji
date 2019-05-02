@@ -3,7 +3,6 @@
 * \file       DirectionalLight.h
 * \author     Martin Cap
 * \date       2018/12/23
-* \brief      DirectionalLight class.
 *
 *  Basic directional light representation that is used to light the scene.
 *

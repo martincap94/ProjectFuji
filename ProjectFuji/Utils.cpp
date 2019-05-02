@@ -184,7 +184,7 @@ float getRandFloat(float min, float max) {
 
 
 
-// https://stackoverflow.com/questions/51949/how-to-get-file-extension-from-string-in-c/51993#51993
+
 bool getFileExtension(const std::string &filename, std::string &outExtension, bool to_lower) {
 
 	std::string::size_type idx;
@@ -201,9 +201,7 @@ bool getFileExtension(const std::string &filename, std::string &outExtension, bo
 
 }
 
-int getIdx(int x, int y, int width) {
-	return x + y * width;
-}
+
 
 GLuint createTextureHelper(GLenum target, int w, int h, GLint internalFormat, GLenum format) {
 	GLuint texid;

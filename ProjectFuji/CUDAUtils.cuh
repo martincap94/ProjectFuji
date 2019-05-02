@@ -2,11 +2,9 @@
 /**
 * \file       CUDAUtils.h
 * \author     Martin Cap
-* \brief      Utility header file that contains helper functions for CUDA usage.
 *
 *	Utility header file that contains helper functions for CUDA usage.
 *	At this moment it contains the error handling only.
-*
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +34,7 @@ static void handleError(cudaError_t error, const char *file, int line) {
 	}
 }
 
-/// Helper macro function that checks and handles error for the cudaError_t parameter.
+//! Helper macro function that checks and handles error for the cudaError_t parameter.
 #define CHECK_ERROR( error ) ( handleError( error, __FILE__, __LINE__ ) )
 
 

@@ -2,7 +2,6 @@
 /*!
 * \file       GeneralGrid.h
 * \author     Martin Cap
-* \brief      GeneralGrid class declaration.
 * 
 *	Describes the GeneralGrid class that is used to draw main axes and helper groud grid.
 *	

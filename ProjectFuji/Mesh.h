@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       Mesh.h
+* \author     Martin Cap
+*
+*	Describes the Mesh class that is used to represent a loaded mesh. We assume that objects may
+*	be formed from multiple meshes, hence the mesh class is wrapped with Model class which can
+*	be composited from multiple meshes and is the general representation of a model in our engine.
+*	Based on Joey de Vries's tutorials: https://learnopengl.com/Model-Loading/Mesh
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <glad\glad.h>

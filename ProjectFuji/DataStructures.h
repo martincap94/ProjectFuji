@@ -2,10 +2,8 @@
 /**
 * \file       DataStructures.h
 * \author     Martin Cap
-* \brief      Class containing important data structures for the application.
 *
-*	Class containing important data structures for the application.
-*
+*	Header file containing important data structures for the application.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

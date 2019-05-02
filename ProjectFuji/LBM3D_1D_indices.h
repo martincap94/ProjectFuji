@@ -1,12 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       LBM3D_1D_indices.h
 * \author     Martin Cap
 * \date       2018/12/23
-* \brief      Defines the LBM3D class and CUDA constants that are used in 3D simulation on GPU.
 *
-*  Defines the LBM3D class (subclass of LBM) that implements the 3D simulation using CPU and GPU.
-*
+*  Defines the LBM3D class that implements the Lattice Boltzmann method 3D simulation on CPU and GPU.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

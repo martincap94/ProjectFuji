@@ -1,3 +1,12 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       TextureManager.h
+* \author     Martin Cap
+*
+*	TextureManager namespace provides easily accessible management of textures across the application.
+*	The TextureManager must be initialized and torn down before and after use, respectively!
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <string>

@@ -1,13 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
-* \file       Simulator.h
+/*!
+* \file       STLPSimulator.h
 * \author     Martin Cap
 * \date       2019/01/18
-* \brief	  Initial version of the Simulator.
 *
-*  Simulator to be extended for orographic cloud simulation. Currently just spawns
-*  particles on the terrain.
-*
+*	--- DEPRECATED ---
+*	SkewT/LogP simulator that runs the cloud simulation on CPU.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

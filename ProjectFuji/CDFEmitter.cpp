@@ -19,7 +19,8 @@
 
 using namespace std;
 
-//#define THRUST_BIN_SEARCH // much slower than regular CPU version
+//#define THRUST_BIN_SEARCH //!< Whether to use binary search on GPU using Thrust
+							//!< Warning! This is much slower than regular CPU version
 
 
 CDFEmitter::CDFEmitter() : Emitter() {}

@@ -1,3 +1,12 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       ShaderManager.h
+* \author     Martin Cap
+*
+*	Namespace that provides utility functions for shader management across the whole application.
+*	Must be initialized and torn down (destroyed) before and after use, respectively!
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <string>

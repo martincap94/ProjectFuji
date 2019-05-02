@@ -36,24 +36,23 @@ void Curve::init() {
 }
 
 void Curve::draw(ShaderProgram & shader) {
-
 	glUseProgram(shader.id);
 
-	shader.setVec3("color", glm::vec3(0.1f, 0.1f, 0.1f));
+	shader.setColor(color);
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_LINES, 0, vertices.size() * 2);
 }
 
 void Curve::draw(ShaderProgram *shader) {
 	shader->use();
-	shader->setVec3("u_Color", glm::vec3(0.1f));
+	shader->setColor(color);
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_LINES, 0, vertices.size() * 2);
 }
 
 glm::vec2 Curve::getIntersectionWithIsobar(float normalizedPressure) {
 
-	// naively search for correct interval - better solutions are: binary search and direct indexation using (non-normalized) pressure - needs better design
+	// naively search for correct interval - better solutions are: binary search and direct indexation using (non-normalized) pressure - see GPU implementation for optimized version!
 	for (int i = 0; i < vertices.size() - 1; i += 1) {
 		//cout << vertices[i].y << endl;
 		if (vertices[i + 1].y > normalizedPressure) {
@@ -84,8 +83,7 @@ void Curve::printVertices() {
 
 
 
-// Based on: http://paulbourke.net/geometry/pointlineplane
-// & http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
+
 bool findIntersectionNew(const Curve & c1, const Curve & c2, glm::vec2 &outIntersection, bool reverseFirst, bool reverseSecond) {
 
 	int iStart, jStart, iEnd, jEnd, iDelta, jDelta;
@@ -124,8 +122,7 @@ bool findIntersectionNew(const Curve & c1, const Curve & c2, glm::vec2 &outInter
 
 
 
-// Based on: http://paulbourke.net/geometry/pointlineplane
-// & http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
+
 glm::vec2 findIntersection(const Curve & c1, const Curve & c2, bool reverseFirst, bool reverseSecond) {
 	// Test each edge pair ( O(|E|^2) )
 

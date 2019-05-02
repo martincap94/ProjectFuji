@@ -1,3 +1,13 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       TerrainPicker.h
+* \author     Martin Cap
+*
+*	Helper TerrainPicker class that draws terrain using special shader. Using pixel read back
+*	it can determine world position of the given screen pixel. This gives us the ability to
+*	pick any point on the terrain with pixel perfect precision.
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <glad\glad.h>

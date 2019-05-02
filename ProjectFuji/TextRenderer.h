@@ -1,11 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       TextRenderer.h
-* \author     Martin Cap
 * \date       2019/01/18
-* \brief      Defines TextRenderer class and its Character structure inside it.
 *
-*  Defines the TextRenderer class to be used to draw text as textures.
+*	Defines the TextRenderer class to be used to draw text as textures.
 *	Uses FreeType library to load TrueType fonts.
 *   Taken from: https://learnopengl.com/In-Practice/Text-Rendering
 *		author: Joey de Vries

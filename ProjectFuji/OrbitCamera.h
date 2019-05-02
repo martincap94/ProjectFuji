@@ -1,12 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       OrbitCamera.h
 * \author     Martin Cap
-* \date       2018/12/23
-* \brief      Camera class for 3D LBM visualization.
 *
-*  Camera class that is used for orbiting a fixed focus point. Subclass of Camera.
-*
+*	Camera class that is used for orbiting a fixed focus point. Subclass of Camera.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

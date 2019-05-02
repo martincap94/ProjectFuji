@@ -2,7 +2,6 @@
 /*!
 * \file       EVSMShadowMapper.h
 * \author     Martin Cap
-* \brief      Declaration of the EVSMShadowMapper class.
 *
 *	Header file containing helper functions for loading cubemap textures for skybox creation.
 *

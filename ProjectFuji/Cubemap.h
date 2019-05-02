@@ -2,7 +2,6 @@
 /*!
 * \file       Cubemap.h
 * \author     Martin Cap
-* \brief      Helper header file for loading cubemap textures.
 *
 *	Header file containing helper functions for loading cubemap textures for skybox creation.
 *
@@ -15,6 +14,12 @@
 #include "Utils.h"
 #include "stb_image.h"
 
+//! Loads the cubemap from the given list of face textures.
+/*!
+	Loads the cubemap from the given list of face textures. Regular ordering is assumed.
+	\param[in] faces	Filenames of individual face textures.
+	\return OpenGL id of the loaded cubemap texture.
+*/
 unsigned int loadCubemap(std::vector<std::string> faces) {
     
     unsigned int textureID = 0;

@@ -1,12 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       Timer.h
 * \author     Martin Cap
 * \date       2018/12/23
-* \brief      Defines the Timer class.
-*
-*  Defines the Timer class which is used for basic timing and logging.
-*
+*	
+*	--- DEPRECATED (at this moment - requires update) ---
+*	Defines the Timer class which is used for basic timing and logging.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once

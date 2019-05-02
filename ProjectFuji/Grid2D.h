@@ -2,8 +2,8 @@
 /*!
 * \file       Grid2D.h
 * \author     Martin Cap
-* \brief      Grid that is used for LBM 2D visualization.
 *
+*	--- DEPRECATED ---
 *  Grid that is used for LBM 2D visualization. Implements the Grid abstract class.
 *
 */

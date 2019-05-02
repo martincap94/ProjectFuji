@@ -1,11 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       LBM2D_1D_indices.h
 * \author     Martin Cap
 * \date       2018/12/23
 * \brief      Defines the LBM2D class and data structures it uses (Node, directionVectors, eDirection).
-*
-*  Defines the LBM2D class (subclass of LBM) that implements the 2D simulation using CPU and GPU.
+*	
+*	--- DEPRECATED ---
+*	Defines the LBM2D class (subclass of LBM) that implements the 2D simulation using CPU and GPU.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////

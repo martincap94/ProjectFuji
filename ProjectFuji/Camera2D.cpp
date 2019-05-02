@@ -88,9 +88,6 @@ void Camera2D::processMouseMovement(float xoffset, float yoffset, bool constrain
 
 }
 
-void Camera2D::printInfo() {
-	cout << "Camera position: " << glm::to_string(position) << endl;
-}
 
 void Camera2D::updateCameraVectors() {
 	glm::vec3 tmp;

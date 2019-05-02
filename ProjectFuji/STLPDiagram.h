@@ -3,10 +3,11 @@
 * \file       STLPDiagram.h
 * \author     Martin Cap
 * \date       2019/01/18
-* \brief	  Describes the STLPDiagram class.
 *
-*	Describes the SkewT/LogP class that is drawn to the screen.
-*
+*	The SkewT/LogP diagram (STLPDiagram class) is the heart of SkewT/LogP cloud simulator by Duarte.
+*	Available here: https://www.researchgate.net/publication/318444032_Real-Time_Simulation_of_Cumulus_Clouds_through_SkewTLogP_Diagrams
+*	It generates the SkewT/LogP diagram on the CPU. The data upload to GPU is processed by the
+*	STLPSimulatorCUDA that accesses this diagram's data.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

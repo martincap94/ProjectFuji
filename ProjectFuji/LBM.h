@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       LBM.h
 * \author     Martin Cap
 * \date       2018/12/23
-* \brief      Defines the abstract LBM class.
 *
-*  Defines the abstract LBM class. It has LBM2D and LBM3D children that simulate fluids in 2D and 3D.
-*  It is used so that we can change simulation type using configuration file without recompiling the solution.
+*	---DEPRECATED---
+*	Defines the abstract LBM class. It has LBM2D and LBM3D children that simulate fluids in 2D and 3D.
+*	It is used so that we can change simulation type using configuration file without recompiling the solution.
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,6 @@
 /*!
 * \file       FreeRoamCamera.h
 * \author     Martin Cap
-* \brief      Declaration of the FreeRoamCamera class.
 *
 *	Describes the FreeRoamCamera class, a subclass of abstract Camera class.
 *

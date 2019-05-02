@@ -2,8 +2,8 @@
 /*!
 * \file       Grid3D.h
 * \author     Martin Cap
-* \brief      Grid that is used for LBM 3D visualization.
 *
+*	--- DEPRECATED ---
 *  Grid that is used when LBM 3D is drawn. It creates a 3D grid of dark grey lines with the given step
 *  sizes. It also provides the option to draw points where the lattice nodes lie.
 */

@@ -2,7 +2,6 @@
 /**
 * \file       Config.h
 * \author     Martin Cap
-* \brief      Configuration file.
 *
 *  Configuration header file that contains some of the variables that are not modifiable at runtime.
 *

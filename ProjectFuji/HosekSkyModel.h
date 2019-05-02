@@ -1,3 +1,15 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       HosekSkyModel.h
+* \author     Martin Cap
+*
+*	Describes HosekSkyModel class that is used to generate and feed atmosphere visualization
+*	on GPU as well as CPU using Hosek-Wilkie's sky model with the provided data.
+*	Hosek-Wilkie's model is desribed here: https://cgg.mff.cuni.cz/projects/SkylightModelling/ 
+*	This is a C++ reimplementation of Ben Anderson's Rust implementation of the sky model that is
+*	available here: https://github.com/benanders/Hosek-Wilkie
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <glad\glad.h>

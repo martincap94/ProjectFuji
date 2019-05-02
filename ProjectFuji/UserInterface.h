@@ -1,3 +1,14 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       UserInterface.h
+* \author     Martin Cap
+*
+*	UserInterface class encapsulates user interface generation into one (large) class.
+*	The nuklear library is used for UI rendering and creation.
+*	Nuklear library was created by Micha Mettke, licensed under Public domain;
+*	available here: https://github.com/vurtun/nuklear
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #define GLFW_INCLUDE_NONE

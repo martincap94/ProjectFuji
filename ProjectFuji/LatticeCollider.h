@@ -1,13 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       LatticeCollider.h
 * \author     Martin Cap
-* \date       2018/12/23
-* \brief	  Description of LatticeCollider class.
 *
-*  Describes the LatticeCollider that is used in LBM 2D. It represents obstacles in the scene
-*  around which the particles should flow.
-*
+*	--- NOT USED (since LBM2D is not used) ---
+*	Describes the LatticeCollider that is used in LBM 2D. It represents obstacles in the scene
+*	around which the particles should flow.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

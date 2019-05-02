@@ -1,3 +1,12 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       PositionalEmitter.h
+* \author     Martin Cap
+*
+*	PositionalEmitter is a subclass of Emitter that can be positioned anywhere in the 3D world.
+*	Positional emitters are also used as brushes when in brush mode.
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include "Emitter.h"

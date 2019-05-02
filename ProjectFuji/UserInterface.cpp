@@ -1971,7 +1971,7 @@ void UserInterface::constructPropertiesTab() {
 		nk_label(ctx, actor->name.c_str(), NK_TEXT_LEFT);
 		nk_checkbox_label(ctx, "visible", &actor->visible);
 
-		if (!actor->isRootChild()) {
+		if (!actor->isChildOfRoot()) {
 			if (nk_button_label(ctx, "move up a level (unparent)")) {
 				actor->unparent();
 			}
@@ -2186,6 +2186,9 @@ void UserInterface::constructHUD() {
 	if (nk_begin(ctx, "HUD", hudRect, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NOT_INTERACTIVE | NK_WINDOW_NO_INPUT)) {
 		nk_layout_row_dynamic(ctx, 15.0f, 1);
 
+		struct nk_color tmpColor = ctx->style.text.color;
+		ctx->style.text.color = nk_rgb(190, 255, 160);
+
 
 		stringstream ss;
 
@@ -2195,6 +2198,9 @@ void UserInterface::constructHUD() {
 		stringstream().swap(ss);
 		ss << fixed << setprecision(0) << prevAvgFPS << " FPS";
 		nk_label(ctx, ss.str().c_str(), NK_TEXT_RIGHT);
+
+		ctx->style.text.color = tmpColor;
+
 	}
 
 	nk_end(ctx);

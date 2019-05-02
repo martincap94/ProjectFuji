@@ -1,3 +1,13 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       PositionalCDFEmitter.h
+* \author     Martin Cap
+*
+*	Describes the PositionalCDFEmitter class. It is a type of positional emitter that uses CDF
+*	sampler to create patterns based on probability texture. It can also be used as a general
+*	brush that can draw particles on terrain when in brush mode.
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include "PositionalEmitter.h"

@@ -1,3 +1,12 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       MainFramebuffer.h
+* \author     Martin Cap
+*
+*	Describes the MainFramebuffer class that is used to manage main framebuffer and its multisampled
+*	version. Also provides functions to switch and blit these framebuffers.
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <glad\glad.h>

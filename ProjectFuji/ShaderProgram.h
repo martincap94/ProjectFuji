@@ -1,12 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       ShaderProgram.h
 * \author     Martin Cap
-* \date       2018/12/23
-* \brief      Defines ShaderProgram class for shader program creation and usage.
 *
-*  Simple ShaderProgram class that helps us with creating, linking and using shader programs.
-*
+*	Simple ShaderProgram class that helps us with creating, linking and using shader programs.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

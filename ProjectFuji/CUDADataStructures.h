@@ -2,7 +2,6 @@
 /*!
 * \file       CUDADataStructures.h
 * \author     Martin Cap
-* \brief      Contains data structures that are in constant GPU memory.
 *
 *	Header file containing data structures that are in constant GPU memory.
 *
@@ -14,9 +13,11 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-/// Viridis mapping array. Taken from https://github.com/libigl/libigl/blob/master/include/igl/colormap.cpp. 
-// One of the new matplotlib colormaps by Nathaniel J.Smith, Stefan van der Walt, and (in the case of viridis) Eric Firing.
-// Released under the CC0 license / public domain dedication.
+ 
+/*! One of the new matplotlib colormaps by Nathaniel J.Smith, Stefan van der Walt, and (in the case of viridis) Eric Firing.
+	Viridis mapping array. Taken from https://github.com/libigl/libigl/blob/master/include/igl/colormap.cpp
+	Released under the CC0 license / public domain dedication.
+*/
 __constant__ double viridis_cm[256][3] = {
 	{ 0.267004, 0.004874, 0.329415 },
 	{ 0.268510, 0.009605, 0.335427 },

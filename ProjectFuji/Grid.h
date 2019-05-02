@@ -2,10 +2,10 @@
 /*!
 * \file       Grid.h
 * \author     Martin Cap
-* \brief      Abstract class describing the grid to be used in LBM visualization.
-*
-*  Abstract class describing the grid to be used in LBM visualization. Provides polymorphism when
-*  we use either LBM 2D or 3D (with Grid2D and Grid3D subclasses).
+*	
+*	--- DEPRECATED ---
+*	Abstract class describing the grid to be used in LBM visualization. Provides polymorphism when
+*	we use either LBM 2D or 3D (with Grid2D and Grid3D subclasses).
 *
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////

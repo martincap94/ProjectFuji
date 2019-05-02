@@ -2,7 +2,6 @@
 /*!
 * \file       GridLBM.h
 * \author     Martin Cap
-* \brief      Contains the declaration of GridLBM class.
 *
 *	Describes the GridLBM class that is used to draw a bounding volume and a grid of the LBM 
 *	simulation area.

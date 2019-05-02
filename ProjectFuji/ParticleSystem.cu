@@ -221,12 +221,8 @@ void ParticleSystem::initCUDA() {
 	CHECK_ERROR(cudaMemcpy(d_numParticles, &numParticles, sizeof(int), cudaMemcpyHostToDevice));
 
 	CHECK_ERROR(cudaMalloc((void**)&d_verticalVelocities, sizeof(float) * numParticles));
-	//CHECK_ERROR(cudaMalloc((void**)&d_profileIndices, sizeof(int) * numParticles));
-	//cudaMalloc((void**)&d_particlePressures, sizeof(float) * numParticles);
 
 	CHECK_ERROR(cudaMemset(d_verticalVelocities, 0, sizeof(float) * numParticles));
-	//cudaMemset(d_profileIndices, 0, sizeof(int) * numParticles);
-	//cudaMemset(d_particlePressures, 0, sizeof(float) * numParticles);
 
 	//cudaGLRegisterBufferObject(cudaDiagramParticleVerticesVBO, )
 
@@ -597,21 +593,6 @@ void ParticleSystem::checkParticleValidity() {
 void ParticleSystem::initParticlesWithZeros() {
 	cout << __FUNCTION__ << " not yet implemented!" << endl;
 
-	/*
-	vector<glm::vec3> particleVertices;
-
-	for (int i = 0; i < numParticles; i++) {
-		particleVertices.push_back(glm::vec3(0.0f));
-	}
-
-	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
-
-	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
-
-
-	cudaMemset(d_profileIndices, 0, sizeof(int) * numParticles);
-	cudaMemset(d_particlePressures, 0, sizeof(float) * numParticles);
-	*/
 }
 
 void ParticleSystem::initParticlesOnTerrain() {
@@ -798,13 +779,6 @@ void ParticleSystem::refreshParticlesOnTerrain() {
 
 	}
 
-
-	//cudaMemcpy(d_particlePressures, &particlePressures[0], sizeof(float) * particlePressures.size(), cudaMemcpyHostToDevice);
-
-	// PARTICLE PROFILES (INDICES) are currently twice on GPU - once in VBO, once in CUDA global memory -> merge!!! (map VBO to CUDA)
-
-	// TODO KEEP ONLY ONE INSTANCE
-	//cudaMemcpy(d_profileIndices, &particleProfiles[0], sizeof(int) * particleProfiles.size(), cudaMemcpyHostToDevice);
 	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
 
 

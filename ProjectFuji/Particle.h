@@ -1,3 +1,13 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/*!
+* \file       Particle.h
+* \author     Martin Cap
+*
+*	Describes a utility Particle class that is only used on CPU. This class is not the basis
+*	of the simulator. Particle data are generally stored in VBOs and CUDA global memory instead
+*	(and are therefore separated into arrays that contain individual particle properties)!
+*/
+///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 #include <glm\glm.hpp>
@@ -8,8 +18,7 @@ public:
 
 	glm::vec3 position;
 	glm::vec3 velocity;
-	//float convectiveTemperature = 0.0f;
-	float pressure; // pressure at its current height (can be computed from position.z) -> TODO, remove references and remove this member variable
+	float pressure;
 	int profileIndex;
 
 	Particle();

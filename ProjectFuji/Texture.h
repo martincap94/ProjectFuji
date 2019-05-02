@@ -1,12 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       Texture.h
 * \author     Martin Cap
 * \date       2018/12/23
-* \brief      Defines Texture class for simple texture loading and usage.
 *
 *  Texture class that provides basic texture functionality using stb_image header file for loading.
-*
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

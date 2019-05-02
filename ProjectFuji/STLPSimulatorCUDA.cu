@@ -515,25 +515,6 @@ void STLPSimulatorCUDA::initCUDA() {
 	gridDim = dim3((int)ceil((float)particleSystem->numParticles / (float)blockDim.x), 1, 1);
 
 
-	/*
-	cudaMalloc((void**)&d_verticalVelocities, sizeof(float) * maxNumParticles);
-	cudaMalloc((void**)&d_profileIndices, sizeof(int) * maxNumParticles);
-	cudaMalloc((void**)&d_particlePressures, sizeof(float) * maxNumParticles);
-	
-	cudaMemset(d_verticalVelocities, 0, sizeof(float) * maxNumParticles);
-	//cudaMemset(d_profileIndices, 0, sizeof(int) * maxNumParticles);
-	//cudaMemset(d_particlePressures, 0, sizeof(float) * maxNumParticles);
-
-	vector<int> itmp;
-	vector<float> ftmp;
-
-	for (int i = 0; i < numParticles; i++) {
-		itmp.push_back(particles[i].profileIndex);
-		ftmp.push_back(particles[i].pressure);
-	}
-	cudaMemcpy(d_profileIndices, &itmp[0], sizeof(int) * itmp.size(), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_particlePressures, &ftmp[0], sizeof(float) * ftmp.size(), cudaMemcpyHostToDevice);
-	*/
 	
 
 	// ambient temp curve can be mapped to VBO, no need for this
