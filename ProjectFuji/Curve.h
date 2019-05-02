@@ -21,9 +21,9 @@
 
 using namespace std;
 
-//! Very simple STLP diagram curve implementation.
+//! Very simple STLPDiagram curve implementation.
 /*!
-	Very simple STLP diagram curve implementation that mainly stores the curve data.
+	Very simple STLPDiagram curve implementation that mainly stores the curve data.
 	Generally, we do not want to draw individual curves, we cluster them into larger VBOs which
 	is done manually, that is why this class is so limited in function.
 */
@@ -88,12 +88,14 @@ private:
 	\param[in] first				First curve.
 	\param[in] second				Second curve.
 	\param[out] outIntersection		Intersection of the two curves.
+	\param[in] intersectionNumber	The number of the intersection (e.g. if we are interested in second found intersection it equals 2).
+	\param[in] skipStartingPoints	Whether to skip intersection between either curve and other's starting point (with small epsilon offset).
 	\param[in] reverseFirst			Whether to reverse the order of vertices for the first curve.
 	\param[in] reverseSecond		Whether to reverse the order of vertices for the second curve.
 	\return Whether the two curves intersect.
 */
 
-bool findIntersectionNew(const Curve &first, const Curve &second, glm::vec2 &outIntersection, bool reverseFirst = false, bool reverseSecond = false);
+bool findIntersectionNew(const Curve &first, const Curve &second, glm::vec2 &outIntersection, unsigned int intersectionNumber = 1, bool skipStartingPoints = false, bool reverseFirst = false, bool reverseSecond = false);
 
 //! Finds intersection between given curves and returns the found intersection.
 /*!

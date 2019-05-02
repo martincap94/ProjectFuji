@@ -13,9 +13,9 @@
 
 class ParticleSystem;
 
-//! Emitter that emits particles in a circle projected onto the terrain.
+//! PositionalEmitter that emits particles in a circle projected onto the terrain.
 /*!
-	Positional emitter that emits particles in a circle projected onto the terrain.
+	PositionalEmitter that emits particles in a circle projected onto the terrain.
 	This emitter can be used as a brush in brush mode.
 */
 class CircleEmitter : public PositionalEmitter {

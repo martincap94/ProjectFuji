@@ -17,9 +17,9 @@
 
 const glm::vec3 WORLD_UP = glm::vec3(0.0f, 1.0f, 0.0f); //!< World up vector for the application (positive y axis).
 
-//! Abstract camera class.
+//! Abstract Camera class.
 /*!
-	Abstract camera class that provides basic functionality interface for other camera types.
+	Abstract Camera class that provides basic functionality interface for other camera types.
 */
 class Camera {
 

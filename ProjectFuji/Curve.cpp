@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "Utils.h"
+#include <glm\gtc\epsilon.hpp>
 
 
 Curve::Curve() {
@@ -82,10 +83,9 @@ void Curve::printVertices() {
 
 
 
+#define CURVE_START_EPSILON 0.0001f
 
-
-bool findIntersectionNew(const Curve & c1, const Curve & c2, glm::vec2 &outIntersection, bool reverseFirst, bool reverseSecond) {
-
+bool findIntersectionNew(const Curve & c1, const Curve & c2, glm::vec2 & outIntersection, unsigned int intersectionNumber, bool skipStartingPoints, bool reverseFirst, bool reverseSecond) {
 	int iStart, jStart, iEnd, jEnd, iDelta, jDelta;
 	if (reverseFirst) {
 		iStart = c1.vertices.size() - 1;
@@ -106,22 +106,27 @@ bool findIntersectionNew(const Curve & c1, const Curve & c2, glm::vec2 &outInter
 		jEnd = c2.vertices.size() - 1;
 		jDelta = 1;
 	}
-
+	unsigned int foundIntersectionCounter = 0;
 	for (int i = iStart; i != iEnd; i += iDelta) {
 		for (int j = jStart; j != jEnd; j += jDelta) {
 			glm::vec2 intersection;
 			if (getIntersectionPoint(c1.vertices[i], c1.vertices[i + iDelta], c2.vertices[j], c2.vertices[j + jDelta], intersection)) {
+				if (skipStartingPoints && 
+					(glm::all(glm::epsilonEqual(intersection, c1.vertices[iStart], CURVE_START_EPSILON)) || 
+					 glm::all(glm::epsilonEqual(intersection, c2.vertices[jStart], CURVE_START_EPSILON)))) {
+					continue;
+				}
+				foundIntersectionCounter++;
 				outIntersection = intersection;
-				return true;
+				if (foundIntersectionCounter == intersectionNumber) {
+					return true;
+				}
 			}
 		}
 	}
 
 	return false;
 }
-
-
-
 
 glm::vec2 findIntersection(const Curve & c1, const Curve & c2, bool reverseFirst, bool reverseSecond) {
 	// Test each edge pair ( O(|E|^2) )

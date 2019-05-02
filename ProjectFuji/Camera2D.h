@@ -19,7 +19,7 @@
 
 //! Camera that is used for 2D views.
 /**
-	Simple camera that is used in 2D viewports such as the diagram view.
+	Simple Camera that is used in 2D viewports such as the diagram view.
 */
 class Camera2D : public Camera {
 public:

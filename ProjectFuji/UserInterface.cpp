@@ -1223,6 +1223,8 @@ void UserInterface::constructDiagramControlsTab() {
 		nk_combo_end(ctx);
 	}
 
+	if (nk_checkbox_label(ctx, "Use Orographic Parameters", &stlpDiagram->useOrographicParameters));
+
 	if (nk_button_label(ctx, "Load Sounding File")) {
 		stlpDiagram->loadSoundingData();
 		stlpDiagram->recalculateAll();

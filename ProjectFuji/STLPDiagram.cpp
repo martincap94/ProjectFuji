@@ -883,7 +883,7 @@ void STLPDiagram::initCurves() {
 		// Find EL 
 		///////////////////////////////////////////////////////////////////////////////////////////////
 
-		ELFound = findIntersectionNew(moistAdiabat_CCL_EL, ambientCurve, ELNormalized, true);
+		ELFound = findIntersectionNew(moistAdiabat_CCL_EL, ambientCurve, ELNormalized, 1, true);
 		//cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
 		if (ELFound) {
 			EL = getDenormalizedCoords(ELNormalized);
@@ -909,7 +909,7 @@ void STLPDiagram::initCurves() {
 			LFC = getDenormalizedCoords(LFCNormalized);
 		}
 
-	    orographicELFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, orographicELNormalized, true);
+	    orographicELFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, orographicELNormalized, 1, true);
 		if (orographicELFound) {
 			orographicEL = getDenormalizedCoords(orographicELNormalized);
 		}
@@ -1030,11 +1030,20 @@ void STLPDiagram::recalculateParameters() {
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// Tc and LCL
 	///////////////////////////////////////////////////////////////////////////////////////////////
-	TcNormalized = findIntersection(groundIsobar, TcDryAdiabat);
-	Tc = getDenormalizedCoords(TcNormalized);
+	LCLFound = findIntersectionNew(LCLDryAdiabatCurve, mixingCCL, LCLNormalized);
+	if (LCLFound) {
+		LCL = getDenormalizedCoords(LCLNormalized);
+	}
 
-	LCLNormalized = findIntersection(LCLDryAdiabatCurve, mixingCCL);
-	LCL = getDenormalizedCoords(LCLNormalized);
+	if (useOrographicParameters) {
+		TcFound = true;
+		TcNormalized = ambientCurve.vertices[0];
+	} else {
+		TcFound = findIntersectionNew(groundIsobar, TcDryAdiabat, TcNormalized);
+	}
+	if (TcFound) {
+		Tc = getDenormalizedCoords(TcNormalized);
+	}
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
 	glNamedBufferData(dryAdiabatsVBO[0], sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
@@ -1049,7 +1058,13 @@ void STLPDiagram::recalculateParameters() {
 		dryAdiabatProfiles[profileIndex].vertices.clear();
 		generateDryAdiabat(theta, vertices, 1, P0, &dryAdiabatEdgeCount[1], true, CURVE_DELTA_P, &dryAdiabatProfiles[profileIndex]);
 
-		CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], ambientCurve));
+		//CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], ambientCurve));
+
+		if (useOrographicParameters) {
+			CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], mixingCCL));
+		} else {
+			CCLProfiles[profileIndex] = getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], ambientCurve));
+		}
 	}
 
 	//int sum = 0;
@@ -1078,21 +1093,26 @@ void STLPDiagram::recalculateParameters() {
 	generateMoistAdiabat(CCL.x, CCL.y, vertices, 0, P0, &moistAdiabatEdgeCount[0], true, CURVE_DELTA_P, &moistAdiabat_CCL_EL);
 
 
-	ELNormalized = findIntersection(moistAdiabat_CCL_EL, ambientCurve, true);
-	EL = getDenormalizedCoords(ELNormalized);
-
+	ELFound = findIntersectionNew(moistAdiabat_CCL_EL, ambientCurve, ELNormalized, 1, true);
+	//cout << "EL (normalized): x = " << ELNormalized.x << ", y = " << ELNormalized.y << endl;
+	if (ELFound) {
+		EL = getDenormalizedCoords(ELNormalized);
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// EL (orographic) computation - special moist adiabat (goes through LCL)
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	generateMoistAdiabat(LCL.x, LCL.y, vertices, 0, P0, &moistAdiabatEdgeCount[0], true, CURVE_DELTA_P, &moistAdiabat_LCL_EL);
 
-	LFCNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve);
-	LFC = getDenormalizedCoords(LFCNormalized);
+	LFCFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, LFCNormalized);
+	if (LFCFound) {
+		LFC = getDenormalizedCoords(LFCNormalized);
+	}
 
-	orographicELNormalized = findIntersection(moistAdiabat_LCL_EL, ambientCurve, true);
-	orographicEL = getDenormalizedCoords(orographicELNormalized);
-
+	orographicELFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, orographicELNormalized, 1, true);
+	if (orographicELFound) {
+		orographicEL = getDenormalizedCoords(orographicELNormalized);
+	}
 
 	glNamedBufferData(moistAdiabatsVBO[0], sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 

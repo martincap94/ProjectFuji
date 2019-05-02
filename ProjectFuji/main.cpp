@@ -1294,7 +1294,6 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE)) {
 			float offsetMultiplier = 0.001f * (vars.diagramProjectionOffset + 0.6f);
 			camera->processMouseMovement(xOffset * offsetMultiplier, yOffset * offsetMultiplier, false);
-			camera->printInfo();
 		}
 
 

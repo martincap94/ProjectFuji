@@ -17,9 +17,9 @@
 class ShaderProgram;
 class Model;
 
-/// Direction light for simple scene lighting.
+//! DirectionalLight for simple scene lighting.
 /**
-	Directional light that lights the scene.
+	DirectionalLight that lights the scene.
 	At the moment we use simple Blinn-Phong lighting, hence needing ambient, diffuse and specular values.
 */
 class DirectionalLight {
