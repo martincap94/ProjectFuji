@@ -106,9 +106,6 @@ public:
 	struct cudaGraphicsResource *cudaParticlesEBO;
 	struct cudaGraphicsResource *cudaDiagramParticleVerticesVBO;
 
-	// will be overwritten from config file if set!
-	float positionRecalculationThreshold = 0.5f;
-	int maxPositionRecalculations = 0;
 
 	int opacityBlendMode = 1;
 	float opacityBlendRange = 10.0f;

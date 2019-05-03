@@ -14,7 +14,7 @@ enum eProjectionMode {
 	PERSPECTIVE		//!< Perspective projection
 };
 
-//! --- DEPRECATED --- Enum listing all possible LBM types.
+//! --- DEPRECATED --- \deprecated Enum listing all possible LBM types.
 enum eLBMType {
 	LBM2D,	//!< 2D version of the LBM
 	LBM3D	//!< 3D version of the LBM

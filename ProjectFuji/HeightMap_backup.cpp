@@ -324,26 +324,26 @@ void HeightMap::initMaterials() {
 	//shader = ShaderManager::getShaderPtr("singleColor");
 	shader->use();
 
-	materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
-	materials[0].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+	materials[0].diffuseTexture = TextureManager::loadTexture("textures/Ground_Dirt_006_COLOR.jpg");
+	materials[0].normalMap = TextureManager::loadTexture("textures/Ground_Dirt_006_NORM.jpg");
 
 	// load two other options
 	TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
 	TextureManager::loadTexture("textures/mossy-ground1-preview.png");
 
-	//materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/mossy-ground1-albedo.png");
-	//materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
+	//materials[0].diffuseTexture = TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
+	//materials[0].normalMap = TextureManager::loadTexture("textures/mossy-ground1-preview.png");
 
 	materials[0].shininess = 2.0f;
 	materials[0].textureTiling = 8000.0f;
 
-	materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
-	materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
+	materials[1].diffuseTexture = TextureManager::loadTexture("textures/ROCK_030_COLOR.jpg");
+	materials[1].normalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
 	materials[1].shininess = 16.0f;
 	materials[1].textureTiling = 1000.0f;
 
-	//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
-	//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
+	//materials[2].diffuseTexture = TextureManager::loadTexture("mossy-ground1-albedo.png");
+	//materials[2].normalMap = TextureManager::loadTexture("mossy-ground1-preview.png");
 	CHECK_GL_ERRORS();
 
 	for (int i = 0; i < MAX_TERRAIN_MATERIALS; i++) {

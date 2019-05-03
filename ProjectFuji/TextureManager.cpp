@@ -61,27 +61,19 @@ namespace TextureManager {
 		textures.insert(make_pair(tex->filename, tex));
 	}
 
-	Texture * loadTexture(std::string filename, bool sRGB) {
+	Texture *loadTexture(std::string filename, bool sRGB) {
 		if (textures.count(filename) == 0) {
+			cout << "Loading texture " << filename << "..." << endl;
 			textures.insert(make_pair(filename, new Texture(filename.c_str(), 0, sRGB)));
 		}
 		return textures[filename];
 	}
 
-	Texture *getTexturePtr(string filename) {
-		if (textures.count(filename) == 0) {
-			//cout << "No texture with filename " << filename << " found! Loading..." << endl;
-			cout << "Loading texture " << filename << "..." << endl;
-			textures.insert(make_pair(filename, new Texture(filename.c_str())));
-		}
-		return textures[filename];
-	}
-
-	vector<Texture*> getTextureTripletPtrs(string diffuseFilename, string specularFilename, string normalMapFilename) {
+	vector<Texture*> loadTextureTriplet(string diffuseFilename, string specularFilename, string normalMapFilename) {
 		vector<Texture *> tmp;
-		tmp.push_back(getTexturePtr(diffuseFilename));
-		tmp.push_back(getTexturePtr(specularFilename));
-		tmp.push_back(getTexturePtr(normalMapFilename));
+		tmp.push_back(loadTexture(diffuseFilename));
+		tmp.push_back(loadTexture(specularFilename));
+		tmp.push_back(loadTexture(normalMapFilename));
 		return tmp;
 	}
 

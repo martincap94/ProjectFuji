@@ -388,11 +388,11 @@ int runApp() {
 	lbm->streamlineParticleSystem = streamlineParticleSystem;
 
 
-	Material testMat(TextureManager::getTexturePtr("textures/body2.png"), TextureManager::getTexturePtr("textures/body2_S.png"), TextureManager::getTexturePtr("textures/body2_N.png"), 32.0f);
+	Material testMat(TextureManager::loadTexture("textures/body2.png"), TextureManager::loadTexture("textures/body2_S.png"), TextureManager::loadTexture("textures/body2_N.png"), 32.0f);
 
 	Model testModel("models/housewife.obj", &testMat, ShaderManager::getShaderPtr("normals"));
 
-	Material treeMat(TextureManager::getTextureTripletPtrs("textures/Bark_Pine_001_COLOR.jpg", "textures/Bark_Pine_001_DISP.png", "textures/Bark_Pine_001_NORM.jpg"), 8.0f);
+	Material treeMat(TextureManager::loadTextureTriplet("textures/Bark_Pine_001_COLOR.jpg", "textures/Bark_Pine_001_DISP.png", "textures/Bark_Pine_001_NORM.jpg"), 8.0f);
 
 	Texture adiffuse("textures/armoire/albedo.png", 0);
 	Texture aspecular("textures/armoire/metallic.png", 1);
@@ -520,8 +520,8 @@ int runApp() {
 
 
 	// Preset overlay textures that are useful for debugging
-	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("lightTexture[0]"), 0);
-	TextureManager::setOverlayTexture(TextureManager::getTexturePtr("imageTexture"), 1);
+	TextureManager::setOverlayTexture(TextureManager::loadTexture("lightTexture[0]"), 0);
+	TextureManager::setOverlayTexture(TextureManager::loadTexture("imageTexture"), 1);
 
 	ebm->loadBrushes();
 	particleSystem->ebm = ebm;
@@ -983,10 +983,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			vars.hideUI = abs(vars.hideUI - 1);
 		}
 
-		if (key == vars.toggleLBMState) {
+		if (key == vars.toggleLBMStateKey) {
 			vars.applyLBM = abs(vars.applyLBM - 1);
 		}
-		if (key == vars.toggleSTLPState) {
+		if (key == vars.toggleSTLPStateKey) {
 			vars.applySTLP = abs(vars.applySTLP - 1);
 		}
 
@@ -1088,7 +1088,7 @@ void processKeyboardInput(GLFWwindow *window) {
 	}
 
 	// Toggle LBM
-	if (glfwGetKey(window, vars.toggleLBMState) == GLFW_PRESS) {
+	if (glfwGetKey(window, vars.toggleLBMStateKey) == GLFW_PRESS) {
 		if (vars.prevToggleLBMState == GLFW_RELEASE) {
 			vars.applyLBM = abs(vars.applyLBM - 1);
 		}
@@ -1099,7 +1099,7 @@ void processKeyboardInput(GLFWwindow *window) {
 
 
 	// Toggle STLP
-	if (glfwGetKey(window, vars.toggleSTLPState) == GLFW_PRESS) {
+	if (glfwGetKey(window, vars.toggleSTLPStateKey) == GLFW_PRESS) {
 		if (vars.prevToggleSTLPState == GLFW_RELEASE) {
 			vars.applySTLP = abs(vars.applySTLP - 1);
 		}

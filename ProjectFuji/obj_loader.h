@@ -4,6 +4,7 @@
 * \author     Martin Cap
 *	
 *	--- DEPRECATED (use Model class with Assimp) ---
+*	\deprecated
 *	Header file that declares helper functions for loading obj models.
 *	Based on: https://github.com/opengl-tutorials/ogl/blob/master/common/objloader.cpp
 */

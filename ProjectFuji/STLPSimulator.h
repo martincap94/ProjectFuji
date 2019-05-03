@@ -5,6 +5,7 @@
 * \date       2019/01/18
 *
 *	--- DEPRECATED ---
+*	\deprecated
 *	SkewT/LogP simulator that runs the cloud simulation on CPU.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////

@@ -272,8 +272,6 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveIntParam(vsync, val);
 	} else if (param == "num_particles" || param == "-p") {
 		saveIntParam(numParticles, val);
-	} else if (param == "max_num_particles") {
-		saveIntParam(maxNumParticles, val);
 	} else if (param == "scene_filename" || param == "-s") {
 		saveStringParam(sceneFilename, val);
 	} else if (param == "window_width") {
@@ -312,10 +310,6 @@ void VariableManager::saveConfigParam(string param, string val) {
 		exitAfterFirstAvg = (val == "true") ? true : false;
 	} else if (param == "sounding_file" || param == "-sf") {
 		soundingFile = val;
-	} else if (param == "position_recalculation_threshold") {
-		positionRecalculationThreshold = stof(val);
-	} else if (param == "max_position_recalculations") {
-		maxPositionRecalculations = stoi(val);
 	} else if (param == "terrain_x_offset") {
 		terrainXOffset = stoi(val);
 	} else if (param == "terrain_z_offset") {

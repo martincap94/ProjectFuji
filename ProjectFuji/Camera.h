@@ -3,7 +3,7 @@
 * \file       Camera.h
 * \author     Martin Cap
 *
-*  Abstract camera class that provides basic functionality interface for more specific camera types.
+*	Abstract camera class that provides basic functionality interface for more specific camera types.
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once
@@ -97,7 +97,7 @@ public:
 	virtual void processMouseScroll(double yoffset) = 0;
 
 	//! Processes mouse movement.
-	virtual void processMouseMovement(float xoffset, float yoffset, bool constainPitch = true) = 0;
+	virtual void processMouseMovement(float xoffset, float yoffset, bool constrainPitch = true) = 0;
 
 	//! Sets the view of the camera (based on the eCameraView enum).
 	/*!

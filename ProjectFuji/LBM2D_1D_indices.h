@@ -6,6 +6,7 @@
 * \brief      Defines the LBM2D class and data structures it uses (Node, directionVectors, eDirection).
 *	
 *	--- DEPRECATED ---
+*	\deprecated
 *	Defines the LBM2D class (subclass of LBM) that implements the 2D simulation using CPU and GPU.
 *
 */

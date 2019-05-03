@@ -22,7 +22,7 @@ glm::mat4 Camera::getViewMatrix() {
 //void Camera::processMouseScroll(double yoffset) {
 //}
 //
-//void Camera::processMouseMovement(float xoffset, float yoffset, bool constainPitch) {
+//void Camera::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
 //	cout << "Process mouse movement in Camera" << endl;
 //}
 

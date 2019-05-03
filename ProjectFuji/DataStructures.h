@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
+/*!
 * \file       DataStructures.h
 * \author     Martin Cap
 *
@@ -56,12 +56,12 @@ struct SoundingDataItem {
 };
 
 
-/// Node for LBM 3D
+//! Node for LBM 3D
 struct Node3D {
-	float adj[19];	///< Distribution function for adjacent lattice nodes (in possible streaming directions)
+	float adj[19];	//!< Distribution function for adjacent lattice nodes (in possible streaming directions)
 };
 
-/// 3rd ordering enum as proposed by Woodgate et al.
+//! 3rd ordering enum as proposed by Woodgate et al.
 enum eDirection3D {
 	DIR_MIDDLE_VERTEX = 0,
 	DIR_RIGHT_FACE,
@@ -84,7 +84,7 @@ enum eDirection3D {
 	DIR_BOTTOM_LEFT_EDGE
 };
 
-
+//! Properties of a single mesh vertex.
 struct MeshVertex {
 	glm::vec3 position;
 	glm::vec3 normal;
@@ -96,7 +96,7 @@ struct MeshVertex {
 
 
 
-/// Direction vectors for LBM 3D
+//! Direction vectors for LBM 3D.
 const glm::vec3 directionVectors3D[19] = {
 	glm::vec3(0.0f, 0.0f, 0.0f),
 	glm::vec3(1.0f, 0.0f, 0.0f),
@@ -120,6 +120,7 @@ const glm::vec3 directionVectors3D[19] = {
 };
 
 
+//! Vertices of a single quad with texture coordinates.
 const float quadVertices[] = {
 	// positions   // texCoords
 	-1.0f,  1.0f,  0.0f, 1.0f,
@@ -132,6 +133,7 @@ const float quadVertices[] = {
 };
 
 
+//! Vertices of a cube with texture coordinates.
 const float cubeVertices[] = {
 	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 	0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -177,7 +179,7 @@ const float cubeVertices[] = {
 };
 
 
-
+//! Skybox vertices.
 const float skyboxVertices[108] = {
 	// positions
 	-1.0f,  1.0f, -1.0f,
@@ -224,18 +226,19 @@ const float skyboxVertices[108] = {
 };
 
 
-// Indexed skybox taken from: https://github.com/benanders/Hosek-Wilkie/blob/master/src/main.rs
+//! Indexed skybox vertices taken from: https://github.com/benanders/Hosek-Wilkie/blob/master/src/main.rs
 const float skyboxVerticesNew[24] = {
-		-1.0, -1.0, 1.0, // 0: Left,  bottom, front
-		1.0, -1.0, 1.0, // 1: Right, bottom, front
-		1.0, 1.0, 1.0, // 2: Right, top,    front
-		-1.0, 1.0, 1.0, // 3: Left,  top,    front
-		-1.0, -1.0, -1.0, // 4: Left,  bottom, back
-		1.0, -1.0, -1.0, // 5: Right, bottom, back
-		1.0, 1.0, -1.0, // 6: Right, top,    back
-		-1.0, 1.0, -1.0, // 7: Left,  top,    back
+		-1.0, -1.0, 1.0,	// 0: Left,  bottom, front
+		1.0, -1.0, 1.0,		// 1: Right, bottom, front
+		1.0, 1.0, 1.0,		// 2: Right, top,    front
+		-1.0, 1.0, 1.0,		// 3: Left,  top,    front
+		-1.0, -1.0, -1.0,	// 4: Left,  bottom, back
+		1.0, -1.0, -1.0,	// 5: Right, bottom, back
+		1.0, 1.0, -1.0,		// 6: Right, top,    back
+		-1.0, 1.0, -1.0,	// 7: Left,  top,    back
 };
 
+//! Skybox indices taken from: https://github.com/benanders/Hosek-Wilkie/blob/master/src/main.rs
 const unsigned int skyboxIndicesNew[36] = {
 		2, 1, 0, 0, 3, 2, // Front
 		5, 6, 7, 7, 4, 5, // Back

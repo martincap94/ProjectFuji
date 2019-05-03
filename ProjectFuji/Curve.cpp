@@ -178,7 +178,7 @@ glm::vec2 findIntersection(const Curve & c1, const Curve & c2, bool reverseFirst
 	//	}
 	//}
 	
-	return glm::vec2(0.0f); // magic (origin of diagram)
+	return glm::vec2(0.0f); // not found (origin of diagram)
 }
 
 
@@ -193,5 +193,5 @@ glm::vec2 findIntersectionOld(const Curve & c1, const Curve & c2) {
 			}
 		}
 	}
-	return glm::vec2(0.0f); // random
+	return glm::vec2(0.0f); // not found
 }

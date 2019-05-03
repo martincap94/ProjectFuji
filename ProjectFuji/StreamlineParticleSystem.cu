@@ -232,11 +232,3 @@ void StreamlineParticleSystem::setPositionInVerticalLine() {
 void StreamlineParticleSystem::setPositionCross() {
 	REPORT_NOT_IMPLEMENTED();
 }
-
-//void StreamlineParticleSystem::centerHParamsYOffset() {
-//	hParams.yOffset = lbm->getWorldHeight() / 2.0f;
-//}
-//
-//void StreamlineParticleSystem::centerVParamsZOffset() {
-//	vParams.zOffset = lbm->getWorldDepth() / 2.0f;
-//}

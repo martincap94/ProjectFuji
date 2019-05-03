@@ -470,31 +470,31 @@ void HeightMap::initMaterials() {
 		shader = ShaderManager::getShaderPtr("terrain_pbr");
 
 
-		pbrMaterials[0].albedo = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-albedo.png");
-		pbrMaterials[0].metallicRoughness = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-MR.png");
-		pbrMaterials[0].normalMap = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-normal-opengl.png");
-		pbrMaterials[0].ao = TextureManager::getTexturePtr("textures/layered_rock_ue/layered-rock1-ao.png");
+		pbrMaterials[0].albedo = TextureManager::loadTexture("textures/layered_rock_ue/layered-rock1-albedo.png");
+		pbrMaterials[0].metallicRoughness = TextureManager::loadTexture("textures/layered_rock_ue/layered-rock1-MR.png");
+		pbrMaterials[0].normalMap = TextureManager::loadTexture("textures/layered_rock_ue/layered-rock1-normal-opengl.png");
+		pbrMaterials[0].ao = TextureManager::loadTexture("textures/layered_rock_ue/layered-rock1-ao.png");
 		pbrMaterials[0].textureTiling = 2500.0f;
 
-		pbrMaterials[1].albedo = TextureManager::getTexturePtr("textures/sand1/sand1-albedo.png");
-		pbrMaterials[1].metallicRoughness = TextureManager::getTexturePtr("textures/sand1/sand1-MR.png");
-		pbrMaterials[1].normalMap = TextureManager::getTexturePtr("textures/sand1/sand1-normal-ogl.png");
-		pbrMaterials[1].ao = TextureManager::getTexturePtr("textures/white.png");
+		pbrMaterials[1].albedo = TextureManager::loadTexture("textures/sand1/sand1-albedo.png");
+		pbrMaterials[1].metallicRoughness = TextureManager::loadTexture("textures/sand1/sand1-MR.png");
+		pbrMaterials[1].normalMap = TextureManager::loadTexture("textures/sand1/sand1-normal-ogl.png");
+		pbrMaterials[1].ao = TextureManager::loadTexture("textures/white.png");
 		pbrMaterials[1].textureTiling = 2500.0f;
 
 		/*
-		pbrMaterials[2].albedo = TextureManager::getTexturePtr("textures/rustediron2/rustediron2_basecolor.png");
-		pbrMaterials[2].metallicRoughness = TextureManager::getTexturePtr("textures/rustediron2/rustediron2_MR.png");
-		pbrMaterials[2].normalMap = TextureManager::getTexturePtr("textures/rustediron2/rustediron2_normal.png");
-		pbrMaterials[2].ao = TextureManager::getTexturePtr("textures/white.png");
+		pbrMaterials[2].albedo = TextureManager::loadTexture("textures/rustediron2/rustediron2_basecolor.png");
+		pbrMaterials[2].metallicRoughness = TextureManager::loadTexture("textures/rustediron2/rustediron2_MR.png");
+		pbrMaterials[2].normalMap = TextureManager::loadTexture("textures/rustediron2/rustediron2_normal.png");
+		pbrMaterials[2].ao = TextureManager::loadTexture("textures/white.png");
 		pbrMaterials[2].textureTiling = 1.0f;
 		*/
 
 
-		pbrMaterials[2].albedo = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-albedo.png");
-		pbrMaterials[2].metallicRoughness = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-MR.png");
-		pbrMaterials[2].normalMap = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-normal2.png");
-		pbrMaterials[2].ao = TextureManager::getTexturePtr("textures/dry-dirt2/dry-dirt2-ao.png");
+		pbrMaterials[2].albedo = TextureManager::loadTexture("textures/dry-dirt2/dry-dirt2-albedo.png");
+		pbrMaterials[2].metallicRoughness = TextureManager::loadTexture("textures/dry-dirt2/dry-dirt2-MR.png");
+		pbrMaterials[2].normalMap = TextureManager::loadTexture("textures/dry-dirt2/dry-dirt2-normal2.png");
+		pbrMaterials[2].ao = TextureManager::loadTexture("textures/dry-dirt2/dry-dirt2-ao.png");
 		pbrMaterials[2].textureTiling = 2500.0f;
 
 
@@ -514,29 +514,29 @@ void HeightMap::initMaterials() {
 		TextureManager::loadTexture("textures/TexturesCom_Grass0202_1_seamless_S.jpg");
 		TextureManager::loadTexture("textures/mossy-ground1-albedo.png");
 
-		materials[0].diffuseTexture = TextureManager::getTexturePtr("textures/TexturesCom_Grass0202_1_seamless_S.jpg");
-		materials[0].normalMap = TextureManager::getTexturePtr("textures/mossy-ground1-preview.png");
+		materials[0].diffuseTexture = TextureManager::loadTexture("textures/TexturesCom_Grass0202_1_seamless_S.jpg");
+		materials[0].normalMap = TextureManager::loadTexture("textures/mossy-ground1-preview.png");
 		materials[0].shininess = 1.0f;
 		materials[0].textureTiling = 2000.0f;
 
-		materials[1].diffuseTexture = TextureManager::getTexturePtr("textures/ROCK_030_COLOR.jpg");
-		materials[1].normalMap = TextureManager::getTexturePtr("textures/ROCK_030_NORM.jpg");
+		materials[1].diffuseTexture = TextureManager::loadTexture("textures/ROCK_030_COLOR.jpg");
+		materials[1].normalMap = TextureManager::loadTexture("textures/ROCK_030_NORM.jpg");
 		materials[1].shininess = 2.0f;
 		materials[1].textureTiling = 1000.0f;
 
-		materials[2].diffuseTexture = TextureManager::getTexturePtr("textures/Ground_Dirt_006_COLOR.jpg");
-		materials[2].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+		materials[2].diffuseTexture = TextureManager::loadTexture("textures/Ground_Dirt_006_COLOR.jpg");
+		materials[2].normalMap = TextureManager::loadTexture("textures/Ground_Dirt_006_NORM.jpg");
 		materials[2].shininess = 1.0f;
 		materials[2].textureTiling = 8000.0f;
 
-		materials[3].diffuseTexture = TextureManager::getTexturePtr("textures/TexturesCom_SoilMud0045_2_seamless_S.jpg");
-		//materials[3].normalMap = TextureManager::getTexturePtr("textures/Ground_Dirt_006_NORM.jpg");
+		materials[3].diffuseTexture = TextureManager::loadTexture("textures/TexturesCom_SoilMud0045_2_seamless_S.jpg");
+		//materials[3].normalMap = TextureManager::loadTexture("textures/Ground_Dirt_006_NORM.jpg");
 		materials[3].shininess = 1.0f;
 		materials[3].textureTiling = 1000.0f;
 
 
-		//materials[2].diffuseTexture = TextureManager::getTexturePtr("mossy-ground1-albedo.png");
-		//materials[2].normalMap = TextureManager::getTexturePtr("mossy-ground1-preview.png");
+		//materials[2].diffuseTexture = TextureManager::loadTexture("mossy-ground1-albedo.png");
+		//materials[2].normalMap = TextureManager::loadTexture("mossy-ground1-preview.png");
 
 		materialMap = TextureManager::loadTexture("materialMaps/materialMap_02_1024.png");
 

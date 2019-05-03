@@ -24,23 +24,23 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) :
 	passThruShader = ShaderManager::getShaderPtr("pass_thru_alpha");
 	blurShader = ShaderManager::getShaderPtr("blur_basic");
 
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "grad.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "cloud_particle_1024.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "cloud_particle_256.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture3_256.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture3.png")); // still the best looking I would say
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture4.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture5.png"));
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture6.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "grad.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture2.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_1024.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_256.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture3_256.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture3.png")); // still the best looking I would say
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture4.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture5.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture6.png"));
 
 
 	spriteTexture = spriteTextures.back();
 
-	spriteTextures.push_back(TextureManager::getTexturePtr((string)TEXTURES_DIR + "white.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "white.png"));
 
-	atlasSpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "cloud_atlas.png");
+	atlasSpriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_atlas.png");
 
 }
 

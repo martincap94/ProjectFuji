@@ -173,9 +173,9 @@ void main() {
 		projCoords = projCoords * 0.5 + vec3(0.5);
 
 		vec4 cloudShadowVals =  texture(u_CloudShadowTexture, projCoords.xy);
-		vec3 cloudShadow = vec3(1.0) - (cloudShadowVals.a * cloudShadowVals.xyz * vec3(u_CloudCastShadowAlphaMultiplier));
+		vec3 cloudShadow = vec3(1.0) - (cloudShadowVals.a * cloudShadowVals.xyz * u_CloudCastShadowAlphaMultiplier);
 
-		//fragColor = vec4(cloudShadow, 1.0);
+		//fragColor = vec4(vec3(cloudShadowVals.a), 1.0);
 		//return;
 
 		result *= cloudShadow;

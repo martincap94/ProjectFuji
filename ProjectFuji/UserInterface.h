@@ -58,44 +58,51 @@ class StreamlineParticleSystem;
 class SceneGraph;
 class EmitterBrushMode;
 
-//struct nk_context;
-//struct nk_image;
 
+//! Class used for UI construction.
+/*!
+	Class that is used for constructing the main user interface of the application.
+	The nuklear library is used for UI rendering and creation.
+	Nuklear library was created by Micha Mettke, licensed under Public domain;
+	available here: https://github.com/vurtun/nuklear
+
+	Generates two sidebars and other floating/popup windows.
+*/
 class UserInterface {
 private:
 
+	//! Possible content modes of each sidebar.
 	enum eContentMode {
-		LBM = 0,
-		LIGHTING,
-		TERRAIN,
-		SKY,
-		CLOUD_VIS,
-		DIAGRAM,
-		LBM_DEBUG,
-		SCENE_HIERARCHY,
-		EMITTERS,
-		GENERAL_DEBUG,
-		PROPERTIES,
-		_NUM_CONTENT_MODES
+		LBM = 0,			//!< Show LBM tab
+		LIGHTING,			//!< Show lighting & shadow controls tab
+		TERRAIN,			//!< Show terrain settings tab
+		SKY,				//!< Show sky settings tab
+		CLOUD_VIS,			//!< Show cloud visualization tab
+		DIAGRAM,			//!< Show diagram controls tab
+		LBM_DEBUG,			//!< Show LBM debug tab
+		SCENE_HIERARCHY,	//!< Show scene hierarchy tab
+		EMITTERS,			//!< Show emitter controls tab
+		GENERAL_DEBUG,		//!< Show general debug tab
+		PROPERTIES,			//!< Show properties (of selected items) tab
+		_NUM_CONTENT_MODES	//!< Number of content modes
 	};
 
+	//! Possible states of each tab.
 	enum eTabState {
-		INACTIVE = 0,
-		ACTIVE = 1
+		INACTIVE = 0,	//!< The tab is inactive (hidden)
+		ACTIVE = 1		//!< The tab is active (shown)
 	};
 
-	//int tabPositions[_NUM_CONTENT_MODES];
-	//int tabStates[_NUM_CONTENT_MODES];
-
-
+	//! Possible naming conventions of vectors.
 	enum eVecNaming {
-		DEFAULT = 0,	// x, y, z, w
-		COLOR,			// r, g, b, a
-		INDEX,			// 0, 1, 2, 3
-		TEXTURE,		// s, t, p, q
+		DEFAULT = 0,	//!< Default naming:		x, y, z, w
+		COLOR,			//!< Color based naming:	r, g, b, a
+		INDEX,			//!< Number indexation:		0, 1, 2, 3
+		TEXTURE,		//!< Texture based naming:	s, t, p, q
 	};
 
 public:
+
 
 	LBM3D_1D_indices *lbm = nullptr;
 	ParticleSystem *particleSystem = nullptr;
@@ -154,11 +161,6 @@ private:
 	struct nk_style_button activeButtonStyle;
 	struct nk_style_button inactiveButtonStyle;
 
-	//enum eTabPosition {
-	//	HIDDEN = 0,
-	//	LEFT_SIDEBAR,
-	//	RIGHT_SIDEBAR
-	//};
 
 	const char *vecNames[16] = {
 		"#x", "#y", "#z", "#w",
@@ -234,7 +236,7 @@ private:
 	void constructSaveParticlesWindow();
 	void constructLoadParticlesWindow();
 
-	
+
 	void constructDebugTab();
 	void constructFavoritesMenu();
 

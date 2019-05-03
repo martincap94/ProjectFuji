@@ -102,19 +102,17 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	gridDim = dim3((int)ceil((float)numParticles / (float)blockDim.x), 1, 1);
 
 
-	positionRecalculationThreshold = vars->positionRecalculationThreshold;
-	maxPositionRecalculations = vars->maxPositionRecalculations;
 	numActiveParticles = 0;
 	//numActiveParticles = numParticles;
 
 	initBuffers();
 	initCUDA();
 
-	//spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "radial-gradient-white-2.png");
-	//secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "radial-gradient-white-2.png");
+	//spriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "radial-gradient-white-2.png");
+	//secondarySpriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "radial-gradient-white-2.png");
 
-	spriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture.png");
-	secondarySpriteTexture = TextureManager::getTexturePtr((string)TEXTURES_DIR + "testTexture2.png");
+	spriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture.png");
+	secondarySpriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture2.png");
 
 
 	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());

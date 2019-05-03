@@ -6,7 +6,6 @@
 *	This file describes a very simple Curve class that is used in the SkewT/LogP diagram.
 *	The curve intersection is based on theroy from http://paulbourke.net/geometry/pointlineplane 
 *	& http://www.cs.swan.ac.uk/~cssimon/line_intersection.html. 
-*
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once

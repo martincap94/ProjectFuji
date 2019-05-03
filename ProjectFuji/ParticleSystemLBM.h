@@ -5,6 +5,7 @@
 * \date       2018/12/23
 *
 *	--- DEPRECATED (LBM only implementation) ---
+*	\deprecated
 *	Defines ParticleSystemLBM class that is used in both 2D and 3D simulations.
 *	As you may notice, the class uses glm::vec3 for particle vertices representation which is
 *	very inefficient when 2D simulation is used. This stems from the fact that I originally

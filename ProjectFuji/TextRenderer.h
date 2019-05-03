@@ -22,32 +22,32 @@ using namespace std;
 #include <map>
 #include "ShaderProgram.h"
 
-/// TextRenderer class that offers text rendering capabilities.
-/**
+//! TextRenderer class that offers text rendering capabilities.
+/*!
 	TextRenderer class that offers text rendering capabilities.
 */
 class TextRenderer {
 public:
 
-	/// Single character attributes of TrueType font.
+	//! Single character attributes of TrueType font.
 	struct Character {
-		GLuint     textureID;  ///< ID handle of the glyph texture
-		glm::ivec2 size;       ///< Size of glyph
-		glm::ivec2 bearing;    ///< Offset from baseline to left/top of glyph
-		GLuint     advance;    ///< Offset to advance to next glyph
+		GLuint     textureID;  //!< ID handle of the glyph texture
+		glm::ivec2 size;       //!< Size of glyph
+		glm::ivec2 bearing;    //!< Offset from baseline to left/top of glyph
+		GLuint     advance;    //!< Offset to advance to next glyph
 	};
 
-	map<GLchar, Character> characters;	///< Preloaded character textures
+	map<GLchar, Character> characters;	//!< Preloaded character textures
 
 	GLuint VAO, VBO;
 
-	/// Constructs the text renderer, initializes FreeType and loads arial.
+	//! Constructs the text renderer, initializes FreeType and loads arial.
 	TextRenderer();
 
-	/// Default destructor.
+	//! Default destructor.
 	~TextRenderer();
 
-	/// Renders the given text in specified location.
+	//! Renders the given text in specified location.
 	/**
 		Renders the given text (string) in specified location (x and y coordinates).
 		\param[in] s		ShaderProgram to be used for text rendering.
@@ -61,7 +61,7 @@ public:
 
 private:
 
-	ShaderProgram *shader = nullptr;
+	ShaderProgram *shader = nullptr;	//!< Shader used when rendering text
 
 };
 
