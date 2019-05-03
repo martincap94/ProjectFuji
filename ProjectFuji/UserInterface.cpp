@@ -1109,8 +1109,7 @@ void UserInterface::constructCloudVisualizationTab() {
 	nk_checkbox_label(ctx, "Half vector always faces camera", &particleRenderer->forceHalfVecToFaceCam);
 
 
-	nk_property_float(ctx, "Point size", 0.1f, &stlpSimCUDA->pointSize, 100000.0f, 0.1f, 0.1f);
-	particleSystem->pointSize = stlpSimCUDA->pointSize;
+	nk_property_float(ctx, "Point size", 0.1f, &particleSystem->pointSize, 100000.0f, 0.1f, 0.1f);
 	nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars->opacityMultiplier, 10.0f, 0.01f, 0.01f);
 
 	nk_checkbox_label(ctx, "Show particles below CCL", &particleRenderer->showParticlesBelowCCL);
@@ -1334,9 +1333,8 @@ void UserInterface::constructDiagramControlsTab() {
 	nk_checkbox_label(ctx, "Apply STLP", &vars->applySTLP);
 	nk_property_int(ctx, "STLP step frame", 1, &vars->stlpStepFrame, 100, 1, 1);
 
-	nk_property_float(ctx, "Point size", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
+	nk_property_float(ctx, "Point size", 0.1f, &particleSystem->pointSize, 100.0f, 0.1f, 0.1f);
 	//stlpSimCUDA->pointSize = stlpSim->pointSize;
-	particleSystem->pointSize = stlpSimCUDA->pointSize;
 	//nk_property_float(ctx, "Point size (CUDA)", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
 
 

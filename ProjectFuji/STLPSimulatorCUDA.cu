@@ -382,14 +382,9 @@ STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpD
 	layerVisShader = ShaderManager::getShaderPtr("singleColorAlpha");
 
 	initBuffers();
-	//initCUDA();
-
-	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
-	secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
 
 	profileMap = new ppmImage("profileMaps/120x80_pm_01.ppm");
 
-	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
 
 	
 }
@@ -411,16 +406,6 @@ void STLPSimulatorCUDA::initBuffers() {
 	uploadProfileIndicesUniforms(s);
 	s = ShaderManager::getShaderPtr("volume_2nd_pass_alt2");
 	uploadProfileIndicesUniforms(s);
-
-	//glGenBuffers(1, &profileDataSSBO);
-	//glBindBuffer(GL_SHADER_STORAGE_BUFFER, profileDataSSBO);
-	//glNamedBufferStorage(profileDataSSBO, n * sizeof(PointLightData), NULL, GL_DYNAMIC_STORAGE_BIT);
-	//glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, profileDataSSBO);
-
-
-
-
-
 
 
 	vector<glm::vec3> vertices;
@@ -735,6 +720,14 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 	}
 	CHECK_ERROR(cudaMemcpy(d_TcProfiles, &tmp[0], sizeof(glm::vec2) * tmp.size(), cudaMemcpyHostToDevice));
 
+
+	ShaderProgram *s = ShaderManager::getShaderPtr("pointSpriteTest");
+	uploadProfileIndicesUniforms(s);
+	s = ShaderManager::getShaderPtr("volume_1st_pass_alt2");
+	uploadProfileIndicesUniforms(s);
+	s = ShaderManager::getShaderPtr("volume_2nd_pass_alt2");
+	uploadProfileIndicesUniforms(s);
+
 }
 
 void STLPSimulatorCUDA::doStep() {
@@ -757,7 +750,7 @@ void STLPSimulatorCUDA::doStep() {
 
 
 
-	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, delta_t, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, /*particleSystem->d_particlePressures,*/ d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO, vars->dividePrevVelocity, vars->prevVelocityDivisor * 0.01f);
+	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, delta_t, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO, vars->dividePrevVelocity, vars->prevVelocityDivisor * 0.01f);
 
 	CHECK_ERROR(cudaPeekAtLastError());
 
@@ -766,20 +759,14 @@ void STLPSimulatorCUDA::doStep() {
 	cudaGraphicsUnmapResources(1, &particleSystem->cudaDiagramParticleVerticesVBO, 0);
 
 
-	// Upload uniforms
-	ShaderProgram *s = ShaderManager::getShaderPtr("pointSpriteTest");
-	uploadProfileIndicesUniforms(s);
-	s = ShaderManager::getShaderPtr("volume_1st_pass_alt2");
-	uploadProfileIndicesUniforms(s);
-	s = ShaderManager::getShaderPtr("volume_2nd_pass_alt2");
-	uploadProfileIndicesUniforms(s);
-
 }
 
 
 void STLPSimulatorCUDA::resetSimulation() {
 }
 
+
+/*
 void STLPSimulatorCUDA::generateParticle() {
 
 
@@ -871,6 +858,7 @@ void STLPSimulatorCUDA::generateParticle() {
 	numParticles++;
 
 }
+*/
 
 void STLPSimulatorCUDA::draw(glm::vec3 cameraPos) {
 	
@@ -919,39 +907,13 @@ void STLPSimulatorCUDA::drawDiagramParticles(ShaderProgram * shader) {
 	glPointSize(2.0f);
 	shader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
 
-	//glBindVertexArray(diagramParticlesVAO);
-	////glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
-	////glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
-	////glNamedBufferData(particlesVBO, sizeof(glm::vec2) * particlePoints.size(), &particlePoints[0], GL_DYNAMIC_DRAW);
-	//glDrawArrays(GL_POINTS, 0, particleSystem->numActiveParticles);
-	//
+
 	if (depthTestEnabled) {
 		glEnable(GL_DEPTH_TEST);
 	}
 
 }
 
-/*
-void STLPSimulatorCUDA::initParticles() {
-	for (int i = 0; i < maxNumParticles; i++) {
-		generateParticle();
-	}
-	//glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
-	glNamedBufferData(particlesVBO, sizeof(glm::vec3) * numParticles, &particlePositions[0], GL_DYNAMIC_DRAW);
-	cout << "Particles initialized: num particles = " << numParticles << endl;
-
-
-	vector<int> particleProfiles;
-	for (int i = 0; i < maxNumParticles; i++) {
-		particleProfiles.push_back(particles[i].profileIndex);
-	}
-	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
-
-	
-
-}
-*/
 
 void STLPSimulatorCUDA::mapToSimulationBox(float & val) {
 	rangeToRange(val, groundHeight, boxTopHeight, 0.0f, vars->latticeHeight);
