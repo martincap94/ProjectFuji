@@ -20,9 +20,10 @@
 
 //bool loadObjNew(const char * path, std::vector<glm::vec3>& outVertices, std::vector<glm::vec2>& outUVs, std::vector<glm::vec3>& outNormals);
 
-
+//! Loads the object from the given file.
 bool loadObj(const char *path, std::vector<MeshVertex>& vertices, std::vector<glm::vec3> &outVertices,
 			 std::vector<glm::vec2> &outUVs, std::vector<glm::vec3> &outNormals, std::vector<glm::vec3> &outTangents, std::vector<glm::vec3> &outBitangents);
 
+//! Loads the object from the given file.
 bool loadObj(const char *path, std::vector<MeshVertex>& vertices, std::vector<glm::vec3> &outVertices,
 			 std::vector<glm::vec2> &outUVs, std::vector<glm::vec3> &outNormals);

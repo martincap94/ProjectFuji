@@ -467,8 +467,6 @@ void STLPSimulator::draw(ShaderProgram &particlesShader, glm::vec3 cameraPos) {
 
 }
 
-void STLPSimulator::initParticles() {
-}
 
 void STLPSimulator::mapToSimulationBox(float & val) {
 	rangeToRange(val, groundHeight, boxTopHeight, 0.0f, vars->latticeHeight);

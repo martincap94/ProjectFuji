@@ -20,8 +20,12 @@ OverlayTexture::OverlayTexture(int x, int y, int width, int height, VariableMana
 	refreshVBO();
 }
 
+OverlayTexture::OverlayTexture() {
+}
+
 OverlayTexture::~OverlayTexture() {
 }
+
 
 void OverlayTexture::draw() {
 	if (!active) {

@@ -6,12 +6,7 @@
 
 using namespace std;
 
-ShaderProgram::ShaderProgram() {
-
-
-
-
-}
+ShaderProgram::ShaderProgram() {}
 
 ShaderProgram::ShaderProgram(const GLchar *vsPath, const GLchar *fsPath, const GLchar *gsPath) {
 

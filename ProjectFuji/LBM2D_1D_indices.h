@@ -157,7 +157,6 @@ public:
 
 	virtual void resetSimulation();
 
-	virtual void updateControlProperty(eLBMControlProperty controlProperty);
 
 	/// Copies data from GPU memory back to CPU memory.
 	/**

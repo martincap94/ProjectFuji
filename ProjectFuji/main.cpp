@@ -489,7 +489,7 @@ int runApp() {
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	lbm->mapVBOTEST(particleSystem->particleVerticesVBO, particleSystem->cudaParticleVerticesVBO);
+	lbm->mapVBO(particleSystem->particleVerticesVBO);
 
 
 	// Set these callbacks after nuklear initialization, otherwise they won't work!
@@ -832,7 +832,7 @@ int runApp() {
 			}
 
 			if (!vars.renderMode) {
-				stlpSimCUDA->draw(camera->position);
+				stlpSimCUDA->draw();
 
 			}
 

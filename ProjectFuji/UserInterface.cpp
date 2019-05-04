@@ -513,14 +513,6 @@ void UserInterface::constructLBMTab() {
 	constructTauProperty();
 
 
-	/*int mirrorSidesPrev = lbm->mirrorSides;
-	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_checkbox_label(ctx, "Mirror sides", &lbm->mirrorSides);
-	if (mirrorSidesPrev != lbm->mirrorSides) {
-	cout << "Mirror sides value changed!" << endl;
-	lbm->updateControlProperty(LBM3D_1D_indices::MIRROR_SIDES_PROP);
-	}*/
-
 
 	//nk_label(ctx, "Use point sprites", NK_TEXT_LEFT);
 	int prevVsync = vars->vsync;

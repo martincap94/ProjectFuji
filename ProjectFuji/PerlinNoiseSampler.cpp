@@ -7,12 +7,10 @@ using namespace std;
 
 int PerlinNoiseSampler::p[512];
 
-PerlinNoiseSampler::PerlinNoiseSampler() {
-}
+PerlinNoiseSampler::PerlinNoiseSampler() {}
 
 
-PerlinNoiseSampler::~PerlinNoiseSampler() {
-}
+PerlinNoiseSampler::~PerlinNoiseSampler() {}
 
 float PerlinNoiseSampler::getSample(glm::vec3 pos) {
 	return getSample(pos.x, pos.y, pos.z);
@@ -29,6 +27,8 @@ float PerlinNoiseSampler::getSampleOctaves(glm::vec3 pos) {
 float PerlinNoiseSampler::getSampleOctaves(float x, float y, float z) {
 	return getSampleOctavesStatic(x, y, z, frequency, numOctaves, persistence, samplingMode);
 }
+
+
 
 float PerlinNoiseSampler::getSampleStatic(glm::vec3 pos, float frequency, int samplingMode) {
 	return getSampleStatic(pos.x, pos.y, pos.z);

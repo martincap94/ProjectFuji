@@ -13,30 +13,29 @@
 #include "StreamlineParticleSystem.h"
 
 
-__constant__ int d_latticeWidth;		///< Lattice width constant on the device
-__constant__ int d_latticeHeight;		///< Lattice height constant on the device
-__constant__ int d_latticeDepth;		///< Lattice depth constant on the device
-__constant__ int d_latticeSize;			///< Lattice size constant on the device (latticeWidth * latticeHeight * latticeDepth)
-__constant__ float d_tau;				///< Tau value on the device
-__constant__ float d_itau;				///< Inverse tau value (1.0f / tau) on the device
-__constant__ int d_mirrorSides;			///< Whether to mirror sides (cycle) on the device
+__constant__ int d_latticeWidth;		//!< Lattice width constant on the device
+__constant__ int d_latticeHeight;		//!< Lattice height constant on the device
+__constant__ int d_latticeDepth;		//!< Lattice depth constant on the device
+__constant__ int d_latticeSize;			//!< Lattice size constant on the device (latticeWidth * latticeHeight * latticeDepth)
+__constant__ float d_tau;				//!< Tau value on the device
+__constant__ float d_itau;				//!< Inverse tau value (1.0f / tau) on the device
 __constant__ float d_worldSizeRatio;
 
 __constant__ glm::vec3 d_position;
 
-__device__ int d_respawnY = 0;			///< Respawn y coordinate on the device, not used (random respawn now used)
-__device__ int d_respawnZ = 0;			///< Respawn z coordinate on the device, not used (random respawn now used)
+__device__ int d_respawnY = 0;			//!< Respawn y coordinate on the device, not used (random respawn now used)
+__device__ int d_respawnZ = 0;			//!< Respawn z coordinate on the device, not used (random respawn now used)
 __constant__ glm::vec3 dirVectorsConst[19];
 
 
 
 
-/// Returns the flattened index using the device constants and provided coordinates.
+//! Returns the flattened index using the device constants and provided coordinates.
 __device__ int getIdxKer(int x, int y, int z) {
 	return (x + d_latticeWidth * (y + d_latticeHeight * z));
 }
 
-/// Returns uniform random between 0.0 and 1.0. Provided from different student's work.
+//! Returns uniform random between 0.0 and 1.0. Provided from different student's work.
 __device__ __host__ float rand(int x, int y) {
 	int n = x + y * 57;
 	n = (n << 13) ^ n;
@@ -51,23 +50,21 @@ __device__ __host__ float rand(int x, int y) {
 //	return glm::vec3(viridis_cm[discreteVal][0], viridis_cm[discreteVal][1], viridis_cm[discreteVal][2]);
 //}
 
+//! Maps the world position vector to the lattice position vector.
 __host__ __device__ glm::vec3 getLatticePosition(glm::vec3 worldPosition) {
 	// TODO - offsets (model matrix?), maybe even scaling (model matrix scale)
 	worldPosition -= d_position;
 	return (worldPosition / d_worldSizeRatio);
-	//return glm::vec3(worldPosition.x / d_worldSizeRatio, worldPosition.y / d_worldSizeRatio, worldPosition.z / d_worldSizeRatio);
-	//return glm::vec3();
 }
 
+//! Maps the lattice position vector to world position vector.
 __host__ __device__ glm::vec3 getWorldPosition(glm::vec3 latticePosition) {
 	latticePosition *= d_worldSizeRatio;
 	return (latticePosition + d_position);
-
-	//return glm::vec3(latticePosition.x * d_worldSizeRatio, latticePosition.y * d_worldSizeRatio, latticePosition.z * d_worldSizeRatio);
 }
 
 
-
+//! Moves the streamline particles. 
 __global__ void moveStreamlineParticlesKernel(glm::vec3 *streamlineVertices, glm::vec3 *velocities, int *streamlineLengths, int maxStreamlineLength, int maxNumStreamlines, int respawnMode, int outOfBoundsMode, float velocityMultiplier = 1.0f, bool useCorrectInterpolation = true) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
@@ -97,32 +94,6 @@ __global__ void moveStreamlineParticlesKernel(glm::vec3 *streamlineVertices, glm
 			// we actually want to remember the streamline lengths so we can then render the lines cleanly
 			idx += blockDim.x * blockDim.y * gridDim.x;
 			continue;
-
-			/*
-			if (respawnMode == 0) {
-
-				if (pos.x < 0.0f || pos.x > d_latticeWidth - 1) {
-					pos.x = fmodf(pos.x + d_latticeWidth - 1, d_latticeWidth - 1);
-				}
-				if (pos.y < 0.0f) {
-					pos.y = 0.0f;
-				}
-				if (pos.y > d_latticeHeight - 1) {
-					// respawn
-					pos.x = 0.0f;
-					pos.y = rand(idx, pos.y) * (d_latticeHeight - 1);
-					pos.z = rand(idx, pos.z) * (d_latticeDepth - 1);
-				}
-				if (pos.z < 0.0f || pos.z > d_latticeDepth - 1) {
-					pos.z = fmodf(pos.z + d_latticeDepth - 1, d_latticeDepth - 1);
-				}
-			} else {
-				//pos.x = 0.0f;
-				pos.x = fmodf(pos.x + d_latticeWidth - 1, d_latticeWidth - 1);
-				pos.y = fmodf(pos.y + d_latticeHeight - 1, d_latticeHeight - 1);
-				pos.z = rand(idx, pos.z) * (d_latticeDepth - 1);
-			}
-			*/
 		}
 
 		int leftX = (int)pos.x;
@@ -190,9 +161,6 @@ __global__ void moveStreamlineParticlesKernel(glm::vec3 *streamlineVertices, glm
 
 		pos += finalVelocity;
 
-
-		//particleVertices[idx] = pos;
-
 		streamlineVertices[off + 1] = getWorldPosition(pos);
 		streamlineLengths[idx]++;
 
@@ -206,7 +174,20 @@ __global__ void moveStreamlineParticlesKernel(glm::vec3 *streamlineVertices, glm
 
 
 
+//! Kernel for moving particles that uses OpenGL interoperability.
+/*!
+	If the particles venture beyond the simulation bounding volume, they are respawned.
+	Out of bounds mode is not used (not implemented) yet.
 
+	\param[in] particleVertices		Vertices (positions stored in VBO) of particles to be updated/moved.
+	\param[in] velocities			Array of velocities that will act on the particles.
+	\param[in] numActiveParticles	Number of active particles that should be moved.
+	\param[in] particleColors		--- OLD --- VBO of particle colors.
+	\param[in] respawnMode			Determines how the particles are respawned.
+	\param[in] outOfBoundsMode		--- NOT IMPLEMENTED --- Determines how are particles that are out of bounds treated.
+	\param[in] velocityMultiplier	Artifical multiplier that determines how much the particles are moved.
+	\param[in] useCorrectInterpolation	Determines mode of trilinear interpolation.
+*/
 __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm::vec3 *velocities, /*int *numParticles*/ int numActiveParticles, glm::vec3 *particleColors, int respawnMode, int outOfBoundsMode, float velocityMultiplier = 1.0f, bool useCorrectInterpolation = true) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
@@ -216,22 +197,19 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 
 	while (idx < numActiveParticles) {
 
-		//glm::vec3 pos = particleVertices[idx];
-
-		if (isnan(particleVertices[idx].x) || isnan(particleVertices[idx].y) || isnan(particleVertices[idx].z) ||
-			isinf(particleVertices[idx].x) || isinf(particleVertices[idx].y) || isinf(particleVertices[idx].z)) {
-			//printf("oh no!");
-			particleVertices[idx] = glm::vec3(0.0f);
-			continue;
-		}
+		//if (isnan(particleVertices[idx].x) || isnan(particleVertices[idx].y) || isnan(particleVertices[idx].z) ||
+		//	isinf(particleVertices[idx].x) || isinf(particleVertices[idx].y) || isinf(particleVertices[idx].z)) {
+		//	particleVertices[idx] = glm::vec3(0.0f);
+		//	continue;
+		//}
 
 		glm::vec3 pos = getLatticePosition(particleVertices[idx]);
 
 
-		//if (isnan(pos.x) || isnan(pos.y) || isnan(pos.z) || isinf(pos.x) || isinf(pos.y) || isinf(pos.z)) {
-		//	printf("oh no");
-		//	continue;
-		//}
+		if (isnan(pos.x) || isnan(pos.y) || isnan(pos.z) || isinf(pos.x) || isinf(pos.y) || isinf(pos.z)) {
+			particleVertices[idx] = glm::vec3(0.0f);
+			continue;
+		}
 
 
 		if (pos.x < 0.0f || pos.x > d_latticeWidth - 1 ||
@@ -366,8 +344,6 @@ __global__ void moveParticlesKernelInteropNew2(glm::vec3 *particleVertices, glm:
 
 		pos += finalVelocity;
 
-
-		//particleVertices[idx] = pos;
 		particleVertices[idx] = getWorldPosition(pos);
 
 		idx += blockDim.x * blockDim.y * gridDim.x;
@@ -431,22 +407,6 @@ __global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::
 			}
 		}
 
-
-		// SOLVES CRASHES WITH STLP
-		//if (pos.x < 0.0f || pos.x > d_latticeWidth - 1 ||
-		//	pos.y < 0.0f || pos.y > d_latticeHeight - 1 ||
-		//	pos.z < 0.0f || pos.z > d_latticeDepth - 1) {
-
-		//	if (outOfBoundsMode == 0) {
-		//		idx += blockDim.x * blockDim.y * gridDim.x;
-		//		continue; // beware - while cycle goes through multiple particles!
-		//	}
-
-		//	pos.x = 0.0f;
-		//	pos.y = rand(idx, pos.y) * (d_latticeHeight - 1);
-		//	pos.z = rand(idx, pos.z) * (d_latticeDepth - 1);
-		//}
-
 		int leftX = (int)pos.x;
 		int rightX = leftX + 1;
 		int bottomY = (int)pos.y;
@@ -499,18 +459,6 @@ __global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::
 
 		pos += finalVelocity;
 
-
-		//if (pos.x < 0.0f || pos.x > d_latticeWidth - 1 ||
-		//	pos.y < 0.0f || pos.y > d_latticeHeight - 1 ||
-		//	pos.z < 0.0f || pos.z > d_latticeDepth - 1) {
-
-		//	pos.x = 0.0f;
-
-		//	if (respawnMode == 1) {
-		//		pos.z = rand(idx, pos.z) * (d_latticeDepth - 1); // comment this out if you want to respawn at same z
-		//	}
-
-		//}
 		particleVertices[idx] = pos;
 
 		idx += blockDim.x * blockDim.y * gridDim.x;
@@ -523,8 +471,8 @@ __global__ void moveParticlesKernelInteropNew(glm::vec3 *particleVertices, glm::
 
 
 
-/// Kernel for moving particles that uses OpenGL interoperability.
-/**
+//! Kernel for moving particles that uses OpenGL interoperability.
+/*!
 	Kernel for moving particles that uses OpenGL interoperability for setting particle positions and colors.
 	If the particles venture beyond the simulation bounding volume, they are randomly respawned.
 	If we use side mirroring (cycling), particles that go beyond side walls (on the z axis) will be mirrored/cycled to the other
@@ -602,35 +550,6 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 
 
 		particleVertices[idx] += finalVelocity;
-		//particleVertices[idx].x += finalVelocity.x;
-		//particleVertices[idx].y += finalVelocity.y;
-		//particleVertices[idx].z += finalVelocity.z;
-
-
-		//particleColors[idx] = mapToViridis3D(glm::length2(finalVelocity) * 4.0f);
-
-
-		//if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
-		//	particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
-		//	particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
-
-		//	if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1) {
-		//		particleVertices[idx].x = 0.0f;
-		//	}
-		//	if (particleVertices[idx].y <= 0.0f) {
-		//		particleVertices[idx].y = d_latticeHeight - 1;
-		//	} else if (particleVertices[idx].y >= d_latticeHeight - 1) {
-		//		particleVertices[idx].y = 0.0f;
-		//	}
-		//	if (particleVertices[idx].z <= 0.0f) {
-		//		particleVertices[idx].z = d_latticeDepth - 1;
-		//	} else if (particleVertices[idx].z >= d_latticeDepth - 1) {
-		//		particleVertices[idx].z = 0.0f;
-		//	}
-		//	return;
-		//}
-
-
 
 		if (particleVertices[idx].x < 0.0f || particleVertices[idx].x > d_latticeWidth - 1 ||
 			particleVertices[idx].y < 0.0f || particleVertices[idx].y > d_latticeHeight - 1 ||
@@ -649,96 +568,13 @@ __global__ void moveParticlesKernelInterop(glm::vec3 *particleVertices, glm::vec
 
 		}
 
-
-
-		/*
-		if (d_mirrorSides && (particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1)) {
-			particleVertices[idx].z = (int)(particleVertices[idx].z + d_latticeDepth - 1) % (d_latticeDepth - 1);
-		} else if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
-					particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
-				   particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
-			particleVertices[idx].x = 0.0f;
-			particleVertices[idx].y = d_respawnY;
-			particleVertices[idx].z = d_respawnZ;
-			//d_respawnZ++;
-			atomicAdd(&d_respawnZ, 1);
-
-			if (d_respawnZ >= d_latticeDepth - 1) {
-				d_respawnZ = 0;
-				//atomicExch(&d_respawnZ, 0);
-				//d_respawnY++;
-				atomicAdd(&d_respawnY, 1);
-			}
-			if (d_respawnY >= d_latticeHeight - 1) {
-				d_respawnY = 0;
-				//atomicExch(&d_respawnY, 0);
-			}
-		}
-		*/
-
-
-		/*
-		if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
-			particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
-			particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
-
-			if (d_mirrorSides) {
-				if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1 ||
-					particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1) {
-					particleVertices[idx].x = 0.0f;
-					particleVertices[idx].y = d_respawnY;
-					particleVertices[idx].z = d_respawnZ++;
-
-					if (d_respawnZ >= d_latticeDepth - 1) {
-						d_respawnZ = 0;
-						d_respawnY++;
-					}
-					if (d_respawnY >= d_latticeHeight - 1) {
-						d_respawnY = 0;
-					}
-				} else {
-					//particleVertices[idx].x = x;
-					//particleVertices[idx].y = y;
-					particleVertices[idx].z = (int)(particleVertices[idx].z + d_latticeDepth - 1) % (d_latticeDepth - 1);
-				}
-			} else {
-
-
-				//particleVertices[idx] = glm::vec3(0.0f, d_respawnY, d_respawnZ++);
-				particleVertices[idx].x = 0.0f;
-				particleVertices[idx].y = d_respawnY;
-				particleVertices[idx].z = d_respawnZ++;
-
-				if (d_respawnZ >= d_latticeDepth - 1) {
-					d_respawnZ = 0;
-					d_respawnY++;
-				}
-				if (d_respawnY >= d_latticeHeight - 1) {
-					d_respawnY = 0;
-				}
-			}
-		}
-		*/
-
-
-
-		/*
-				if (particleVertices[idx].x <= 0.0f || particleVertices[idx].x >= d_latticeWidth - 1) {
-					particleVertices[idx].x = 0.0f;
-				} else if (particleVertices[idx].y <= 0.0f || particleVertices[idx].y >= d_latticeHeight - 1 ||
-						   particleVertices[idx].z <= 0.0f || particleVertices[idx].z >= d_latticeDepth - 1) {
-
-					particleVertices[idx].y = (float)((int)(particleVertices[idx].y + d_latticeHeight - 1) % (d_latticeHeight - 1));
-					particleVertices[idx].z = (float)((int)(particleVertices[idx].z + d_latticeDepth - 1) % (d_latticeDepth - 1));
-				}*/
-
 		idx += blockDim.x * blockDim.y * gridDim.x;
 
 	}
 }
 
-/// Kernel for clearing the back lattice.
-/**
+//! Kernel for clearing the back lattice.
+/*!
 	Kernel that clears the back lattice.
 	\param[in] backLattice	Pointer to the back lattice to be cleared.
 */
@@ -758,8 +594,8 @@ __global__ void clearBackLatticeKernel(Node3D *backLattice) {
 	}
 }
 
-/// Kernel for updating the inlets.
-/**
+//! Kernel for updating the inlets.
+/*!
 	Kernel for updating the inlets. Acts the same way as collision step but with predetermined velocity and density.
 	The inlet is the left wall of the simulation bounding volume.
 	\param[in] backLattice		The back lattice where we update node values.
@@ -957,8 +793,8 @@ __global__ void updateInletsKernel(Node3D *backLattice, glm::vec3 *velocities, g
 	}
 
 
-/// Kernel for calculating the collision operator.
-/**
+//! Kernel for calculating the collision operator.
+/*!
 	Kernel that calculates the collision operator using Bhatnagar-Gross-Krook operator.
 	\param[in] backLattice		Back lattice in which we do our calculations.
 	\param[in] velocities		Velocities array for the lattice.
@@ -1209,8 +1045,8 @@ __global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities, 
 
 }
 
-/// Kernel for calculating the collision operator that uses the shared memory (in naive manner).
-/**
+//! Kernel for calculating the collision operator that uses the shared memory (in naive manner).
+/*!
 	Kernel that calculates the collision operator using Bhatnagar-Gross-Krook operator.
 	\param[in] backLattice		Back lattice in which we do our calculations.
 	\param[in] velocities		Velocities array for the lattice.
@@ -1418,11 +1254,11 @@ __global__ void collisionStepKernelSharedNewReorganized(Node3D *backLattice, glm
 
 
 
-/// Kernel for calculating the collision operator that uses the shared memory (in naive manner).
-/**
-Kernel that calculates the collision operator using Bhatnagar-Gross-Krook operator.
-\param[in] backLattice		Back lattice in which we do our calculations.
-\param[in] velocities		Velocities array for the lattice.
+//! Kernel for calculating the collision operator that uses the shared memory (in naive manner).
+/*!
+	Kernel that calculates the collision operator using Bhatnagar-Gross-Krook operator.
+	\param[in] backLattice		Back lattice in which we do our calculations.
+	\param[in] velocities		Velocities array for the lattice.
 */
 __global__ void collisionStepKernelSharedNewReorganizedExtended(Node3D *backLattice, glm::vec3 *velocities, int useSubgridModel = 0) {
 
@@ -1643,11 +1479,11 @@ __global__ void collisionStepKernelSharedNewReorganizedExtended(Node3D *backLatt
 
 
 
-/// Kernel for calculating the collision operator that uses the shared memory (in naive manner).
-/**
-Kernel that calculates the collision operator using Bhatnagar-Gross-Krook operator.
-\param[in] backLattice		Back lattice in which we do our calculations.
-\param[in] velocities		Velocities array for the lattice.
+//! Kernel for calculating the collision operator that uses the shared memory (in naive manner).
+/*!
+	Kernel that calculates the collision operator using Bhatnagar-Gross-Krook operator.
+	\param[in] backLattice		Back lattice in which we do our calculations.
+	\param[in] velocities		Velocities array for the lattice.
 */
 __global__ void collisionStepKernelShared(Node3D *backLattice, glm::vec3 *velocities, int useSubgridModel = 0) {
 
@@ -1906,8 +1742,8 @@ __global__ void collisionStepKernelShared(Node3D *backLattice, glm::vec3 *veloci
 }
 
 
-/// Kernel for calculating the collision operator using shared memory with smaller register usage.
-/**
+//! Kernel for calculating the collision operator using shared memory with smaller register usage.
+/*!
 	Kernel that calculates the collision operator using Bhatnagar-Gross-Krook operator.
 	Uses shared memory and less registers. Slower than its naive version unfortunately.
 	\param[in] backLattice		Back lattice in which we do our calculations.
@@ -2048,8 +1884,8 @@ __global__ void collisionStepKernelStreamlinedShared(Node3D *backLattice, glm::v
 }
 
 
-/// Kernel for updating colliders/obstacles in the lattice.
-/**
+//! Kernel for updating colliders/obstacles in the lattice.
+/*!
 	Updates colliders/obstacles by using the full bounce back approach.
 	\param[in] backLattice		Back lattice in which we do our calculations.
 	\param[in] velocities		Velocities array for the lattice.
@@ -2169,8 +2005,8 @@ __global__ void updateCollidersKernel(Node3D *backLattice, glm::vec3 *velocities
 }
 
 
-/// Kernel that streams the microscopic particles from the previous frame.
-/**
+//! Kernel that streams the microscopic particles from the previous frame.
+/*!
 	 Kernel that streams the microscopic particles from the previous frame.
 	 \param[in] backLatice		Lattice that will be used in the current frame (the one we are currently updating).
 	 \param[in] frontLattice	Lattice from the previous frame from which we stream the particles.
@@ -2280,6 +2116,8 @@ __global__ void streamingStepKernel(Node3D *backLattice, Node3D *frontLattice) {
 
 }
 
+
+//! Initializes the front lattice with default distribution function values.
 __global__ void initLatticeKernel(Node3D *frontLattice) {
 
 	int idx = threadIdx.x + blockDim.x * threadIdx.y; // idx in block
@@ -2360,7 +2198,6 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, ParticleSystem *partic
 	CHECK_ERROR(cudaMemcpyToSymbol(d_latticeSize, &latticeSize, sizeof(int)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_tau, &tau, sizeof(float)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_itau, &itau, sizeof(float)));
-	CHECK_ERROR(cudaMemcpyToSymbol(d_mirrorSides, &mirrorSides, sizeof(int)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_worldSizeRatio, &scale, sizeof(float)));
 	CHECK_ERROR(cudaMemcpyToSymbol(d_position, glm::value_ptr(position), sizeof(glm::vec3)));
 
@@ -2531,7 +2368,7 @@ void LBM3D_1D_indices::draw(ShaderProgram & shader) {
 
 	heightMap->draw();
 
-	}
+}
 
 
 
@@ -3329,17 +3166,7 @@ void LBM3D_1D_indices::resetSimulation() {
 
 }
 
-void LBM3D_1D_indices::updateControlProperty(eLBMControlProperty controlProperty) {
-	switch (controlProperty) {
-		case MIRROR_SIDES_PROP:
-			cudaMemcpyToSymbol(d_mirrorSides, &mirrorSides, sizeof(int));
-			break;
-	}
-}
 
-
-void LBM3D_1D_indices::switchToCPU() {
-}
 
 void LBM3D_1D_indices::synchronize() {
 	cudaDeviceSynchronize();
@@ -3399,7 +3226,7 @@ glm::mat4 LBM3D_1D_indices::getPrevStateModelMatrix() {
 	return model;
 }
 
-void LBM3D_1D_indices::mapVBOTEST(GLuint VBO, struct cudaGraphicsResource *res) {
+void LBM3D_1D_indices::mapVBO(GLuint VBO) {
 
 	//res = cudaParticleVerticesVBO;
 	//cudaParticleColorsVBO = res;

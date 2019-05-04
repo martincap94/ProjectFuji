@@ -53,7 +53,6 @@ namespace ShaderManager {
 					CHECK_GL_ERRORS();
 
 				} else {
-					cout << "oopsie" << endl;
 					//kv.second->use();
 					kv.second->setVec4("u_Fog.color", glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
 					kv.second->setFloat("u_Fog.minDistance", 20.0f);

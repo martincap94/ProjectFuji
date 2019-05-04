@@ -2,13 +2,6 @@
 
 
 
-Particle::Particle() {
-}
-
-
-Particle::~Particle() {
-}
-
 void Particle::updatePressureVal() {
 	pressure = getPressureVal();
 }

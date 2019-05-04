@@ -76,6 +76,8 @@ public:
 	//! Constructs the emitter with the given name.
 	/*!
 		Constructs the emitter with the given name, sets its owner and creates the sampler member object.
+		The emitter is initialized at the end of construction.
+		\see init()
 		\param[in] name		Name of the emitter.
 		\param[in] owner	Owning particle system.
 	*/
@@ -142,6 +144,10 @@ public:
 	static const char *getEmitterTypeString(int emitterType);
 
 	//! Constructs the emitter properties tab using the user interface context.
+	/*!
+		\param[in] ctx		Nuklear context to be used.
+		\param[in] ui		User interface that is currently in usage.
+	*/
 	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 	//! Returns the emitter's name.

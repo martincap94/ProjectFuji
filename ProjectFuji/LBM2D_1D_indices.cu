@@ -556,14 +556,6 @@ void LBM2D_1D_indices::resetSimulation() {
 
 }
 
-void LBM2D_1D_indices::updateControlProperty(eLBMControlProperty controlProperty) {
-	switch (controlProperty) {
-		case MIRROR_SIDES_PROP:
-			cudaMemcpyToSymbol(d_mirrorSides, &mirrorSides, sizeof(int));
-			break;
-	}
-
-}
 
 void LBM2D_1D_indices::switchToCPU() {
 	cout << "Copying data back to CPU for simulation..." << endl;

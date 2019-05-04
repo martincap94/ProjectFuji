@@ -111,41 +111,40 @@ public:
 
 	//! Does single step of the simulation.
 	/*!
-		Calls 
+		Maps the OpenGL resources to CUDA pointers and runs the simulation step kernel.
 	*/
 	void doStep();
 
-	void resetSimulation();
+	//void generateParticle();
 
+	//! Draws the visualization levels.
+	void draw();
 
-	/// Generates single particle on the terrain.
-	void generateParticle();
-
-	/// Draws the heightmap and particles.
-	void draw(glm::vec3 cameraPos);
-	void drawDiagramParticles(ShaderProgram *shader);
 
 	//void initParticles();
 
+	//! Maps the value to the simulation box from the world size coordinate system.
+	/*!
+		\param[in] val	Value to be mapped.
+	*/
 	void mapToSimulationBox(float &val);
+
+	//! Maps the value from the simulation box to world size coordinate system.
+	/*!
+		\param[in] val	Value to be mapped.
+	*/
 	void mapFromSimulationBox(float &val);
 
 
 private:
 
+	GLuint CCLLevelVAO;		//!< VAO for the CCL level visualization
+	GLuint CCLLevelVBO;		//!< VBO for the CCL level visualization
 
-	GLuint particleProfilesVBO;
+	GLuint ELLevelVAO;		//!< VAO for the EL level visualization
+	GLuint ELLevelVBO;		//!< VBO for the EL level visualization
 
-	GLuint groundLevelVAO;
-	GLuint groundLevelVBO;
-
-	GLuint CCLLevelVAO;
-	GLuint CCLLevelVBO;
-
-	GLuint ELLevelVAO;
-	GLuint ELLevelVBO;
-
-	int currAmbientCurveVertexCount;
+	int currAmbientCurveVertexCount;	//!< Vertex count of the ambient curve of the current STLPDiagram instance
 
 
 };

@@ -456,28 +456,6 @@ void STLPSimulatorCUDA::initBuffers() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
 
 	glBindVertexArray(0);
-
-
-	vertices.clear();
-
-	glGenVertexArrays(1, &groundLevelVAO);
-	glBindVertexArray(groundLevelVAO);
-	glGenBuffers(1, &groundLevelVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, groundLevelVBO);
-
-	altitude = getAltitudeFromPressure(stlpDiagram->P0);
-	mapToSimulationBox(altitude);
-	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
-	vertices.push_back(glm::vec3(0.0f, altitude, vars->latticeDepth));
-	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, vars->latticeDepth));
-	vertices.push_back(glm::vec3(vars->latticeWidth, altitude, 0.0f));
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, &vertices[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
-
-	glBindVertexArray(0);
 }
 
 void STLPSimulatorCUDA::uploadProfileIndicesUniforms(ShaderProgram *shader) {
@@ -762,8 +740,6 @@ void STLPSimulatorCUDA::doStep() {
 }
 
 
-void STLPSimulatorCUDA::resetSimulation() {
-}
 
 
 /*
@@ -860,7 +836,7 @@ void STLPSimulatorCUDA::generateParticle() {
 }
 */
 
-void STLPSimulatorCUDA::draw(glm::vec3 cameraPos) {
+void STLPSimulatorCUDA::draw() {
 	
 	if (vars->showCCLLevelLayer || vars->showELLevelLayer) {
 		GLboolean cullFaceEnabled;
@@ -897,22 +873,6 @@ void STLPSimulatorCUDA::draw(glm::vec3 cameraPos) {
 	}
 }
 
-void STLPSimulatorCUDA::drawDiagramParticles(ShaderProgram * shader) {
-	shader->use();
-	GLboolean depthTestEnabled;
-	glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
-	glDisable(GL_DEPTH_TEST);
-
-
-	glPointSize(2.0f);
-	shader->setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
-
-
-	if (depthTestEnabled) {
-		glEnable(GL_DEPTH_TEST);
-	}
-
-}
 
 
 void STLPSimulatorCUDA::mapToSimulationBox(float & val) {

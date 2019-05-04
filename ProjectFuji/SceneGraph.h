@@ -11,12 +11,16 @@
 
 #include "Actor.h"
 
+//! Very simple graph of scene.
 class SceneGraph {
 public:
 
-	Actor *root = nullptr;
+	Actor *root = nullptr;	//!< Root of the scene.
 
+	//! Default constructor. 
 	SceneGraph();
+
+	//! Default destructor.
 	~SceneGraph();
 };
 

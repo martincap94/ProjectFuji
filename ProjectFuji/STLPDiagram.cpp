@@ -29,10 +29,6 @@ void STLPDiagram::init() {
 	overlayDiagramShader = ShaderManager::getShaderPtr("overlayTexture");
 
 
-	cout << "Lv at 0 Celius = " << computeLatentHeatOfVaporisationC(0.0f) << endl;
-	cout << "Lv at 0 Kelvin = " << computeLatentHeatOfVaporisationK(0.0f) << endl;
-
-
 	loadSoundingData();
 
 	initFreetype();
@@ -53,7 +49,6 @@ void STLPDiagram::loadSoundingData() {
 	if (!infile.is_open()) {
 		cerr << soundingFilename << " could not be opened!" << endl;
 		exit(EXIT_FAILURE);
-		//return;
 	}
 	// assume the file is in correct format!
 	string line;
@@ -449,9 +444,9 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2> &vertices, i
 
 }
 
-void STLPDiagram::generateMoistAdiabat(float theta, float startP, vector<glm::vec2>& vertices, int mode, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve, float smallDeltaP) {
+void STLPDiagram::generateMoistAdiabat(float startT, float startP, vector<glm::vec2>& vertices, int mode, float P0, vector<int>* edgeCounter, bool incrementCounter, float deltaP, Curve * curve, float smallDeltaP) {
 
-	float T = getKelvin(theta);
+	float T = getKelvin(startT);
 
 	int vertexCounter = 0;
 	float x, y;
@@ -644,19 +639,6 @@ void STLPDiagram::initBuffers() {
 		glBindVertexArray(0);
 	}
 
-
-	///////////////////////////////////////////////////////////////////////////////////////
-	// PARTICLES
-	///////////////////////////////////////////////////////////////////////////////////////
-	glGenVertexArrays(1, &particlesVAO);
-	glBindVertexArray(particlesVAO);
-	glGenBuffers(1, &particlesVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
-
-	glBindVertexArray(0);
 
 
 
@@ -1268,16 +1250,6 @@ void STLPDiagram::draw() {
 		}
 	}
 
-	//glPointSize(9.0f);
-	//shader.setVec3("u_Color", glm::vec3(1.0f, 0.0f, 0.0f));
-	//glBindVertexArray(CCLVAO);
-	//glDrawArrays(GL_POINTS, 0, 1);
-
-	//glPointSize(9.0f);
-	//shader.setVec3("u_Color", glm::vec3(0.6f, 0.3f, 0.6f));
-	//glBindVertexArray(TcVAO);
-	//glDrawArrays(GL_POINTS, 0, 1);
-
 
 	xaxis.draw(curveShader);
 	yaxis.draw(curveShader);
@@ -1664,9 +1636,6 @@ void STLPDiagram::generateTemperatureNotches() {
 	glBindBuffer(GL_ARRAY_BUFFER, temperaturePointsVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 
-}
-
-void STLPDiagram::generateDryAdiabats() {
 }
 
 void STLPDiagram::uploadMainParameterPointsToBuffer() {
