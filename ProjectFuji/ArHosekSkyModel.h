@@ -335,6 +335,7 @@ typedef double ArHosekSkyModelConfiguration[9];
 
 ---------------------------------------------------------------------------- */
 
+//! State of the Hosek-Wilkie sky model.
 typedef struct ArHosekSkyModelState
 {
     ArHosekSkyModelConfiguration  configs[11];

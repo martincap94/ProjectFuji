@@ -4,8 +4,16 @@
 #include "DataStructures.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
+#include <algorithm>
 
 MainFramebuffer::MainFramebuffer(VariableManager *vars) : vars(vars) {
+	if (vars->multisamplingAmount <= 1) {
+		useMultisampling = false;
+		sampleCount = 1;
+	} else {
+		useMultisampling = true;
+		sampleCount = std::max(vars->multisamplingAmount, MAX_MSAA_SAMPLE_COUNT);
+	}
 	init();
 }
 

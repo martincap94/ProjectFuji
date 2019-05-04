@@ -23,20 +23,45 @@
 
 class ParticleSystem;
 
-
+//! Special positional emitter that uses CDFSampler to generate any pattern on the ground.
 class PositionalCDFEmitter : public PositionalEmitter {
 public:
 
-	std::string probabilityTexturePath = "";
-	const int numVisPoints = 4;
+	std::string probabilityTexturePath = "";	//!< Path to the probability texture
+	const int numVisPoints = 4;		//!< Number of visualization points
 
 
-	float scale = 1.0f;
-	int centered = 1;
+	float scale = 1.0f;		//!< Scale of the emitter (relative scale of the texture)
+	int centered = 1;		//!< Whether the mouse is centered inside the emitter when in brush mode
 
+	//! Default constructor.
+	/*!
+		Default constructor creates non-initialized emitter!
+		This is useful when we want to initialize the emitter later on, e.g. using the copy constructor.
+		The main usage is in ParticleSystem where we use uninitialized emitters to feed data to emitter creation wizard.
+	*/
 	PositionalCDFEmitter();
+
+	//! Constructs the emitter with the given name.
+	/*!
+		Constructs the emitter with the given name, sets its owner and creates the sampler member object.
+		\param[in] name		Name of the emitter.
+		\param[in] owner	Owning particle system.
+		\param[in] probabilityTexturePath	Path to the probability texture used in sampler. Should be grayscale image!
+	*/
 	PositionalCDFEmitter(std::string name, ParticleSystem *owner, std::string probabilityTexturePath);
+
+	//! Constructs the emitter by copying an existing non-initialized(!) one.
+	/*!
+		Constructs the emitter by copying an existing non-initialized(!) one.
+		After copying is finished, the emitter is initialized!
+		This way of construction is provided for easier implementation of user interface emitter creation wizard.
+		\param[in] e		Non-initialized emitter to be copied.
+		\param[in] owner	Owning particle system.
+	*/
 	PositionalCDFEmitter(const PositionalCDFEmitter &e, ParticleSystem *owner);
+
+	//! Destroys the sampler.
 	~PositionalCDFEmitter();
 
 
@@ -54,17 +79,21 @@ public:
 
 	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
+	//! Returns the sampler probability texture.
 	Texture *getSamplerTexture();
 
 protected:
 
-	float prevScale;
+	float prevScale;	//!< Saved previous scale of the emitter
 
-	CDFSampler *sampler = nullptr;
+	CDFSampler *sampler = nullptr;		//!< CDFSampler used to generate particles
 
-	struct nk_image nkSamplerTexture;
+	struct nk_image nkSamplerTexture;	//!< Helper image for UI
 
+
+	//! Updates the VBO containing visualization points for this emitter.
 	virtual void updateVBOPoints();
+
 
 };
 

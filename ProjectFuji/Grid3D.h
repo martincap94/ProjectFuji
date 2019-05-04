@@ -22,11 +22,11 @@
 
 #include "ShaderProgram.h"
 
-/// Grid that is used for LBM 3D visualization. Draw 3D grid of lines and lattice nodes. Furthermore, draws the bounding box of the scene.
+//! Grid that is used for LBM 3D visualization. Draw 3D grid of lines and lattice nodes. Furthermore, draws the bounding box of the scene.
 class Grid3D : public Grid {
 public:
-	/// Constructs the 3D grid with the given attributes.
-	/**
+	//! Constructs the 3D grid with the given attributes.
+	/*!
 		Constructs the 3D grid with the specified width, height and depth. Optionally, the step sizes
 		in each axis can be set.
 		\param[in] width	Width of the grid.
@@ -38,19 +38,19 @@ public:
 	*/
 	Grid3D(int width, int height, int depth, int stepX = 1, int stepY = 1, int stepZ = 1);
 	
-	/// Default destructor.
+	//! Default destructor.
 	~Grid3D();
 
-	/// Draws the grid using the given shader program.
+	//! Draws the grid using the given shader program.
 	virtual void draw(ShaderProgram &shader);
 
 private:
 
-	GLuint pointsVAO;	///< VAO of the lattice points
-	GLuint pointsVBO;	///< VBO of the lattice points
+	GLuint pointsVAO;	//!< VAO of the lattice points
+	GLuint pointsVBO;	//!< VBO of the lattice points
 
-	GLuint boxVAO;		///< VAO of the bounding box for the whole scene
-	GLuint boxVBO;		///< VBO of the bounding box for the whole scene
+	GLuint boxVAO;		//!< VAO of the bounding box for the whole scene
+	GLuint boxVBO;		//!< VBO of the bounding box for the whole scene
 
 
 };

@@ -87,7 +87,7 @@ void GridLBM::draw() {
 void GridLBM::draw(glm::mat4 modelMatrix) {
 	shader->use();
 
-	shader->setVec3("u_Color", boxColor);
+	shader->setColor(boxColor);
 	shader->setModelMatrix(modelMatrix);
 
 	glBindVertexArray(boxVAO);

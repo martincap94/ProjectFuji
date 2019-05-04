@@ -327,6 +327,8 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveBoolParam(useMonitorResolution, val);
 	} else if (param == "fullscreen") {
 		saveBoolParam(fullscreen, val);
+	} else if (param == "multisampling") {
+		saveIntParam(multisamplingAmount, val);
 	}
 
 

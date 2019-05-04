@@ -18,27 +18,27 @@
 #include <vector>
 #include <glad\glad.h>
 
-/// Abstract grid class.
-/**
+//! Abstract grid class.
+/*!
 	Grid that is used for the LBM visualization.
 */
 class Grid {
 public:
 
-	/// Default constructor. Does nothing.
+	//! Default constructor. Does nothing.
 	Grid();
-	/// Default destructor. Does nothing.
+	//! Default destructor. Does nothing.
 	~Grid();
 
-	/// Draw the grid using the provided shader program.
+	//! Draw the grid using the provided shader program.
 	virtual void draw(ShaderProgram &shader) = 0;
 
 protected:
 
-	GLuint VAO;		///< VAO for this grid
-	GLuint VBO;		///< VBO for this grid
+	GLuint VAO;		//!< VAO for this grid
+	GLuint VBO;		//!< VBO for this grid
 
-	vector<glm::vec3> gridVertices;		///< Grid vertices
+	std::vector<glm::vec3> gridVertices;	//!< Grid vertices
 
 
 };

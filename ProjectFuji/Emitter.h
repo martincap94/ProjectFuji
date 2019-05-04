@@ -157,14 +157,19 @@ public:
 protected:
 
 	// for refresh when UI changes some values
-	int prevMinProfileIndex;
-	int prevMaxProfileIndex;
+	int prevMinProfileIndex;		//!< Holds the previous minimum profile index
+	int prevMaxProfileIndex;		//!< Holds the previous maximum profile index
 
-	GLuint VAO;
-	GLuint VBO;
+	GLuint VAO;	//!< VAO used for visualizing the emitter
+	GLuint VBO;	//!< VBO used for visualizing the emitter
 
+	//! Updates the uniform distribution samplers if previous min/max profiles were changed.
+	/*!
+		This is important for generating particles withing the given profile index range.
+	*/
 	inline void updateProfileIndexDistribution();
 
+	//! Returns random convective temperature profile index.
 	inline virtual int getRandomProfileIndex();
 
 

@@ -149,22 +149,10 @@ void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Cam
 
 void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 
-	eyeViewMatrix = cam->getViewMatrix();
-
 	viewVec = glm::normalize(cam->front); // normalize just to be sure (camera front should always be normalized)
 	
-
 	lightVec = dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
 
-	//viewVec.y = 0.0f;
-	//lightVec.y = 0.0f;
-	//viewVec = glm::normalize(viewVec);
-	//lightVec = glm::normalize(lightVec);
-
-
-	//cout << glm::dot(viewVec, lightVec) << endl;
-
-
 	if (glm::dot(viewVec, lightVec) > inversionThreshold) {
 		halfVec = glm::normalize(viewVec + lightVec);
 		invertedRendering = true;
@@ -172,56 +160,11 @@ void ParticleRenderer::recalcVectors(Camera *cam, DirectionalLight *dirLight) {
 		halfVec = glm::normalize(-viewVec + lightVec);
 		invertedRendering = false;
 	}
-
-	/*
-	if (glm::dot(viewVec, lightVec) > inversionThreshold) {
-		halfVec = glm::normalize(viewVec + lightVec);
-		if (forceHalfVecToFaceCam) {
-			halfVec.y = viewVec.y;
-			halfVec = glm::normalize(halfVec);
-		}
-		invertedRendering = false;
-	} else {
-		halfVec = glm::normalize(-viewVec + lightVec);
-		if (forceHalfVecToFaceCam) {
-			halfVec.y = -viewVec.y;
-			halfVec = glm::normalize(halfVec);
-		}
-		invertedRendering = true;
-	}
-	*/
-
-	/*
-	lightVec = -dirLight->getDirection(); // this is surely normalized since getDirection() returns glm::normalized vec
-	//lightVec = glm::normalize(dirLight->position); // according to the Nvidia source code
-
-	//cout << glm::dot(viewVec, lightVec) << endl;
-
-	if (glm::dot(viewVec, lightVec) > 0.0f) {
-		halfVec = glm::normalize(viewVec + lightVec);
-		invertedRendering = false;
-	} else {
-		halfVec = glm::normalize(-viewVec + lightVec);
-		invertedRendering = true;
-	}
-	*/
-
-	lightPosEye = eyeViewMatrix * glm::vec4(dirLight->position, 1.0f);
-
 
 	lightViewMatrix = dirLight->getViewMatrix();
 	lightProjectionMatrix = dirLight->getProjectionMatrix();
 
-	shadowMatrix = lightProjectionMatrix * lightViewMatrix * glm::inverse(eyeViewMatrix);
-	shadowMatrix = glm::scale(shadowMatrix, glm::vec3(0.5f));
-	shadowMatrix = glm::translate(shadowMatrix, glm::vec3(0.5f));
 
-	//eyePos = glm::inverse(cam->getViewMatrix()) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	//cout << eyePos.x << " " << eyePos.y << " " << eyePos.z << ", " << cam->position.x << " " << cam->position.y << " " << cam->position.z << endl;
-	
-	eyePos = cam->position;
-
-	halfVecEye = eyeViewMatrix * glm::vec4(halfVec, 0.0f);
 
 }
 
@@ -416,18 +359,11 @@ void ParticleRenderer::drawSlice(int i) {
 
 void ParticleRenderer::drawSliceLightView(int i) {
 
-	// TODO -> set matrix uniforms for lightView and lightProjection
-
 
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[srcLightTexture], 0);
 
 	glViewport(0, 0, lightBufferResolution, lightBufferResolution);
-
-	// TODO -> set color (or color modifier if color taken from texture)
-	//			-> if texture, set texture uniforms, activate texture unit and bind sprite texture
-
-	// TODO: SET SHADOW COLOR ALPHA
 
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 
@@ -443,13 +379,10 @@ void ParticleRenderer::drawSliceLightView(int i) {
 void ParticleRenderer::drawPointSprites(ShaderProgram * shader, int start, int count, bool shadowed) {
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_FALSE); // do not write depth (but do depth test)
+	glDepthMask(GL_FALSE); // do not write depth (but do depth testing)
 	glEnable(GL_BLEND);
 
 	shader->use();
-
-	// TODO - set shader uniforms and bind textures
-	//shader->
 
 	if (shadowed) {
 		shader->setInt("u_ShadowTexture", 1);
@@ -602,8 +535,8 @@ void ParticleRenderer::initImageBuffer() {
 		glDeleteFramebuffers(1, &imageFramebuffer);
 	}
 
-	imageWidth = vars->screenWidth / downSample;
-	imageHeight = vars->screenHeight / downSample;
+	imageWidth = vars->screenWidth;
+	imageHeight = vars->screenHeight;
 
 	GLint format = GL_RGBA16F;
 

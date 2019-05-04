@@ -189,6 +189,7 @@ public:
 	bool generalKeyboardInputEnabled = true;	//!< Whether we should listen to keyboard inputs
 												//!< This is useful when we are typing in UI, we do not want to listen to the keyboard inputs in our application
 
+	int multisamplingAmount = 12;			//!< Multisampling used in MainFramebuffer for general rendering.
 
 
 	int projectionMode = eProjectionMode::PERSPECTIVE;	//!< Current projection mode of the 3D viewport

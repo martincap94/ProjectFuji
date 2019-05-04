@@ -1098,14 +1098,13 @@ void UserInterface::constructCloudVisualizationTab() {
 	nk_value_bool(ctx, "Inverted rendering", particleRenderer->invertedRendering);
 	nk_value_vec3(ctx, particleRenderer->halfVec, "Half vector");
 
-	nk_checkbox_label(ctx, "Half vector always faces camera", &particleRenderer->forceHalfVecToFaceCam);
 
 
 	nk_property_float(ctx, "Point size", 0.1f, &particleSystem->pointSize, 100000.0f, 0.1f, 0.1f);
 	nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars->opacityMultiplier, 10.0f, 0.01f, 0.01f);
 
 	nk_checkbox_label(ctx, "Show particles below CCL", &particleRenderer->showParticlesBelowCCL);
-	nk_checkbox_label(ctx, "use new", &particleRenderer->useVolumetricRendering);
+	nk_checkbox_label(ctx, "Use Volumetric Rendering", &particleRenderer->useVolumetricRendering);
 
 	nk_property_int(ctx, "first pass shader mode", 0, &particleRenderer->firstPassShaderMode, particleRenderer->numFirstPassShaderModes - 1, 1, 1);
 

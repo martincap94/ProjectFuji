@@ -24,7 +24,7 @@ using namespace std;
 
 //! TextRenderer class that offers text rendering capabilities.
 /*!
-	TextRenderer class that offers text rendering capabilities.
+	Based on Joey de Vries's tutorials: https://learnopengl.com/In-Practice/Text-Rendering
 */
 class TextRenderer {
 public:

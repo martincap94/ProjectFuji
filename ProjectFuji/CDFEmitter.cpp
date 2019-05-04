@@ -107,10 +107,10 @@ void CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *u
 		}
 
 		if (nk_button_label(ctx, "Generate New Noise Func. * CDF Texture")) {
-			dsampler->updatePerlinNoiseNaiveTestingCPU(false);
+			dsampler->updatePerlinNoiseCPU(false);
 		}
 		if (nk_button_label(ctx, "Generate New Noise Func.")) {
-			dsampler->updatePerlinNoiseNaiveTestingCPU(true);
+			dsampler->updatePerlinNoiseCPU(true);
 		}
 	}
 

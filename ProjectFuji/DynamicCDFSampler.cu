@@ -74,7 +74,7 @@ DynamicCDFSampler::~DynamicCDFSampler() {
 	CHECK_ERROR(cudaFree(d_sums));
 }
 
-void DynamicCDFSampler::updatePerlinNoiseNaiveTestingCPU(bool onlyPerlin) {
+void DynamicCDFSampler::updatePerlinNoiseCPU(bool onlyPerlin) {
 	float currSum = 0.0f;
 	float currSeed = 0.0f;
 	if (useTimeAsSeed) {

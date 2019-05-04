@@ -21,7 +21,7 @@
 HeightMap::HeightMap(VariableManager * vars) : vars(vars) {
 
 	if (!vars) {
-		cerr << "Oh noes - VariableManager not set in HeightMap!" << endl;
+		cerr << "Oh no - VariableManager not set in HeightMap!" << endl;
 		exit(EXIT_FAILURE);
 	}
 	terrainHeightRange = vars->terrainHeightRange;

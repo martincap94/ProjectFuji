@@ -14,7 +14,6 @@ void Mesh::draw(ShaderProgram *shader) {
 
 	// TODO textures (naming and binding conventions)
 
-	//shader.use();
 	glBindVertexArray(VAO);
 
 	if (instanced) {

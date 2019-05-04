@@ -19,20 +19,33 @@
 #include "ShaderProgram.h"
 #include "Transform.h"
 
+//! Simple mesh representation.
+/*!
+	Based on Joey de Vries's tutorials: https://learnopengl.com/Model-Loading/Mesh
+*/
 class Mesh {
 public:
 
-	std::vector<MeshVertex> vertices;
-	std::vector<GLuint> indices;
-	std::vector<Texture> textures;
+	std::vector<MeshVertex> vertices;	//!< Vertices of the mesh
+	std::vector<GLuint> indices;		//!< Indices of the mesh
+	std::vector<Texture> textures;		//!< --- NOT USED --- Textures used by the mesh
 
+	//! Creates a mesh using the given parameters.
 	Mesh(std::vector<MeshVertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
+
+	//! Default destructor.
 	~Mesh();
 
+	//! Draws the mesh using the given shader.
 	void draw(ShaderProgram *shader);
 
+	//! Makes the mesh instanced given an array of transforms for all instances.
 	void makeInstanced(std::vector<Transform> &instanceTransforms);
+
+	//! Updates the instance transforms if the mesh is instanced.
 	void updateInstanceTransforms(std::vector<Transform> &instanceTransforms);
+
+	//! Updates model matrices of all instances.
 	void updateInstanceModelMatrices(std::vector<glm::mat4> &instanceModelMatrices);
 
 private:
@@ -41,12 +54,14 @@ private:
 	GLuint VBO;
 	GLuint EBO;
 
-	bool instanced = false;
-	int numInstances = 0;
-	GLuint instancesVBO;
+	bool instanced = false;		//!< Whether the mesh is instanced or not
+	int numInstances = 0;		//!< Number of instances
+	GLuint instancesVBO;		//!< VBO for instance model matrices
 
-
+	//! Initializes the necessary buffers for the mesh.
 	void setupMesh();
+
+	//! Initializes the instance buffers.
 	void initInstancedMeshBuffers();
 
 };
