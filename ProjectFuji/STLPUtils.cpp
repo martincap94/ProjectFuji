@@ -157,7 +157,7 @@ float computePseudoadiabaticLapseRate(float T, float P) {
 
 
 	float res = (1.0f + w) * (1.0f + (L_v * w) / (R_d * T));
-	res /= c_pd + w * c_pv + (L_v * L_v * w * (EPS + w)) / (R_d * T * T);
+	res /= (c_pd + w * c_pv + (L_v * L_v * w * (EPS + w)) / (R_d * T * T));
 	res *= (-9.81f);
 
 	return res;

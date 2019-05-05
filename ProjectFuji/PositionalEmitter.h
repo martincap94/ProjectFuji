@@ -64,6 +64,9 @@ public:
 	//! Updates the emitter (wiggle position update).
 	virtual void update();
 
+	virtual void draw(ShaderProgram *shader) = 0;
+
+
 	//! Moves the emitter by random amount from [0, x/zWiggleRange] in x and z directions.
 	virtual void wigglePosition();
 

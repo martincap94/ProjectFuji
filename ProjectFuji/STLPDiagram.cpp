@@ -487,7 +487,8 @@ void STLPDiagram::generateMoistAdiabat(float startT, float startP, vector<glm::v
 		}
 
 		P_Pa = P * 100.0f;
-		T -= dTdP_moist_degK_Bakhshaii(T, P_Pa) * smallDeltaP_Pa;
+		//T -= dTdP_moist_degK_Bakhshaii(T, P_Pa) * smallDeltaP_Pa;
+		T -= getMoistAdiabatIntegralVal(T, P_Pa) * smallDeltaP_Pa;
 
 		accumulatedP += smallDeltaP;
 

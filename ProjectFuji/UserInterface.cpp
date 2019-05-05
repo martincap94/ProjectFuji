@@ -313,7 +313,7 @@ void UserInterface::constructHorizontalBar() {
 
 			if (viewportMode == eViewportMode::VIEWPORT_3D) {
 				if (nk_menu_item_label(ctx, "Diagram view", NK_TEXT_CENTERED)) {
-					viewportMode == eViewportMode::DIAGRAM;
+					viewportMode = eViewportMode::DIAGRAM;
 				}
 			} else if (viewportMode == eViewportMode::DIAGRAM) {
 				if (nk_menu_item_label(ctx, "3D viewport", NK_TEXT_CENTERED)) {

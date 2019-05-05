@@ -139,6 +139,8 @@ __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int num
 			return glm::vec2(normalizedTemperature, normP);
 		}
 	}
+	return glm::vec2();
+
 #else
 
 	
@@ -172,8 +174,6 @@ __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int num
 
 
 #endif
-
-	return glm::vec2();
 
 }
 

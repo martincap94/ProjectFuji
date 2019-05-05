@@ -17,7 +17,7 @@
 #define R_v R_m				//!< Moist air gas constant (alternate notation)
 #define EPS (R_d / R_m)		//!< Epsilon used for computing saturation mixing ratio
 #define c_pd 1005.7f		//!< Specific heat capacity for dry air at constant pressure
-#define c_pv 1875.0f;		//!< Specific heat capacity for water vapor at constant pressure
+#define c_pv 1875.0f		//!< Specific heat capacity for water vapor at constant pressure
 //#define k_ratio 0.286f
 #define k_ratio (R_d / c_pd)	//!< Poisson's constant: http://glossary.ametsoc.org/wiki/Poisson_constant
 								//!< Dimensionless ratio of dry air gas constant and specific heat capacity for dry air at constant pressure
@@ -218,18 +218,16 @@ float getAltitudeFromPressure(float pressure);
 float computeRho(float T, float P);
 
 
-//! --- DO NOT USE --- Computes pseudoadiabatic lapse rate according to Duarte's approach & AMS glossary.
+//! Computes pseudoadiabatic lapse rate according to Duarte's approach & AMS glossary.
 /*!
-	Do not use this approach since it does not yield correct results in our implementation due to unkown reasons.
 	\param[in] T	Absolute temperature in kelvin [K].
 	\param[in] P	Pressure in pascals [Pa].
 	\return			Pseudoadiabatic lapse rate.
 */
 float computePseudoadiabaticLapseRate(float T, float P);
 
-//! --- DO NOT USE --- Computes pseudoadiabatic lapse rate according to Duarte's approach & AMS glossary.
+//! Computes pseudoadiabatic lapse rate according to Duarte's approach & AMS glossary.
 /*!
-	Do not use this approach since it does not yield correct results in our implementation due to unkown reasons.
 	\param[in] T	Absolute temperature in kelvin [K].
 	\param[in] P	Pressure in pascals [Pa].
 	\return			Integration value for moist adiabat creation.
