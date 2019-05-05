@@ -1386,7 +1386,7 @@ void STLPDiagram::drawText() {
 	textRend->renderText("Ground Level at " + to_string((int)getAltitudeFromPressure(P0)) + "[m]", 1.0f + 0.01f * scaleZoomModifier, getNormalizedPres(P0), textScale);
 
 	for (i = 1000; i >= (int)MIN_P; i -= 100) {
-		textRend->renderText(to_string(i), 0.04f - 0.02f * scaleZoomModifier, getNormalizedPres((float)i), textScale);
+		textRend->renderText(to_string(i), -0.04f - 0.02f * scaleZoomModifier, getNormalizedPres((float)i), textScale);
 		textRend->renderText(to_string((int)getAltitudeFromPressure((float)i)) + "[m]", 0.0f + 0.01f * scaleZoomModifier, getNormalizedPres((float)i), textScale);
 	}
 

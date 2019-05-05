@@ -3230,7 +3230,7 @@ void LBM3D_1D_indices::mapVBO(GLuint VBO) {
 	//res = cudaParticleVerticesVBO;
 	//cudaParticleColorsVBO = res;
 
-	cout << "CUDA mapping VBO" << endl;
+	//cout << "CUDA mapping VBO" << endl;
 	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, VBO, cudaGraphicsMapFlagsWriteDiscard)); // returns out of memory error (even though it shouldn't according to documentation
 
 }

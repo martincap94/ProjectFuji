@@ -74,7 +74,7 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	shader->setVec3("u_TintColor", vars->tintColor);
 	shader->setFloat("u_ShadowAlpha", shadowAlpha);
 	shader->setBool("u_ShowParticleTextureIdx", showParticleTextureIdx != 0);
-	shader->setInt("u_PhaseFunction", phaseFunction != 0);
+	shader->setInt("u_PhaseFunction", phaseFunction);
 	shader->setBool("u_MultiplyPhaseByShadow", multiplyPhaseByShadow != 0);
 
 	if (phaseFunction == SCHLICK) {

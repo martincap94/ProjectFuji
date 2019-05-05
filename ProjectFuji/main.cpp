@@ -1248,7 +1248,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 			stlpDiagram->findClosestSoundingPoint(mouseCoords);
 		} else {
-			cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
+			//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
 			ebm->onLeftMouseButtonPress((float)xpos, (float)ypos);
 

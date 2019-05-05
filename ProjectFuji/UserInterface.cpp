@@ -864,7 +864,7 @@ void UserInterface::constructTerrainTab() {
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(hm->materialMap), nk_vec2(nk_widget_width(ctx), 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
 		for (const auto& kv : *textures) {
-			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
 				vars->heightMap->materialMap = kv.second;
 				nk_combo_close(ctx);
 			}
@@ -889,11 +889,11 @@ void UserInterface::constructTerrainTab() {
 
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(vars->heightMap->visTexture), nk_vec2(nk_widget_width(ctx), 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
-		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
 			vars->heightMap->visTexture = nullptr;
 		}
 		for (const auto& kv : *textures) {
-			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
 				vars->heightMap->visTexture = kv.second;
 			}
 		}
@@ -949,11 +949,11 @@ void UserInterface::constructTerrainTab() {
 
 				if (nk_combo_begin_label(ctx, vars->heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::DIFFUSE).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
 					nk_layout_row_dynamic(ctx, 15, 1);
-					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
 						vars->heightMap->materials[i].diffuseTexture = nullptr;
 					}
 					for (const auto& kv : *textures) {
-						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
 							vars->heightMap->materials[i].diffuseTexture = kv.second;
 						}
 					}
@@ -964,11 +964,11 @@ void UserInterface::constructTerrainTab() {
 
 				if (nk_combo_begin_label(ctx, vars->heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::SPECULAR).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
 					nk_layout_row_dynamic(ctx, 15, 1);
-					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
 						vars->heightMap->materials[i].specularMap = nullptr;
 					}
 					for (const auto& kv : *textures) {
-						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
 							vars->heightMap->materials[i].specularMap = kv.second;
 						}
 					}
@@ -979,11 +979,11 @@ void UserInterface::constructTerrainTab() {
 
 				if (nk_combo_begin_label(ctx, vars->heightMap->materials[i].tryGetTextureFilename(Texture::eTextureMaterialType::NORMAL_MAP).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
 					nk_layout_row_dynamic(ctx, 15, 1);
-					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
 						vars->heightMap->materials[i].normalMap = nullptr;
 					}
 					for (const auto& kv : *textures) {
-						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
 							vars->heightMap->materials[i].normalMap = kv.second;
 						}
 					}
@@ -1229,7 +1229,7 @@ void UserInterface::constructCloudVisualizationTab() {
 		}
 		*/
 		for (int i = 0; i < particleRenderer->spriteTextures.size(); i++) {
-			if (nk_combo_item_label(ctx, particleRenderer->spriteTextures[i]->filename.c_str(), NK_TEXT_CENTERED)) {
+			if (nk_combo_item_label(ctx, particleRenderer->spriteTextures[i]->filename.c_str(), NK_TEXT_LEFT)) {
 				particleRenderer->spriteTexture = particleRenderer->spriteTextures[i];
 			}
 		}
@@ -2358,11 +2358,11 @@ void UserInterface::constructHUD() {
 void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string nullTextureNameOverride) {
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(*targetTexturePtr, nullTextureNameOverride), nk_vec2(400, 200))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
-		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
 			*targetTexturePtr = nullptr;
 		}
 		for (const auto& kv : *textures) {
-			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_CENTERED)) {
+			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
 				(*targetTexturePtr) = kv.second;
 			}
 		}

@@ -207,10 +207,8 @@ float getPressureFromAltitude(float altitude);
 float getAltitudeFromPressure(float pressure);
 
 
-//! --- DEPRECATED --- Compute density (rho) from saturation water vapor pressure.
+//! Compute density (rho) from saturation water vapor pressure.
 /*!
-	--- DEPRECATED ---
-	\deprecated		We now use the Bakhshaii's iterative description.
 	\param[in] T	Absolute temperature in kelvin [K].
 	\param[in] P	Pressure in pascals [Pa].
 	\return			Density computed for moist adiabat integration.
