@@ -88,7 +88,7 @@ void HosekSkyModel::update() {
 	*/
 
 
-	if (!shouldUpdate(eta)) {
+	if (!shouldUpdate((float)eta)) {
 		return;
 	}
 
@@ -146,8 +146,8 @@ glm::vec3 HosekSkyModel::getColor(float cosTheta, float gamma, float cosGamma) {
 	auto H = params[7];
 	auto I = params[8];
 
-	glm::vec3 chi = (1 + cosGamma * cosGamma) / glm::pow(glm::vec3(1.0f) + H * H - 2.0f * cosGamma * H, glm::vec3(1.5));
-	return (glm::vec3(1.0f) + A * glm::exp(B / (cosTheta + glm::vec3(horizonOffset)))) * (C + D * glm::exp(E * gamma) + F * (cosGamma * cosGamma) + G * chi + I * sqrt(cosTheta));
+	glm::vec3 chi = (1 + cosGamma * cosGamma) / glm::pow(glm::vec3(1.0f) + H * H - 2.0f * cosGamma * H, glm::vec3(1.5f));
+	return (glm::vec3(1.0f) + A * glm::exp(B / (cosTheta + glm::vec3((float)horizonOffset)))) * (C + D * glm::exp(E * gamma) + F * (cosGamma * cosGamma) + G * chi + I * sqrt(cosTheta));
 }
 
 glm::vec3 HosekSkyModel::getSunColor() {
@@ -195,7 +195,7 @@ void HosekSkyModel::recalculateParams(glm::vec3 sunDir) {
 
 }
 
-double HosekSkyModel::calculateParam(double *dataset, int stride) {
+float HosekSkyModel::calculateParam(double *dataset, int stride) {
 
 	int turbidity_low = glm::clamp((int)turbidity, 1, 10);
 	int turbidity_high = glm::min(turbidity_low + 1, 10);
@@ -215,7 +215,7 @@ double HosekSkyModel::calculateParam(double *dataset, int stride) {
 	res += albedo0_turbidity_high * (1.0 - albedo) * turbidity_rem;
 	res += albedo1_turbidity_high * albedo * turbidity_rem;
 
-	return res;
+	return (float)res;
 
 }
 
@@ -234,7 +234,7 @@ void HosekSkyModel::normalizeRGBParams(glm::vec3 sunDir) {
 		glm::vec3 S = getColor(-sunDir.y, 0.0f, 1.0f) * params[9];
 		params[9] /= glm::dot(S, glm::vec3(0.2126f, 0.7152f, 0.0722f));
 
-		float sunAmount = fmodf(((-sunDir.y) / (MATH_PI / 2.0f)), 4.0f);
+		float sunAmount = fmodf(((-sunDir.y) / ((float)MATH_PI / 2.0f)), 4.0f);
 		if (sunAmount > 2.0f) {
 			sunAmount = 0.0f;
 		}
@@ -257,12 +257,12 @@ void HosekSkyModel::recalculateParamsHosek(glm::vec3 sunDir) {
 	glm::vec3 tmp(0.0f);
 	for (int j = 0; j < 9; j++) {
 		for (int i = 0; i < 3; i++) {
-			tmp[i] = skymodel_state->configs[i][j];
+			tmp[i] = (float)skymodel_state->configs[i][j];
 		}
 		params[j] = tmp;
 	}
 	for (int i = 0; i < 3; i++) {
-		tmp[i] = skymodel_state->radiances[i];
+		tmp[i] = (float)skymodel_state->radiances[i];
 	}
 	params[9] = tmp;
 

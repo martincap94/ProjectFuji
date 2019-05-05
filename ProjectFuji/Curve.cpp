@@ -41,14 +41,14 @@ void Curve::draw(ShaderProgram & shader) {
 
 	shader.setColor(color);
 	glBindVertexArray(VAO);
-	glDrawArrays(GL_LINES, 0, vertices.size() * 2);
+	glDrawArrays(GL_LINES, 0, (GLsizei)vertices.size() * 2);
 }
 
 void Curve::draw(ShaderProgram *shader) {
 	shader->use();
 	shader->setColor(color);
 	glBindVertexArray(VAO);
-	glDrawArrays(GL_LINES, 0, vertices.size() * 2);
+	glDrawArrays(GL_LINES, 0, (GLsizei)vertices.size() * 2);
 }
 
 glm::vec2 Curve::getIntersectionWithIsobar(float normalizedPressure) {
@@ -88,22 +88,22 @@ void Curve::printVertices() {
 bool findIntersectionNew(const Curve & c1, const Curve & c2, glm::vec2 & outIntersection, unsigned int intersectionNumber, bool skipStartingPoints, bool reverseFirst, bool reverseSecond) {
 	int iStart, jStart, iEnd, jEnd, iDelta, jDelta;
 	if (reverseFirst) {
-		iStart = c1.vertices.size() - 1;
+		iStart = (int)c1.vertices.size() - 1;
 		iEnd = 0;
 		iDelta = -1;
 	} else {
 		iStart = 0;
-		iEnd = c1.vertices.size() - 1;
+		iEnd = (int)c1.vertices.size() - 1;
 		iDelta = 1;
 	}
 
 	if (reverseSecond) {
-		jStart = c2.vertices.size() - 1;
+		jStart = (int)c2.vertices.size() - 1;
 		jEnd = 0;
 		jDelta = -1;
 	} else {
 		jStart = 0;
-		jEnd = c2.vertices.size() - 1;
+		jEnd = (int)c2.vertices.size() - 1;
 		jDelta = 1;
 	}
 	unsigned int foundIntersectionCounter = 0;
@@ -140,22 +140,22 @@ glm::vec2 findIntersection(const Curve & c1, const Curve & c2, bool reverseFirst
 
 	int iStart, jStart, iEnd, jEnd, iDelta, jDelta;
 	if (reverseFirst) {
-		iStart = c1.vertices.size() - 1;
+		iStart = (int)c1.vertices.size() - 1;
 		iEnd = 0;
 		iDelta = -1;
 	} else {
 		iStart = 0;
-		iEnd = c1.vertices.size() - 1;
+		iEnd = (int)c1.vertices.size() - 1;
 		iDelta = 1;
 	}
 
 	if (reverseSecond) {
-		jStart = c2.vertices.size() - 1;
+		jStart = (int)c2.vertices.size() - 1;
 		jEnd = 0;
 		jDelta = -1;
 	} else {
 		jStart = 0;
-		jEnd = c2.vertices.size() - 1;
+		jEnd = (int)c2.vertices.size() - 1;
 		jDelta = 1;
 	}
 

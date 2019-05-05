@@ -60,7 +60,7 @@ GeneralGrid::GeneralGrid(int range, int stepSize) : range(range), stepSize(stepS
 	gridVertices.push_back(glm::vec3(0.0f, 0.0f, 1.0f));
 
 
-	numLines = gridVertices.size();
+	numLines = (int)gridVertices.size();
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);

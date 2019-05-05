@@ -2454,7 +2454,7 @@ void LBM3D_1D_indices::doStepCUDA() {
 
 	//moveParticlesKernelInterop << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode);
 	//moveParticlesKernelInteropNew << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode, vars->lbmVelocityMultiplier, (bool)vars->lbmUseCorrectInterpolation);
-	moveParticlesKernelInteropNew2 << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode, vars->lbmVelocityMultiplier, (bool)vars->lbmUseCorrectInterpolation);
+	moveParticlesKernelInteropNew2 << <gridDim, blockDim >> > (d_particleVerticesVBO, d_velocities, /*d_numParticles*/particleSystem->numActiveParticles, nullptr, respawnMode, outOfBoundsMode, vars->lbmVelocityMultiplier, vars->lbmUseCorrectInterpolation != 0);
 
 
 	//cudaDeviceSynchronize(); // FOR FINDING ERROR - TESTING!
@@ -2476,7 +2476,7 @@ void LBM3D_1D_indices::doStepCUDA() {
 
 		CHECK_ERROR(cudaPeekAtLastError());
 
-		moveStreamlineParticlesKernel << <gridDim, blockDim >> > (d_streamlinesVBO, d_velocities, streamlineParticleSystem->d_currActiveVertices, streamlineParticleSystem->maxStreamlineLength, streamlineParticleSystem->maxNumStreamlines, respawnMode, outOfBoundsMode, vars->lbmVelocityMultiplier, (bool)vars->lbmUseCorrectInterpolation);
+		moveStreamlineParticlesKernel << <gridDim, blockDim >> > (d_streamlinesVBO, d_velocities, streamlineParticleSystem->d_currActiveVertices, streamlineParticleSystem->maxStreamlineLength, streamlineParticleSystem->maxNumStreamlines, respawnMode, outOfBoundsMode, vars->lbmVelocityMultiplier, vars->lbmUseCorrectInterpolation != 0);
 		CHECK_ERROR(cudaPeekAtLastError());
 
 		cudaGraphicsUnmapResources(1, &streamlineParticleSystem->cudaStreamlinesVBO, 0);

@@ -136,7 +136,7 @@ private:
 
 	// stride only different for radiosity dataset, otherwise always 9
 	//! Calculates param using the given dataset and stride.
-	double calculateParam(double *dataset, int stride);
+	float calculateParam(double *dataset, int stride);
 
 	//! Calculates the bezier interpolation using the given dataset, start and stride values.
 	double calculateBezier(double *dataset, int start, int stride);

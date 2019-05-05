@@ -683,10 +683,10 @@ void HeightMap::draw(ShaderProgram *shader) {
 	shader->setFloat("u_GlobalNormalMapMixingRatio", globalNormalMapMixingRatio);
 	shader->setFloat("u_GlobalNormalMapTiling", globalNormalMapTiling);
 
-	shader->setBool("u_NormalsOnly", (bool)showNormalsOnly);
+	shader->setBool("u_NormalsOnly", showNormalsOnly != 0);
 	shader->setInt("u_NormalsMode", normalsShaderMode);
 
-	shader->setBool("u_UseGrungeMap", (bool)useGrungeMap);
+	shader->setBool("u_UseGrungeMap", useGrungeMap != 0);
 	shader->setFloat("u_GrungeMapMin", grungeMapMin);
 	shader->setFloat("u_GrungeMapTiling", grungeMapTiling);
 
@@ -708,7 +708,7 @@ void HeightMap::draw(ShaderProgram *shader) {
 
 	// TODO - Make this global for multiple shaders
 	shader->setInt("u_CloudShadowTexture", TEXTURE_UNIT_CLOUD_SHADOW_MAP);
-	shader->setBool("u_CloudsCastShadows", (bool)vars->cloudsCastShadows);
+	shader->setBool("u_CloudsCastShadows", vars->cloudsCastShadows != 0);
 	shader->setFloat("u_CloudCastShadowAlphaMultiplier", vars->cloudCastShadowAlphaMultiplier);
 
 	if (visualizeTextureMode && visTexture) {

@@ -45,7 +45,7 @@ LatticeCollider::LatticeCollider(string filename) {
 		for (int x = 0; x < width; x++) {
 
 			inFile >> dummy; // take red channel only
-			area[x + width * y] = (bool)dummy;
+			area[x + width * y] = dummy != 0;
 			if (area[x + width * y]) {
 				areaPoints.push_back(glm::vec3(x, y, 0.0f));
 			}
@@ -53,7 +53,7 @@ LatticeCollider::LatticeCollider(string filename) {
 			inFile >> dummy;
 		}
 	}
-	numPoints = areaPoints.size();
+	numPoints = (int)areaPoints.size();
 
 
 

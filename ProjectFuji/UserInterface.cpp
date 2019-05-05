@@ -1134,11 +1134,11 @@ void UserInterface::constructSkyTab() {
 
 
 
-	nk_value_float(ctx, "Eta", hosek->eta);
+	nk_value_float(ctx, "Eta", (float)hosek->eta);
 	nk_value_float(ctx, "Eta (degrees)", hosek->getElevationDegrees());
 
-	nk_value_float(ctx, "Sun Theta", hosek->sunTheta);
-	nk_value_float(ctx, "Sun Theta (degrees)", glm::degrees(hosek->sunTheta));
+	nk_value_float(ctx, "Sun Theta", (float)hosek->sunTheta);
+	nk_value_float(ctx, "Sun Theta (degrees)", glm::degrees((float)hosek->sunTheta));
 
 	nk_checkbox_label(ctx, "Simulate sun", &vars->simulateSun);
 	nk_checkbox_label(ctx, "Skip night", &dirLight->skipNightTime);

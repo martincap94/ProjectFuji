@@ -17,9 +17,9 @@ void Mesh::draw(ShaderProgram *shader) {
 	glBindVertexArray(VAO);
 
 	if (instanced) {
-		glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, numInstances);
+		glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0, numInstances);
 	} else {
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
 	}
 	glBindVertexArray(0);
 
@@ -37,7 +37,7 @@ void Mesh::makeInstanced(std::vector<Transform> &instanceTransforms) {
 }
 
 void Mesh::updateInstanceTransforms(std::vector<Transform>& instanceTransforms) {
-	numInstances = instanceTransforms.size();
+	numInstances = (int)instanceTransforms.size();
 	vector<glm::mat4> instanceModelMatrices;
 	for (int i = 0; i < numInstances; i++) {
 		instanceModelMatrices.push_back(instanceTransforms[i].getModelMatrix());
@@ -47,7 +47,7 @@ void Mesh::updateInstanceTransforms(std::vector<Transform>& instanceTransforms) 
 }
 
 void Mesh::updateInstanceModelMatrices(std::vector<glm::mat4> &instanceModelMatrices) {
-	numInstances = instanceModelMatrices.size();
+	numInstances = (int)instanceModelMatrices.size();
 
 	glBindBuffer(GL_ARRAY_BUFFER, instancesVBO);
 	glBufferData(GL_ARRAY_BUFFER, numInstances * sizeof(glm::mat4), instanceModelMatrices.data(), GL_STATIC_DRAW);

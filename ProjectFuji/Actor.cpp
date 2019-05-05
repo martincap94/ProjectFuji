@@ -78,7 +78,7 @@ bool Actor::drawWireframe(ShaderProgram * shader) {
 void Actor::addChild(Actor *child) {
 	children.push_back(child);
 	child->parent = this;
-	child->pidx = children.size() - 1;
+	child->pidx = (int)children.size() - 1;
 
 }
 
@@ -112,5 +112,5 @@ void Actor::snapToGround(HeightMap *heightMap) {
 }
 
 bool Actor::shouldDraw() {
-	return visible;
+	return visible != 0;
 }

@@ -1269,7 +1269,7 @@ void STLPDiagram::draw() {
 	if (showAmbientCurve) {
 		curveShader->setColor(ambientCurveColor);
 		glBindVertexArray(ambientTemperatureVAO);
-		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size());
+		glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)soundingData.size());
 	}
 
 

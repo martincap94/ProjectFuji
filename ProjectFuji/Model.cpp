@@ -122,7 +122,7 @@ void Model::makeInstancedOld(HeightMap *heightMap, int numInstances, glm::vec2 s
 	float areaHalfDepth = areaSize.y / 2.0f;
 
 	std::vector<Transform> instanceTransforms;
-	for (unsigned int i = 0; i < numInstances; i++) {
+	for (int i = 0; i < numInstances; i++) {
 		float instanceScaleModifier = getRandFloat(scaleModifier.x, scaleModifier.y);
 		
 		float xPos;
@@ -161,7 +161,7 @@ void Model::makeInstanced(HeightMap * heightMap, int numInstances, glm::vec2 sca
 	float areaHalfDepth = areaSize.y / 2.0f;
 
 	std::vector<Transform> instanceTransforms;
-	for (unsigned int i = 0; i < numInstances; i++) {
+	for (int i = 0; i < numInstances; i++) {
 		float instanceScaleModifier = getRandFloat(scaleModifier.x, scaleModifier.y);
 
 		float xOff = getRandFloat(-areaHalfWidth, areaHalfWidth);
@@ -185,7 +185,7 @@ void Model::makeInstanced(HeightMap * heightMap, int numInstances, glm::vec2 sca
 
 void Model::makeInstancedMaterialMap(HeightMap * heightMap, int numInstances, int materialIdx, glm::vec2 scaleModifier) {
 	std::vector<Transform> instanceTransforms;
-	for (unsigned int i = 0; i < numInstances; i++) {
+	for (int i = 0; i < numInstances; i++) {
 		float instanceScaleModifier = getRandFloat(scaleModifier.x, scaleModifier.y);
 
 		glm::vec3 pos = heightMap->getWorldPositionMaterialMapSample(materialIdx);
@@ -255,11 +255,11 @@ void Model::loadModel(string path) {
 }
 
 void Model::processNode(aiNode * node, const aiScene * scene) {
-	for (int i = 0; i < node->mNumMeshes; i++) {
+	for (unsigned int i = 0; i < node->mNumMeshes; i++) {
 		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
 		meshes.push_back(processMesh(mesh, scene));
 	}
-	for (int i = 0; i < node->mNumChildren; i++) {
+	for (unsigned int i = 0; i < node->mNumChildren; i++) {
 		processNode(node->mChildren[i], scene);
 	}
 }
@@ -270,7 +270,7 @@ Mesh Model::processMesh(aiMesh * mesh, const aiScene * scene) {
 	vector<GLuint> indices;
 	vector<Texture> textures;
 
-	for (int i = 0; i < mesh->mNumVertices; i++) {
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
 		MeshVertex vertex;
 		glm::vec3 tmp;
 
@@ -305,9 +305,9 @@ Mesh Model::processMesh(aiMesh * mesh, const aiScene * scene) {
 		vertices.push_back(vertex);
 	}
 
-	for (int i = 0; i < mesh->mNumFaces; i++) {
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 		aiFace face = mesh->mFaces[i];
-		for (int j = 0; j < face.mNumIndices; j++) {
+		for (unsigned int j = 0; j < face.mNumIndices; j++) {
 			indices.push_back(face.mIndices[j]);
 		}
 	}

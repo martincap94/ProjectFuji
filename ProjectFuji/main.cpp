@@ -224,7 +224,7 @@ ShaderProgram *pbrTest;
 
 /// Main - runs the application and sets seed for the random number generator.
 int main(int argc, char **argv) {
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 
 
 	PerlinNoiseSampler::loadPermutationsData("resources/perlin_noise_permutations.txt");
@@ -564,8 +564,8 @@ int runApp() {
 		accumulatedTime += deltaTime;
 
 		if (currentFrameTime - prevTime >= 1.0f) {
-			prevAvgDeltaTime = 1000.0 * (accumulatedTime / frameCounter);
-			prevAvgFPS = 1000.0 / prevAvgDeltaTime;
+			prevAvgDeltaTime = 1000.0f * (float)(accumulatedTime / frameCounter);
+			prevAvgFPS = 1000.0f / prevAvgDeltaTime;
 			//printf("Avg delta time = %0.4f [ms]\n", prevAvgDeltaTime);
 			prevTime += (currentFrameTime - prevTime);
 			frameCounter = 0;
@@ -705,7 +705,7 @@ int runApp() {
 
 			// Naively simulate sun movement
 			if (vars.simulateSun) {
-				dirLight->circularMotionStep(deltaTime);
+				dirLight->circularMotionStep((float)deltaTime);
 			}
 
 			scene.root->update();
@@ -934,17 +934,18 @@ void processInput(GLFWwindow* window) {
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
 		//cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
-
+		float x = (float)xpos;
+		float y = (float)ypos;
 
 		if (ui->viewportMode == eViewportMode::DIAGRAM && stlpDiagram->soundingCurveEditingEnabled) {
 			//X_ndc = X_screen * 2.0 / VP_sizeX - 1.0;
 			//Y_ndc = Y_screen * 2.0 / VP_sizeY - 1.0;
 			//Z_ndc = 2.0 * depth - 1.0;
-			xpos = xpos * 2.0f / (float)vars.screenWidth - 1.0f;
-			ypos = vars.screenHeight - ypos;
-			ypos = ypos * 2.0f / (float)vars.screenHeight - 1.0f;
+			x = x * 2.0f / (float)vars.screenWidth - 1.0f;
+			y = (float)vars.screenHeight - (float)ypos;
+			y = y * 2.0f / (float)vars.screenHeight - 1.0f;
 
-			glm::vec4 mouseCoords(xpos, ypos, 0.0f, 1.0f);
+			glm::vec4 mouseCoords(x, y, 0.0f, 1.0f);
 			mouseCoords = glm::inverse(view) * glm::inverse(projection) * mouseCoords;
 			//cout << "mouse coords = " << glm::to_string(mouseCoords) << endl;
 
@@ -953,7 +954,7 @@ void processInput(GLFWwindow* window) {
 			stlpDiagram->moveSelectedPoint(mouseCoords);
 		} else {
 
-			ebm->onLeftMouseButtonDown(xpos, ypos);
+			ebm->onLeftMouseButtonDown(x, y);
 
 
 			/*
@@ -1174,7 +1175,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	
 
 	if (ui->viewportMode == eViewportMode::DIAGRAM) {
- 		vars.diagramProjectionOffset -= yoffset * 0.04f;
+ 		vars.diagramProjectionOffset -= (float)yoffset * 0.04f;
 		if (vars.diagramProjectionOffset < -0.45f) {
 			vars.diagramProjectionOffset = -0.45f;
 		}
@@ -1200,7 +1201,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 				glfwMods |= GLFW_MOD_ALT;
 			}
 
-			ebm->processMouseWheelScroll(yoffset, glfwMods);
+			ebm->processMouseWheelScroll((float)yoffset, glfwMods);
 
 			//if (glfwMods == 0) {
 			//	camera->processMouseScroll(yoffset);
@@ -1249,7 +1250,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		} else {
 			cout << "Cursor Position at (" << xpos << " : " << ypos << ")" << endl;
 
-			ebm->onLeftMouseButtonPress(xpos, ypos);
+			ebm->onLeftMouseButtonPress((float)xpos, (float)ypos);
 
 			/*
 			glm::vec4 pos = tPicker->getPixelData(xpos, vars.screenHeight - ypos);
@@ -1266,7 +1267,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 		if (ui->viewportMode == eViewportMode::VIEWPORT_3D) {
 
-			ebm->onLeftMouseButtonRelease(xpos, ypos);
+			ebm->onLeftMouseButtonRelease((float)xpos, (float)ypos);
 		}
 	}
 }
@@ -1277,19 +1278,19 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
 	static bool firstFrame = true;
 	if (firstFrame) {
-		lastMouseX = xpos;
-		lastMouseY = ypos;
+		lastMouseX = (float)xpos;
+		lastMouseY = (float)ypos;
 		firstFrame = false;
 	}
 
 
-	float xOffset = xpos - lastMouseX;
-	float yOffset = lastMouseY - ypos;
+	float xOffset = (float)xpos - lastMouseX;
+	float yOffset = lastMouseY - (float)ypos;
 
 	//cout << xOffset << ", " << yOffset << endl;
 
-	lastMouseX = xpos;
-	lastMouseY = ypos;
+	lastMouseX = (float)xpos;
+	lastMouseY = (float)ypos;
 
 	if (ui->viewportMode == eViewportMode::DIAGRAM) {
 
@@ -1306,7 +1307,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 			camera->processMouseMovement(xOffset, yOffset, false);
 		}
 
-		ebm->updateMousePosition(xpos, ypos);
+		ebm->updateMousePosition((float)xpos, (float)ypos);
 	}
 }
 

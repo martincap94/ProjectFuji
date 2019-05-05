@@ -520,7 +520,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
 		int prevSum = sum;
-		sum += stlpDiagram->dryAdiabatProfiles[i].vertices.size();
+		sum += (int)stlpDiagram->dryAdiabatProfiles[i].vertices.size();
 		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 		//cout << stlpDiagram->dryAdiabatProfiles[i].vertices.size() << endl;
 	}
@@ -540,7 +540,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
 		int prevSum = sum;
-		sum += stlpDiagram->moistAdiabatProfiles[i].vertices.size();
+		sum += (int)stlpDiagram->moistAdiabatProfiles[i].vertices.size();
 		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 		//cout << stlpDiagram->moistAdiabatProfiles[i].vertices.size() << endl;
 	}
@@ -605,7 +605,7 @@ void STLPSimulatorCUDA::initCUDAGeneral() {
 
 
 	CHECK_ERROR(cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size()));
-	currAmbientCurveVertexCount = stlpDiagram->ambientCurve.vertices.size();
+	currAmbientCurveVertexCount = (int)stlpDiagram->ambientCurve.vertices.size();
 
 	CHECK_ERROR(cudaMalloc((void**)&d_dryAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * vars->stlpMaxProfiles));
 	CHECK_ERROR(cudaMalloc((void**)&d_moistAdiabatOffsetsAndLengths, sizeof(glm::ivec2) * vars->stlpMaxProfiles));
@@ -622,7 +622,7 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 	if (currAmbientCurveVertexCount != stlpDiagram->ambientCurve.vertices.size()) {
 		CHECK_ERROR(cudaFree(d_ambientTempCurve));
 		CHECK_ERROR(cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size()));
-		currAmbientCurveVertexCount = stlpDiagram->ambientCurve.vertices.size();
+		currAmbientCurveVertexCount = (int)stlpDiagram->ambientCurve.vertices.size();
 	}
 	//cout << "Ambient curve length: " << stlpDiagram->ambientCurve.vertices.size() << endl;
 
@@ -654,7 +654,7 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
 		int prevSum = sum;
-		sum += stlpDiagram->dryAdiabatProfiles[i].vertices.size();
+		sum += (int)stlpDiagram->dryAdiabatProfiles[i].vertices.size();
 		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 	}
 	CHECK_ERROR(cudaMemcpy(d_dryAdiabatOffsetsAndLengths, &ivectmp[0], sizeof(glm::ivec2) * ivectmp.size(), cudaMemcpyHostToDevice));
@@ -669,7 +669,7 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
 		int prevSum = sum;
-		sum += stlpDiagram->moistAdiabatProfiles[i].vertices.size();
+		sum += (int)stlpDiagram->moistAdiabatProfiles[i].vertices.size();
 		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 	}
 	CHECK_ERROR(cudaMemcpy(d_moistAdiabatOffsetsAndLengths, &ivectmp[0], sizeof(glm::ivec2) * ivectmp.size(), cudaMemcpyHostToDevice));
@@ -742,7 +742,7 @@ void STLPSimulatorCUDA::doStep() {
 
 
 
-	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, delta_t, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, d_ambientTempCurve, stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO, vars->dividePrevVelocity, vars->prevVelocityDivisor * 0.01f);
+	simulationStepKernel << <gridDim.x, blockDim.x >> > (d_mappedParticleVerticesVBO, particleSystem->numActiveParticles, delta_t, particleSystem->d_verticalVelocities, d_mappedParticleProfilesVBO, d_ambientTempCurve, (int)stlpDiagram->ambientCurve.vertices.size(), d_dryAdiabatProfiles, d_dryAdiabatOffsetsAndLengths, d_moistAdiabatProfiles, d_moistAdiabatOffsetsAndLengths, d_CCLProfiles, d_TcProfiles, d_mappedDiagramParticleVerticesVBO, vars->dividePrevVelocity != 0, vars->prevVelocityDivisor * 0.01f);
 
 	CHECK_ERROR(cudaPeekAtLastError());
 

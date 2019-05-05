@@ -78,7 +78,7 @@ void Camera2D::processKeyboardMovement(int glfwKey, double deltaTime) {
 
 
 void Camera2D::processMouseScroll(double yoffset) {
-	movementSpeed += yoffset;
+	movementSpeed += (float)yoffset;
 	movementSpeed = glm::max(movementSpeed, 0.01f);
 }
 

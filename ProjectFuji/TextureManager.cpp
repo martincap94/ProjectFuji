@@ -102,7 +102,7 @@ namespace TextureManager {
 		if (vars->hideUI) {
 			return;
 		}
-		int size = (int)(textureIds.size() <= overlayTextures.size() - 1) ? textureIds.size() : overlayTextures.size();
+		int size = (int)((textureIds.size() <= overlayTextures.size() - 1) ? textureIds.size() : overlayTextures.size());
 		for (int i = 0; i < size; i++) {
 			overlayTextures[i]->draw(textureIds[i]);
 			overlayTextures[i]->texId = textureIds[i];
