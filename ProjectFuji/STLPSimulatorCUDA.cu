@@ -612,7 +612,7 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 		CHECK_ERROR(cudaMalloc((void**)&d_ambientTempCurve, sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size()));
 		currAmbientCurveVertexCount = stlpDiagram->ambientCurve.vertices.size();
 	}
-	cout << "Ambient curve length: " << stlpDiagram->ambientCurve.vertices.size() << endl;
+	//cout << "Ambient curve length: " << stlpDiagram->ambientCurve.vertices.size() << endl;
 
 	// ambient temp curve can be mapped to VBO, no need for this
 	CHECK_ERROR(cudaMemcpy(d_ambientTempCurve, &stlpDiagram->ambientCurve.vertices[0], sizeof(glm::vec2) * stlpDiagram->ambientCurve.vertices.size(), cudaMemcpyHostToDevice));

@@ -23,6 +23,7 @@ STLPDiagram::~STLPDiagram() {
 void STLPDiagram::init() {
 
 	soundingFilename = string(SOUNDING_DATA_DIR) + vars->soundingFile;
+	tmpSoundingFilename = soundingFilename;
 
 	curveShader = ShaderManager::getShaderPtr("curve");
 	singleColorShaderVBO = ShaderManager::getShaderPtr("singleColor_VBO");
@@ -42,6 +43,9 @@ void STLPDiagram::init() {
 }
 
 void STLPDiagram::loadSoundingData() {
+
+	soundingFilename = tmpSoundingFilename; // not important at initialization; used when user edits the diagram
+	soundingFilenameChanged = false;
 
 	//cout << "Sounding filename = " << filename << endl;
 	ifstream infile(soundingFilename);
@@ -399,12 +403,12 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2> &vertices, i
 	// We need to compute the initial step to snap to the isobars.
 
 
-	printf(" P0 = %0.1f\n deltaP = %0.1f\n ", P0, deltaP);
+	//printf(" P0 = %0.1f\n deltaP = %0.1f\n ", P0, deltaP);
 
 	float nextMultipleP = P0 + (deltaP - fmodf(P0, deltaP)) - deltaP;
 	float firstDeltaP = P0 - nextMultipleP;
 
-	printf(" next multiple P = %0.1f\n first delta P = %0.1f\n ", nextMultipleP, firstDeltaP);
+	//printf(" next multiple P = %0.1f\n first delta P = %0.1f\n ", nextMultipleP, firstDeltaP);
 
 	P = P0;
 	T = computeAbsoluteFromThetaC(theta, P, this->P0);
@@ -504,16 +508,64 @@ void STLPDiagram::generateMoistAdiabat(float startT, float startP, vector<glm::v
 
 
 void STLPDiagram::recalculateAll() {
-	cout << "Resetting diagram to default sounding data values" << endl;
+
+
+
+	// Show diagram between minimal & maximal pressure values
+	ymin = getNormalizedPres(MIN_P);
+	ymax = getNormalizedPres(MAX_P);
+
+
+	P0 = soundingData[0].data[PRES];
+	float y0 = getNormalizedPres(P0);
+
+
+	float T;
+	float P;
+
+	xaxis.vertices.clear();
+	yaxis.vertices.clear();
+
+	xaxis.vertices.push_back(glm::vec2(xmin, ymax));
+	xaxis.vertices.push_back(glm::vec2(xmax, ymax));
+	yaxis.vertices.push_back(glm::vec2(xmin, ymin));
+	yaxis.vertices.push_back(glm::vec2(xmin, ymax));
+
+	xaxis.uploadToBuffers();
+	yaxis.uploadToBuffers();
+
+	groundIsobar.vertices.clear();
+	groundIsobar.vertices.push_back(glm::vec2(xmin, y0));
+	groundIsobar.vertices.push_back(glm::vec2(xmax * 10.0f, y0)); // we want it to be long for Tc computation (intersection beyond xmax)
+
+	groundIsobar.uploadToBuffers();
 
 
 
 
+	///////////////////////////////////////////////////////////////////////////////////////
+	// ISOBARS
+	///////////////////////////////////////////////////////////////////////////////////////
+	generateIsobars();
 
-	//initCurves();
+	///////////////////////////////////////////////////////////////////////////////////////
+	// TEMPERATURE POINTS
+	///////////////////////////////////////////////////////////////////////////////////////
+	generateTemperatureNotches();
 
+	///////////////////////////////////////////////////////////////////////////////////////
+	// ISOTHERMS
+	///////////////////////////////////////////////////////////////////////////////////////
+	generateIsotherms();
 
+	///////////////////////////////////////////////////////////////////////////////////////
+	// AMBIENT TEMPERATURE PIECE-WISE LINEAR CURVE
+	///////////////////////////////////////////////////////////////////////////////////////
 	initAmbientTemperatureCurve();
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// DEWPOINT TEMPERATURE PIECE-WISE LINEAR CURVE
+	///////////////////////////////////////////////////////////////////////////////////////
 	initDewpointCurve();
 
 	recalculateParameters();
@@ -521,6 +573,12 @@ void STLPDiagram::recalculateAll() {
 }
 
 void STLPDiagram::initBuffers() {
+
+	xaxis.initBuffers();
+	yaxis.initBuffers();
+	groundIsobar.initBuffers();
+
+
 	///////////////////////////////////////////////////////////////////////////////////////
 	// ISOBARS
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -658,7 +716,11 @@ void STLPDiagram::initBuffers() {
 
 }
 
+
+
+
 void STLPDiagram::initCurves() {
+
 
 	recalculateProfileDelta();
 
@@ -677,18 +739,22 @@ void STLPDiagram::initCurves() {
 	float T;
 	float P;
 
+	xaxis.vertices.clear();
+	yaxis.vertices.clear();
+
 	xaxis.vertices.push_back(glm::vec2(xmin, ymax));
 	xaxis.vertices.push_back(glm::vec2(xmax, ymax));
 	yaxis.vertices.push_back(glm::vec2(xmin, ymin));
 	yaxis.vertices.push_back(glm::vec2(xmin, ymax));
 
-	xaxis.init();
-	yaxis.init();
+	xaxis.uploadToBuffers();
+	yaxis.uploadToBuffers();
 
+	groundIsobar.vertices.clear();
 	groundIsobar.vertices.push_back(glm::vec2(xmin, y0));
 	groundIsobar.vertices.push_back(glm::vec2(xmax * 10.0f, y0)); // we want it to be long for Tc computation (intersection beyond xmax)
 
-	groundIsobar.init();
+	groundIsobar.uploadToBuffers();
 
 
 
@@ -784,10 +850,10 @@ void STLPDiagram::initCurves() {
 	// PROFILES
 	for (int i = 0; i < numProfiles; i++) {
 		TcProfiles.push_back(Tc + glm::vec2(i * profileDelta, 0.0f));
-		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(TcProfiles.back()), -2.0f)); // point
-		float tint = (i + 1) * profileDelta;
-		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
-		visualizationPoints.push_back(glm::vec3(tint, 0.0f, 0.0f)); // color	
+		//visualizationPoints.push_back(glm::vec3(getNormalizedCoords(TcProfiles.back()), -2.0f)); // point
+		//float tint = (i + 1) * profileDelta;
+		//rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
+		//visualizationPoints.push_back(glm::vec3(tint, 0.0f, 0.0f)); // color	
 	}
 
 
@@ -811,10 +877,10 @@ void STLPDiagram::initCurves() {
 			CCLProfiles.push_back(getDenormalizedCoords(findIntersection(dryAdiabatProfiles[profileIndex], ambientCurve)));
 		}
 
-		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(CCLProfiles.back()), -2.0f)); // point
-		float tint = (profileIndex + 1) * profileDelta;
-		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
-		visualizationPoints.push_back(glm::vec3(tint, 0.0f, 1.0f)); // color	
+		//visualizationPoints.push_back(glm::vec3(getNormalizedCoords(CCLProfiles.back()), -2.0f)); // point
+		//float tint = (profileIndex + 1) * profileDelta;
+		//rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
+		//visualizationPoints.push_back(glm::vec3(tint, 0.0f, 1.0f)); // color	
 
 	}
 
@@ -872,11 +938,11 @@ void STLPDiagram::initCurves() {
 		}
 		//cout << "EL: T = " << EL.x << ", P = " << EL.y << endl;
 
-		visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
-		visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
+		//visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
+		//visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
 
-		visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
-		visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
+		//visualizationPoints.push_back(glm::vec3(ELNormalized, -2.0f)); // point
+		//visualizationPoints.push_back(glm::vec3(0.0f, 1.0f, 1.0f)); // color	
 	}
 
 
@@ -917,10 +983,10 @@ void STLPDiagram::initCurves() {
 		glm::vec2 tmp = findIntersection(moistAdiabatProfiles[profileIndex], ambientCurve, true);
 		ELProfiles.push_back(getDenormalizedCoords(tmp));
 
-		visualizationPoints.push_back(glm::vec3(getNormalizedCoords(ELProfiles.back()), -2.0f)); // point
-		float tint = (profileIndex + 1) * profileDelta;
-		rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
-		visualizationPoints.push_back(glm::vec3(tint, 1.0f, 1.0f)); // color	
+		//visualizationPoints.push_back(glm::vec3(getNormalizedCoords(ELProfiles.back()), -2.0f)); // point
+		//float tint = (profileIndex + 1) * profileDelta;
+		//rangeToRange(tint, 0.0f, convectiveTempRange, 0.0f, 1.0f);
+		//visualizationPoints.push_back(glm::vec3(tint, 1.0f, 1.0f)); // color	
 	}
 
 
@@ -936,12 +1002,12 @@ void STLPDiagram::initCurves() {
 	// trying out stuff
 	P = 432.2f;
 	float normP = getNormalizedPres(P);
-	//cout << "Pressure = " << P << ", normalized pressure = " << normP << endl;
-	visualizationPoints.push_back(glm::vec3(ambientCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
-	visualizationPoints.push_back(glm::vec3(1.0f, 0.0f, 0.0f)); // color
+	////cout << "Pressure = " << P << ", normalized pressure = " << normP << endl;
+	//visualizationPoints.push_back(glm::vec3(ambientCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
+	//visualizationPoints.push_back(glm::vec3(1.0f, 0.0f, 0.0f)); // color
 
-	visualizationPoints.push_back(glm::vec3(dewpointCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
-	visualizationPoints.push_back(glm::vec3(0.0f, 0.0f, 1.0f)); // color
+	//visualizationPoints.push_back(glm::vec3(dewpointCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
+	//visualizationPoints.push_back(glm::vec3(0.0f, 0.0f, 1.0f)); // color
 
 
 	glGenVertexArrays(1, &visPointsVAO);
@@ -969,11 +1035,19 @@ void STLPDiagram::initCurves() {
 
 }
 
+
+
+
+
+
 void STLPDiagram::recalculateParameters() {
 
-	
 	recalculateProfileDelta();
 
+
+	diagramChanged = false;
+	useOrographicParametersChanged = false;
+	useOrographicParameters = useOrographicParametersEdit;
 
 	generateMixingRatioLine();
 
@@ -981,7 +1055,6 @@ void STLPDiagram::recalculateParameters() {
 	CCL = getDenormalizedCoords(CCLNormalized);
 
 
-	float P0 = soundingData[0].data[PRES];
 	vector<glm::vec2> vertices;
 
 	for (int i = 0; i < 2; i++) {
@@ -1286,6 +1359,10 @@ void STLPDiagram::drawText() {
 
 	int i = 0;
 	for (int temp = MIN_TEMP; temp <= MAX_TEMP; temp += 10) {
+		if (temperaturePoints[i].x < 0.0f || temperaturePoints[i].x > 1.0f) {
+			i++;
+			continue;
+		}
 		textRend->renderText(to_string(temp), temperaturePoints[i].x, temperaturePoints[i].y + 0.02f, textScale);
 		i++;
 	}
@@ -1309,17 +1386,17 @@ void STLPDiagram::drawText() {
 		textRend->renderText("OEL", orographicELNormalized.x, orographicELNormalized.y, textScale);
 	}
 
-	textRend->renderText(to_string((int)getAltitudeFromPressure(P0)) + "[m]", 0.0f + 0.01f * scaleZoomModifier, getNormalizedPres(P0), textScale);
+	textRend->renderText("Ground Level at " + to_string((int)getAltitudeFromPressure(P0)) + "[m]", 1.0f + 0.01f * scaleZoomModifier, getNormalizedPres(P0), textScale);
 
 	for (i = 1000.0f; i >= MIN_P; i -= 100) {
-		textRend->renderText(to_string(i), 0.0f - 0.04f, getNormalizedPres(i), textScale);
+		textRend->renderText(to_string(i), 0.0f - 0.04f - 0.02f * scaleZoomModifier, getNormalizedPres(i), textScale);
 		textRend->renderText(to_string((int)getAltitudeFromPressure(i)) + "[m]", 0.0f + 0.01f * scaleZoomModifier, getNormalizedPres(i), textScale);
 	}
 
-	textRend->renderText("Temperature [degree C]", 0.45f, 1.10f, textScale);
+	textRend->renderText("Temperature [degree C]", 0.35f, ymax + 0.08f, textScale);
 	textRend->renderText("P [hPa]", -0.15f, 0.5f, textScale);
 
-	textRend->renderText("SkewT/LogP (" + soundingFilename + ")", 0.4f, -0.05f, textScale);
+	textRend->renderText("SkewT/LogP (" + soundingFilename + ")", 0.2f, -0.05f, textScale);
 
 
 }
@@ -1401,8 +1478,6 @@ void STLPDiagram::setVisualizationPoint(glm::vec3 position, glm::vec3 color, int
 
 		//glNamedBufferSubData(visPointsVBO, sizeof(glm::vec3) * index, 2 * sizeof(glm::vec3), &visualizationPoints[index]);
 
-	} else {
-		cout << "Incorrect index (out of bounds)." << endl;
 	}
 
 }
@@ -1453,7 +1528,7 @@ void STLPDiagram::moveSelectedPoint(glm::vec2 mouseCoords) {
 		glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * pointIndex, sizeof(glm::vec2), &curvePtr->vertices[pointIndex]);
 	}
 	setVisualizationPoint(glm::vec3(curvePtr->vertices[pointIndex], 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 3, true);
-
+	diagramChanged = true;
 
 
 }
@@ -1476,22 +1551,22 @@ void STLPDiagram::constructDiagramCurvesToolbar(nk_context *ctx, UserInterface *
 	}
 
 	nk_checkbox_label(ctx, "Show Dry Adiabats (General)", &showDryAdiabats[0]);
-	if (showDryAdiabats) {
+	if (showDryAdiabats[0]) {
 		ui->nk_property_color_rgb(ctx, dryAdiabatsColor[0]);
 	}
 
 	nk_checkbox_label(ctx, "Show Moist Adiabats (General)", &showMoistAdiabats[0]);
-	if (showMoistAdiabats) {
+	if (showMoistAdiabats[0]) {
 		ui->nk_property_color_rgb(ctx, moistAdiabatsColor[0]);
 	}
 
 	nk_checkbox_label(ctx, "Show Dry Adiabat Profiles", &showDryAdiabats[1]);
-	if (showDryAdiabats) {
+	if (showDryAdiabats[1]) {
 		ui->nk_property_color_rgb(ctx, dryAdiabatsColor[1]);
 	}
 
 	nk_checkbox_label(ctx, "Show Moist Adiabat Profiles", &showMoistAdiabats[1]);
-	if (showMoistAdiabats) {
+	if (showMoistAdiabats[1]) {
 		ui->nk_property_color_rgb(ctx, moistAdiabatsColor[1]);
 	}
 
@@ -1509,6 +1584,27 @@ void STLPDiagram::constructDiagramCurvesToolbar(nk_context *ctx, UserInterface *
 
 
 
+}
+
+void STLPDiagram::setTmpSoundingFilename(string tmpSoundingFilename) {
+	this->tmpSoundingFilename = tmpSoundingFilename;
+	soundingFilenameChanged = (soundingFilename != this->tmpSoundingFilename);
+}
+
+string STLPDiagram::getTmpSoundingFilename() {
+	return tmpSoundingFilename;
+}
+
+bool STLPDiagram::wasSoundingFilenameChanged() {
+	return soundingFilenameChanged;
+}
+
+bool STLPDiagram::wasDiagramChanged() {
+	return diagramChanged;
+}
+
+void STLPDiagram::setDiagramChanged(bool diagramChanged) {
+	this->diagramChanged = diagramChanged;
 }
 
 
@@ -1625,6 +1721,7 @@ void STLPDiagram::generateTemperatureNotches() {
 	float T;
 
 	temperaturePointsCount = 0;
+	temperaturePoints.clear();
 	for (int i = MIN_TEMP; i <= MAX_TEMP; i += 10) {
 		T = getNormalizedTemp(i, ymax);
 		temperaturePoints.push_back(glm::vec2(T, ymax));

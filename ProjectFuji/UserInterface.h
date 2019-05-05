@@ -83,6 +83,8 @@ private:
 		SCENE_HIERARCHY,	//!< Show scene hierarchy tab
 		EMITTERS,			//!< Show emitter controls tab
 		GENERAL_DEBUG,		//!< Show general debug tab
+		VIEW,				//!< Show view (camera controls) tab
+		PARTICLE_SYSTEM,	//!< Show particle system tab
 		PROPERTIES,			//!< Show properties (of selected items) tab
 		_NUM_CONTENT_MODES	//!< Number of content modes
 	};
@@ -232,6 +234,8 @@ private:
 
 	void constructGeneralDebugTab();
 	void constructPropertiesTab();
+
+	void constructViewTab();
 
 	void constructSaveParticlesWindow();
 	void constructLoadParticlesWindow();

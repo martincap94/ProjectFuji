@@ -109,8 +109,8 @@ public:
 	float cloudCastShadowAlphaMultiplier = 1.0f;	//!< Multiplier of the cloud cast shadows
 
 
-	int dividePrevVelocity = 0;			//!< Whether to divide velocity from previous step (used for artificial damping in STLP)
-	float prevVelocityDivisor = 100.1f; //!< Velocity divisor used (x100) when artifical velocity damping is turned on in STLP simulation
+	int dividePrevVelocity = 1;			//!< Whether to divide velocity from previous step (used for artificial damping in STLP)
+	float prevVelocityDivisor = 102.0f; //!< Velocity divisor used (x100) when artifical velocity damping is turned on in STLP simulation
 
 	int showCCLLevelLayer = 0;			//!< Whether to visualize CCL level in the 3D viewport
 	int showELLevelLayer = 0;			//!< Whether to visualize EL level in the 3D viewport

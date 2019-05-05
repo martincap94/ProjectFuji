@@ -383,34 +383,37 @@ void UserInterface::constructSidebarSelectionTab(int *contentModeTarget, float x
 				 NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row_dynamic(ctx, 15, 4);
 		if (nk_button_label(ctx, "LBM")) {
-			(*contentModeTarget) = 0;
+			(*contentModeTarget) = LBM;
 		}
 		if (nk_button_label(ctx, "Shadows")) {
-			(*contentModeTarget) = 1;
+			(*contentModeTarget) = LIGHTING;
 		}
 		if (nk_button_label(ctx, "Terrain")) {
-			(*contentModeTarget) = 2;
+			(*contentModeTarget) = TERRAIN;
 		}
 		if (nk_button_label(ctx, "Sky")) {
-			(*contentModeTarget) = 3;
+			(*contentModeTarget) = SKY;
 		}
 		if (nk_button_label(ctx, "Cloud Vis")) {
-			(*contentModeTarget) = 4;
+			(*contentModeTarget) = CLOUD_VIS;
 		}
-		if (nk_button_label(ctx, "Diagram Controls")) {
-			(*contentModeTarget) = 5;
+		if (nk_button_label(ctx, "STLP")) {
+			(*contentModeTarget) = DIAGRAM;
 		}
 		if (nk_button_label(ctx, "LBM DEVELOPER")) {
-			(*contentModeTarget) = 6;
+			(*contentModeTarget) = LBM_DEBUG;
 		}
 		if (nk_button_label(ctx, "Hierarchy")) {
-			(*contentModeTarget) = 7;
+			(*contentModeTarget) = SCENE_HIERARCHY;
 		}
 		if (nk_button_label(ctx, "Emitters")) {
-			(*contentModeTarget) = 8;
+			(*contentModeTarget) = EMITTERS;
 		}
 		if (nk_button_label(ctx, "General Debug")) {
 			(*contentModeTarget) = GENERAL_DEBUG;
+		}
+		if (nk_button_label(ctx, "View")) {
+			(*contentModeTarget) = VIEW;
 		}
 		if (nk_button_label(ctx, "Properties")) {
 			(*contentModeTarget) = PROPERTIES;
@@ -453,35 +456,14 @@ void UserInterface::constructSelectedContent(int contentMode) {
 		case GENERAL_DEBUG:
 			constructGeneralDebugTab();
 			break;
+		case VIEW:
+			constructViewTab();
+			break;
 		case PROPERTIES:
 		default:
 			constructPropertiesTab();
 			break;
 	}
-
-	/*
-	if (contentMode == 0) {
-		constructLBMTab();
-	} else if (contentMode == 1) {
-		constructLightingTab();
-	} else if (contentMode == 2) {
-		constructTerrainTab();
-	} else if (contentMode == 3) {
-		constructSkyTab();
-	} else if (contentMode == 4) {
-		constructCloudVisualizationTab();
-	} else if (contentMode == 5) {
-		constructDiagramControlsTab();
-	} else if (contentMode == 6) {
-		constructLBMDebugTab();
-	} else if (contentMode == 7) {
-		constructSceneHierarchyTab();
-	} else if (contentMode == 8) {
-		constructEmittersTab();
-	} else if (contentMode == 9) {
-		constructGeneralDebugTab();
-	}
-	*/
 }
 
 
@@ -489,110 +471,38 @@ void UserInterface::constructLBMTab() {
 	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_label(ctx, "LBM Controls", NK_TEXT_CENTERED);
 
-	//if (nk_button_label(ctx, "fullscreen")) {
-	//	vars->fullscreen = !vars->fullscreen;
-	//	glfwWindowHint(GLFW_MAXIMIZED, vars->fullscreen ? GL_TRUE : GL_FALSE); // For maximization of window
-	//}
-
-
 	nk_layout_row_dynamic(ctx, 15, 1);
-	if (nk_button_label(ctx, "Reset")) {
-		//fprintf(stdout, "button pressed\n");
-		lbm->resetSimulation();
-		particleSystem->refreshParticlesOnTerrain();
-	}
-	const char *buttonDescription = vars->paused ? "Play" : "Pause";
+
+
+	const char *buttonDescription = vars->applyLBM ? "Pause" : "Play";
 	if (nk_button_label(ctx, buttonDescription)) {
-		vars->paused = !vars->paused;
+		vars->applyLBM = !vars->applyLBM;
 	}
 
-	if (nk_button_label(ctx, "Refresh HEIGHTMAP")) {
-		lbm->refreshHeightMap();
+	if (nk_button_label(ctx, "Reset")) {
+		lbm->resetSimulation();
 	}
+
+	//if (nk_button_label(ctx, "Refresh Heightmap")) {
+	//	lbm->refreshHeightMap();
+	//}
 
 	constructTauProperty();
 
 
 
-	//nk_label(ctx, "Use point sprites", NK_TEXT_LEFT);
-	int prevVsync = vars->vsync;
-	nk_checkbox_label(ctx, "VSync", &vars->vsync);
-	if (prevVsync != vars->vsync) {
-		glfwSwapInterval(vars->vsync);
-	}
-
 	nk_label(ctx, "Inlet velocity:", NK_TEXT_LEFT);
 
-	nk_property_float(ctx, "x:", -10.0f, &lbm->inletVelocity.x, 10.0f, 0.01f, 0.005f);
-	nk_property_float(ctx, "y:", -10.0f, &lbm->inletVelocity.y, 10.0f, 0.01f, 0.005f);
-	nk_property_float(ctx, "z:", -10.0f, &lbm->inletVelocity.z, 10.0f, 0.01f, 0.005f);
+	nk_property_float(ctx, "x:", -1.0f, &lbm->inletVelocity.x, 1.0f, 0.01f, 0.005f);
+	nk_property_float(ctx, "y:", -1.0f, &lbm->inletVelocity.y, 1.0f, 0.01f, 0.005f);
+	nk_property_float(ctx, "z:", -1.0f, &lbm->inletVelocity.z, 1.0f, 0.01f, 0.005f);
 
+	nk_property_int(ctx, "LBM step frame", 1, &vars->lbmStepFrame, 100, 1, 1);
 
-
-	//nk_label(ctx, "Use point sprites", NK_TEXT_LEFT);
-	nk_checkbox_label(ctx, "Use point sprites", &vars->usePointSprites);
-
-
-	if (nk_button_label(ctx, "Sort points by camera distance")) {
+	if (nk_button_label(ctx, "Sort Particles by Camera Distance")) {
 		particleSystem->sortParticlesByDistance(camera->position, eSortPolicy::GREATER);
-
 	}
 
-
-	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_label(ctx, "Camera movement speed", NK_TEXT_LEFT);
-	nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 10000.0f, 1.0f);
-
-
-	// TODO - get this back in working order (and nicer looking)
-	nk_layout_row_dynamic(ctx, 15, 2);
-	if (nk_option_label(ctx, "Orthographic", vars->projectionMode == ORTHOGRAPHIC)) {
-		vars->projectionMode = ORTHOGRAPHIC;
-	}
-	if (nk_option_label(ctx, "Perspective", vars->projectionMode == PERSPECTIVE)) {
-		vars->projectionMode = PERSPECTIVE;
-	}
-	if (vars->projectionMode == PERSPECTIVE) {
-		nk_slider_float(ctx, 30.0f, &vars->fov, 120.0f, 1.0f);
-	}
-
-
-	nk_checkbox_label(ctx, "Use freeroam camera", &vars->useFreeRoamCamera);
-
-	constructWalkingPanel();
-
-
-
-
-
-	//if (useFreeRoamCameraPrev != vars->useFreeRoamCamera) {
-	//	if (mode >= 2) {
-	//		camera = (vars->useFreeRoamCamera) ? freeRoamCamera : viewportCamera;
-	//		if (vars->useFreeRoamCamera) {
-	//			cout << "using freeRoamCamera from now on" << endl;
-	//		}
-	//	}
-	//}
-	//nk_colorf()
-
-
-	// TODO - make this into a function
-	struct nk_colorf tmpColor;
-	tmpColor.r = dirLight->color.x;
-	tmpColor.g = dirLight->color.y;
-	tmpColor.b = dirLight->color.z;
-
-	if (nk_combo_begin_color(ctx, nk_rgb_cf(tmpColor), nk_vec2(nk_widget_width(ctx), 400))) {
-		nk_layout_row_dynamic(ctx, 120, 1);
-		tmpColor = nk_color_picker(ctx, tmpColor, NK_RGBA);
-		nk_layout_row_dynamic(ctx, 25, 1);
-		tmpColor.r = nk_propertyf(ctx, "#R:", 0, tmpColor.r, 1.0f, 0.01f, 0.005f);
-		tmpColor.g = nk_propertyf(ctx, "#G:", 0, tmpColor.g, 1.0f, 0.01f, 0.005f);
-		tmpColor.b = nk_propertyf(ctx, "#B:", 0, tmpColor.b, 1.0f, 0.01f, 0.005f);
-		tmpColor.a = nk_propertyf(ctx, "#A:", 0, tmpColor.a, 1.0f, 0.01f, 0.005f);
-		dirLight->color = glm::vec3(tmpColor.r, tmpColor.g, tmpColor.b);
-		nk_combo_end(ctx);
-	}
 
 	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_label(ctx, "LBM Respawn Mode", NK_TEXT_CENTERED);
@@ -647,6 +557,198 @@ void UserInterface::constructLBMTab() {
 	nk_checkbox_label(ctx, "LBM use extended collision step", &vars->lbmUseExtendedCollisionStep);
 
 
+
+
+
+	nk_layout_row_dynamic(ctx, 30, 1);
+	nk_label(ctx, "LBM DEVELOPER", NK_TEXT_CENTERED);
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+
+
+	if (!lbm->isUnderEdit()) {
+		if (nk_button_label(ctx, "EDIT LBM")) {
+			lbm->startEditing();
+		}
+	} else {
+
+		nk_property_float(ctx, "#x", -10000.0f, &lbm->position.x, 100000.0f, 10.0f, 10.0f);
+		nk_property_float(ctx, "#y", -10000.0f, &lbm->position.y, 100000.0f, 10.0f, 10.0f);
+		nk_property_float(ctx, "#z", -10000.0f, &lbm->position.z, 100000.0f, 10.0f, 10.0f);
+
+		/*
+		// This needs LBM reinitialization - maybe later
+		nk_property_int(ctx, "x cells", 10, &lbm->latticeWidth, 1000, 1, 1);
+		nk_property_int(ctx, "y cells", 10, &lbm->latticeHeight, 1000, 1, 1);
+		nk_property_int(ctx, "z cells", 10, &lbm->latticeDepth, 1000, 1, 1);
+		*/
+
+		nk_property_float(ctx, "scale", 1.0f, &lbm->scale, 1000.0f, 1.0f, 1.0f);
+
+		if (nk_button_label(ctx, "snap (corners by min) to ground")) {
+			lbm->snapToGround();
+		}
+
+		if (nk_button_label(ctx, "SAVE CHANGES")) {
+
+			//lbm->saveChanges(); // testing 
+			lbm->stopEditing(true);
+		}
+		if (nk_button_label(ctx, "CANCEL")) {
+			lbm->stopEditing(false);
+		}
+
+	}
+
+	nk_layout_row_dynamic(ctx, 30.0f, 1);
+	nk_label(ctx, "Streamlines", NK_TEXT_CENTERED);
+
+	//nk_layout_row_dynamic(ctx, 200, 1); // wrapping row
+
+	//if (nk_group_begin(ctx, "Streamlines", NK_WINDOW_BORDER)) {
+
+	nk_layout_row_dynamic(ctx, 15, 1);
+	constructTauProperty();
+
+
+	if (!sps->initialized && !streamlineInitMode) {
+		if (nk_button_label(ctx, "Use streamlines")) {
+			//sps->init();
+			streamlineInitMode = true;
+		}
+
+	} else if (sps->initialized) {
+
+		nk_checkbox_label(ctx, "visible", &sps->visible);
+
+
+		nk_layout_row(ctx, NK_STATIC, 15, 2, leftSidebarEditButtonRatio);
+
+		if (nk_button_label(ctx, "set horizontal line")) {
+			sps->setPositionInHorizontalLine();
+		}
+		struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
+		wpos.x += nk_widget_size(ctx).x;
+		wpos.y -= nk_widget_size(ctx).y;
+
+		if (nk_button_image(ctx, nkEditIcon)) {
+			sps->editingHorizontalParameters = true;
+		}
+		if (sps->editingHorizontalParameters) {
+			if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Horizontal Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+				nk_label(ctx, "Horizontal Line Params", NK_TEXT_LEFT);
+
+				nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->hParams.xOffset, 0.99f, 0.01f, 0.01f);
+				nk_property_float(ctx, "yOffset (ratio)", 0.0f, &sps->hParams.yOffset, 0.99f, 0.01f, 0.01f);
+
+				if (nk_button_label(ctx, "Save & Apply")) {
+					sps->setPositionInHorizontalLine();
+					sps->editingHorizontalParameters = false;
+					nk_popup_close(ctx);
+				}
+				if (nk_button_label(ctx, "Save")) {
+					sps->editingHorizontalParameters = false;
+					nk_popup_close(ctx);
+				}
+				nk_popup_end(ctx);
+			} else {
+				sps->editingHorizontalParameters = false;
+			}
+		}
+
+		if (nk_button_label(ctx, "set vertical line")) {
+			sps->setPositionInVerticalLine();
+		}
+		wpos = nk_widget_position(ctx); // this needs to be before the widget!
+		wpos.x += nk_widget_size(ctx).x;
+		wpos.y -= nk_widget_size(ctx).y;
+		if (nk_button_image(ctx, nkEditIcon)) {
+			sps->editingVerticalParameters = true;
+		}
+		if (sps->editingVerticalParameters) {
+			if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Vertical Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
+				nk_layout_row_dynamic(ctx, 15, 1);
+				nk_label(ctx, "Vertical Line Params", NK_TEXT_LEFT);
+
+				nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->vParams.xOffset, 0.99f, 0.01f, 0.01f);
+				nk_property_float(ctx, "zOffset (ratio)", 0.0f, &sps->vParams.zOffset, 0.99f, 0.01f, 0.01f);
+
+				if (nk_button_label(ctx, "Save & Apply")) {
+					sps->setPositionInVerticalLine();
+					sps->editingVerticalParameters = false;
+					nk_popup_close(ctx);
+				}
+				if (nk_button_label(ctx, "Save")) {
+					sps->editingVerticalParameters = false;
+					nk_popup_close(ctx);
+				}
+				nk_popup_end(ctx);
+			} else {
+				sps->editingVerticalParameters = false;
+			}
+		}
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
+
+
+		if (sps->active) {
+			if (nk_button_label(ctx, "Deactivate streamlines")) {
+				sps->deactivate();
+			}
+		} else {
+			if (nk_button_label(ctx, "Activate streamlines")) {
+				sps->activate();
+			}
+		}
+
+		if (nk_button_label(ctx, "Reset")) {
+			sps->reset();
+		}
+
+
+		nk_checkbox_label(ctx, "live line cleanup (DEBUG)", &sps->liveLineCleanup);
+
+		struct nk_rect bounds;
+
+		bounds = nk_widget_bounds(ctx);
+		if (nk_button_label(ctx, "Teardown")) {
+			sps->tearDown();
+		}
+		if (nk_input_is_mouse_hovering_rect(ctx_in, bounds)) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_tooltip(ctx, "Teardown current buffers - user can then create new streamline environment.");
+		}
+
+
+	} else if (streamlineInitMode) {
+
+		nk_property_int(ctx, "max streamlines", 1, &sps->maxNumStreamlines, 10000, 1, 1);
+		nk_property_int(ctx, "max streamline length", 1, &sps->maxStreamlineLength, 1000, 1, 1);
+		//nk_property_int(ctx, "streamline sampling", 1, &sps->sampling)
+
+		if (nk_button_label(ctx, "Apply settings")) {
+			cout << "Initializing streamline data..." << endl;
+			sps->init();
+			streamlineInitMode = false;
+		}
+
+	}
+	//nk_group_end(ctx);
+
+	//}
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 void UserInterface::constructLightingTab() {
@@ -666,7 +768,6 @@ void UserInterface::constructLightingTab() {
 	nk_property_float(ctx, "focus z:", -100000.0f, &dirLight->focusPoint.z, 100000.0f, 100.0f, 100.0f);
 
 
-	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_property_float(ctx, "left:", -100000.0f, &dirLight->pLeft, 100000.0f, 10.0f, 10.0f);
 	nk_property_float(ctx, "right:", -100000.0f, &dirLight->pRight, 100000.0f, 10.0f, 10.0f);
 	nk_property_float(ctx, "bottom:", -100000.0f, &dirLight->pBottom, 100000.0f, 10.0f, 10.0f);
@@ -739,6 +840,8 @@ void UserInterface::constructLightingTab() {
 		vars->fogColor = glm::vec4(tmpColor.r, tmpColor.g, tmpColor.b, tmpColor.a);
 		nk_combo_end(ctx);
 	}
+
+
 
 
 
@@ -901,16 +1004,17 @@ void UserInterface::constructTerrainTab() {
 
 
 	
-	if (nk_button_label(ctx, "Refresh LBM HEIGHTMAP")) {
-		lbm->refreshHeightMap();
+	//if (nk_button_label(ctx, "Refresh LBM HEIGHTMAP")) {
+	//	lbm->refreshHeightMap();
+	//}
+	//nk_property_int(ctx, "x offset", 0, &vars->terrainXOffset, 1000, 1, 1);
+	//nk_property_int(ctx, "z offset", 0, &vars->terrainZOffset, 1000, 1, 1);
+
+
+	nk_checkbox_label(ctx, "Normals Only", &vars->heightMap->showNormalsOnly);
+	if (vars->heightMap->showNormalsOnly) {
+		nk_property_int(ctx, "Normals Mode", 0, &vars->heightMap->normalsShaderMode, 2, 1, 1);
 	}
-	nk_property_int(ctx, "x offset", 0, &vars->terrainXOffset, 1000, 1, 1);
-	nk_property_int(ctx, "z offset", 0, &vars->terrainZOffset, 1000, 1, 1);
-
-
-	nk_checkbox_label(ctx, "normals only", &vars->heightMap->showNormalsOnly);
-	nk_property_int(ctx, "normals mode", 0, &vars->heightMap->normalsShaderMode, 10, 1, 1);
-
 
 }
 
@@ -1051,6 +1155,8 @@ void UserInterface::constructSkyTab() {
 	nk_checkbox_label(ctx, "Use sky sun color", &vars->useSkySunColor);
 	if (vars->useSkySunColor) {
 		nk_property_float(ctx, "Sky Sun Color Tint Intensity", 0.0f, &vars->skySunColorTintIntensity, 1.0f, 0.01f, 0.01f);
+	} else {
+		nk_property_color_rgb(ctx, dirLight->color);
 	}
 
 }
@@ -1191,36 +1297,42 @@ void UserInterface::constructDiagramControlsTab() {
 
 
 	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
-	if (nk_button_label(ctx, "Recalculate Params")) {
-		//lbm->resetSimulation();
-		stlpDiagram->recalculateParameters();
-		stlpSimCUDA->uploadDataFromDiagramToGPU();
-		particleSystem->clearVerticalVelocities();
-	}
 
 
-	if (nk_combo_begin_label(ctx, stlpDiagram->soundingFilename.c_str(), nk_vec2(nk_widget_width(ctx), 200.0f))) {
+	if (nk_combo_begin_label(ctx, stlpDiagram->getTmpSoundingFilename().c_str(), nk_vec2(nk_widget_width(ctx), 200.0f))) {
 		if (vars->soundingDataFilenames.empty()) {
-			nk_label(ctx, "empty...", NK_TEXT_LEFT);
+			nk_label(ctx, "Empty...", NK_TEXT_LEFT);
 		}
 
 		for (int i = 0; i < vars->soundingDataFilenames.size(); i++) {
 			nk_layout_row_dynamic(ctx, 15, 1);
 			if (nk_combo_item_label(ctx, vars->soundingDataFilenames[i].c_str(), NK_TEXT_CENTERED)) {
-				stlpDiagram->soundingFilename = vars->soundingDataFilenames[i];
+				stlpDiagram->setTmpSoundingFilename(vars->soundingDataFilenames[i]);
 			}
 		}
 		nk_combo_end(ctx);
 	}
+	
+	if (nk_checkbox_label(ctx, "Use Orographic Parameters", &stlpDiagram->useOrographicParametersEdit));
+	stlpDiagram->useOrographicParametersChanged = stlpDiagram->useOrographicParametersEdit != stlpDiagram->useOrographicParameters;
 
-	if (nk_checkbox_label(ctx, "Use Orographic Parameters", &stlpDiagram->useOrographicParameters));
+	nk_checkbox_label(ctx, "Sounding Curves Editing Enabled", &stlpDiagram->soundingCurveEditingEnabled);
 
-	if (nk_button_label(ctx, "Load Sounding File")) {
-		stlpDiagram->loadSoundingData();
-		stlpDiagram->recalculateAll();
+	if (stlpDiagram->wasSoundingFilenameChanged()) {
+		if (nk_button_label(ctx, "Load Sounding File")) {
+			stlpDiagram->loadSoundingData();
+			stlpDiagram->recalculateAll();
+			stlpSimCUDA->uploadDataFromDiagramToGPU();
+			particleSystem->clearVerticalVelocities();
+		}
+	}/* else if (stlpDiagram->wasDiagramChanged() || stlpDiagram->useOrographicParametersChanged) {*/
+	if (nk_button_label(ctx, "Recalculate Parameters")) {
+		stlpDiagram->recalculateParameters();
 		stlpSimCUDA->uploadDataFromDiagramToGPU();
 		particleSystem->clearVerticalVelocities();
 	}
+	//}
+
 
 
 	if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram Curves", NK_MINIMIZED)) {
@@ -1236,11 +1348,10 @@ void UserInterface::constructDiagramControlsTab() {
 		stlpDiagram->recalculateAll();
 		stlpSimCUDA->uploadDataFromDiagramToGPU();
 		particleSystem->clearVerticalVelocities();
-
 	}
 
 	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_property_float(ctx, "Zoom", -1.0f, &vars->diagramProjectionOffset, 1.0f, 0.01f, 0.01f);
+	//nk_property_float(ctx, "Zoom", -1.0f, &vars->diagramProjectionOffset, 1.0f, 0.01f, 0.01f);
 
 	//if (nk_button_label(ctx, "Reset simulation")) {
 	//stlpSim->resetSimulation();
@@ -1257,9 +1368,9 @@ void UserInterface::constructDiagramControlsTab() {
 	//	stlpSimCUDA->updateGPU_delta_t();
 	//}
 
-	nk_property_int(ctx, "number of profiles", 2, &stlpDiagram->numProfiles, 100, 1, 1.0f); // somewhere bug when only one profile -> FIX!
+	nk_property_int(ctx, "Number of Profiles", 2, &stlpDiagram->numProfiles, 100, 1, 1.0f); // somewhere bug when only one profile -> FIX!
 
-	nk_property_float(ctx, "profile range", -10.0f, &stlpDiagram->convectiveTempRange, 10.0f, 0.01f, 0.01f);
+	nk_property_float(ctx, "Profile Range", -10.0f, &stlpDiagram->convectiveTempRange, 10.0f, 0.01f, 0.01f);
 
 	//nk_property_int(ctx, "max particles", 1, &stlpSim->maxNumParticles, 100000, 1, 10.0f);
 
@@ -1309,8 +1420,8 @@ void UserInterface::constructDiagramControlsTab() {
 
 	//nk_checkbox_label(ctx, "Use CUDA", &vars->stlpUseCUDA);
 
-	nk_checkbox_label(ctx, "Apply LBM", &vars->applyLBM);
-	nk_property_int(ctx, "LBM step frame", 1, &vars->lbmStepFrame, 100, 1, 1);
+	//nk_checkbox_label(ctx, "Apply LBM", &vars->applyLBM);
+	//nk_property_int(ctx, "LBM step frame", 1, &vars->lbmStepFrame, 100, 1, 1);
 
 	/*
 	bounds = nk_widget_bounds(ctx);
@@ -1423,10 +1534,6 @@ void UserInterface::constructDiagramControlsTab() {
 	nk_value_bool(ctx, "LCL Found", stlpDiagram->LCLFound);
 	nk_value_bool(ctx, "LFC Found", stlpDiagram->LFCFound);
 	nk_value_bool(ctx, "Orographic EL Found", stlpDiagram->orographicELFound);
-
-
-	nk_checkbox_label(ctx, "Sounding Curves Editing Enabled", &stlpDiagram->soundingCurveEditingEnabled);
-
 
 
 
@@ -1942,6 +2049,13 @@ void UserInterface::constructGeneralDebugTab() {
 	nk_property_vec3(ctx, 0.0f, dirLight->color, 100.0f, 1.0f, 1.0f, "dir light color", eVecNaming::COLOR);
 	nk_property_float(ctx, "dir light intensity", 0.0f, &dirLight->intensity, 1000.0f, 0.01f, 0.01f);
 
+	//nk_label(ctx, "Use point sprites", NK_TEXT_LEFT);
+	int prevVsync = vars->vsync;
+	nk_checkbox_label(ctx, "VSync", &vars->vsync);
+	if (prevVsync != vars->vsync) {
+		glfwSwapInterval(vars->vsync);
+	}
+
 
 	if (nk_button_label(ctx, "Reload shaders (recompile all) - EXPERIMENTAL")) {
 		ShaderManager::loadShaders();
@@ -2001,6 +2115,34 @@ void UserInterface::constructPropertiesTab() {
 
 	}
 
+
+
+}
+
+void UserInterface::constructViewTab() {
+
+	nk_layout_row_dynamic(ctx, 15.0f, 1);
+
+
+	nk_label(ctx, "Camera Movement Speed", NK_TEXT_LEFT);
+	nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 10000.0f, 1.0f);
+
+	// TODO - get this back in working order (and nicer looking)
+	nk_layout_row_dynamic(ctx, 15, 2);
+	if (nk_option_label(ctx, "Orthographic", vars->projectionMode == ORTHOGRAPHIC)) {
+		vars->projectionMode = ORTHOGRAPHIC;
+	}
+	if (nk_option_label(ctx, "Perspective", vars->projectionMode == PERSPECTIVE)) {
+		vars->projectionMode = PERSPECTIVE;
+	}
+	if (vars->projectionMode == PERSPECTIVE) {
+		nk_slider_float(ctx, 30.0f, &vars->fov, 120.0f, 1.0f);
+	}
+
+
+	nk_checkbox_label(ctx, "Use Freeroam Camera", &vars->useFreeRoamCamera);
+
+	constructWalkingPanel();
 
 
 }
@@ -2255,7 +2397,7 @@ void UserInterface::setFullscreen(bool useFullscreen) {
 }
 
 void UserInterface::constructTauProperty() {
-	nk_property_float(ctx, "Tau:", 0.1f, &lbm->tau, 10.0f, 0.005f, 0.005f);
+	nk_property_float(ctx, "Tau:", 0.5005f, &lbm->tau, 10.0f, 0.005f, 0.005f);
 }
 
 void UserInterface::constructWalkingPanel() {

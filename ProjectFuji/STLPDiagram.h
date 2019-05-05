@@ -81,6 +81,8 @@ public:
 
 	int soundingCurveEditingEnabled = 0;	//!< Whether we are currently editing sounding curves
 	int useOrographicParameters = 0;		//!< Whether to use orographic parameter set to create curve profiles
+	int useOrographicParametersEdit = 0;		//!< Helper for UI
+	bool useOrographicParametersChanged = false;
 
 	Curve xaxis;					//!< x axis curve (single line)
 	Curve yaxis;					//!< y axis curve (single line)
@@ -415,8 +417,26 @@ public:
 	*/
 	void constructDiagramCurvesToolbar(struct nk_context *ctx, UserInterface *ui);
 
+	//! Sets the temporary sounding filename.
+	/*!
+		\param[in] tmpSoundingFilename	The filename to be used.
+	*/
+	void setTmpSoundingFilename(string tmpSoundingFilename);
 
+	//! Returns the tmpSoundingFilename.
+	/*!
+		\return The tmpSoundingFilename.
+	*/
+	string getTmpSoundingFilename();
 
+	//! Returns whether the sounding filename was changed (in UI).
+	bool wasSoundingFilenameChanged();
+
+	//! Returns whether the diagram was changed and not since recalculated.
+	bool wasDiagramChanged();
+
+	//! Sets whether the diagram has changed (been edited).
+	void setDiagramChanged(bool diagramChanged);
 
 private:
 
@@ -424,6 +444,9 @@ private:
 
 	const float maxTextScale = 0.0005f;				//!< Maximum text scale when zoomed in
 
+	string tmpSoundingFilename;					//!< Temporarily selected sounding filename (in UI)
+	bool soundingFilenameChanged = false;		//!< Whether the sounding filename was changed
+	bool diagramChanged = false;				//!< Whether the diagram was changed by the user (and the parameters were not since recalculated)
 
 	VariableManager *vars = nullptr;				//!< VariableManager for this diagram
 	

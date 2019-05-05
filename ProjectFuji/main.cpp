@@ -627,12 +627,12 @@ int runApp() {
 		glm::vec4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			clearColor = glm::vec4(1.0f);
-			glfwSwapInterval(1);
+			//glfwSwapInterval(1);
 			camera = diagramCamera;
 			glDisable(GL_DEPTH_TEST);
 		} else {
 			clearColor = glm::vec4(vars.bgClearColor, 1.0f);
-			glfwSwapInterval(0);
+			//glfwSwapInterval(0);
 			camera = vars.useFreeRoamCamera ? freeRoamCamera : viewportCamera;
 			glEnable(GL_DEPTH_TEST);
 		}
