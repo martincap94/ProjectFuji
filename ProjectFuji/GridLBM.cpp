@@ -14,9 +14,9 @@ GridLBM::GridLBM(LBM3D_1D_indices *owner, glm::vec3 boxColor, glm::vec3 stepSize
 	//float bw = lbm->getWorldWidth();
 	//float bh = lbm->getWorldHeight();
 	//float bd = lbm->getWorldDepth();
-	float bw = lbm->latticeWidth;
-	float bh = lbm->latticeHeight;
-	float bd = lbm->latticeDepth;
+	int bw = lbm->latticeWidth;
+	int bh = lbm->latticeHeight;
+	int bd = lbm->latticeDepth;
 
 	vector<glm::vec3> bData;
 

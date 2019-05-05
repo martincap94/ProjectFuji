@@ -222,7 +222,7 @@ void printVec2(const glm::vec2 & v) {
 }
 
 void printVec3(const glm::vec3 & v) {
-	printf("(%0.2f, %0.2f, 0.2f)\n", v.x, v.y, v.z);
+	printf("(%0.2f, %0.2f, %0.2f)\n", v.x, v.y, v.z);
 }
 
 void printVec4(const glm::vec4 & v) {

@@ -45,6 +45,10 @@ void PositionalEmitter::update() {
 	}
 }
 
+void PositionalEmitter::draw() {
+	Emitter::draw();
+}
+
 
 void PositionalEmitter::wigglePosition() {
 

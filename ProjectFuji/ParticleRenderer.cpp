@@ -66,16 +66,16 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	shader->use();
 	shader->setInt("u_Texture", 0); // just to be sure
 	shader->setInt("u_AtlasTexture", 2);
-	shader->setBool("u_UseAtlasTexture", (bool)useAtlasTexture);
+	shader->setBool("u_UseAtlasTexture", useAtlasTexture != 0);
 	shader->setVec3("u_CameraPos", cam->position);
 	shader->setVec3("u_LightPos", dirLight->position);
 	shader->setFloat("u_WorldPointSize", ps->pointSize);
 	shader->setFloat("u_Opacity", vars->opacityMultiplier);
 	shader->setVec3("u_TintColor", vars->tintColor);
 	shader->setFloat("u_ShadowAlpha", shadowAlpha);
-	shader->setBool("u_ShowParticleTextureIdx", (bool)showParticleTextureIdx);
-	shader->setInt("u_PhaseFunction", (int)phaseFunction);
-	shader->setBool("u_MultiplyPhaseByShadow", (bool)multiplyPhaseByShadow);
+	shader->setBool("u_ShowParticleTextureIdx", showParticleTextureIdx != 0);
+	shader->setInt("u_PhaseFunction", phaseFunction != 0);
+	shader->setBool("u_MultiplyPhaseByShadow", multiplyPhaseByShadow != 0);
 
 	if (phaseFunction == SCHLICK) {
 		shader->setFloat("u_g", -1.55f * symmetryParameter + 0.55f * symmetryParameter * symmetryParameter * symmetryParameter);
@@ -84,7 +84,7 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 	}
 	shader->setFloat("u_g2", symmetryParameter2);
 	shader->setFloat("u_f", dHenyeyGreensteinInterpolationParameter);
-	shader->setBool("u_ShowParticlesBelowCCL", (bool)showParticlesBelowCCL);
+	shader->setBool("u_ShowParticlesBelowCCL", showParticlesBelowCCL != 0);
 
 }
 
@@ -290,7 +290,7 @@ void ParticleRenderer::drawSlices() {
 	//cout << "num slices = " << numSlices << endl;
 	//cout << "setting batchsize to " << (ps->numActiveParticles / numSlices) << endl;
 
-	batchSize = ceil((float)ps->numActiveParticles / (float)numSlices);
+	batchSize = (int)ceilf((float)ps->numActiveParticles / (float)numSlices);
 
 	//cout << "BATCH SIZE = " << batchSize << endl;
 

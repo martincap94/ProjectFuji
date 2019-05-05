@@ -9,7 +9,7 @@ GeneralGrid::GeneralGrid() {
 	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
 }
 
-GeneralGrid::GeneralGrid(float range, float stepSize) : range(range), stepSize(stepSize) {
+GeneralGrid::GeneralGrid(int range, int stepSize) : range(range), stepSize(stepSize) {
 	unlitColorShader = ShaderManager::getShaderPtr("unlitColor");
 
 	vector<glm::vec3> gridVertices;

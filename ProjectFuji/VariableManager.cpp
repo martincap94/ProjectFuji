@@ -419,7 +419,7 @@ void VariableManager::saveBoolParam(bool & target, std::string stringVal) {
 	} else {
 		// unsafe - try integer
 		int tmp = stoi(stringVal);
-		target = (bool)tmp;
+		target = (tmp != 0);
 	}
 
 }

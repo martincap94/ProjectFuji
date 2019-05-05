@@ -111,7 +111,7 @@ void HosekSkyModel::update() {
 }
 
 float HosekSkyModel::getElevationDegrees() {
-	return glm::degrees(eta);
+	return (float)glm::degrees(eta);
 }
 
 std::string HosekSkyModel::getCalcParamModeName() {

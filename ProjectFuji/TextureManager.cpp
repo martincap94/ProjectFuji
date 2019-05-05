@@ -21,7 +21,7 @@ namespace TextureManager {
 
 		// prepare debug overlay textures
 		for (int i = 0; i < vars->numDebugOverlayTextures; i++) {
-			overlayTextures.push_back(new OverlayTexture(vars->leftSidebarWidth + 20.0f + i * vars->debugOverlayTextureRes, 0/*vars->screenHeight - (i + 1) * debugOverlayTexturesRes*/, vars->debugOverlayTextureRes, vars->debugOverlayTextureRes, TextureManager::vars));
+			overlayTextures.push_back(new OverlayTexture((int)vars->leftSidebarWidth + 20 + i * vars->debugOverlayTextureRes, 0/*vars->screenHeight - (i + 1) * debugOverlayTexturesRes*/, vars->debugOverlayTextureRes, vars->debugOverlayTextureRes, TextureManager::vars));
 		}
 
 		return true;
@@ -102,7 +102,7 @@ namespace TextureManager {
 		if (vars->hideUI) {
 			return;
 		}
-		int size = (textureIds.size() <= overlayTextures.size() - 1) ? textureIds.size() : overlayTextures.size();
+		int size = (int)(textureIds.size() <= overlayTextures.size() - 1) ? textureIds.size() : overlayTextures.size();
 		for (int i = 0; i < size; i++) {
 			overlayTextures[i]->draw(textureIds[i]);
 			overlayTextures[i]->texId = textureIds[i];
@@ -111,7 +111,7 @@ namespace TextureManager {
 
 	int pushOverlayTexture(OverlayTexture * overlayTexture) {
 		overlayTextures.push_back(overlayTexture);
-		return overlayTextures.size() - 1;
+		return (int)overlayTextures.size() - 1;
 	}
 
 	OverlayTexture * createOverlayTexture(int x, int y, int width, int height, Texture * tex) {
@@ -127,7 +127,7 @@ namespace TextureManager {
 	}
 
 	int getNumAvailableOverlayTextures() {
-		return overlayTextures.size();
+		return (int)overlayTextures.size();
 	}
 
 	std::vector<OverlayTexture*>* getOverlayTexturesVectorPtr() {

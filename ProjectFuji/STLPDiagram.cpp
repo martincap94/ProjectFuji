@@ -143,14 +143,14 @@ void STLPDiagram::generateIsotherms() {
 	float y;
 
 	isothermsCount = 0;
-	for (int i = MIN_TEMP - 80.0f; i <= MAX_TEMP; i += 10) {
+	for (int i = MIN_TEMP - 80; i <= MAX_TEMP; i += 10) {
 
 		y = ymax;
-		x = getNormalizedTemp(i, y);
+		x = getNormalizedTemp((float)i, y);
 		vertices.push_back(glm::vec2(x, y));
 
 		y = ymin;
-		x = getNormalizedTemp(i, y);
+		x = getNormalizedTemp((float)i, y);
 		vertices.push_back(glm::vec2(x, y));
 
 		isothermsCount++;
@@ -521,8 +521,6 @@ void STLPDiagram::recalculateAll() {
 	float y0 = getNormalizedPres(P0);
 
 
-	float T;
-	float P;
 
 	xaxis.vertices.clear();
 	yaxis.vertices.clear();
@@ -737,8 +735,8 @@ void STLPDiagram::initCurves() {
 	float y0 = getNormalizedPres(P0);
 
 
-	float T;
-	float P;
+	//float T;
+	//float P;
 
 	xaxis.vertices.clear();
 	yaxis.vertices.clear();
@@ -802,7 +800,6 @@ void STLPDiagram::initCurves() {
 
 	vertices.clear();
 	numDryAdiabats[0] = 0;
-	int counter;
 
 	for (float theta = MIN_TEMP; theta <= MAX_TEMP * 5; theta += dryAdiabatDeltaT) {
 		generateDryAdiabat(theta, vertices, 0, P0, &dryAdiabatEdgeCount[0]);
@@ -915,7 +912,6 @@ void STLPDiagram::initCurves() {
 	//for (float T = MIN_TEMP; T <= MAX_TEMP; T++) {
 	//float Lv = (a*T*T*T + b*T*T + c*T + d) * 1000.0f;
 
-	float currP;
 
 	// General moist adiabats (not part of the parameter calculations)
 	for (float currT = MIN_TEMP; currT <= MAX_TEMP; currT += moistAdiabatDeltaT) {
@@ -1001,8 +997,8 @@ void STLPDiagram::initCurves() {
 
 
 	// trying out stuff
-	P = 432.2f;
-	float normP = getNormalizedPres(P);
+	//float P = 432.2f;
+	//float normP = getNormalizedPres(P);
 	////cout << "Pressure = " << P << ", normalized pressure = " << normP << endl;
 	//visualizationPoints.push_back(glm::vec3(ambientCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
 	//visualizationPoints.push_back(glm::vec3(1.0f, 0.0f, 0.0f)); // color
@@ -1247,7 +1243,7 @@ void STLPDiagram::draw() {
 
 	curveShader->use();
 
-	curveShader->setBool("u_CropBounds", (bool)cropBounds);
+	curveShader->setBool("u_CropBounds", cropBounds != 0);
 
 	if (showIsobars) {
 		curveShader->setColor(isobarsColor);
@@ -1280,14 +1276,14 @@ void STLPDiagram::draw() {
 	if (showDewpointCurve) {
 		curveShader->setColor(dewpointCurveColor);
 		glBindVertexArray(dewTemperatureVAO);
-		glDrawArrays(GL_LINE_STRIP, 0, soundingData.size());
+		glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)soundingData.size());
 	}
 
 
 	if (showIsohumes) {
 		curveShader->setColor(isohumesColor);
 		glBindVertexArray(isohumesVAO);
-		glDrawArrays(GL_LINES, 0, mixingCCL.vertices.size());
+		glDrawArrays(GL_LINES, 0, (GLsizei)mixingCCL.vertices.size());
 	}
 
 	for (int j = 0; j < 2; j++) {
@@ -1334,7 +1330,7 @@ void STLPDiagram::draw() {
 	glPointSize(6.0f);
 	curveShader->setColor(glm::vec3(0.0f));
 	glBindVertexArray(mainParameterPointsVAO);
-	glDrawArrays(GL_POINTS, 0, mainParameterPoints.size());
+	glDrawArrays(GL_POINTS, 0, (GLsizei)mainParameterPoints.size());
 
 
 
@@ -1342,7 +1338,7 @@ void STLPDiagram::draw() {
 	glPointSize(3.0f);
 	singleColorShaderVBO->use();
 	glBindVertexArray(visPointsVAO);
-	glDrawArrays(GL_POINTS, 0, visualizationPoints.size() / 2);
+	glDrawArrays(GL_POINTS, 0, (GLsizei)visualizationPoints.size() / 2);
 	
 
 
@@ -1389,9 +1385,9 @@ void STLPDiagram::drawText() {
 
 	textRend->renderText("Ground Level at " + to_string((int)getAltitudeFromPressure(P0)) + "[m]", 1.0f + 0.01f * scaleZoomModifier, getNormalizedPres(P0), textScale);
 
-	for (i = 1000.0f; i >= MIN_P; i -= 100) {
-		textRend->renderText(to_string(i), 0.0f - 0.04f - 0.02f * scaleZoomModifier, getNormalizedPres(i), textScale);
-		textRend->renderText(to_string((int)getAltitudeFromPressure(i)) + "[m]", 0.0f + 0.01f * scaleZoomModifier, getNormalizedPres(i), textScale);
+	for (i = 1000; i >= (int)MIN_P; i -= 100) {
+		textRend->renderText(to_string(i), 0.04f - 0.02f * scaleZoomModifier, getNormalizedPres((float)i), textScale);
+		textRend->renderText(to_string((int)getAltitudeFromPressure((float)i)) + "[m]", 0.0f + 0.01f * scaleZoomModifier, getNormalizedPres((float)i), textScale);
 	}
 
 	textRend->renderText("Temperature [degree C]", 0.35f, ymax + 0.08f, textScale);
@@ -1428,7 +1424,7 @@ void STLPDiagram::drawOverlayDiagram(GLuint textureId) {
 
 }
 
-void STLPDiagram::refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight, GLuint viewport_x, GLuint viewport_y) {
+void STLPDiagram::refreshOverlayDiagram(float viewportWidth, float viewportHeight, float viewport_x, float viewport_y) {
 
 	glm::vec4 vp;
 	//glGetFloatv(GL_VIEWPORT, &vp.x);
@@ -1724,7 +1720,7 @@ void STLPDiagram::generateTemperatureNotches() {
 	temperaturePointsCount = 0;
 	temperaturePoints.clear();
 	for (int i = MIN_TEMP; i <= MAX_TEMP; i += 10) {
-		T = getNormalizedTemp(i, ymax);
+		T = getNormalizedTemp((float)i, ymax);
 		temperaturePoints.push_back(glm::vec2(T, ymax));
 		vertices.push_back(glm::vec2(T, ymax + temperatureNotchSize / 2.0f));
 		vertices.push_back(glm::vec2(T, ymax - temperatureNotchSize / 2.0f));

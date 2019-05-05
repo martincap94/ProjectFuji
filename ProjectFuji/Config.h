@@ -21,8 +21,8 @@
 #define SOUNDING_DATA_DIR "sounding_data/"		//!< Directory in which sounding data files reside
 #define PARTICLE_DATA_DIR "particle_system/"	//!< Directory in which particle data files reside
 
-#define MIN_X -40.0f							//!< Minimum x value for the diagram
-#define MAX_X 40.0f								//!< Maximum x value for the diagram
+#define MIN_X -40								//!< Minimum x value for the diagram
+#define MAX_X 40								//!< Maximum x value for the diagram
 
 #define MIN_TEMP MIN_X							//!< Minimum temperature shown in the diagram
 #define MAX_TEMP MAX_X							//!< Maximum temperature shown in the diagram

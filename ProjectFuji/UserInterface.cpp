@@ -86,7 +86,7 @@ UserInterface::UserInterface(GLFWwindow *window, VariableManager *vars) : vars(v
 	inactiveButtonStyle.text_hover = nk_rgb(60, 60, 60);
 	inactiveButtonStyle.text_active = nk_rgb(60, 60, 60);
 
-	hudRect = nk_rect(vars->screenWidth - vars->rightSidebarWidth - hudWidth, vars->toolbarHeight, hudWidth, hudHeight);
+	hudRect = nk_rect((float)(vars->screenWidth - vars->rightSidebarWidth - hudWidth), (float)vars->toolbarHeight, hudWidth, hudHeight);
 }
 
 UserInterface::~UserInterface() {
@@ -110,7 +110,6 @@ void UserInterface::constructUserInterface() {
 	textures = TextureManager::getTexturesMapPtr();
 
 	const struct nk_input *in = &ctx->input;
-	struct nk_rect bounds;
 
 	//ctx->style.window.border = 5.0f;
 
@@ -132,7 +131,7 @@ void UserInterface::constructUserInterface() {
 	if (aboutWindowOpened) {
 
 
-		if (nk_begin(ctx, "About Window", nk_rect(vars->screenWidth / 2 - 250, vars->screenHeight / 2 - 250, 500, 500), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE)) {
+		if (nk_begin(ctx, "About Window", nk_rect((float)(vars->screenWidth / 2 - 250), (float)(vars->screenHeight / 2 - 250), 500.0f, 500.0f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE)) {
 			nk_layout_row_dynamic(ctx, 20.0f, 1);
 
 			nk_label(ctx, "Orographic Cloud Simulator", NK_TEXT_CENTERED);
@@ -150,7 +149,7 @@ void UserInterface::constructUserInterface() {
 }
 
 bool UserInterface::isAnyWindowHovered() {
-	return nk_window_is_any_hovered(ctx);
+	return nk_window_is_any_hovered(ctx) != 0;
 }
 
 void UserInterface::nk_property_vec2(nk_context * ctx, float min, glm::vec2 & target, float max, float step, float pixStep, std::string label, eVecNaming namingConvention) {
@@ -251,10 +250,10 @@ void UserInterface::constructLeftSidebar() {
 
 void UserInterface::constructRightSidebar() {
 
-	constructSidebarSelectionTab(&rightSidebarContentMode, vars->screenWidth - vars->rightSidebarWidth, vars->rightSidebarWidth);
+	constructSidebarSelectionTab(&rightSidebarContentMode, (float)(vars->screenWidth - vars->rightSidebarWidth), (float)vars->rightSidebarWidth);
 
 
-	if (nk_begin(ctx, "Debug Tab", nk_rect(vars->screenWidth - vars->rightSidebarWidth, vars->toolbarHeight + selectionTabHeight, vars->rightSidebarWidth, /*vars->debugTabHeight*/vars->screenHeight - vars->toolbarHeight - selectionTabHeight), NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
+	if (nk_begin(ctx, "Debug Tab", nk_rect((float)(vars->screenWidth - vars->rightSidebarWidth), (float)(vars->toolbarHeight + selectionTabHeight), (float)vars->rightSidebarWidth, /*vars->debugTabHeight*/(float)(vars->screenHeight - vars->toolbarHeight - selectionTabHeight)), NK_WINDOW_BORDER /*| NK_WINDOW_NO_SCROLLBAR*/)) {
 
 		constructSelectedContent(rightSidebarContentMode);
 		//constructGeneralDebugTab();
@@ -267,7 +266,7 @@ void UserInterface::constructHorizontalBar() {
 
 	ctx->style.window.padding = nk_vec2(0, 0);
 
-	if (nk_begin(ctx, "HorizontalBar", nk_rect(0, 0, vars->screenWidth, vars->toolbarHeight), NK_WINDOW_NO_SCROLLBAR)) {
+	if (nk_begin(ctx, "HorizontalBar", nk_rect(0.0f, 0.0f, (float)vars->screenWidth, (float)vars->toolbarHeight), NK_WINDOW_NO_SCROLLBAR)) {
 
 		int numToolbarItems = 3;
 
@@ -282,7 +281,7 @@ void UserInterface::constructHorizontalBar() {
 		nk_menubar_begin(ctx);
 
 		/* menu #1 */
-		nk_layout_row_begin(ctx, NK_STATIC, vars->toolbarHeight, 5);
+		nk_layout_row_begin(ctx, NK_STATIC, (float)vars->toolbarHeight, 5);
 		nk_layout_row_push(ctx, 120);
 		if (nk_menu_begin_label(ctx, "File", NK_TEXT_CENTERED, nk_vec2(120, 200))) {
 			nk_layout_row_dynamic(ctx, 15, 1);
@@ -1101,11 +1100,11 @@ void UserInterface::constructSkyTab() {
 	nk_checkbox_label(ctx, "Hosek", &vars->hosekSkybox);
 
 
-	nk_property_double(ctx, "Turbidity", 1.0, &hosek->turbidity, 10.0, 0.1, 0.1);
-	nk_property_double(ctx, "Albedo", 0.0, &hosek->albedo, 1.0, 0.01, 0.01);
+	nk_property_double(ctx, "Turbidity", 1.0, &hosek->turbidity, 10.0, 0.1, 0.1f);
+	nk_property_double(ctx, "Albedo", 0.0, &hosek->albedo, 1.0, 0.01, 0.01f);
 
 
-	nk_property_double(ctx, "Horizon Offset", 0.001, &hosek->horizonOffset, 10.0, 0.001, 0.001);
+	nk_property_double(ctx, "Horizon Offset", 0.001, &hosek->horizonOffset, 10.0, 0.001, 0.001f);
 	nk_property_float(ctx, "Sun Intensity", 0.1f, &hosek->sunIntensity, 10.0f, 0.1f, 0.1f);
 	nk_property_int(ctx, "Sun Exponent", 1, &hosek->sunExponent, 1024, 1, 1);
 
@@ -1211,6 +1210,9 @@ void UserInterface::constructCloudVisualizationTab() {
 
 	nk_checkbox_label(ctx, "Show particles below CCL", &particleRenderer->showParticlesBelowCCL);
 	nk_checkbox_label(ctx, "Use Volumetric Rendering", &particleRenderer->useVolumetricRendering);
+	if (!particleRenderer->useVolumetricRendering) {
+		nk_checkbox_label(ctx, "Use Point Sprites", &vars->usePointSprites);
+	}
 
 	nk_property_int(ctx, "first pass shader mode", 0, &particleRenderer->firstPassShaderMode, particleRenderer->numFirstPassShaderModes - 1, 1, 1);
 
@@ -1296,7 +1298,7 @@ void UserInterface::constructDiagramControlsTab() {
 
 
 
-	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
+	nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
 
 
 	if (nk_combo_begin_label(ctx, stlpDiagram->getTmpSoundingFilename().c_str(), nk_vec2(nk_widget_width(ctx), 200.0f))) {
@@ -1313,7 +1315,7 @@ void UserInterface::constructDiagramControlsTab() {
 		nk_combo_end(ctx);
 	}
 	
-	if (nk_checkbox_label(ctx, "Use Orographic Parameters", &stlpDiagram->useOrographicParametersEdit));
+	nk_checkbox_label(ctx, "Use Orographic Parameters", &stlpDiagram->useOrographicParametersEdit);
 	stlpDiagram->useOrographicParametersChanged = stlpDiagram->useOrographicParametersEdit != stlpDiagram->useOrographicParameters;
 
 	nk_checkbox_label(ctx, "Sounding Curves Editing Enabled", &stlpDiagram->soundingCurveEditingEnabled);
@@ -1336,12 +1338,12 @@ void UserInterface::constructDiagramControlsTab() {
 
 
 	if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram Curves", NK_MINIMIZED)) {
-		nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
+		nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
 		stlpDiagram->constructDiagramCurvesToolbar(ctx, this);
 		nk_tree_pop(ctx);
 	}
 
-	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
+	nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
 
 
 	if (nk_button_label(ctx, "Reset to Default")) {
@@ -1379,9 +1381,9 @@ void UserInterface::constructDiagramControlsTab() {
 	nk_checkbox_label(ctx, "Show Particles in Diagram", &vars->drawOverlayDiagramParticles);
 	if (vars->drawOverlayDiagramParticles) {
 
-		if (nk_checkbox_label(ctx, "Synchronize with Active Particles", &particleSystem->synchronizeDiagramParticlesWithActiveParticles));
+		nk_checkbox_label(ctx, "Synchronize with Active Particles", &particleSystem->synchronizeDiagramParticlesWithActiveParticles);
+		
 		if (!particleSystem->synchronizeDiagramParticlesWithActiveParticles) {
-
 			if (nk_button_label(ctx, "Activate All")) {
 				particleSystem->activateAllDiagramParticles();
 			}
@@ -1410,8 +1412,8 @@ void UserInterface::constructDiagramControlsTab() {
 	nk_checkbox_label(ctx, "Show Overlay Diagram", &vars->showOverlayDiagram);
 	if (vars->showOverlayDiagram) {
 
-		int tmp = stlpDiagram->overlayDiagramResolution;
-		int maxDiagramWidth = (vars->screenWidth < vars->screenHeight) ? vars->screenWidth : vars->screenHeight;
+		float tmp = stlpDiagram->overlayDiagramResolution;
+		float maxDiagramWidth = (float)((vars->screenWidth < vars->screenHeight) ? vars->screenWidth : vars->screenHeight);
 		nk_slider_float(ctx, 10.0f, &stlpDiagram->overlayDiagramResolution, maxDiagramWidth, 1.0f);
 
 
@@ -1423,7 +1425,7 @@ void UserInterface::constructDiagramControlsTab() {
 		if (tmp != stlpDiagram->overlayDiagramResolution ||
 			prevX != stlpDiagram->overlayDiagramX ||
 			prevY != stlpDiagram->overlayDiagramY) {
-			stlpDiagram->refreshOverlayDiagram(vars->screenWidth, vars->screenHeight);
+			stlpDiagram->refreshOverlayDiagram((float)vars->screenWidth, (float)vars->screenHeight);
 		}
 	}
 
@@ -1503,7 +1505,7 @@ void UserInterface::constructDiagramControlsTab() {
 	//		//particleSystem->emitters[i]
 	//	}
 	//}
-	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
+	nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();
 	}
@@ -1905,7 +1907,7 @@ void UserInterface::constructEmittersTab() {
 		}
 	}
 
-	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
+	nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();
 	}
@@ -1968,7 +1970,7 @@ void UserInterface::constructEmitterCreationWindow() {
 void UserInterface::constructGeneralDebugTab() {
 	stringstream ss;
 
-	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
+	nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
 
 	/*
 	ss.clear();
@@ -2390,7 +2392,7 @@ void UserInterface::setButtonStyle(nk_context *ctx, bool active) {
 }
 
 void UserInterface::refreshWidgets() {
-	hudRect = nk_rect(vars->screenWidth - vars->rightSidebarWidth - hudWidth, vars->toolbarHeight, hudWidth, hudHeight);
+	hudRect = nk_rect((float)(vars->screenWidth - vars->rightSidebarWidth - hudWidth), (float)vars->toolbarHeight, hudWidth, hudHeight);
 }
 
 void UserInterface::setFullscreen(bool useFullscreen) {

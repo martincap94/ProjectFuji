@@ -33,7 +33,7 @@ void EmitterBrushMode::updateMousePosition(float x, float y) {
 	if (!active) {
 		return;
 	}
-	pos = tPicker->getPixelData(x, y, terrainHit);
+	pos = tPicker->getPixelData((int)x, (int)y, terrainHit);
 
 	if (terrainHit) {
 
@@ -81,6 +81,8 @@ void EmitterBrushMode::onLeftMouseButtonRelease(float x, float y) {
 
 void EmitterBrushMode::processMouseWheelScroll(float yoffset, int glfwMods) {
 
+	int yoff = (int)yoffset;
+
 	if (glfwMods == 0) {
 		activeBrush->changeScale(yoffset);
 		return;
@@ -88,18 +90,18 @@ void EmitterBrushMode::processMouseWheelScroll(float yoffset, int glfwMods) {
 
 	if (glfwMods & GLFW_MOD_CONTROL) {
 		cout << "control was held" << endl;
-		activeBrush->setProfileIndexPos(yoffset);
+		activeBrush->setProfileIndexPos(yoff);
 
 
 	}
 	if (glfwMods & GLFW_MOD_ALT) {
 		cout << "alt was held" << endl;
-		activeBrush->setProfileIndexRange(yoffset);
+		activeBrush->setProfileIndexRange(yoff);
 	}
 
 	if (glfwMods & GLFW_MOD_SHIFT) {
 		cout << "shift was held" << endl;
-		numParticlesEmittedPerFrame += yoffset * glm::clamp(numParticlesEmittedPerFrame, 1, 100);
+		numParticlesEmittedPerFrame += yoff * glm::clamp(numParticlesEmittedPerFrame, 1, 100);
 		if (numParticlesEmittedPerFrame < 1) {
 			numParticlesEmittedPerFrame = 1;
 		}

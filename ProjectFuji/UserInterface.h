@@ -193,8 +193,8 @@ private:
 
 	int selectedEmitterType = 0;
 
-	const int hudWidth = 100;
-	const int hudHeight = 200;
+	const float hudWidth = 100;
+	const float hudHeight = 200;
 	struct nk_rect hudRect;
 
 

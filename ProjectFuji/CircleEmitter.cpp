@@ -86,6 +86,10 @@ void CircleEmitter::update() {
 }
 
 
+void CircleEmitter::draw() {
+	Emitter::draw();
+}
+
 void CircleEmitter::draw(ShaderProgram * shader) {
 	if (!visible) {
 		return;

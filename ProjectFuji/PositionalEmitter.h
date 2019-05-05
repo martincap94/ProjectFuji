@@ -64,6 +64,7 @@ public:
 	//! Updates the emitter (wiggle position update).
 	virtual void update();
 
+	virtual void draw();
 	virtual void draw(ShaderProgram *shader) = 0;
 
 

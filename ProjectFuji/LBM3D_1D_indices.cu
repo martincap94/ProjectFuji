@@ -51,14 +51,14 @@ __device__ __host__ float rand(int x, int y) {
 //}
 
 //! Maps the world position vector to the lattice position vector.
-__host__ __device__ glm::vec3 getLatticePosition(glm::vec3 worldPosition) {
+__device__ glm::vec3 getLatticePosition(glm::vec3 worldPosition) {
 	// TODO - offsets (model matrix?), maybe even scaling (model matrix scale)
 	worldPosition -= d_position;
 	return (worldPosition / d_worldSizeRatio);
 }
 
 //! Maps the lattice position vector to world position vector.
-__host__ __device__ glm::vec3 getWorldPosition(glm::vec3 latticePosition) {
+__device__ glm::vec3 getWorldPosition(glm::vec3 latticePosition) {
 	latticePosition *= d_worldSizeRatio;
 	return (latticePosition + d_position);
 }
@@ -2276,11 +2276,11 @@ void LBM3D_1D_indices::refreshHeightMap() {
 			int zidx = vars->terrainZOffset + z;
 
 			// TESTING
-			xidx = (xidx * scale) + position.x;
-			zidx = (zidx * scale) + position.z;
+			xidx = (int)((xidx * scale) + position.x);
+			zidx = (int)((zidx * scale) + position.z);
 
-			xidx /= vars->texelWorldSize;
-			zidx /= vars->texelWorldSize;
+			xidx /= (int)vars->texelWorldSize;
+			zidx /= (int)vars->texelWorldSize;
 
 			if (xidx < heightMap->width && xidx >= 0 && zidx < heightMap->height && zidx >= 0) {
 				//tempHM[x + z * latticeWidth] = heightMap->data[xidx][zidx];
@@ -3209,7 +3209,6 @@ const char * LBM3D_1D_indices::getRespawnModeString(int mode) {
 		default:
 			return "None";
 	}
-	return "None";
 }
 
 glm::mat4 LBM3D_1D_indices::getModelMatrix() {

@@ -334,49 +334,43 @@ void ParticleSystem::draw(glm::vec3 cameraPos) {
 
 		glDepthMask(GL_FALSE);
 		shader = pointSpriteTestShader;
+		shader->use();
+
+
+		shader->setInt("u_Tex", 0);
+		shader->setInt("u_SecondTex", 1);
+
+		shader->setBool("u_ShowHiddenParticles", showHiddenParticles != 0);
+
+
+		glActiveTexture(GL_TEXTURE0 + 0);
+		glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
+
+		glActiveTexture(GL_TEXTURE0 + 1);
+		glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture->id);
 
 	} else {
 		shader = singleColorShader;
+		shader->use();
 	}
 
-	//glUseProgram(point.id);
-	pointSpriteTestShader->use();
 
-	pointSpriteTestShader->setBool("u_ShowHiddenParticles", (bool)showHiddenParticles);
-	pointSpriteTestShader->setInt("u_Tex", 0);
-	pointSpriteTestShader->setInt("u_SecondTex", 1);
-	pointSpriteTestShader->setVec3("u_TintColor", vars->tintColor);
+	shader->setVec3("u_TintColor", vars->tintColor);
 
-	pointSpriteTestShader->setInt("u_OpacityBlendMode", opacityBlendMode);
-	pointSpriteTestShader->setFloat("u_OpacityBlendRange", opacityBlendRange);
+	shader->setInt("u_OpacityBlendMode", opacityBlendMode);
+	shader->setFloat("u_OpacityBlendRange", opacityBlendRange);
 
-
-	glActiveTexture(GL_TEXTURE0 + 0);
-	glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
-
-	glActiveTexture(GL_TEXTURE0 + 1);
-	glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture->id);
 
 	glPointSize(pointSize);
-	pointSpriteTestShader->setVec3("u_CameraPos", cameraPos);
-	pointSpriteTestShader->setFloat("u_PointSizeModifier", pointSize);
-	pointSpriteTestShader->setFloat("u_OpacityMultiplier", vars->opacityMultiplier);
+	shader->setVec3("u_CameraPos", cameraPos);
+	shader->setFloat("u_PointSizeModifier", pointSize);
+	shader->setFloat("u_OpacityMultiplier", vars->opacityMultiplier);
 
 	glBindVertexArray(particlesVAO);
 
-
-	//glDrawArrays(GL_POINTS, 0, numActiveParticles);
 	glDrawElements(GL_POINTS, numActiveParticles, GL_UNSIGNED_INT, 0);
 
-
 	glDepthMask(GL_TRUE);
-
-
-
-	for (int i = 0; i < emitters.size(); i++) {
-		emitters[i]->draw();
-	}
-
 
 
 }
@@ -1010,10 +1004,10 @@ void ParticleSystem::constructSaveParticlesWindow(nk_context * ctx, UserInterfac
 		ui->setButtonStyle(ctx, true);
 	} else {
 		if (nk_button_label(ctx, "Save")) {
-			saveParticlesToFile(particleSaveName, saveActiveParticlesOnly);
+			saveParticlesToFile(particleSaveName, saveActiveParticlesOnly != 0);
 		}
 		if (nk_button_label(ctx, "Save and Close")) {
-			saveParticlesToFile(particleSaveName, saveActiveParticlesOnly);
+			saveParticlesToFile(particleSaveName, saveActiveParticlesOnly != 0);
 			closeWindowAfterwards = true;
 		}
 	}

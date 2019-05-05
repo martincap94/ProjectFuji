@@ -375,7 +375,7 @@ public:
 	/*!
 		\param[in] textureId		Texture to be used if diagramTexture not set.
 	*/
-	void drawOverlayDiagram(GLuint textureId = -1);
+	void drawOverlayDiagram(GLuint textureId = 0);
 
 	//! Refreshes position of the overlay diagram and updates its VBO.
 	/*!
@@ -384,7 +384,7 @@ public:
 		\param[in] viewport_x		x position of the viewport (should be 0).
 		\param[in] viewport_y		y position of the viewport (should be 0).
 	*/
-	void refreshOverlayDiagram(GLuint viewportWidth, GLuint viewportHeight, GLuint viewport_x = 0, GLuint viewport_y = 0);
+	void refreshOverlayDiagram(float viewportWidth, float viewportHeight, float viewport_x = 0.0f, float viewport_y = 0.0f);
 
 
 	//! Sets position for a visualization point.

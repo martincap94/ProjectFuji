@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#define GLFW_INCLUDE_NONE
+//#define GLFW_INCLUDE_NONE
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -466,7 +466,7 @@ int runApp() {
 	refreshProjectionMatrix();
 
 
-	GeneralGrid gGrid(20000.0f, 1000.0f);
+	GeneralGrid gGrid(20000, 1000);
 
 
 	int frameCounter = 0;
@@ -1338,7 +1338,7 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 	mainFramebuffer->refresh();
 	particleRenderer->refreshImageBuffer();
 	TextureManager::refreshOverlayTextures();
-	stlpDiagram->refreshOverlayDiagram(vars.screenWidth, vars.screenHeight);
+	stlpDiagram->refreshOverlayDiagram((float)vars.screenWidth, (float)vars.screenHeight);
 	ui->refreshWidgets();
 }
 

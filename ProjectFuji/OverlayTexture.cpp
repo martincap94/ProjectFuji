@@ -138,8 +138,8 @@ void OverlayTexture::refreshVBO() {
 	//vp.x = 0.0f;
 	//vp.y = 0.0f;
 	if (vars) {
-		vp.z = vars->screenWidth;
-		vp.w = vars->screenHeight;
+		vp.z = (float)vars->screenWidth;
+		vp.w = (float)vars->screenHeight;
 	}
 
 	const GLfloat normalized_coords_with_tex_coords[] = {
@@ -189,7 +189,7 @@ void OverlayTexture::drawQuad() {
 
 	glDisable(GL_DEPTH_TEST);
 	shader->use();
-	shader->setBool("u_ShowAlphaChannel", (bool)showAlphaChannel);
+	shader->setBool("u_ShowAlphaChannel", showAlphaChannel != 0);
 
 	//glUniform1i(glGetUniformLocation(shader->id, "u_Texture"), 0);
 

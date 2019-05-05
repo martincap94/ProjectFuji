@@ -12,7 +12,7 @@ using namespace std;
 
 
 #define LH_A (-6.14342f * 0.00001f)
-#define LH_B (1.58927 * 0.001f)
+#define LH_B (1.58927f * 0.001f)
 #define LH_C (-2.36418f)
 #define LH_D 2500.79f
 
@@ -187,10 +187,10 @@ float getWetBulbPotentialTemperature_degC_hPa(float T, float P) {
 	float g1, g2, g3, g4, g5, g6;
 	float tmp;
 
-	g1 = atan(-0.0141748f * (sqrt(P) * (8.114196f + T) + 65.8402));
+	g1 = atan(-0.0141748f * (sqrt(P) * (8.114196f + T) + 65.8402f));
 	cout << "g1 = " << g1 << endl;
 
-	tmp = (6.558563f + (8.3237 / P));
+	tmp = (6.558563f + (8.3237f / P));
 	g2 = sqrt(69.2840f + sqrt(P)) + tmp * tmp;
 	cout << "g2 = " << g2 << endl;
 
@@ -228,7 +228,6 @@ float getPseudoadiabatTemperature_degC_hPa(double theta_w, double P) {
 	P *= 0.1;
 
 	double g1, g2, g3, g4, g5, g6, g7;
-	double tmp;
 	double T = 0.0;
 
 	if (theta_w <= 4.0) {

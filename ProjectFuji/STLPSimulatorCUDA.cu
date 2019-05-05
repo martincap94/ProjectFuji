@@ -519,7 +519,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	int sum = 0;
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
-		float prevSum = sum;
+		int prevSum = sum;
 		sum += stlpDiagram->dryAdiabatProfiles[i].vertices.size();
 		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 		//cout << stlpDiagram->dryAdiabatProfiles[i].vertices.size() << endl;
@@ -539,7 +539,7 @@ void STLPSimulatorCUDA::initCUDA() {
 	sum = 0;
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
-		float prevSum = sum;
+		int prevSum = sum;
 		sum += stlpDiagram->moistAdiabatProfiles[i].vertices.size();
 		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 		//cout << stlpDiagram->moistAdiabatProfiles[i].vertices.size() << endl;
@@ -653,7 +653,7 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 	int sum = 0;
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
-		float prevSum = sum;
+		int prevSum = sum;
 		sum += stlpDiagram->dryAdiabatProfiles[i].vertices.size();
 		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 	}
@@ -668,7 +668,7 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 	sum = 0;
 	for (int i = 0; i < stlpDiagram->numProfiles; i++) {
 		itmp.push_back(sum);
-		float prevSum = sum;
+		int prevSum = sum;
 		sum += stlpDiagram->moistAdiabatProfiles[i].vertices.size();
 		ivectmp.push_back(glm::ivec2(prevSum, sum - prevSum)); // x = offset, y = length
 	}
@@ -890,11 +890,11 @@ void STLPSimulatorCUDA::draw() {
 
 
 void STLPSimulatorCUDA::mapToSimulationBox(float & val) {
-	rangeToRange(val, groundHeight, boxTopHeight, 0.0f, vars->latticeHeight);
+	rangeToRange(val, groundHeight, boxTopHeight, 0.0f, (float)vars->latticeHeight);
 }
 
 void STLPSimulatorCUDA::mapFromSimulationBox(float & val) {
-	rangeToRange(val, 0.0f, vars->latticeHeight, groundHeight, boxTopHeight);
+	rangeToRange(val, 0.0f, (float)vars->latticeHeight, groundHeight, boxTopHeight);
 }
 
 void STLPSimulatorCUDA::refreshLevelVisualizationBuffers() {

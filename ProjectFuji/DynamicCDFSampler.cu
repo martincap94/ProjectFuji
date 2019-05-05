@@ -35,7 +35,7 @@ DynamicCDFSampler::DynamicCDFSampler(string probabilityTexturePath) : CDFSampler
 	arr = new float[size]();
 
 	float currSum = 0;
-	float maxIntensity = (float)numeric_limits<unsigned short>().max();
+	//float maxIntensity = (float)numeric_limits<unsigned short>().max();
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
@@ -78,9 +78,9 @@ void DynamicCDFSampler::updatePerlinNoiseCPU(bool onlyPerlin) {
 	float currSum = 0.0f;
 	float currSeed = 0.0f;
 	if (useTimeAsSeed) {
-		currSeed = glfwGetTime();
+		currSeed = (float)glfwGetTime();
 	} else {
-		currSeed = this->seed;
+		currSeed = (float)this->seed;
 	}
 
 	for (int y = 0; y < height; y++) {

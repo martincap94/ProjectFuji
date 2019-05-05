@@ -165,10 +165,13 @@ public:
 	bool debugWindowOpened = false;			//!< Whether the debug window is opened
 	bool aboutWindowOpened = false;			//!< Whether the about window is opened
 
-	int toolbarHeight = 20;					//!< Height of the toolbar
-	int debugTabHeight = 300;				//!< Height of the debug tab
-	int leftSidebarWidth = 250;				//!< Width of the left sidebar
+	float toolbarHeight = 20.0f;					//!< Height of the toolbar
+	float debugTabHeight = 300.0f;				//!< Height of the debug tab
+	float leftSidebarWidth = 250.0f;				//!< Width of the left sidebar
+
 	int rightSidebarWidth = 250;			//!< Width of the right sidebar
+
+
 	int debugOverlayTextureRes = 250;		//!< Resolution of the debug overlay textures (all are square)
 	int numDebugOverlayTextures = 3;		//!< Default number of debug overlay textures
 
