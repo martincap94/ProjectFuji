@@ -1012,7 +1012,9 @@ void STLPDiagram::initCurves() {
 	glGenBuffers(1, &visPointsVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, visPointsVBO);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * visualizationPoints.size(), &visualizationPoints[0], GL_STATIC_DRAW);
+	if (!visualizationPoints.empty()) {
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * visualizationPoints.size(), &visualizationPoints[0], GL_STATIC_DRAW);
+	}
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)0);

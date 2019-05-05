@@ -326,45 +326,39 @@ void ParticleSystem::draw(glm::vec3 cameraPos) {
 	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
 	*/
 
-	ShaderProgram *shader;
-	if (vars->usePointSprites) {
 
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glDepthMask(GL_FALSE);
-		shader = pointSpriteTestShader;
-		shader->use();
+	glDepthMask(GL_FALSE);
+	pointSpriteTestShader->use();
 
 
-		shader->setInt("u_Tex", 0);
-		shader->setInt("u_SecondTex", 1);
+	pointSpriteTestShader->setInt("u_Tex", 0);
+	pointSpriteTestShader->setInt("u_SecondTex", 1);
 
-		shader->setBool("u_ShowHiddenParticles", showHiddenParticles != 0);
-
-
-		glActiveTexture(GL_TEXTURE0 + 0);
-		glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
-
-		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture->id);
-
-	} else {
-		shader = singleColorShader;
-		shader->use();
-	}
+	pointSpriteTestShader->setBool("u_ShowHiddenParticles", showHiddenParticles != 0);
 
 
-	shader->setVec3("u_TintColor", vars->tintColor);
+	glActiveTexture(GL_TEXTURE0 + 0);
+	glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
 
-	shader->setInt("u_OpacityBlendMode", opacityBlendMode);
-	shader->setFloat("u_OpacityBlendRange", opacityBlendRange);
+	glActiveTexture(GL_TEXTURE0 + 1);
+	glBindTexture(GL_TEXTURE_2D, secondarySpriteTexture->id);
+
+	
+
+
+	pointSpriteTestShader->setVec3("u_TintColor", vars->tintColor);
+
+	pointSpriteTestShader->setInt("u_OpacityBlendMode", opacityBlendMode);
+	pointSpriteTestShader->setFloat("u_OpacityBlendRange", opacityBlendRange);
 
 
 	glPointSize(pointSize);
-	shader->setVec3("u_CameraPos", cameraPos);
-	shader->setFloat("u_PointSizeModifier", pointSize);
-	shader->setFloat("u_OpacityMultiplier", vars->opacityMultiplier);
+	pointSpriteTestShader->setVec3("u_CameraPos", cameraPos);
+	pointSpriteTestShader->setFloat("u_PointSizeModifier", pointSize);
+	pointSpriteTestShader->setFloat("u_OpacityMultiplier", vars->opacityMultiplier);
 
 	glBindVertexArray(particlesVAO);
 

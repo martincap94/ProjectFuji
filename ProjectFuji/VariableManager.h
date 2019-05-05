@@ -77,7 +77,6 @@ public:
 
 
 	int paused = 0;				//!< Whether the simulation is paused
-	int usePointSprites = 1;	//!< Whether to use point sprites for point visualization
 	bool appRunning = true;		//!< Helper boolean to stop the application with the exit button in the user interface
 	float cameraSpeed = DEFAULT_CAMERA_SPEED;	//!< Movement speed of the main camera
 

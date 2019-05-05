@@ -103,6 +103,12 @@ private:
 		TEXTURE,		//!< Texture based naming:	s, t, p, q
 	};
 
+	//! Possible sides of sidebars.
+	enum eSidebarSide {
+		S_LEFT = 0,		//!< Left sidebar
+		S_RIGHT			//!< Right sidebar
+	};
+
 public:
 
 
@@ -136,8 +142,8 @@ public:
 	void constructUserInterface();
 	bool isAnyWindowHovered();
 
-	void nk_property_vec2(struct nk_context *ctx, float min, glm::vec2 &target, float max, float step, float pixStep, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
-	void nk_property_vec3(struct nk_context *ctx, float min, glm::vec3 &target, float max, float step, float pixStep, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
+	void nk_property_vec2(struct nk_context *ctx, float min, glm::vec2 &target, float max, float step, float pixStep, std::string label = "", bool labelIsHeader = true, eVecNaming namingConvention = eVecNaming::DEFAULT);
+	void nk_property_vec3(struct nk_context *ctx, float min, glm::vec3 &target, float max, float step, float pixStep, std::string label = "", bool labelIsHeader = true, eVecNaming namingConvention = eVecNaming::DEFAULT);
 
 	void nk_property_vec4(struct nk_context *ctx, glm::vec4 &target);
 	void nk_property_color_rgb(struct nk_context *ctx, glm::vec3 &target);
@@ -145,8 +151,9 @@ public:
 
 	void nk_value_vec3(struct nk_context *ctx, const glm::vec3 &target, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
 
+	void nk_label_header(struct nk_context *ctx, const char *headerString, bool resetRowAfter = true, nk_text_alignment textAlignment = nk_text_alignment::NK_TEXT_CENTERED);
 
-	void constructTextureSelection(Texture **targetTexturePtr, std::string nullTextureNameOverride = "");
+	void constructTextureSelection(Texture **targetTexturePtr, std::string nullTextureNameOverride = "", bool useWidgetWidth = false);
 
 	void nk_property_string(struct nk_context *ctx, std::string &target, char *buffer, int bufferLength, int &length);
 
@@ -183,7 +190,7 @@ private:
 	bool streamlineInitMode = false;
 
 	int leftSidebarContentMode = CLOUD_VIS;
-	int rightSidebarContentMode = PROPERTIES;
+	int rightSidebarContentMode = DIAGRAM;
 
 	bool aboutWindowOpened = false;
 	bool terrainGeneratorWindowOpened = false;
@@ -197,12 +204,20 @@ private:
 	const float hudHeight = 200;
 	struct nk_rect hudRect;
 
+	struct nk_vec2 horizontalBarPadding = nk_vec2(0.0f, 0.0f);
+	struct nk_vec2 sidebarPadding = nk_vec2(4.0f, 2.0f);
+
+	struct nk_vec2 toolbarMenuSize = nk_vec2(200, 250);
+	struct nk_vec2 standardTexSelectSize = nk_vec2(200, 300);
 
 	int hierarchyIdCounter = 0;
 	std::vector<Actor *> activeActors;
 
 	nk_context *ctx;
 	struct nk_input *ctx_in;
+
+	float wh = 15.0f;				//!< Basic widget height to be used
+	float headerHeight = 25.0f;		//!< Height of header labels
 
 	std::map<std::string, Texture *> *textures; // general textures of the app
 
@@ -216,26 +231,26 @@ private:
 	void constructRightSidebar();
 	void constructHorizontalBar();
 	void constructSidebarSelectionTab(int *contentModeTarget, float xPos, float width);
-	void constructSelectedContent(int contentMode);
+	void constructSelectedContent(int contentMode, int side);
 
-	void constructLBMTab();
-	void constructLightingTab();
-	void constructTerrainTab();
+	void constructLBMTab(int side);
+	void constructLightingTab(int side);
+	void constructTerrainTab(int side);
 	void constructTerrainGeneratorWindow();
-	void constructSkyTab();
-	void constructCloudVisualizationTab();
-	void constructDiagramControlsTab();
-	void constructLBMDebugTab();
-	void constructSceneHierarchyTab();
+	void constructSkyTab(int side);
+	void constructCloudVisualizationTab(int side);
+	void constructDiagramControlsTab(int side);
+	void constructLBMDebugTab(int side);
+	void constructSceneHierarchyTab(int side);
 	void addSceneHierarchyActor(Actor *actor);
 
-	void constructEmittersTab();
+	void constructEmittersTab(int side);
 	void constructEmitterCreationWindow();
 
-	void constructGeneralDebugTab();
-	void constructPropertiesTab();
+	void constructGeneralDebugTab(int side);
+	void constructPropertiesTab(int side);
 
-	void constructViewTab();
+	void constructViewTab(int side);
 
 	void constructSaveParticlesWindow();
 	void constructLoadParticlesWindow();
@@ -246,6 +261,8 @@ private:
 
 	void constructDirLightPositionPanel();
 	void constructFormBoxButtonPanel();
+
+	void constructDirLightColorPanel();
 
 	void constructHUD();
 

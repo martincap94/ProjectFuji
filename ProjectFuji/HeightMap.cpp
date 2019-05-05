@@ -92,10 +92,10 @@ void HeightMap::loadHeightMapData(std::string filename) {
 
 
 
-	cout << "number of channels = " << numChannels << endl;
+	//cout << "number of channels = " << numChannels << endl;
 
-	cout << "Width: " << width << ", height: " << height << endl;
-	cout << (float)numeric_limits<unsigned short>().max() << endl;
+	//cout << "Width: " << width << ", height: " << height << endl;
+	//cout << (float)numeric_limits<unsigned short>().max() << endl;
 
 	for (int z = 0; z < height; z++) {
 		for (int x = 0; x < width; x++) {

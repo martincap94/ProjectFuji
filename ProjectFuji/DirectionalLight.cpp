@@ -10,12 +10,6 @@
 
 DirectionalLight::DirectionalLight() {
 
-	//initBuffers();
-
-	// setup some default projection matrix
-	//projectionMatrix = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, 1.0f, 1000.0f);
-	//projectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 1.0f, 1000.0f);
-	//initBuffers();
 	shader = ShaderManager::getShaderPtr("singleColorModel");
 
 	sunModel = new Model("models/unitsphere.fbx");
@@ -36,11 +30,9 @@ glm::mat4 DirectionalLight::getViewMatrix() {
 
 glm::mat4 DirectionalLight::getProjectionMatrix() {
 	return glm::ortho(pLeft, pRight, pBottom, pTop, pNear, pFar);
-	//return projectionMatrix;
 }
 
 void DirectionalLight::setProjectionMatrix(float left, float right, float bottom, float top) {
-	//projectionMatrix = glm::ortho(left, right, bottom, top, near, far);
 	pLeft = left;
 	pRight = right;
 	pBottom = bottom;
@@ -91,31 +83,15 @@ void DirectionalLight::circularMotionStep(float deltaTime) {
 
 void DirectionalLight::draw() {
 	shader->use();
-	shader->setVec3("u_Color", glm::vec3(1.0f));
+	shader->setColor(glm::vec3(1.0f));
 
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, position);
 	shader->setModelMatrix(model);
 
-	/*
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	*/
-
 	sunModel->transform.position = position;
 	sunModel->transform.updateModelMatrix();
 	sunModel->drawGeometry(shader);
-
-
-	//shader->setVec3("u_Color", glm::vec3(0.5f, 1.0f, 0.7f));
-
-	//glPointSize(20.0f);
-
-	////glm::rotate(model, )
-	//shader->setModelMatrix(model);
-	////shader->setModelMatrix(glm::mat4(1.0f));
-	//glBindVertexArray(projVAO);
-	//glDrawArrays(GL_LINES, 0, 24);
 }
 
 

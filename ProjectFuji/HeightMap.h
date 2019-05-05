@@ -265,7 +265,7 @@ private:
 
 	const int materialMapTextureUnit = 12;		//!< Texture unit used by the material map
 	const int normalMapTextureUnit = 13;		//!< Texture unit used by the global normal map
-	const int grungeMapTextureUnit = 14;		//!< Texture unit used by the color grunge map
+	const int grungeMapTextureUnit = 16;		//!< Texture unit used by the color grunge map
 
 	GLuint VAO;		//!< VAO of the terrain's mesh
 	GLuint VBO;		//!< VBO of the terrain's mesh

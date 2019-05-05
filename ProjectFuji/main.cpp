@@ -1,7 +1,4 @@
-
 #include <iostream>
-
-//#define GLFW_INCLUDE_NONE
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -14,7 +11,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-//#include "glm/gtx/string_cast.hpp"
 
 #include <random>
 #include <ctime>
@@ -26,12 +22,8 @@
 #include <iomanip> // setprecision
 
 
-//#include "LBM.h"
-//#include "LBM2D_1D_indices.h"
 #include "LBM3D_1D_indices.h"
 #include "HeightMap.h"
-//#include "Grid2D.h"
-//#include "Grid3D.h"
 #include "GeneralGrid.h"
 #include "ShaderProgram.h"
 #include "Camera.h"
@@ -41,7 +33,6 @@
 #include "ParticleSystemLBM.h"
 #include "ParticleSystem.h"
 #include "DirectionalLight.h"
-//#include "Grid.h"
 #include "Utils.h"
 #include "Timer.h"
 #include "STLPDiagram.h"
@@ -68,8 +59,6 @@
 #include "PerlinNoiseSampler.h"
 #include "EmitterBrushMode.h"
 
-//#include "ArHosekSkyModel.h"
-//#include "ArHosekSkyModel.c"
 
 #include "HosekSkyModel.h"
 
@@ -79,10 +68,9 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-
-
-
 #include "UserInterface.h"
+
+
 
 
 
@@ -90,29 +78,30 @@
 ///// FORWARD DECLARATIONS OF FUNCTIONS
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// Run the application.
+//! Run the application.
 int runApp();
 
-/// Process keyboard inputs of the window.
+//! Process keyboard inputs of the window.
 void processInput(GLFWwindow *window);
 
+//! Key callback for the window.
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+//! Process continuous keyboard input (held buttons).
 void processKeyboardInput(GLFWwindow *window);
 
-/// Mouse scroll callback for the window.
+//! Mouse scroll callback for the window.
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-/// Mouse button callback for the window.
+//! Mouse button callback for the window.
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 
+//! Mouse position callback for the window.
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
-
-/// Window size changed callback.
+//! Window size changed callback.
 void window_size_callback(GLFWwindow* window, int width, int height);
 
-/// Constructs the user interface for the given context. Must be called in each frame!
-//void constructUserInterface(nk_context *ctx/*, nk_colorf &particlesColor*/);
 
 
 void refreshProjectionMatrix();
@@ -126,110 +115,81 @@ void refreshDiagramProjectionMatrix(float aspectRatio);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-VariableManager vars;
+VariableManager vars;		//!< VariableManager that loads and manages variables across the application
+
+LBM3D_1D_indices *lbm;		//!< Pointer to the current LBM
+Camera *camera;				//!< Pointer to the current camera
+ParticleSystem *particleSystem;			//!< Particle system used throughout the application
+ParticleRenderer *particleRenderer;		//!< Volumetric renderer used for particle rendering
+MainFramebuffer *mainFramebuffer;		//!< Main framebuffer used by the application
+StreamlineParticleSystem *streamlineParticleSystem;		//!< Debug particle system for drawing streamlines
+UserInterface *ui;			//!< User interface used by the application
+EmitterBrushMode *ebm;		//!< Helper object that manages brush mode (when user draws particles on the ground)
+
+Camera *viewportCamera;				//!< Camera used in the 3D viewport
+Camera *freeRoamCamera;				//!< Free roam camera used in the 3D viewport
+Camera *orbitCamera;				//!< Camera that orbits around the terrain
+Camera2D *diagramCamera;			//!< Camera used when visualizing the STLP diagram
+Camera2D *overlayDiagramCamera;		//!< Fixed diagram camera used for overlay diagram drawing
+
+STLPDiagram *stlpDiagram;			//!< SkewT/LogP diagram instance
+STLPSimulatorCUDA *stlpSimCUDA;		//!< SkewT/LogP simulator that runs the simulation on GPU
+EVSMShadowMapper *evsm;				//!< Helper class used for exponential variance shadow mapping
+DirectionalLight *dirLight;			//!< The sun lighting the scene
+
+Skybox *skybox;						//!< Simple skybox used in the scene
+HosekSkyModel *hosek;				//!< Hosek-Wilkie sky model
+
+ShaderProgram *diagramShader;				//!< Shader used for drawing diagram
+ShaderProgram *visualizeNormalsShader;		//!< Shader used for visualizing normals
+ShaderProgram *normalsInstancedShader;		//!< Shader for instanced models
+ShaderProgram *grassShader;					//!< Shader used for grass rendering
+ShaderProgram *pbrTest;						//!< PBR testing shader
 
 
-LBM3D_1D_indices *lbm;				///< Pointer to the current LBM
-//Grid *grid;				///< Pointer to the current grid
-Camera *camera;			///< Pointer to the current camera
-//ParticleSystemLBM *particleSystemLBM;		///< Pointer to the particle system that is to be used throughout the whole application
-ParticleSystem *particleSystem;
-ParticleRenderer *particleRenderer;
-
-MainFramebuffer *mainFramebuffer;
-
-StreamlineParticleSystem *streamlineParticleSystem;
-
-UserInterface *ui;
-
-//TerrainPicker *tPicker;
-//HeightMap *heightMap;
-EmitterBrushMode *ebm;
-
-//Timer timer;
-Camera *viewportCamera;
-Camera *freeRoamCamera;
-Camera *orbitCamera;
-Camera2D *diagramCamera;
-Camera2D *overlayDiagramCamera;
-
-//STLPSimulator *stlpSim;
-STLPSimulatorCUDA *stlpSimCUDA;
-
-EVSMShadowMapper *evsm;
-DirectionalLight *dirLight;
+float lastMouseX;	//!< Previous screen x position of the mouse cursor
+float lastMouseY;	//!< Previous screen y position of the mouse cursor
 
 
-float lastMouseX;
-float lastMouseY;
-
-
-
-struct nk_context *ctx;
-
-//int projectionMode = PERSPECTIVE;
-//int drawSkybox = 0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///// DEFAULT VALUES THAT ARE TO BE REWRITTEN FROM THE CONFIG FILE
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-double deltaTime = 0.0;		///< Delta time of the current frame
-double lastFrameTime;		///< Duration of the last frame
+double deltaTime = 0.0;		//!< Delta time of the current frame
+double lastFrameTime;		//!< Duration of the last frame
 
-glm::mat4 view;				///< View matrix
-glm::mat4 projection;		///< Projection matrix
-glm::mat4 prevProjection; // for s
-glm::mat4 viewportProjection;
-glm::mat4 diagramProjection;
-glm::mat4 overlayDiagramProjection;
+glm::mat4 view;				//!< View matrix
+glm::mat4 projection;		//!< Projection matrix
+glm::mat4 prevProjection;	//!< Projection matrix from previous frame
+glm::mat4 viewportProjection;			//!< 3D viewport projection matrix
+glm::mat4 diagramProjection;			//!< Diagram projection matrix (flipped y orthographic)
+glm::mat4 overlayDiagramProjection;		//!< Overlay diagram projection matrix (flipped y orthographic, no zooming allowed)
 
-float nearPlane = 0.1f;		///< Near plane of the view frustum
-float farPlane = 50000.0f;	///< Far plane of the view frustum
+float nearPlane = 0.1f;		//!< Near plane of the view frustum
+float farPlane = 50000.0f;	//!< Far plane of the view frustum
 
-float projWidth;			///< Width of the ortographic projection
-float projHeight;			///< Height of the ortographic projection
-float projectionRange;		///< General projection range for 3D (largest value of lattice width, height and depth)
-
-
-int prevPauseKeyState = GLFW_RELEASE;	///< Pause key state from previous frame
-int pauseKey = GLFW_KEY_T;				///< Pause key
-
-int prevResetKeyState = GLFW_RELEASE;	///< Reset key state from previous frame
-int resetKey = GLFW_KEY_R;				///< Reset key
-
-int prevMouseCursorKeyState = GLFW_RELEASE;
-int mouseCursorKey = GLFW_KEY_C;
+float projWidth;			//!< Width of the orthographic projection
+float projHeight;			//!< Height of the ortographic projection
+float projectionRange;		//!< General projection range for 3D (largest value of lattice width, height and depth)
 
 
+int pauseKey = GLFW_KEY_T;				//!< Pause LBM key
+int resetKey = GLFW_KEY_R;				//!< Reset LBM key
+int mouseCursorKey = GLFW_KEY_C;		//!< Consume mouse cursor key
 
-bool leftMouseButtonDown = false;
+bool leftMouseButtonDown = false;		//!< Holds whether the left mouse button is being held down
 
-
-float prevAvgFPS;
-float prevAvgDeltaTime;
-
-STLPDiagram *stlpDiagram;	///< SkewT/LogP diagram instance
-
-Skybox *skybox;
-HosekSkyModel *hosek;
+float prevAvgFPS;			//!< Average FPS from the previous frame
+float prevAvgDeltaTime;		//!< Average delta time from the previous frame
 
 
-ShaderProgram *diagramShader;
-ShaderProgram *visualizeNormalsShader;
-ShaderProgram *normalsInstancedShader;
-ShaderProgram *grassShader;
 
-ShaderProgram *pbrTest;
-
-
-/// Main - runs the application and sets seed for the random number generator.
+//! Main - runs the application and sets seed for the random number generator.
 int main(int argc, char **argv) {
 	srand((unsigned int)time(NULL));
 
-
+	// Load the permutations data for Perlin Noise from file
 	PerlinNoiseSampler::loadPermutationsData("resources/perlin_noise_permutations.txt");
-	//cout << PerlinNoiseSampler::getSample(3.14f, 42.0f, 7.0f);
-
 	vars.init(argc, argv);
 
 	return runApp();
@@ -250,8 +210,10 @@ int runApp() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 
+	// No need since we use auxiliary framebuffer (main framebuffer)
 	//glfwWindowHint(GLFW_SAMPLES, 12); // enable MSAA with 4 samples
 
+	// Set 
 	if (vars.useMonitorResolution || vars.fullscreen) {
 		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
@@ -368,13 +330,11 @@ int runApp() {
 	
 	overlayDiagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
 	
-	freeRoamCamera = new FreeRoamCamera(glm::vec3(30.0f, vars.terrainHeightRange.y, 30.0f), WORLD_UP, -35.0f, -35.0f);
+	freeRoamCamera = new FreeRoamCamera(glm::vec3(30.0f, vars.terrainHeightRange.y, 30.0f), WORLD_UP, 35.0f, -35.0f);
 	((FreeRoamCamera *)freeRoamCamera)->heightMap = vars.heightMap;
 	freeRoamCamera->movementSpeed = vars.cameraSpeed;
 
 	camera->movementSpeed = vars.cameraSpeed;
-
-	dirLight->focusPoint = glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, 0.0f, vars.heightMap->getWorldDepth() / 2.0f);
 
 
 
@@ -388,20 +348,20 @@ int runApp() {
 	lbm->streamlineParticleSystem = streamlineParticleSystem;
 
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	// TESTING MODELS AND INSTANCED MODELS
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+
 	Material testMat(TextureManager::loadTexture("textures/body2.png"), TextureManager::loadTexture("textures/body2_S.png"), TextureManager::loadTexture("textures/body2_N.png"), 32.0f);
 
 	Model testModel("models/housewife.obj", &testMat, ShaderManager::getShaderPtr("normals"));
 
 	Material treeMat(TextureManager::loadTextureTriplet("textures/Bark_Pine_001_COLOR.jpg", "textures/Bark_Pine_001_DISP.png", "textures/Bark_Pine_001_NORM.jpg"), 8.0f);
 
-	Texture adiffuse("textures/armoire/albedo.png", 0);
-	Texture aspecular("textures/armoire/metallic.png", 1);
-	Texture anormal("textures/armoire/normal.png", 2);
-	Material aMat(adiffuse, aspecular, anormal, 32.0f);
 
 	Texture gdiffuse("textures/grass.png", 0);
 	Texture gspecular("textures/grass_S.png", 1);
-	Material gMat(gdiffuse, gspecular, anormal, 32.0f);
+	Material gMat(&gdiffuse, &gspecular, nullptr, 32.0f);
 
 	Model grassModel("models/grass.obj", &gMat, grassShader);
 
@@ -449,11 +409,11 @@ int runApp() {
 	testModel.transform.position = glm::vec3(1.0f, 0.0f, 5.0f);
 
 
-	dirLight->position = glm::vec3(10000.0f, 15000.0f, 20000.0f);
+	dirLight->position = glm::vec3(140000.0f, 70000.0f, 100000.0f);
+	dirLight->focusPoint = glm::vec3(vars.heightMap->getWorldWidth() / 2.0f, 0.0f, vars.heightMap->getWorldDepth() / 2.0f);
 
-	//testModel.snapToGround(vars.heightMap);
 
-
+	// Create the scene from the test models
 	SceneGraph scene;
 	scene.root = new Actor("Root");
 	scene.root->addChild(&cerberus);
@@ -462,6 +422,8 @@ int runApp() {
 	scene.root->addChild(&grassModel);
 	houseModel.addChild(&testModel);
 
+	grassModel.visible = 0;
+	treeModel.visible = 0;
 
 	refreshProjectionMatrix();
 
@@ -483,12 +445,7 @@ int runApp() {
 	particleSystem->numActiveParticles = 500000;
 	particleSystem->activateAllDiagramParticles();
 
-	//particleSystem->initParticlePositions();
-	CHECK_ERROR(cudaPeekAtLastError());
 
-
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	lbm->mapVBO(particleSystem->particleVerticesVBO);
 
 
@@ -510,13 +467,8 @@ int runApp() {
 	}
 	double accumulatedTime = 0.0;
 
-	glActiveTexture(GL_TEXTURE0);
+	//glActiveTexture(GL_TEXTURE0);
 
-	CHECK_ERROR(cudaPeekAtLastError());
-
-
-	vector<GLuint> debugTextureIds;
-	debugTextureIds.push_back(evsm->getDepthMapTextureId());
 
 
 	// Preset overlay textures that are useful for debugging
@@ -653,7 +605,7 @@ int runApp() {
 
 
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
-			refreshProjectionMatrix();
+			refreshProjectionMatrix();	// reorganize so this can be removed
 
 			particleSystem->update();
 
@@ -711,7 +663,8 @@ int runApp() {
 			scene.root->update();
 
 
-			refreshProjectionMatrix();
+
+			refreshProjectionMatrix();	// reorganize so this can be removed
 
 
 			///////////////////////////////////////////////////////////////
@@ -779,6 +732,7 @@ int runApp() {
 				section of the main loop.
 			*/
 			ebm->update();
+
 			//tPicker->drawTerrain(vars.heightMap);
 
 			if (vars.visualizeTerrainNormals) {
@@ -1046,128 +1000,27 @@ void processKeyboardInput(GLFWwindow *window) {
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		//camera->processKeyboardMovement(Camera::UP, deltaTime);
 		camera->processKeyboardMovement(GLFW_KEY_W, deltaTime);
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		//camera->processKeyboardMovement(Camera::DOWN, deltaTime);
 		camera->processKeyboardMovement(GLFW_KEY_S, deltaTime);
 
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		//camera->processKeyboardMovement(Camera::LEFT, deltaTime);
 		camera->processKeyboardMovement(GLFW_KEY_A, deltaTime);
 
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		//camera->processKeyboardMovement(Camera::RIGHT, deltaTime);
 		camera->processKeyboardMovement(GLFW_KEY_D, deltaTime);
 
 	}
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-		//camera->processKeyboardMovement(Camera::ROTATE_LEFT, deltaTime);
 		camera->processKeyboardMovement(GLFW_KEY_E, deltaTime);
 
 	}
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-		//camera->processKeyboardMovement(Camera::ROTATE_RIGHT, deltaTime);
 		camera->processKeyboardMovement(GLFW_KEY_Q, deltaTime);
 	}
-
-	/*
-	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
-		if (vars.useFreeRoamCamera) {
-			((FreeRoamCamera*)camera)->snapToGround();
-			//((FreeRoamCamera*)camera)->walking = !((FreeRoamCamera*)camera)->walking;
-		}
-	}
-	if (glfwGetKey(window, vars.hideUIKey) == GLFW_PRESS) {
-		if (vars.prevHideUIKeyState == GLFW_RELEASE) {
-			vars.hideUI = abs(vars.hideUI - 1);
-		}
-		vars.prevHideUIKeyState = GLFW_PRESS;
-	} else {
-		vars.prevHideUIKeyState = GLFW_RELEASE;
-	}
-
-	// Toggle LBM
-	if (glfwGetKey(window, vars.toggleLBMStateKey) == GLFW_PRESS) {
-		if (vars.prevToggleLBMState == GLFW_RELEASE) {
-			vars.applyLBM = abs(vars.applyLBM - 1);
-		}
-		vars.prevToggleLBMState = GLFW_PRESS;
-	} else {
-		vars.prevToggleLBMState = GLFW_RELEASE;
-	}
-
-
-	// Toggle STLP
-	if (glfwGetKey(window, vars.toggleSTLPStateKey) == GLFW_PRESS) {
-		if (vars.prevToggleSTLPState == GLFW_RELEASE) {
-			vars.applySTLP = abs(vars.applySTLP - 1);
-		}
-		vars.prevToggleSTLPState = GLFW_PRESS;
-	} else {
-		vars.prevToggleSTLPState = GLFW_RELEASE;
-	}
-
-
-
-	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-		camera->setView(Camera::VIEW_FRONT);
-	}
-	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
-		camera->setView(Camera::VIEW_SIDE);
-	}
-	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
-		camera->setView(Camera::VIEW_TOP);
-	}
-	if (glfwGetKey(window, resetKey) == GLFW_PRESS) {
-		if (prevResetKeyState == GLFW_RELEASE) {
-			lbm->resetSimulation();
-		}
-		prevResetKeyState = GLFW_PRESS;
-	} else {
-		prevResetKeyState = GLFW_RELEASE;
-	}
-	if (glfwGetKey(window, pauseKey) == GLFW_PRESS) {
-		if (prevPauseKeyState == GLFW_RELEASE) {
-			vars.paused = !vars.paused;
-		}
-		prevPauseKeyState = GLFW_PRESS;
-	} else {
-		prevPauseKeyState = GLFW_RELEASE;
-	}
-
-
-
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-		ui->viewportMode = 0;
-		refreshProjectionMatrix();
-	}
-	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-		ui->viewportMode = 1;
-		refreshProjectionMatrix();
-	}
-
-
-	if (glfwGetKey(window, mouseCursorKey) == GLFW_PRESS) {
-		if (prevMouseCursorKeyState == GLFW_RELEASE) {
-			//vars.paused = !vars.paused;
-			// do action
-			vars.consumeMouseCursor = !vars.consumeMouseCursor;
-			if (vars.consumeMouseCursor) {
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			} else {
-				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			}
-		}
-		prevMouseCursorKeyState = GLFW_PRESS;
-	} else {
-		prevMouseCursorKeyState = GLFW_RELEASE;
-	}
-
-	*/
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {

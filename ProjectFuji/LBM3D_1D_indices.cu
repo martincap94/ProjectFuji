@@ -3205,7 +3205,7 @@ const char * LBM3D_1D_indices::getRespawnModeString(int mode) {
 		case eRespawnMode::CYCLE_XZ:
 			return "Cycle x and z";
 		case eRespawnMode::RANDOM_UNIFORM:
-			return "Random (uniform respawn)";
+			return "Random (Uniform)";
 		default:
 			return "None";
 	}

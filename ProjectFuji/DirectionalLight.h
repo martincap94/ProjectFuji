@@ -39,7 +39,7 @@ public:
 	float pBottom = -30000.0f;		//!< Bottom value of the orthogonal projection
 	float pTop = 30000.0f;			//!< Top value of the orthogonal projection
 	float pNear = 10.0f;			//!< Near value of the orthogonal projection
-	float pFar = 1000000.0f;		//!< Far value of the orthogonal projection
+	float pFar = 600000.0f;			//!< Far value of the orthogonal projection
 
 	// for circular motion -> overwrites position and direction (focus point is the center of the circular motion)
 	float theta = 0.0f;						//!< Angle that keeps track of sun rotation [0, 360]
