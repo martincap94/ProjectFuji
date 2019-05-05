@@ -161,6 +161,10 @@ void ParticleSystem::update() {
 		}
 	}
 	emitParticles();
+
+	if (synchronizeDiagramParticlesWithActiveParticles) {
+		numDiagramParticlesToDraw = numActiveParticles;
+	}
 }
 
 

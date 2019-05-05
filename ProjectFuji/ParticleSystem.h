@@ -119,6 +119,7 @@ public:
 
 	int showHiddenParticles = 1;	//!< Whether to show particles that should be hidden/invisible
 
+	int synchronizeDiagramParticlesWithActiveParticles = 1;
 
 	glm::vec3 particlesColor = glm::vec3(0.8f, 0.8f, 0.8f);	//!< Old particle color setting
 

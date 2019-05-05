@@ -655,6 +655,8 @@ int runApp() {
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			refreshProjectionMatrix();
 
+			particleSystem->update();
+
 			// LBM simulation update
 			if (vars.applyLBM) {
 				if (totalFrameCounter % vars.lbmStepFrame == 0) {

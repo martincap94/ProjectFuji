@@ -1376,6 +1376,24 @@ void UserInterface::constructDiagramControlsTab() {
 
 	nk_property_float(ctx, "Profile Range", -10.0f, &stlpDiagram->convectiveTempRange, 10.0f, 0.01f, 0.01f);
 
+	nk_checkbox_label(ctx, "Show Particles in Diagram", &vars->drawOverlayDiagramParticles);
+	if (vars->drawOverlayDiagramParticles) {
+
+		if (nk_checkbox_label(ctx, "Synchronize with Active Particles", &particleSystem->synchronizeDiagramParticlesWithActiveParticles));
+		if (!particleSystem->synchronizeDiagramParticlesWithActiveParticles) {
+
+			if (nk_button_label(ctx, "Activate All")) {
+				particleSystem->activateAllDiagramParticles();
+			}
+			if (nk_button_label(ctx, "Deactivate All")) {
+				particleSystem->deactivateAllDiagramParticles();
+			}
+			nk_property_int(ctx, "Num Particles Drawn", 0, &particleSystem->numDiagramParticlesToDraw, particleSystem->numActiveParticles, 1, 1);
+		}
+		nk_property_color_rgb(ctx, particleSystem->diagramParticlesColor);
+
+	}
+
 	//nk_property_int(ctx, "max particles", 1, &stlpSim->maxNumParticles, 100000, 1, 10.0f);
 
 	//nk_checkbox_label(ctx, "Simulate wind", &stlpSim->simulateWind);
@@ -1406,19 +1424,6 @@ void UserInterface::constructDiagramControlsTab() {
 			prevX != stlpDiagram->overlayDiagramX ||
 			prevY != stlpDiagram->overlayDiagramY) {
 			stlpDiagram->refreshOverlayDiagram(vars->screenWidth, vars->screenHeight);
-		}
-
-		nk_checkbox_label(ctx, "Show Particles in Diagram", &vars->drawOverlayDiagramParticles);
-		if (vars->drawOverlayDiagramParticles) {
-			if (nk_button_label(ctx, "Activate All")) {
-				particleSystem->activateAllDiagramParticles();
-			}
-			if (nk_button_label(ctx, "Deactivate All")) {
-				particleSystem->deactivateAllDiagramParticles();
-			}
-			nk_property_int(ctx, "Num Particles Drawn", 0, &particleSystem->numDiagramParticlesToDraw, particleSystem->numActiveParticles, 1, 1);
-			nk_property_color_rgb(ctx, particleSystem->diagramParticlesColor);
-
 		}
 	}
 
