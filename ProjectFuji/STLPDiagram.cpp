@@ -957,7 +957,7 @@ void STLPDiagram::initCurves() {
 			LFC = getDenormalizedCoords(LFCNormalized);
 		}
 
-	    orographicELFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, orographicELNormalized, 1, true);
+	    orographicELFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, orographicELNormalized, 2, true);
 		if (orographicELFound) {
 			orographicEL = getDenormalizedCoords(orographicELNormalized);
 		}
@@ -1164,7 +1164,7 @@ void STLPDiagram::recalculateParameters() {
 		LFC = getDenormalizedCoords(LFCNormalized);
 	}
 
-	orographicELFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, orographicELNormalized, 1, true);
+	orographicELFound = findIntersectionNew(moistAdiabat_LCL_EL, ambientCurve, orographicELNormalized, 2, true);
 	if (orographicELFound) {
 		orographicEL = getDenormalizedCoords(orographicELNormalized);
 	}

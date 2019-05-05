@@ -1344,9 +1344,13 @@ void UserInterface::constructDiagramControlsTab() {
 	nk_layout_row_static(ctx, 15, vars->rightSidebarWidth, 1);
 
 
-	if (nk_button_label(ctx, "Reset to default")) {
+	if (nk_button_label(ctx, "Reset to Default")) {
 		stlpDiagram->recalculateAll();
 		stlpSimCUDA->uploadDataFromDiagramToGPU();
+		particleSystem->clearVerticalVelocities();
+	}
+
+	if (nk_button_label(ctx, "Clear Vertical Velocities")) {
 		particleSystem->clearVerticalVelocities();
 	}
 

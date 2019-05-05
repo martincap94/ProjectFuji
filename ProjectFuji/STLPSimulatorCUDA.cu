@@ -420,8 +420,14 @@ void STLPSimulatorCUDA::initBuffers() {
 	float w = vars->heightMap->getWorldWidth();
 	float d = vars->heightMap->getWorldDepth();
 
-	altitude = getAltitudeFromPressure(stlpDiagram->CCL.y);
+	if (stlpDiagram->useOrographicParameters) {
+		altitude = getAltitudeFromPressure(stlpDiagram->LCL.y);
+	} else {
+		altitude = getAltitudeFromPressure(stlpDiagram->CCL.y);
+	}
+
 	//mapToSimulationBox(altitude);
+
 	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
 	vertices.push_back(glm::vec3(0.0f, altitude, d));
 	vertices.push_back(glm::vec3(w, altitude, d));
@@ -443,8 +449,14 @@ void STLPSimulatorCUDA::initBuffers() {
 	glGenBuffers(1, &ELLevelVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, ELLevelVBO);
 
-	altitude = getAltitudeFromPressure(stlpDiagram->EL.y);
-	//mapToSimulationBox(altitude);
+
+	if (stlpDiagram->useOrographicParameters) {
+		altitude = getAltitudeFromPressure(stlpDiagram->orographicEL.y);
+	} else {
+		altitude = getAltitudeFromPressure(stlpDiagram->EL.y);
+	}
+
+
 	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
 	vertices.push_back(glm::vec3(0.0f, altitude, d));
 	vertices.push_back(glm::vec3(w, altitude, d));
@@ -706,6 +718,8 @@ void STLPSimulatorCUDA::uploadDataFromDiagramToGPU() {
 	s = ShaderManager::getShaderPtr("volume_2nd_pass_alt2");
 	uploadProfileIndicesUniforms(s);
 
+	refreshLevelVisualizationBuffers();
+
 }
 
 void STLPSimulatorCUDA::doStep() {
@@ -881,4 +895,47 @@ void STLPSimulatorCUDA::mapToSimulationBox(float & val) {
 
 void STLPSimulatorCUDA::mapFromSimulationBox(float & val) {
 	rangeToRange(val, 0.0f, vars->latticeHeight, groundHeight, boxTopHeight);
+}
+
+void STLPSimulatorCUDA::refreshLevelVisualizationBuffers() {
+
+	vector<glm::vec3> vertices;
+
+
+	float altitude;
+
+	float w = vars->heightMap->getWorldWidth();
+	float d = vars->heightMap->getWorldDepth();
+
+	if (stlpDiagram->useOrographicParameters) {
+		altitude = getAltitudeFromPressure(stlpDiagram->LCL.y);
+	} else {
+		altitude = getAltitudeFromPressure(stlpDiagram->CCL.y);
+	}
+	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
+	vertices.push_back(glm::vec3(0.0f, altitude, d));
+	vertices.push_back(glm::vec3(w, altitude, d));
+	vertices.push_back(glm::vec3(w, altitude, 0.0f));
+
+	glBindBuffer(GL_ARRAY_BUFFER, CCLLevelVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, &vertices[0], GL_STATIC_DRAW);
+
+
+	vertices.clear();
+
+
+	if (stlpDiagram->useOrographicParameters) {
+		altitude = getAltitudeFromPressure(stlpDiagram->orographicEL.y);
+	} else {
+		altitude = getAltitudeFromPressure(stlpDiagram->EL.y);
+	}
+
+	vertices.push_back(glm::vec3(0.0f, altitude, 0.0f));
+	vertices.push_back(glm::vec3(0.0f, altitude, d));
+	vertices.push_back(glm::vec3(w, altitude, d));
+	vertices.push_back(glm::vec3(w, altitude, 0.0f));
+
+	glBindBuffer(GL_ARRAY_BUFFER, ELLevelVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, &vertices[0], GL_STATIC_DRAW);
+
 }

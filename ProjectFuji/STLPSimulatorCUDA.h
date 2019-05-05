@@ -135,6 +135,9 @@ public:
 	*/
 	void mapFromSimulationBox(float &val);
 
+	//! Refreshes the visualization levels.
+	void refreshLevelVisualizationBuffers();
+
 
 private:
 
