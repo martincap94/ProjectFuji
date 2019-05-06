@@ -80,7 +80,8 @@ public:
 	bool appRunning = true;		//!< Helper boolean to stop the application with the exit button in the user interface
 	float cameraSpeed = DEFAULT_CAMERA_SPEED;	//!< Movement speed of the main camera
 
-	int useFreeRoamCamera = 1;
+	int useFreeRoamCamera = 1;	//!< Whether to use freeroam camera
+	int prevUseFreeRoamCamera = 1;	//!< Saved value that is useful when switching projections (since freeroam camera cannot be used with orthographic projection)
 
 	int blockDim_2D = 256;		//!< --- DEPRECATED --- Block dimension for 2D LBM
 	int blockDim_3D_x = 32;		//!< Block x dimension for 3D LBM

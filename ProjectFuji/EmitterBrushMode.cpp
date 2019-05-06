@@ -89,18 +89,18 @@ void EmitterBrushMode::processMouseWheelScroll(float yoffset, int glfwMods) {
 	}
 
 	if (glfwMods & GLFW_MOD_CONTROL) {
-		cout << "control was held" << endl;
+		//cout << "control was held" << endl;
 		activeBrush->setProfileIndexPos(yoff);
 
 
 	}
 	if (glfwMods & GLFW_MOD_ALT) {
-		cout << "alt was held" << endl;
+		//cout << "alt was held" << endl;
 		activeBrush->setProfileIndexRange(yoff);
 	}
 
 	if (glfwMods & GLFW_MOD_SHIFT) {
-		cout << "shift was held" << endl;
+		//cout << "shift was held" << endl;
 		numParticlesEmittedPerFrame += yoff * glm::clamp(numParticlesEmittedPerFrame, 1, 100);
 		if (numParticlesEmittedPerFrame < 1) {
 			numParticlesEmittedPerFrame = 1;
@@ -123,7 +123,6 @@ void EmitterBrushMode::loadBrushes() {
 		if (pe != nullptr) {
 			pe->visible = 0;
 			brushes.push_back(pe);
-			
 		}
 	}
 }
@@ -134,9 +133,10 @@ void EmitterBrushMode::setActiveBrush(Brush * brush) {
 		prevActiveBrush->visible = 0;
 	}
 	activeBrush = brush;
-	activeBrush->visible = 1;
-	activeBrush->enabled = 0;
-
+	if (activeBrush) {
+		activeBrush->visible = 1;
+		activeBrush->enabled = 0;
+	}
 	
 }
 
@@ -159,7 +159,16 @@ void EmitterBrushMode::setActive(bool active) {
 		if (activeBrush) {
 			setActiveBrush(activeBrush);
 		}
+	} else {
+		//setActiveBrush(nullptr);
+		if (activeBrush) {
+			activeBrush->visible = 0;
+		}
 	}
+}
+
+void EmitterBrushMode::toggleActive() {
+	setActive(!active);
 }
 
 void EmitterBrushMode::constructBrushSelectionUIPanel(nk_context * ctx, UserInterface * ui) {

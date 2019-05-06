@@ -126,6 +126,9 @@ public:
 	*/
 	void setActive(bool active);
 
+	//! Toggles whether the EmitterBrushMode is active.
+	void toggleActive();
+
 	//! Constructs the brush selection panel for the user interface.
 	/*!
 		\param[in] ctx		Nuklear context object for which we create the panel.

@@ -579,12 +579,10 @@ int runApp() {
 		glm::vec4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			clearColor = glm::vec4(1.0f);
-			//glfwSwapInterval(1);
 			camera = diagramCamera;
 			glDisable(GL_DEPTH_TEST);
 		} else {
 			clearColor = glm::vec4(vars.bgClearColor, 1.0f);
-			//glfwSwapInterval(0);
 			camera = vars.useFreeRoamCamera ? freeRoamCamera : viewportCamera;
 			glEnable(GL_DEPTH_TEST);
 		}
@@ -964,11 +962,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		}
 		if (key == GLFW_KEY_1) {
 			ui->viewportMode = 0;
-			refreshProjectionMatrix();
+			glfwSwapInterval(vars.vsync);
+			//refreshProjectionMatrix();
 		}
 		if (key == GLFW_KEY_2) {
 			ui->viewportMode = 1;
-			refreshProjectionMatrix();
+			glfwSwapInterval(1);
+			//refreshProjectionMatrix();
 		}
 		if (key == mouseCursorKey) {
 			vars.consumeMouseCursor = !vars.consumeMouseCursor;
@@ -978,10 +978,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			}
 		}
+		if (key == GLFW_KEY_B) {
+			ebm->toggleActive();
+		}
 	} else if (action == GLFW_PRESS && mods & GLFW_MOD_SHIFT) {
 
 		if (key == GLFW_KEY_F) {
 			ui->setFullscreen(!vars.fullscreen);
+		}
+		if (key == GLFW_KEY_G) {
+			if (vars.useFreeRoamCamera) {
+				FreeRoamCamera *fcam = (FreeRoamCamera*)freeRoamCamera;
+				int wasWalking = fcam->walking;
+				fcam->walking = fcam->walking == 0;
+				if (!wasWalking && fcam->walking) {
+					fcam->snapToGround();
+				}
+			}
 		}
 
 	}

@@ -1016,9 +1016,9 @@ void ParticleSystem::constructLoadParticlesWindow(nk_context * ctx, UserInterfac
 	static bool fileSelected = false;
 	static string selectedFile;
 
-	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_layout_row_dynamic(ctx, 30.0f, 1);
 	if (nk_combo_begin_label(ctx, fileSelected ? selectedFile.c_str() : "Select file...", nk_vec2(nk_widget_width(ctx), 200))) {
-		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_layout_row_dynamic(ctx, 30.0f, 1);
 		if (nk_combo_item_label(ctx, "None", NK_TEXT_LEFT)) {
 			fileSelected = false;
 			nk_combo_close(ctx);

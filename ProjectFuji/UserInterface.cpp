@@ -118,7 +118,7 @@ void UserInterface::constructUserInterface() {
 	constructLeftSidebar();
 	constructRightSidebar();
 
-	constructHorizontalBar();
+	ctx->style.window.padding = popupWindowPadding;
 
 	constructTerrainGeneratorWindow();
 	constructEmitterCreationWindow();
@@ -143,6 +143,7 @@ void UserInterface::constructUserInterface() {
 		}
 		nk_end(ctx);
 	}
+	constructHorizontalBar();
 
 
 }
@@ -185,14 +186,14 @@ void UserInterface::nk_property_vec4(nk_context * ctx, glm::vec4 & target) {
 	REPORT_NOT_IMPLEMENTED();
 }
 
-void UserInterface::nk_property_color_rgb(nk_context * ctx, glm::vec3 & target) {
+void UserInterface::nk_property_color_rgb(nk_context * ctx, glm::vec3 & target, const char * label) {
 	struct nk_colorf tmp;
 	tmp.r = target.r;
 	tmp.g = target.g;
 	tmp.b = target.b;
 	nk_layout_row_begin(ctx, NK_DYNAMIC, 15.0f, 2);
 	nk_layout_row_push(ctx, 0.2f);
-	nk_label(ctx, "Color:", NK_TEXT_RIGHT);
+	nk_label(ctx, label, NK_TEXT_RIGHT);
 	nk_layout_row_push(ctx, 0.8f);
 	if (nk_combo_begin_color(ctx, nk_rgb_cf(tmp), nk_vec2(nk_widget_width(ctx), 400))) {
 		nk_layout_row_dynamic(ctx, 120, 1);
@@ -206,7 +207,7 @@ void UserInterface::nk_property_color_rgb(nk_context * ctx, glm::vec3 & target) 
 	nk_layout_row_end(ctx);
 }
 
-void UserInterface::nk_property_color_rgba(nk_context * ctx, glm::vec4 & target) {
+void UserInterface::nk_property_color_rgba(nk_context * ctx, glm::vec4 & target, const char * label) {
 	struct nk_colorf tmp;
 	tmp.r = target.r;
 	tmp.g = target.g;
@@ -214,7 +215,7 @@ void UserInterface::nk_property_color_rgba(nk_context * ctx, glm::vec4 & target)
 	tmp.a = target.a;
 	nk_layout_row_begin(ctx, NK_DYNAMIC, 15.0f, 2);
 	nk_layout_row_push(ctx, 0.2f);
-	nk_label(ctx, "Color:", NK_TEXT_RIGHT);
+	nk_label(ctx, label, NK_TEXT_RIGHT);
 	nk_layout_row_push(ctx, 0.8f);
 	if (nk_combo_begin_color(ctx, nk_rgb_cf(tmp), nk_vec2(nk_widget_width(ctx), 400))) {
 		nk_layout_row_dynamic(ctx, 120, 1);
@@ -228,6 +229,7 @@ void UserInterface::nk_property_color_rgba(nk_context * ctx, glm::vec4 & target)
 	}
 	nk_layout_row_end(ctx);
 }
+
 
 void UserInterface::nk_value_vec3(nk_context * ctx, const glm::vec3 & target, std::string label, eVecNaming namingConvention) {
 	if (!label.empty()) {
@@ -327,10 +329,13 @@ void UserInterface::constructHorizontalBar() {
 			if (viewportMode == eViewportMode::VIEWPORT_3D) {
 				if (nk_menu_item_label(ctx, "Diagram View (2)", NK_TEXT_LEFT)) {
 					viewportMode = eViewportMode::DIAGRAM;
+					glfwSwapInterval(1);
 				}
 			} else if (viewportMode == eViewportMode::DIAGRAM) {
 				if (nk_menu_item_label(ctx, "3D Viewport (1)", NK_TEXT_LEFT)) {
 					viewportMode = eViewportMode::VIEWPORT_3D;
+					glfwSwapInterval(vars->vsync);
+
 				}
 			}
 
@@ -406,23 +411,26 @@ void UserInterface::constructSidebarSelectionTab(int *contentModeTarget, float x
 		if (nk_button_label(ctx, "STLP")) {
 			(*contentModeTarget) = DIAGRAM;
 		}
-		if (nk_button_label(ctx, "LBM DEVELOPER")) {
-			(*contentModeTarget) = LBM_DEBUG;
-		}
-		if (nk_button_label(ctx, "Hierarchy")) {
-			(*contentModeTarget) = SCENE_HIERARCHY;
-		}
+		//if (nk_button_label(ctx, "LBM DEVELOPER")) {
+		//	(*contentModeTarget) = LBM_DEBUG;
+		//}
 		if (nk_button_label(ctx, "Emitters")) {
 			(*contentModeTarget) = EMITTERS;
-		}
-		if (nk_button_label(ctx, "General Debug")) {
-			(*contentModeTarget) = GENERAL_DEBUG;
 		}
 		if (nk_button_label(ctx, "View")) {
 			(*contentModeTarget) = VIEW;
 		}
+		if (nk_button_label(ctx, "Debug")) {
+			(*contentModeTarget) = GENERAL_DEBUG;
+		}
+		if (nk_button_label(ctx, "Hierarchy")) {
+			(*contentModeTarget) = SCENE_HIERARCHY;
+		}
 		if (nk_button_label(ctx, "Properties")) {
 			(*contentModeTarget) = PROPERTIES;
+		}
+		if (nk_button_label(ctx, "Particles")) {
+			(*contentModeTarget) = PARTICLE_SYSTEM;
 		}
 
 	}
@@ -464,6 +472,9 @@ void UserInterface::constructSelectedContent(int contentMode, int side) {
 			break;
 		case VIEW:
 			constructViewTab(side);
+			break;
+		case PARTICLE_SYSTEM:
+			constructParticleSystemTab(side);
 			break;
 		case PROPERTIES:
 		default:
@@ -565,7 +576,7 @@ void UserInterface::constructLBMTab(int side) {
 
 	nk_property_float(ctx, "Velocity Multiplier", 0.01f, &vars->lbmVelocityMultiplier, 10.0f, 0.01f, 0.01f);
 	nk_checkbox_label(ctx, "Use Alternate Interpolation", &vars->lbmUseCorrectInterpolation);
-	nk_checkbox_label(ctx, "Use Extended Collision Step (Experimental and Unstable)", &vars->lbmUseExtendedCollisionStep);
+	nk_checkbox_label(ctx, "Use Extended Collision Step (Unstable)", &vars->lbmUseExtendedCollisionStep);
 
 	nk_label_header(ctx, "Editing");
 
@@ -817,6 +828,10 @@ void UserInterface::constructLightingTab(int side) {
 
 }
 
+
+
+#define USE_TERRAIN_MATERIAL_TOOLTIPS
+
 void UserInterface::constructTerrainTab(int side) {
 
 	nk_label_header(ctx, "Terrain");
@@ -836,7 +851,7 @@ void UserInterface::constructTerrainTab(int side) {
 		nk_layout_row_dynamic(ctx, 15, 1);
 		for (const auto& kv : *textures) {
 			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
-				vars->heightMap->materialMap = kv.second;
+				hm->materialMap = kv.second;
 				nk_combo_close(ctx);
 			}
 		}
@@ -855,30 +870,31 @@ void UserInterface::constructTerrainTab(int side) {
 
 	
 	nk_label_header(ctx, "Texture Visualization");
-	nk_checkbox_label(ctx, "Visualize Texture", &vars->heightMap->visualizeTextureMode);
+	nk_checkbox_label(ctx, "Visualize Texture", &hm->visualizeTextureMode);
 
+	if (hm->visualizeTextureMode) {
+		if (nk_combo_begin_label(ctx, tryGetTextureFilename(hm->visTexture), nk_vec2(nk_widget_width(ctx), 200))) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+			if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
+				hm->visTexture = nullptr;
+			}
+			for (const auto& kv : *textures) {
+				if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
+					hm->visTexture = kv.second;
+				}
+			}
+			nk_combo_end(ctx);
+		}
+	}
 
 	nk_checkbox_label(ctx, "Normals Only", &vars->heightMap->showNormalsOnly);
 	if (vars->heightMap->showNormalsOnly) {
 		nk_property_int(ctx, "Normals Mode", 0, &vars->heightMap->normalsShaderMode, 2, 1, 1);
 	}
 
-	if (nk_combo_begin_label(ctx, tryGetTextureFilename(vars->heightMap->visTexture), nk_vec2(nk_widget_width(ctx), 200))) {
-		nk_layout_row_dynamic(ctx, 15, 1);
-		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
-			vars->heightMap->visTexture = nullptr;
-		}
-		for (const auto& kv : *textures) {
-			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
-				vars->heightMap->visTexture = kv.second;
-			}
-		}
-		nk_combo_end(ctx);
-	}
 
 
-
-	nk_label_header(ctx, "Materials");
+	nk_label_header(ctx, "Materials", false);
 	if (vars->terrainUsesPBR) {
 
 		for (int i = 0; i < vars->heightMap->activeMaterialCount; i++) {
@@ -886,6 +902,58 @@ void UserInterface::constructTerrainTab(int side) {
 			if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Material " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
 
 				
+#ifdef USE_TERRAIN_MATERIAL_TOOLTIPS
+
+				struct nk_rect bounds;
+
+				nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+				nk_layout_row_push(ctx, 0.1f);
+				bounds = nk_widget_bounds(ctx);
+				nk_label(ctx, "A", NK_TEXT_LEFT);
+				nk_layout_row_push(ctx, 0.9f);
+				constructTextureSelection(&vars->heightMap->pbrMaterials[i].albedo);
+				nk_layout_row_end(ctx);
+
+				if (nk_input_is_mouse_hovering_rect(ctx_in, bounds)) {
+					nk_tooltip(ctx, "Albedo");
+				}
+
+				nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+				nk_layout_row_push(ctx, 0.1f);
+				bounds = nk_widget_bounds(ctx);
+				nk_label(ctx, "MR", NK_TEXT_LEFT);
+				nk_layout_row_push(ctx, 0.9f);
+				constructTextureSelection(&vars->heightMap->pbrMaterials[i].metallicRoughness);
+				nk_layout_row_end(ctx);
+
+				if (nk_input_is_mouse_hovering_rect(ctx_in, bounds)) {
+					nk_tooltip(ctx, "Metallic Roughness");
+				}
+
+				nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+				nk_layout_row_push(ctx, 0.1f);
+				bounds = nk_widget_bounds(ctx);
+				nk_label(ctx, "NM", NK_TEXT_LEFT);
+				nk_layout_row_push(ctx, 0.9f);
+				constructTextureSelection(&vars->heightMap->pbrMaterials[i].normalMap);
+				nk_layout_row_end(ctx);
+
+				if (nk_input_is_mouse_hovering_rect(ctx_in, bounds)) {
+					nk_tooltip(ctx, "Normal Map");
+				}
+
+				nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+				nk_layout_row_push(ctx, 0.1f);
+				bounds = nk_widget_bounds(ctx);
+				nk_label(ctx, "AO", NK_TEXT_LEFT);
+				nk_layout_row_push(ctx, 0.9f);
+				constructTextureSelection(&vars->heightMap->pbrMaterials[i].ao);
+				nk_layout_row_end(ctx);
+
+				if (nk_input_is_mouse_hovering_rect(ctx_in, bounds)) {
+					nk_tooltip(ctx, "Ambient Occlusion");
+				}
+#else 
 				nk_layout_row_dynamic(ctx, 15, 2);
 
 				if (side == S_LEFT) {
@@ -915,8 +983,9 @@ void UserInterface::constructTerrainTab(int side) {
 					nk_label(ctx, "Ambient Occlusion", NK_TEXT_LEFT);
 
 				}
+#endif
 
-				nk_layout_row_dynamic(ctx, 15, 1);
+				nk_layout_row_dynamic(ctx, wh, 1);
 				nk_property_float(ctx, "#tiling", 0.1f, &vars->heightMap->pbrMaterials[i].textureTiling, 100000.0f, 0.1f, 1.0f);
 
 				nk_tree_pop(ctx);
@@ -1098,6 +1167,12 @@ void UserInterface::constructSkyTab(int side) {
 
 	nk_checkbox_label(ctx, "Recalculate Live", &hosek->liveRecalc);
 
+	if (!hosek->liveRecalc) {
+		if (nk_button_label(ctx, "Recalculate Model")) {
+			hosek->update();
+		}
+	}
+
 
 	if (nk_combo_begin_label(ctx, hosek->getCalcParamModeName().c_str(), nk_vec2(nk_widget_width(ctx), 60))) {
 		nk_layout_row_dynamic(ctx, 15, 1);
@@ -1112,12 +1187,7 @@ void UserInterface::constructSkyTab(int side) {
 
 
 
-	if (!hosek->liveRecalc) {
-		if (nk_button_label(ctx, "Recalculate Model")) {
-			hosek->update();
 
-		}
-	}
 
 
 
@@ -1151,124 +1221,137 @@ void UserInterface::constructSkyTab(int side) {
 
 void UserInterface::constructCloudVisualizationTab(int side) {
 
-	nk_layout_row_dynamic(ctx, 30, 1);
 
-	nk_label(ctx, "Cloud Visualization", NK_TEXT_CENTERED);
+	nk_label_header(ctx, "Cloud Visualization", false);
 
 	constructDirLightPositionPanel();
 
 
 
-	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_layout_row_dynamic(ctx, wh, 1);
 
-	int prevNumSlices = particleRenderer->numSlices;
-	nk_property_int(ctx, "Num slices", 1, &particleRenderer->numSlices, particleRenderer->maxNumSlices, 1, 1);
-	if (prevNumSlices != particleRenderer->numSlices) {
-		particleRenderer->numDisplayedSlices = particleRenderer->numSlices;
-	}
-
-	nk_property_int(ctx, "Num displayed slices", 0, &particleRenderer->numDisplayedSlices, particleRenderer->numSlices, 1, 1);
-
-	nk_value_int(ctx, "Batch size", particleRenderer->batchSize);
-
-	constructFormBoxButtonPanel();
-
-
-	nk_property_float(ctx, "Shadow alpha (100x)", 0.01f, &particleRenderer->shadowAlpha100x, 100.0f, 0.01f, 0.01f);
-
-
-
-	nk_value_vec3(ctx, particleRenderer->lightVec, "Light vector");
-	nk_value_vec3(ctx, particleRenderer->viewVec, "View vector");
-	nk_value_float(ctx, "Dot product", glm::dot(particleRenderer->viewVec, particleRenderer->lightVec));
-	nk_property_float(ctx, "Inversion threshold", -1.0f, &particleRenderer->inversionThreshold, 1.0f, 0.01f, 0.01f);
-	nk_value_bool(ctx, "Inverted rendering", particleRenderer->invertedRendering);
-	nk_value_vec3(ctx, particleRenderer->halfVec, "Half vector");
-
-
-
-	nk_property_float(ctx, "Point size", 0.1f, &particleSystem->pointSize, 100000.0f, 0.1f, 0.1f);
-	nk_property_float(ctx, "Opacity multiplier", 0.01f, &vars->opacityMultiplier, 10.0f, 0.01f, 0.01f);
-
-	nk_checkbox_label(ctx, "Show particles below CCL", &particleRenderer->showParticlesBelowCCL);
 	nk_checkbox_label(ctx, "Use Volumetric Rendering", &particleRenderer->useVolumetricRendering);
 
-	if (!particleRenderer->useVolumetricRendering) {
+	if (particleRenderer->useVolumetricRendering) {
+
+		nk_label_header(ctx, "Volumetric Rendering Settings");
+
+		int prevNumSlices = particleRenderer->numSlices;
+		nk_property_int(ctx, "Num Slices", 1, &particleRenderer->numSlices, particleRenderer->maxNumSlices, 1, 1);
+		if (prevNumSlices != particleRenderer->numSlices) {
+			particleRenderer->numDisplayedSlices = particleRenderer->numSlices;
+		}
+
+		nk_property_int(ctx, "Num Displayed Slices", 0, &particleRenderer->numDisplayedSlices, particleRenderer->numSlices, 1, 1);
+
+		nk_value_int(ctx, "Batch Size", particleRenderer->batchSize);
+
+
+		//nk_value_vec3(ctx, particleRenderer->lightVec, "Light Vector");
+		//nk_value_vec3(ctx, particleRenderer->viewVec, "View Vector");
+		//nk_value_float(ctx, "Dot product", glm::dot(particleRenderer->viewVec, particleRenderer->lightVec));
+		nk_property_float(ctx, "Inversion Threshold", -1.0f, &particleRenderer->inversionThreshold, 1.0f, 0.01f, 0.01f);
+		nk_value_bool(ctx, "Inverted Rendering", particleRenderer->invertedRendering);
+		//nk_value_vec3(ctx, particleRenderer->halfVec, "Half Vector");
+
+
+	} else {
+
 		if (nk_button_label(ctx, "Sort Particles by Camera Distance")) {
 			particleSystem->sortParticlesByDistance(camera->position, eSortPolicy::GREATER);
 		}
 	}
 
-	nk_property_int(ctx, "First Pass Shader Mode", 0, &particleRenderer->firstPassShaderMode, particleRenderer->numFirstPassShaderModes - 1, 1, 1);
+	constructFormBoxButtonPanel();
 
-	nk_property_int(ctx, "Second Pass Shader Mode", 0, &particleRenderer->secondPassShaderMode, particleRenderer->numSecondPassShaderModes - 1, 1, 1);
+	nk_property_float(ctx, "Point Size", 0.1f, &particleSystem->pointSize, 100000.0f, 0.1f, 0.1f);
+	nk_property_float(ctx, "Opacity Multiplier", 0.01f, &vars->opacityMultiplier, 10.0f, 0.01f, 0.01f);
+
+	nk_checkbox_label(ctx, "Show Particles Below CCL", &particleRenderer->showParticlesBelowCCL);
+	particleSystem->showHiddenParticles = particleRenderer->showParticlesBelowCCL;
+
+	nk_property_color_rgb(ctx, vars->tintColor, "Tint Color:");
 
 
+	if (particleRenderer->useVolumetricRendering) {
 
-	if (nk_combo_begin_label(ctx, getTextureName(particleRenderer->spriteTexture).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_layout_row_dynamic(ctx, wh, 1);
+		nk_property_float(ctx, "Shadow Alpha (100x)", 0.01f, &particleRenderer->shadowAlpha100x, 100.0f, 0.01f, 0.01f);
 
-		/*
-		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
-		particleRenderer->spriteTexture = nullptr; // not a very bright idea
-		}
-		*/
-		for (int i = 0; i < particleRenderer->spriteTextures.size(); i++) {
-			if (nk_combo_item_label(ctx, particleRenderer->spriteTextures[i]->filename.c_str(), NK_TEXT_LEFT)) {
-				particleRenderer->spriteTexture = particleRenderer->spriteTextures[i];
+
+		nk_label_header(ctx, "Debugging/Testing Options");
+		nk_property_int(ctx, "Shader set", 0, &particleRenderer->shaderSet, 2, 1, 1);
+		particleRenderer->updateShaderSet();
+
+		nk_property_int(ctx, "First Pass Shader Mode", 0, &particleRenderer->firstPassShaderMode, particleRenderer->numFirstPassShaderModes - 1, 1, 1);
+
+		nk_property_int(ctx, "Second Pass Shader Mode", 0, &particleRenderer->secondPassShaderMode, particleRenderer->numSecondPassShaderModes - 1, 1, 1);
+
+
+		nk_label(ctx, "Sprite Texture", NK_TEXT_LEFT);
+		if (nk_combo_begin_label(ctx, getTextureName(particleRenderer->spriteTexture).c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+
+			/*
+			if (nk_combo_item_label(ctx, "NONE", NK_TEXT_CENTERED)) {
+			particleRenderer->spriteTexture = nullptr; // not a very bright idea
 			}
-		}
-		nk_combo_end(ctx);
-	}
-
-	nk_property_int(ctx, "Shader set", 0, &particleRenderer->shaderSet, 2, 1, 1);
-	particleRenderer->updateShaderSet();
-
-	nk_checkbox_label(ctx, "Cast Shadows", &vars->cloudsCastShadows);
-
-	nk_property_float(ctx, "Cast Shadow Alpha Multiplier", 0.0f, &vars->cloudCastShadowAlphaMultiplier, 2.0f, 0.01f, 0.01f);
-
-	nk_label(ctx, "Phase Function Settings", NK_TEXT_LEFT);
-	if (nk_combo_begin_label(ctx, particleRenderer->getPhaseFunctionName(particleRenderer->phaseFunction), nk_vec2(nk_widget_width(ctx), 200))) {
-		nk_layout_row_dynamic(ctx, 15, 1);
-
-		for (int i = 0; i < ParticleRenderer::ePhaseFunction::_NUM_PHASE_FUNCTIONS; i++) {
-			if (nk_combo_item_label(ctx, particleRenderer->getPhaseFunctionName(i), NK_TEXT_CENTERED)) {
-				particleRenderer->phaseFunction = (ParticleRenderer::ePhaseFunction)i;
+			*/
+			for (int i = 0; i < particleRenderer->spriteTextures.size(); i++) {
+				if (nk_combo_item_label(ctx, particleRenderer->spriteTextures[i]->filename.c_str(), NK_TEXT_LEFT)) {
+					particleRenderer->spriteTexture = particleRenderer->spriteTextures[i];
+				}
 			}
+			nk_combo_end(ctx);
 		}
-		nk_combo_end(ctx);
+
+
+		nk_checkbox_label(ctx, "Cast Shadows", &vars->cloudsCastShadows);
+
+		nk_property_float(ctx, "Cast Shadow Alpha Multiplier", 0.0f, &vars->cloudCastShadowAlphaMultiplier, 2.0f, 0.01f, 0.01f);
+
+		nk_label_header(ctx, "Phase Function");
+
+		if (nk_combo_begin_label(ctx, particleRenderer->getPhaseFunctionName(particleRenderer->phaseFunction), nk_vec2(nk_widget_width(ctx), 200))) {
+			nk_layout_row_dynamic(ctx, 15, 1);
+
+			for (int i = 0; i < ParticleRenderer::ePhaseFunction::_NUM_PHASE_FUNCTIONS; i++) {
+				if (nk_combo_item_label(ctx, particleRenderer->getPhaseFunctionName(i), NK_TEXT_CENTERED)) {
+					particleRenderer->phaseFunction = (ParticleRenderer::ePhaseFunction)i;
+				}
+			}
+			nk_combo_end(ctx);
+		}
+
+		//nk_property_int(ctx, "phase function", 0, &particleRenderer->phaseFunction, 10, 1, 1);
+		if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::HENYEY_GREENSTEIN
+			|| particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::CORNETTE_SHANK) {
+
+			nk_property_float(ctx, "g", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
+
+		} else if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::DOUBLE_HENYEY_GREENSTEIN) {
+
+			nk_property_float(ctx, "g1", 0.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
+			nk_property_float(ctx, "g2", -1.0f, &particleRenderer->symmetryParameter2, 0.0f, 0.01f, 0.01f);
+			nk_property_float(ctx, "f", 0.0f, &particleRenderer->dHenyeyGreensteinInterpolationParameter, 1.0f, 0.01f, 0.01f);
+
+		} else if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::SCHLICK) {
+			nk_property_float(ctx, "k", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
+		}
+		if (particleRenderer->phaseFunction > 0) {
+			nk_checkbox_label(ctx, "Multiply by Shadow Intensity", &particleRenderer->multiplyPhaseByShadow);
+		}
+
+		nk_label_header(ctx, "Atlas Texture");
+
+		nk_checkbox_label(ctx, "Show Particle Texture Idx", &particleRenderer->showParticleTextureIdx);
+		nk_checkbox_label(ctx, "Use Atlas Texture", &particleRenderer->useAtlasTexture);
+
+		nk_label_header(ctx, "Light Texture Blurring");
+
+		nk_checkbox_label(ctx, "Blur Light Texture", &particleRenderer->useBlurPass);
+		nk_property_float(ctx, "Blur Amount", 0.0f, &particleRenderer->blurAmount, 10.0f, 0.01f, 0.01f);
 	}
-
-
-	//nk_property_int(ctx, "phase function", 0, &particleRenderer->phaseFunction, 10, 1, 1);
-	if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::HENYEY_GREENSTEIN
-		|| particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::CORNETTE_SHANK) {
-
-		nk_property_float(ctx, "g", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
-
-	} else if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::DOUBLE_HENYEY_GREENSTEIN) {
-
-		nk_property_float(ctx, "g1", 0.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
-		nk_property_float(ctx, "g2", -1.0f, &particleRenderer->symmetryParameter2, 0.0f, 0.01f, 0.01f);
-		nk_property_float(ctx, "f", 0.0f, &particleRenderer->dHenyeyGreensteinInterpolationParameter, 1.0f, 0.01f, 0.01f);
-
-	} else if (particleRenderer->phaseFunction == ParticleRenderer::ePhaseFunction::SCHLICK) {
-
-		nk_property_float(ctx, "k", -1.0f, &particleRenderer->symmetryParameter, 1.0f, 0.01f, 0.01f);
-
-	}
-
-	if (particleRenderer->phaseFunction > 0) {
-		nk_checkbox_label(ctx, "Multiply by shadow intensity", &particleRenderer->multiplyPhaseByShadow);
-	}
-
-
-	nk_checkbox_label(ctx, "Show particle texture idx", &particleRenderer->showParticleTextureIdx);
-	nk_checkbox_label(ctx, "Use atlas texture", &particleRenderer->useAtlasTexture);
-
-	nk_checkbox_label(ctx, "Blur light texture", &particleRenderer->useBlurPass);
-	nk_property_float(ctx, "blur amount", 0.0f, &particleRenderer->blurAmount, 10.0f, 0.01f, 0.01f);
 
 
 }
@@ -1376,6 +1459,7 @@ void UserInterface::constructDiagramControlsTab(int side) {
 			nk_property_int(ctx, "Num Particles Drawn", 0, &particleSystem->numDiagramParticlesToDraw, particleSystem->numActiveParticles, 1, 1);
 		}
 		nk_property_color_rgb(ctx, particleSystem->diagramParticlesColor);
+		nk_layout_row_dynamic(ctx, wh, 1);
 
 	}
 
@@ -1429,17 +1513,17 @@ void UserInterface::constructDiagramControlsTab(int side) {
 	nk_checkbox_label(ctx, "Apply STLP", &vars->applySTLP);
 	nk_property_int(ctx, "STLP step frame", 1, &vars->stlpStepFrame, 100, 1, 1);
 
-	nk_property_float(ctx, "Point size", 0.1f, &particleSystem->pointSize, 100.0f, 0.1f, 0.1f);
+	//nk_property_float(ctx, "Point size", 0.1f, &particleSystem->pointSize, 100.0f, 0.1f, 0.1f);
 	//stlpSimCUDA->pointSize = stlpSim->pointSize;
 	//nk_property_float(ctx, "Point size (CUDA)", 0.1f, &stlpSimCUDA->pointSize, 100.0f, 0.1f, 0.1f);
-
+/*
 
 	struct nk_colorf tintColor;
 	tintColor.r = vars->tintColor.x;
 	tintColor.g = vars->tintColor.y;
 	tintColor.b = vars->tintColor.z;
 
-	nk_property_color_rgb(ctx, vars->tintColor);
+	nk_property_color_rgb(ctx, vars->tintColor);*/
 	/*
 	if (nk_combo_begin_color(ctx, nk_rgb_cf(tintColor), nk_vec2(nk_widget_width(ctx), 400))) {
 		nk_layout_row_dynamic(ctx, 120, 1);
@@ -1506,21 +1590,23 @@ void UserInterface::constructDiagramControlsTab(int side) {
 
 
 
-	tintColor.r = vars->bgClearColor.x;
-	tintColor.g = vars->bgClearColor.y;
-	tintColor.b = vars->bgClearColor.z;
+	//tintColor.r = vars->bgClearColor.x;
+	//tintColor.g = vars->bgClearColor.y;
+	//tintColor.b = vars->bgClearColor.z;
 
-	if (nk_combo_begin_color(ctx, nk_rgb_cf(tintColor), nk_vec2(nk_widget_width(ctx), 400))) {
-		nk_layout_row_dynamic(ctx, 120, 1);
-		tintColor = nk_color_picker(ctx, tintColor, NK_RGBA);
-		nk_layout_row_dynamic(ctx, 10, 1);
-		tintColor.r = nk_propertyf(ctx, "#R:", 0, tintColor.r, 1.0f, 0.01f, 0.005f);
-		tintColor.g = nk_propertyf(ctx, "#G:", 0, tintColor.g, 1.0f, 0.01f, 0.005f);
-		tintColor.b = nk_propertyf(ctx, "#B:", 0, tintColor.b, 1.0f, 0.01f, 0.005f);
-		//tintColor.a = nk_propertyf(ctx, "#A:", 0, tintColor.a, 1.0f, 0.01f, 0.005f);
-		vars->bgClearColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
-		nk_combo_end(ctx);
-	}
+	//if (nk_combo_begin_color(ctx, nk_rgb_cf(tintColor), nk_vec2(nk_widget_width(ctx), 400))) {
+	//	nk_layout_row_dynamic(ctx, 120, 1);
+	//	tintColor = nk_color_picker(ctx, tintColor, NK_RGBA);
+	//	nk_layout_row_dynamic(ctx, 10, 1);
+	//	tintColor.r = nk_propertyf(ctx, "#R:", 0, tintColor.r, 1.0f, 0.01f, 0.005f);
+	//	tintColor.g = nk_propertyf(ctx, "#G:", 0, tintColor.g, 1.0f, 0.01f, 0.005f);
+	//	tintColor.b = nk_propertyf(ctx, "#B:", 0, tintColor.b, 1.0f, 0.01f, 0.005f);
+	//	//tintColor.a = nk_propertyf(ctx, "#A:", 0, tintColor.a, 1.0f, 0.01f, 0.005f);
+	//	vars->bgClearColor = glm::vec3(tintColor.r, tintColor.g, tintColor.b);
+	//	nk_combo_end(ctx);
+	//}
+
+
 
 	nk_value_bool(ctx, "Tc Found", stlpDiagram->TcFound);
 	nk_value_bool(ctx, "EL Found", stlpDiagram->ELFound);
@@ -1731,7 +1817,7 @@ void UserInterface::constructSceneHierarchyTab(int side) {
 	hierarchyIdCounter = 0;
 	activeActors.clear();
 
-	nk_label_header(ctx, "Scene Hierarchy", NK_TEXT_CENTERED);
+	nk_label_header(ctx, "Scene Hierarchy", false);
 
 
 	//addSceneHierarchyActor(scene->root);
@@ -1802,10 +1888,10 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 	}
 }
 
+void UserInterface::constructParticleSystemTab(int side) {
 
-void UserInterface::constructEmittersTab(int side) {
+	nk_label_header(ctx, "Particle System");
 
-	nk_layout_row_dynamic(ctx, 15, 1);
 
 	if (nk_button_label(ctx, "Load Particles from File")) {
 		openPopupWindow(loadParticlesWindowOpened);
@@ -1814,6 +1900,24 @@ void UserInterface::constructEmittersTab(int side) {
 	if (nk_button_label(ctx, "Save Particles to File")) {
 		openPopupWindow(saveParticlesWindowOpened);
 	}
+
+	nk_layout_row_dynamic(ctx, wh, 1);
+	if (nk_button_label(ctx, "Activate All Particles")) {
+		particleSystem->activateAllParticles();
+	}
+	if (nk_button_label(ctx, "Deactivate All Particles")) {
+		particleSystem->deactivateAllParticles();
+	}
+	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
+
+
+
+}
+
+
+void UserInterface::constructEmittersTab(int side) {
+
+	nk_label_header(ctx, "Emitters");
 
 	if (nk_button_label(ctx, "Add Emitter")) {
 		openPopupWindow(emitterCreationWindowOpened);
@@ -1889,8 +1993,8 @@ void UserInterface::constructEmittersTab(int side) {
 			particleSystem->deleteEmitter(i);
 		}
 	}
+	nk_label_header(ctx, "Particle Settings");
 
-	nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();
 	}
@@ -1911,12 +2015,12 @@ void UserInterface::constructEmittersTab(int side) {
 
 void UserInterface::constructEmitterCreationWindow() {
 	if (emitterCreationWindowOpened) {
-		cout << "Emitter creation window is open" << endl;
+		//cout << "Emitter creation window is open" << endl;
 		float w = 500.0f;
 		float h = 500.0f;
 		if (nk_begin(ctx, "Emitter Creation", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
 
-			cout << "Emitter Creation opened successfuly" << endl;
+			//cout << "Emitter Creation opened successfuly" << endl;
 
 			nk_layout_row_dynamic(ctx, 15, 1);
 
@@ -1953,7 +2057,7 @@ void UserInterface::constructEmitterCreationWindow() {
 void UserInterface::constructGeneralDebugTab(int side) {
 	stringstream ss;
 
-	nk_layout_row_dynamic(ctx, 15.0f, 1);
+	nk_label_header(ctx, "Debug");
 
 	/*
 	ss.clear();
@@ -1963,10 +2067,11 @@ void UserInterface::constructGeneralDebugTab(int side) {
 	nk_label(ctx, ss.str().c_str(), NK_TEXT_CENTERED);
 	*/
 	stringstream().swap(ss);
-	ss << "Delta time: " << fixed << setprecision(4) << prevAvgDeltaTime << " [ms] (" << setprecision(0) << prevAvgFPS << " FPS)";
+	ss << "Delta Time: " << fixed << setprecision(4) << prevAvgDeltaTime << " [ms] (" << setprecision(0) << prevAvgFPS << " FPS)";
 	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
 
-	nk_label(ctx, "Basic STLP Parameters", NK_TEXT_CENTERED);
+	nk_label_header(ctx, "Basic STLP Parameters");
+
 	// Quick info -> creation of the strings should be moved to the Diagram since it only changes when the diagram is changed
 	stringstream().swap(ss);
 	ss << "T_c: " << fixed << setprecision(0) << stlpDiagram->Tc.x << " [deg C] at " << stlpDiagram->Tc.y << " [hPa]";
@@ -1982,12 +2087,13 @@ void UserInterface::constructGeneralDebugTab(int side) {
 	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
 
 	stringstream().swap(ss);
-	ss << "Ground pressure: " << stlpDiagram->P0 << " [hPa]";
+	ss << "Ground Pressure: " << stlpDiagram->P0 << " [hPa]";
 	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
 
 
 	// OVERLAY TEXTURES
 
+	nk_label_header(ctx, "Overlay Textures", false);
 	vector<OverlayTexture *> *overlayTextures = TextureManager::getOverlayTexturesVectorPtr();
 
 	for (int i = 0; i < overlayTextures->size(); i++) {
@@ -2013,9 +2119,7 @@ void UserInterface::constructGeneralDebugTab(int side) {
 		}
 	}
 
-
-	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_label(ctx, "Camera Info", NK_TEXT_CENTERED);
+	nk_label_header(ctx, "Camera Info", false);
 
 	nk_layout_row_dynamic(ctx, 15, 3);
 
@@ -2024,8 +2128,7 @@ void UserInterface::constructGeneralDebugTab(int side) {
 	nk_value_float(ctx, "z", camera->position.z);
 
 
-	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_label(ctx, "Lattice Dimensions", NK_TEXT_CENTERED);
+	nk_label_header(ctx, "Lattice Dimensions", false);
 
 	nk_layout_row_dynamic(ctx, 15, 3);
 
@@ -2033,25 +2136,27 @@ void UserInterface::constructGeneralDebugTab(int side) {
 	nk_value_int(ctx, "h", vars->latticeHeight);
 	nk_value_int(ctx, "d", vars->latticeDepth);
 
-	nk_value_float(ctx, "w [m]", vars->latticeWidth * lbm->scale);
-	nk_value_float(ctx, "h [m]", vars->latticeHeight * lbm->scale);
-	nk_value_float(ctx, "d [m]", vars->latticeDepth * lbm->scale);
+	nk_value_int(ctx, "w [m]", (int)(vars->latticeWidth * lbm->scale));
+	nk_value_int(ctx, "h [m]", (int)(vars->latticeHeight * lbm->scale));
+	nk_value_int(ctx, "d [m]", (int)(vars->latticeDepth * lbm->scale));
 
 
-	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_label_header(ctx, "Terrain Dimensions");
+
 	nk_value_int(ctx, "Terrain Texture Width", vars->heightMap->width);
 	nk_value_int(ctx, "Terrain Texture Height", vars->heightMap->height);
 
-	nk_value_float(ctx, "Terrain World Width", vars->heightMap->getWorldWidth());
-	nk_value_float(ctx, "Terrain World Depth", vars->heightMap->getWorldDepth());
+	nk_value_int(ctx, "Terrain World Width", (int)vars->heightMap->getWorldWidth());
+	nk_value_int(ctx, "Terrain World Depth", (int)vars->heightMap->getWorldDepth());
 
 
-	int prevVsync = vars->vsync;
-	nk_checkbox_label(ctx, "VSync", &vars->vsync);
-	if (prevVsync != vars->vsync) {
-		glfwSwapInterval(vars->vsync);
+	if (vars->viewportMode == eViewportMode::VIEWPORT_3D) {
+		if (nk_checkbox_label(ctx, "VSync", &vars->vsync)) {
+			glfwSwapInterval(vars->vsync);
+		}
 	}
 
+	nk_property_color_rgb(ctx, vars->bgClearColor, "BG Color:");
 
 	if (nk_button_label(ctx, "Recompile Shaders - EXPERIMENTAL")) {
 		ShaderManager::loadShaders();
@@ -2060,6 +2165,8 @@ void UserInterface::constructGeneralDebugTab(int side) {
 }
 
 void UserInterface::constructPropertiesTab(int side) {
+
+	nk_label_header(ctx, "Properties");
 
 	if (activeActors.empty()) {
 		nk_layout_row_dynamic(ctx, 60, 1);
@@ -2070,10 +2177,10 @@ void UserInterface::constructPropertiesTab(int side) {
 
 		nk_layout_row_dynamic(ctx, 15, 1);
 		nk_label(ctx, actor->name.c_str(), NK_TEXT_LEFT);
-		nk_checkbox_label(ctx, "visible", &actor->visible);
+		nk_checkbox_label(ctx, "Visible", &actor->visible);
 
 		if (!actor->isChildOfRoot()) {
-			if (nk_button_label(ctx, "move up a level (unparent)")) {
+			if (nk_button_label(ctx, "Move up a Level (Unparent)")) {
 				actor->unparent();
 			}
 		}
@@ -2085,9 +2192,10 @@ void UserInterface::constructPropertiesTab(int side) {
 		nk_layout_row_dynamic(ctx, 250, 1);
 		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
 			nk_layout_row_dynamic(ctx, 15, 1);
-			nk_property_vec3(ctx, -1000000.0f, actor->transform.position, 1000000.0f, 0.01f, 0.1f, "pos");
-			nk_property_vec3(ctx, 0.0f, actor->transform.rotation, 360.0f, 0.1f, 0.1f, "rot");
-			nk_property_vec3(ctx, 0.0f, actor->transform.scale, 1000.0f, 0.1f, 0.1f, "scale");
+			nk_property_vec3(ctx, -1000000.0f, actor->transform.position, 1000000.0f, 0.01f, 0.1f, "Position");
+			nk_property_vec3(ctx, 0.0f, actor->transform.rotation, 360.0f, 0.1f, 0.1f, "Rotation");
+			nk_property_vec3(ctx, 0.0f, actor->transform.scale, 1000.0f, 0.1f, 0.1f, "Scale");
+
 			//nk_property_float(ctx, "scale", 0.0f, &actor->transform.scale.x, 10000.0f, 0.1f, 0.1f);
 			//// quick hack
 			//actor->transform.scale.y = actor->transform.scale.x;
@@ -2117,26 +2225,68 @@ void UserInterface::constructPropertiesTab(int side) {
 
 void UserInterface::constructViewTab(int side) {
 
-	nk_layout_row_dynamic(ctx, 15.0f, 1);
+	nk_label_header(ctx, "View Options");
 
+	nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+	nk_layout_row_push(ctx, 0.5f);
+	nk_value_float(ctx, "Camera Speed", camera->movementSpeed);
 
-	nk_label(ctx, "Camera Movement Speed", NK_TEXT_LEFT);
+	nk_layout_row_push(ctx, 0.5f);
 	nk_slider_float(ctx, 1.0f, &camera->movementSpeed, 10000.0f, 1.0f);
+	nk_layout_row_end(ctx);
 
-	// TODO - get this back in working order (and nicer looking)
-	nk_layout_row_dynamic(ctx, 15, 2);
+
+	nk_label_header(ctx, "Projection Settings");
+
+	if (nk_combo_begin_label(ctx, vars->projectionMode == ORTHOGRAPHIC ? "Orthographic" : "Perspective", nk_vec2(nk_widget_width(ctx), 200.0f))) {
+		nk_layout_row_dynamic(ctx, wh, 1);
+		if (nk_combo_item_label(ctx,  "Orthographic", NK_TEXT_LEFT)) {
+			vars->projectionMode = ORTHOGRAPHIC;
+			if (vars->useFreeRoamCamera) {
+				vars->prevUseFreeRoamCamera = vars->useFreeRoamCamera;
+				vars->useFreeRoamCamera = vars->useFreeRoamCamera == 0;
+			}
+		}
+		if (nk_combo_item_label(ctx, "Perspective", NK_TEXT_LEFT)) {
+			vars->projectionMode = PERSPECTIVE;
+			vars->useFreeRoamCamera = vars->prevUseFreeRoamCamera;
+		}
+		nk_combo_end(ctx);
+	}
+
+	/*
+	nk_layout_row_dynamic(ctx, wh, 2);
 	if (nk_option_label(ctx, "Orthographic", vars->projectionMode == ORTHOGRAPHIC)) {
 		vars->projectionMode = ORTHOGRAPHIC;
+		if (vars->useFreeRoamCamera) {
+			vars->prevUseFreeRoamCamera = vars->useFreeRoamCamera;
+			vars->useFreeRoamCamera = vars->useFreeRoamCamera == 0;
+		}
 	}
 	if (nk_option_label(ctx, "Perspective", vars->projectionMode == PERSPECTIVE)) {
 		vars->projectionMode = PERSPECTIVE;
+		if (vars->useFreeRoamCamera != vars->prevUseFreeRoamCamera) {
+			vars->useFreeRoamCamera = vars->prevUseFreeRoamCamera;
+		}
 	}
+	*/
+
 	if (vars->projectionMode == PERSPECTIVE) {
+		nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+		nk_layout_row_push(ctx, 0.5f);
+		nk_value_float(ctx, "FOV", vars->fov);
+
+		nk_layout_row_push(ctx, 0.5f);
 		nk_slider_float(ctx, 30.0f, &vars->fov, 120.0f, 1.0f);
+		nk_layout_row_end(ctx);
 	}
 
-
-	nk_checkbox_label(ctx, "Use Freeroam Camera", &vars->useFreeRoamCamera);
+	if (vars->projectionMode == PERSPECTIVE) {
+		nk_layout_row_dynamic(ctx, wh, 1);
+		if (nk_checkbox_label(ctx, "Use Freeroam Camera", &vars->useFreeRoamCamera)) {
+			vars->prevUseFreeRoamCamera = vars->useFreeRoamCamera;
+		}
+	}
 
 	constructWalkingPanel();
 
@@ -2199,7 +2349,7 @@ void UserInterface::constructDebugTab() {
 void UserInterface::constructFavoritesMenu() {
 	nk_layout_row_push(ctx, 120);
 	if (nk_menu_begin_label(ctx, "Favorites", NK_TEXT_CENTERED, toolbarMenuSize)) {
-		nk_layout_row_dynamic(ctx, 15, 1);
+		nk_layout_row_dynamic(ctx, wh, 1);
 
 		constructTauProperty();
 		if (nk_button_label(ctx, "Form BOX")) {
@@ -2215,7 +2365,7 @@ void UserInterface::constructFavoritesMenu() {
 		constructDirLightPositionPanel();
 
 		// temporary
-		nk_checkbox_label(ctx, "cloud shadows", &vars->cloudsCastShadows);
+		nk_checkbox_label(ctx, "Cloud Cast Shadows", &vars->cloudsCastShadows);
 
 		if (vars->fullscreen) {
 			if (nk_button_label(ctx, "Windowed")) {
@@ -2372,7 +2522,7 @@ void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string
 
 void UserInterface::nk_property_string(nk_context * ctx, std::string & target, char *buffer, int bufferLength, int &length) {
 
-	nk_layout_row_dynamic(ctx, 30, 1);
+	nk_layout_row_dynamic(ctx, 30.0f, 1);
 	nk_flags event = nk_edit_string(ctx, NK_EDIT_SIMPLE, &buffer[0], &length, bufferLength, nk_filter_default);
 
 	if (event & NK_EDIT_ACTIVATED) {
@@ -2414,16 +2564,14 @@ void UserInterface::constructTauProperty() {
 void UserInterface::constructWalkingPanel() {
 	if (vars->useFreeRoamCamera) {
 		FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
-		if (fcam) {
-			int wasWalking = fcam->walking;
-			nk_checkbox_label(ctx, "Walking", &fcam->walking);
-			if (!wasWalking && fcam->walking) {
-				fcam->snapToGround();
-				fcam->movementSpeed = 1.4f;
-			}
-
-			nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
+		int wasWalking = fcam->walking;
+		nk_checkbox_label(ctx, "Walking", &fcam->walking);
+		if (!wasWalking && fcam->walking) {
+			fcam->snapToGround();
+			//fcam->movementSpeed = 1.4f;
 		}
+
+		nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
 	}
 }
 

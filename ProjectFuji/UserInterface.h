@@ -146,8 +146,9 @@ public:
 	void nk_property_vec3(struct nk_context *ctx, float min, glm::vec3 &target, float max, float step, float pixStep, std::string label = "", bool labelIsHeader = true, eVecNaming namingConvention = eVecNaming::DEFAULT);
 
 	void nk_property_vec4(struct nk_context *ctx, glm::vec4 &target);
-	void nk_property_color_rgb(struct nk_context *ctx, glm::vec3 &target);
-	void nk_property_color_rgba(struct nk_context *ctx, glm::vec4 &target);
+	void nk_property_color_rgb(struct nk_context *ctx, glm::vec3 &target, const char *label = "Color:");
+
+	void nk_property_color_rgba(struct nk_context *ctx, glm::vec4 &target, const char *label = "Color:");
 
 	void nk_value_vec3(struct nk_context *ctx, const glm::vec3 &target, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
 
@@ -206,8 +207,9 @@ private:
 
 	struct nk_vec2 horizontalBarPadding = nk_vec2(0.0f, 0.0f);
 	struct nk_vec2 sidebarPadding = nk_vec2(4.0f, 2.0f);
+	struct nk_vec2 popupWindowPadding = nk_vec2(4.0f, 4.0f);
 
-	struct nk_vec2 toolbarMenuSize = nk_vec2(200, 250);
+	struct nk_vec2 toolbarMenuSize = nk_vec2(200, 500);
 	struct nk_vec2 standardTexSelectSize = nk_vec2(200, 300);
 
 	int hierarchyIdCounter = 0;
@@ -243,6 +245,8 @@ private:
 	void constructLBMDebugTab(int side);
 	void constructSceneHierarchyTab(int side);
 	void addSceneHierarchyActor(Actor *actor);
+
+	void constructParticleSystemTab(int side);
 
 	void constructEmittersTab(int side);
 	void constructEmitterCreationWindow();

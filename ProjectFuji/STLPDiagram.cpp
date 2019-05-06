@@ -1336,12 +1336,12 @@ void STLPDiagram::draw() {
 
 
 
-	
-	glPointSize(3.0f);
-	singleColorShaderVBO->use();
-	glBindVertexArray(visPointsVAO);
-	glDrawArrays(GL_POINTS, 0, (GLsizei)visualizationPoints.size() / 2);
-	
+	if (!visualizationPoints.empty()) {
+		glPointSize(3.0f);
+		singleColorShaderVBO->use();
+		glBindVertexArray(visPointsVAO);
+		glDrawArrays(GL_POINTS, 0, (GLsizei)visualizationPoints.size() / 2);
+	}
 
 
 
@@ -1537,46 +1537,55 @@ void STLPDiagram::constructDiagramCurvesToolbar(nk_context *ctx, UserInterface *
 	nk_checkbox_label(ctx, "Show Isobars", &showIsobars);
 	if (showIsobars) {
 		ui->nk_property_color_rgb(ctx, isobarsColor);
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 	}
 
 	nk_checkbox_label(ctx, "Show Isotherms", &showIsotherms);
 	if (showIsotherms) {
 		ui->nk_property_color_rgb(ctx, isothermsColor);
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 	}
 
 	nk_checkbox_label(ctx, "Show Isohumes", &showIsohumes);
 	if (showIsohumes) {
 		ui->nk_property_color_rgb(ctx, isohumesColor);
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 	}
 
 	nk_checkbox_label(ctx, "Show Dry Adiabats (General)", &showDryAdiabats[0]);
 	if (showDryAdiabats[0]) {
 		ui->nk_property_color_rgb(ctx, dryAdiabatsColor[0]);
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 	}
 
 	nk_checkbox_label(ctx, "Show Moist Adiabats (General)", &showMoistAdiabats[0]);
 	if (showMoistAdiabats[0]) {
 		ui->nk_property_color_rgb(ctx, moistAdiabatsColor[0]);
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 	}
 
 	nk_checkbox_label(ctx, "Show Dry Adiabat Profiles", &showDryAdiabats[1]);
 	if (showDryAdiabats[1]) {
 		ui->nk_property_color_rgb(ctx, dryAdiabatsColor[1]);
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 	}
 
 	nk_checkbox_label(ctx, "Show Moist Adiabat Profiles", &showMoistAdiabats[1]);
 	if (showMoistAdiabats[1]) {
 		ui->nk_property_color_rgb(ctx, moistAdiabatsColor[1]);
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 	}
 
 	nk_checkbox_label(ctx, "Show Dewpoint Curve", &showDewpointCurve);
 	if (showDewpointCurve) {
 		ui->nk_property_color_rgb(ctx, dewpointCurveColor);
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 	}
 
 	nk_checkbox_label(ctx, "Show Ambient Curve", &showAmbientCurve);
 	if (showAmbientCurve) {
 		ui->nk_property_color_rgb(ctx, ambientCurveColor);
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
 	}
 
 	nk_checkbox_label(ctx, "Crop Bounds", &cropBounds);

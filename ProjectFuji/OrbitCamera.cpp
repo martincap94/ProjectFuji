@@ -65,8 +65,8 @@ void OrbitCamera::processKeyboardMovement(eCameraMovementDirection direction, do
 }
 
 void OrbitCamera::processKeyboardMovement(int glfwKey, double deltaTime) {
-	float velocity = (float)((double)movementSpeed * deltaTime);
-
+	float velocity = movementSpeed * (float)deltaTime;
+	float rotationVelocity = rotationSpeed * (float)deltaTime;
 
 
 	//if (glfwKey == ) {
@@ -100,11 +100,11 @@ void OrbitCamera::processKeyboardMovement(int glfwKey, double deltaTime) {
 
 	}
 	if (glfwKey == GLFW_KEY_E) {
-		yaw -= velocity;
+		yaw -= rotationVelocity;
 		updateCameraVectors();
 	}
 	if (glfwKey == GLFW_KEY_Q) {
-		yaw += velocity;
+		yaw += rotationVelocity;
 		updateCameraVectors();
 	}
 }

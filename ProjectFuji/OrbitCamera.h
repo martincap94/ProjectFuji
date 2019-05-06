@@ -28,7 +28,9 @@ public:
 	glm::vec3 initFocusPoint;	//!< Initial focus point for resetting the camera
 
 
+
 	float radius = 100.0f;		//!< Radius at which the camera orbits around the focus point
+	float rotationSpeed = 100.0f;	//!< Speed at which the orbit camera rotates around the focus point
 
 	//! Default constructor.
 	OrbitCamera();
