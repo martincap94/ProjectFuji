@@ -34,7 +34,7 @@ public:
 	CDFSampler(std::string probabilityTexturePath);
 
 	//! Destroys the allocated array memory.
-	~CDFSampler();
+	virtual ~CDFSampler();
 
 	//! Returns one generated sample. Returns (0,0) if not initialized.
 	/*!

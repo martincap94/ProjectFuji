@@ -1054,19 +1054,6 @@ void HeightMap::initBuffersOld() {
 		}
 	}
 
-	for (int i = 0; i < vertexData.size(); i += 8) {
-
-		//glm::vec3 edge1 = 
-
-	}
-
-
-	/*
-	for (int i = 0; i < triangles.size(); i++) {
-	areaPoints.push_back(triangles[i]);
-	areaPoints.push_back(normals[i]);
-	}
-	*/
 
 
 	glGenVertexArrays(1, &VAO);

@@ -66,7 +66,6 @@ DynamicCDFSampler::DynamicCDFSampler(string probabilityTexturePath) : CDFSampler
 
 
 DynamicCDFSampler::~DynamicCDFSampler() {
-	CDFSampler::~CDFSampler();
 	if (arr) {
 		delete[] arr;
 	}

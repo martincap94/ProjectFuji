@@ -42,6 +42,9 @@ namespace TextureManager {
 	}
 
 	Texture *pushCustomTexture(GLuint texId, int width, int height, int numChannels, string name, GLuint textureUnit) {
+		if (textures.count(name) > 0) {
+			return textures[name];
+		}
 		Texture *tex = new Texture(texId, width, height, numChannels, name, textureUnit);
 		textures.insert(make_pair(tex->filename, tex));
 		return tex;

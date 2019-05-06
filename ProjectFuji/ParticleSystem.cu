@@ -868,7 +868,7 @@ void ParticleSystem::deleteEmitter(int idx) {
 
 // Do not use this, it does not work with the CUDA compiler
 void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterface * ui, int emitterType, bool &closeWindowAfterwards) {
-	nk_layout_row_dynamic(ctx, 30, 1);
+	nk_layout_row_dynamic(ctx, 30.0f, 1);
 
 	static char nameBuffer[64];
 	static int nameLength;
@@ -882,7 +882,7 @@ void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterf
 	}
 	nameBuffer[nameLength] = '\0';
 	string eName = string(nameBuffer);
-	cout << "|" << eName << "|" << endl;
+	//cout << "|" << eName << "|" << endl;
 	nk_layout_row_dynamic(ctx, 15, 1);
 
 	switch (emitterType) {

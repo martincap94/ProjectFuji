@@ -36,7 +36,7 @@ public:
 	DynamicCDFSampler(std::string probabilityTexturePath);
 
 	//! Frees the CPU and GPU allocated data.
-	~DynamicCDFSampler();
+	virtual ~DynamicCDFSampler();
 
 	//! Updates the sums using the perlin noise instance on CPU.
 	/*!

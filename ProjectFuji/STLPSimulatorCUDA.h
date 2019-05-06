@@ -37,7 +37,7 @@ public:
 	STLPDiagram *stlpDiagram;			//!< STLPDiagram from which the curves are read and used
 	ParticleSystem *particleSystem;		//!< Pointer to the used ParticleSystem instance
 	HeightMap *heightMap;
-	ppmImage *profileMap; // needs to have the same parameters as the height map (width, height), or at least larger
+	ppmImage *profileMap = nullptr; // needs to have the same parameters as the height map (width, height), or at least larger
 
 	float delta_t = 1.0f;				//!< Delta time of the simulator - decides how quickly the particles reach equilibrium
 
@@ -50,7 +50,7 @@ public:
 
 	ShaderProgram *layerVisShader;		//!< Shader for visualizing CCL/LCL and EL levels
 
-	struct cudaGraphicsResource *cudaParticleVerticesVBO;	//!< CUDA pointer to the particle vertices VBO
+	//struct cudaGraphicsResource *cudaParticleVerticesVBO;	//!< CUDA pointer to the particle vertices VBO
 
 	float *d_verticalVelocities;	//!< GPU array of the particle vertical velocities
 

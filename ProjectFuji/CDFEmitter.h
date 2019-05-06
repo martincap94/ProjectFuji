@@ -54,7 +54,7 @@ public:
 	CDFEmitter(const CDFEmitter &e, ParticleSystem *owner);
 
 	//! Destroys the sampler.
-	~CDFEmitter();
+	virtual ~CDFEmitter();
 
 
 	virtual void init();

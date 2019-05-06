@@ -90,6 +90,7 @@ UserInterface::UserInterface(GLFWwindow *window, VariableManager *vars) : vars(v
 }
 
 UserInterface::~UserInterface() {
+	nk_glfw3_shutdown();
 }
 
 void UserInterface::draw() {
@@ -339,18 +340,18 @@ void UserInterface::constructHorizontalBar() {
 				}
 			}
 
-
-			nk_label(ctx, "Camera Settings", NK_TEXT_CENTERED);
-			if (nk_menu_item_label(ctx, "Front View (I)", NK_TEXT_LEFT)) {
-				camera->setView(Camera::VIEW_FRONT);
+			if (!vars->useFreeRoamCamera) {
+				nk_label(ctx, "Camera Settings", NK_TEXT_CENTERED);
+				if (nk_menu_item_label(ctx, "Front View (I)", NK_TEXT_LEFT)) {
+					camera->setView(Camera::VIEW_FRONT);
+				}
+				if (nk_menu_item_label(ctx, "Side View (O)", NK_TEXT_LEFT)) {
+					camera->setView(Camera::VIEW_SIDE);
+				}
+				if (nk_menu_item_label(ctx, "Top View (P)", NK_TEXT_LEFT)) {
+					camera->setView(Camera::VIEW_TOP);
+				}
 			}
-			if (nk_menu_item_label(ctx, "Side View (O)", NK_TEXT_LEFT)) {
-				camera->setView(Camera::VIEW_SIDE);
-			}
-			if (nk_menu_item_label(ctx, "Top View (P)", NK_TEXT_LEFT)) {
-				camera->setView(Camera::VIEW_TOP);
-			}
-
 
 			if (vars->drawSkybox) {
 				if (nk_menu_item_label(ctx, "Hide Skybox", NK_TEXT_LEFT)) {
@@ -2285,6 +2286,20 @@ void UserInterface::constructViewTab(int side) {
 		nk_layout_row_dynamic(ctx, wh, 1);
 		if (nk_checkbox_label(ctx, "Use Freeroam Camera", &vars->useFreeRoamCamera)) {
 			vars->prevUseFreeRoamCamera = vars->useFreeRoamCamera;
+		}
+	}
+
+
+	if (!vars->useFreeRoamCamera) {
+		nk_label(ctx, "Camera Settings", NK_TEXT_CENTERED);
+		if (nk_button_label(ctx, "Front View (I)")) {
+			camera->setView(Camera::VIEW_FRONT);
+		}
+		if (nk_button_label(ctx, "Side View (O)")) {
+			camera->setView(Camera::VIEW_SIDE);
+		}
+		if (nk_button_label(ctx, "Top View (P)")) {
+			camera->setView(Camera::VIEW_TOP);
 		}
 	}
 

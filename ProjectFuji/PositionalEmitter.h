@@ -55,8 +55,8 @@ public:
 	*/
 	PositionalEmitter(const PositionalEmitter &e, ParticleSystem *owner);
 
-	//! Default destructor.
-	~PositionalEmitter();
+	//! Default virtual destructor.
+	virtual ~PositionalEmitter();
 
 	//! Sets the previous position to current position of the emitter.
 	virtual void init();

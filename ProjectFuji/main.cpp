@@ -64,7 +64,7 @@
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
-//#include <vld.h>	// Visual Leak Detector for memory leaks analysis
+#include <vld.h>	// Visual Leak Detector for memory leaks analysis
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -821,26 +821,29 @@ int runApp() {
 	}
 
 
+
 	delete particleSystem;
 	delete particleRenderer;
 	delete streamlineParticleSystem;
 	delete lbm;
 	delete evsm;
+
 	delete freeRoamCamera;
 	delete diagramCamera;
 	delete overlayDiagramCamera;
 	delete orbitCamera;
+
 	delete dirLight;
-	//delete tPicker;
 	delete ebm;
-	delete stlpDiagram;
-
 	delete scene.root;
-
 	delete mainFramebuffer;
-
 	delete skybox;
+	delete ui;
+	delete hosek;
 
+	//delete vars.heightMap;	// deleted in VariableManager
+	delete stlpDiagram;
+	delete stlpSimCUDA;
 
 
 	ShaderManager::tearDown();

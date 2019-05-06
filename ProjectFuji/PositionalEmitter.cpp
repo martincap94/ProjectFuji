@@ -69,6 +69,6 @@ void PositionalEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInte
 
 	ui->nk_property_vec3(ctx, -1000000.0f, position, 1000000.0f, 1.0f, 1.0f, "Position");
 
-
+	
 
 }

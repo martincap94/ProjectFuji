@@ -49,7 +49,7 @@ public:
 	CircleEmitter(const CircleEmitter &e, ParticleSystem *owner);
 
 	//! Default destructor.
-	~CircleEmitter();
+	virtual ~CircleEmitter();
 
 
 	virtual void init();

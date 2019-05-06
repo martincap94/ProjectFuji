@@ -390,11 +390,11 @@ STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpD
 }
 
 STLPSimulatorCUDA::~STLPSimulatorCUDA() {
-	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleVerticesVBO));
-
-	if (profileMap) {
-		delete(profileMap);
+	if (profileMap != nullptr) {
+		delete profileMap;
 	}
+
+
 
 }
 

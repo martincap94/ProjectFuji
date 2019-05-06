@@ -20,7 +20,7 @@ CDFSampler::CDFSampler(string probabilityTexturePath) : CDFSampler() {
 }
 
 CDFSampler::~CDFSampler() {
-	if (sums) {
+	if (sums != nullptr) {
 		delete[] sums;
 	}
 }

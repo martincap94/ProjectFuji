@@ -93,8 +93,8 @@ public:
 	*/
 	Emitter(const Emitter &e, ParticleSystem *owner);
 
-	//! Default destructor.
-	~Emitter();
+	//! Default virtual destructor.
+	virtual ~Emitter();
 
 	//! Initializes the emitter.
 	/*!

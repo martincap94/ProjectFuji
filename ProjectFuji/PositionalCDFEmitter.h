@@ -62,7 +62,7 @@ public:
 	PositionalCDFEmitter(const PositionalCDFEmitter &e, ParticleSystem *owner);
 
 	//! Destroys the sampler.
-	~PositionalCDFEmitter();
+	virtual ~PositionalCDFEmitter();
 
 
 	virtual void init();
