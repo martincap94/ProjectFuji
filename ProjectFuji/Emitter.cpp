@@ -144,6 +144,7 @@ const char * Emitter::getEmitterTypeString(int emitterType) {
 
 void Emitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
 
+	nk_layout_row_dynamic(ctx, 15.0f, 1);
 	if (initialized) {
 
 		nk_checkbox_label(ctx, "#enabled", &enabled);

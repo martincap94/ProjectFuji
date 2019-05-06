@@ -64,7 +64,7 @@
 
 //#include <omp.h>	// OpenMP for CPU parallelization
 
-#include <vld.h>	// Visual Leak Detector for memory leaks analysis
+//#include <vld.h>	// Visual Leak Detector for memory leaks analysis
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -729,7 +729,7 @@ int runApp() {
 
 			//tPicker->drawTerrain(vars.heightMap);
 
-			if (vars.visualizeTerrainNormals) {
+			if (vars.visualizeTerrainNormals && vars.projectionMode == eProjectionMode::PERSPECTIVE) {
 				vars.heightMap->drawGeometry(visualizeNormalsShader);
 			}
 

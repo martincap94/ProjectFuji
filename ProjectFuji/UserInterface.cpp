@@ -507,7 +507,7 @@ void UserInterface::constructLBMTab(int side) {
 
 	constructTauProperty();
 
-	nk_property_int(ctx, "LBM step frame", 1, &vars->lbmStepFrame, 100, 1, 1);
+	nk_property_int(ctx, "LBM Step Frame", 1, &vars->lbmStepFrame, 100, 1, 1);
 
 
 	nk_label_header(ctx, "Inlet Settings");
@@ -2292,6 +2292,19 @@ void UserInterface::constructViewTab(int side) {
 		}
 	}
 
+	nk_checkbox_label(ctx, "Render Mode", &vars->renderMode);
+
+	if (viewportMode == eViewportMode::VIEWPORT_3D) {
+		if (nk_button_label(ctx, "Diagram View (2)")) {
+			viewportMode = eViewportMode::DIAGRAM;
+			glfwSwapInterval(1);
+		}
+	} else if (viewportMode == eViewportMode::DIAGRAM) {
+		if (nk_button_label(ctx, "3D Viewport (1)")) {
+			viewportMode = eViewportMode::VIEWPORT_3D;
+			glfwSwapInterval(vars->vsync);
+		}
+	}
 
 	if (!vars->useFreeRoamCamera) {
 		nk_label(ctx, "Camera Settings", NK_TEXT_CENTERED);
