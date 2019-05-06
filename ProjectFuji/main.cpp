@@ -340,10 +340,6 @@ int runApp() {
 
 	// Create and configure the simulator
 	lbm = new LBM3D_1D_indices(&vars, particleSystem, stlpDiagram);
-
-
-
-	// TODO - cleanup this hack
 	streamlineParticleSystem = new StreamlineParticleSystem(&vars, lbm);
 	lbm->streamlineParticleSystem = streamlineParticleSystem;
 

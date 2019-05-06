@@ -1911,6 +1911,9 @@ void UserInterface::constructParticleSystemTab(int side) {
 	}
 	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
 
+	if (nk_button_label(ctx, "Reset on Terrain")) {
+		particleSystem->refreshParticlesOnTerrain();
+	}
 
 
 }

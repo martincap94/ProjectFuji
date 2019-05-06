@@ -1255,14 +1255,12 @@ void STLPDiagram::draw() {
 	}
 
 
-	glPointSize(8.0f);
-	curveShader->setVec3("u_Color", glm::vec3(0.0f));
+	curveShader->setColor(glm::vec3(0.0f));
 	glBindVertexArray(temperaturePointsVAO);
 	glDrawArrays(GL_LINES, 0, temperaturePointsCount * 2);
 
 
 	if (showIsotherms) {
-		glPointSize(8.0f);
 		curveShader->setColor(isothermsColor);
 		glBindVertexArray(isothermsVAO);
 		glDrawArrays(GL_LINES, 0, isothermsCount * 2);
@@ -1308,7 +1306,6 @@ void STLPDiagram::draw() {
 
 	for (int j = 0; j < 2; j++) {
 		if (showMoistAdiabats[j]) {
-			glPointSize(2.0f);
 			curveShader->setColor(moistAdiabatsColor[j]);
 			glBindVertexArray(moistAdiabatsVAO[j]);
 			//glDrawArrays(GL_LINE_STRIP, 0, 1000000);
@@ -1410,7 +1407,7 @@ void STLPDiagram::drawOverlayDiagram(GLuint textureId) {
 	overlayDiagramShader->use();
 	glActiveTexture(GL_TEXTURE0);
 
-	if (textureId == -1) {
+	if (textureId == 0) {
 		glBindTextureUnit(0, diagramTexture);
 	} else {
 		glBindTextureUnit(0, textureId);
