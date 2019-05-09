@@ -1616,7 +1616,23 @@ void UserInterface::constructDiagramControlsTab(int side) {
 	nk_value_bool(ctx, "LFC Found", stlpDiagram->LFCFound);
 	nk_value_bool(ctx, "Orographic EL Found", stlpDiagram->orographicELFound);
 
+	if (nk_tree_push(ctx, NK_TREE_TAB, "Miscellaneous", NK_MINIMIZED)) {
+		nk_layout_row_dynamic(ctx, wh, 1);
+		nk_checkbox_label(ctx, "Ground Level Label", &stlpDiagram->showGroundLevelTextLabel);
+		nk_checkbox_label(ctx, "Show Filename Label", &stlpDiagram->showFilenameLabel);
 
+		nk_property_float(ctx, "test", -100.0f, &stlpDiagram->userHelperSlider, 100.0f, 0.01f, 0.01f);
+
+		nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+		nk_layout_row_push(ctx, 0.5f);
+		nk_label(ctx, "Text Scale:", NK_TEXT_LEFT);
+		nk_layout_row_push(ctx, 0.5f);
+		nk_slider_float(ctx, 0.8f, &stlpDiagram->textScaleMultiplier, 1.4f, 0.01f);
+		nk_layout_row_end(ctx);
+
+
+		nk_tree_pop(ctx);
+	}
 
 
 

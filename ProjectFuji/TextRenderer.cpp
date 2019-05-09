@@ -104,7 +104,7 @@ void TextRenderer::renderText(string text, GLfloat x, GLfloat y, GLfloat scale, 
 
 		GLfloat xpos = x + ch.bearing.x * scale;
 		//GLfloat ypos = y - (ch.size.y - ch.bearing.y) * scale;
-		GLfloat ypos = y - ch.bearing.y * scale; // for reversed y ortographic projection
+		GLfloat ypos = y - ch.bearing.y * scale; // for reversed y orthographic projection
 
 		GLfloat w = ch.size.x * scale;
 		GLfloat h = ch.size.y * scale;

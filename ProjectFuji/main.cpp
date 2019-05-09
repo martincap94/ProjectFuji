@@ -596,27 +596,29 @@ int runApp() {
 		ShaderManager::updateFogUniforms();
 
 
+		particleSystem->update();
+
+		// LBM simulation update
+		if (vars.applyLBM) {
+			if (totalFrameCounter % vars.lbmStepFrame == 0) {
+				lbm->doStepCUDA();
+			}
+			lbm->recalculateVariables(); // recalculate variables based on the updated values
+		}
+
+		// STLP simulation update
+		if (vars.applySTLP) {
+			if (totalFrameCounter % vars.stlpStepFrame == 0) {
+				stlpSimCUDA->doStep();
+			}
+		}
+
 
 
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			refreshProjectionMatrix();	// reorganize so this can be removed
 
-			particleSystem->update();
 
-			// LBM simulation update
-			if (vars.applyLBM) {
-				if (totalFrameCounter % vars.lbmStepFrame == 0) {
-					lbm->doStepCUDA();
-				}
-				lbm->recalculateVariables(); // recalculate variables based on the updated values
-			}
-
-			// STLP simulation update
-			if (vars.applySTLP) {
-				if (totalFrameCounter % vars.stlpStepFrame == 0) {
-					stlpSimCUDA->doStep();
-				}
-			}
 
 			stlpDiagram->draw();
 			stlpDiagram->drawText();
@@ -631,23 +633,6 @@ int runApp() {
 			hosek->update();
 			
 
-			// Update particle system (emit particles mainly)
-			particleSystem->update();
-
-			// LBM simulation update
-			if (vars.applyLBM) {
-				if (totalFrameCounter % vars.lbmStepFrame == 0) {
-					lbm->doStepCUDA();
-				}
-				lbm->recalculateVariables(); // recalculate variables based on the updated values
-			}
-
-			// STLP simulation update
-			if (vars.applySTLP) {
-				if (totalFrameCounter % vars.stlpStepFrame == 0) {
-					stlpSimCUDA->doStep();
-				}
-			}
 
 			// Naively simulate sun movement
 			if (vars.simulateSun) {
@@ -1037,7 +1022,9 @@ void processKeyboardInput(GLFWwindow *window) {
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
-	
+	if (ui->isAnyWindowHovered()) {
+		return;
+	}
 
 	if (ui->viewportMode == eViewportMode::DIAGRAM) {
  		vars.diagramProjectionOffset -= (float)yoffset * 0.04f;

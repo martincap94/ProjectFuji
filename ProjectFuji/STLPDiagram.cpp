@@ -1351,8 +1351,8 @@ void STLPDiagram::draw() {
 void STLPDiagram::drawText() {
 
 	float scaleZoomModifier = vars->diagramProjectionOffset + 0.5f;
-	float textScale = 0.0006f * powf(scaleZoomModifier, 0.8f);
-	textScale = glm::min(textScale, maxTextScale);
+	float textScale = 0.0006f * powf(scaleZoomModifier, 0.8f) * textScaleMultiplier;
+	textScale = glm::min(textScale, maxTextScale * textScaleMultiplier);
 
 	int i = 0;
 	for (int temp = MIN_TEMP; temp <= MAX_TEMP; temp += 10) {
@@ -1364,37 +1364,47 @@ void STLPDiagram::drawText() {
 		i++;
 	}
 
-	if (CCLFound) {
-		textRend->renderText("CCL", CCLNormalized.x, CCLNormalized.y, textScale);
-	}
-	if (TcFound) {
-		textRend->renderText("Tc", TcNormalized.x, TcNormalized.y, textScale);
-	}
-	if (ELFound) {
-		textRend->renderText("EL", ELNormalized.x, ELNormalized.y, textScale);
-	}
-	if (LCLFound) {
-		textRend->renderText("LCL", LCLNormalized.x, LCLNormalized.y, textScale);
-	}
-	if (LFCFound) {
-		textRend->renderText("LFC", LFCNormalized.x, LFCNormalized.y, textScale);
-	}
-	if (orographicELFound) {
-		textRend->renderText("OEL", orographicELNormalized.x, orographicELNormalized.y, textScale);
+	if (!useOrographicParameters) {
+		if (CCLFound) {
+			textRend->renderText("CCL", CCLNormalized.x, CCLNormalized.y, textScale);
+		}
+		if (TcFound) {
+			textRend->renderText("Tc", TcNormalized.x, TcNormalized.y, textScale);
+		}
+		if (ELFound) {
+			textRend->renderText("EL", ELNormalized.x, ELNormalized.y, textScale);
+		}
+	} else {
+		if (LCLFound) {
+			textRend->renderText("LCL", LCLNormalized.x, LCLNormalized.y, textScale);
+		}
+		if (LFCFound) {
+			textRend->renderText("LFC", LFCNormalized.x, LFCNormalized.y, textScale);
+		}
+		if (orographicELFound) {
+			textRend->renderText("OEL", orographicELNormalized.x, orographicELNormalized.y, textScale);
+		}
 	}
 
-	textRend->renderText("Ground Level at " + to_string((int)getAltitudeFromPressure(P0)) + "[m]", 1.0f + 0.01f * scaleZoomModifier, getNormalizedPres(P0), textScale);
+	if (showGroundLevelTextLabel) {
+		textRend->renderText("Ground Level at " + to_string((int)getAltitudeFromPressure(P0)) + "[m]", 1.0f + 0.01f * scaleZoomModifier, getNormalizedPres(P0), textScale);
+	}
+
+	if (showDewpointParameter) {
+		textRend->renderText("Td", dewpointCurve.vertices[0].x + userHelperSlider, dewpointCurve.vertices[0].y, textScale);
+	}
 
 	for (i = 1000; i >= (int)MIN_P; i -= 100) {
 		textRend->renderText(to_string(i), -0.04f - 0.02f * scaleZoomModifier, getNormalizedPres((float)i), textScale);
 		textRend->renderText(to_string((int)getAltitudeFromPressure((float)i)) + "[m]", 0.0f + 0.01f * scaleZoomModifier, getNormalizedPres((float)i), textScale);
 	}
 
-	textRend->renderText("Temperature [degree C]", 0.35f, ymax + 0.08f, textScale);
+	textRend->renderText("Temperature [C]", 0.35f, ymax + 0.08f, textScale);
 	textRend->renderText("P [hPa]", -0.15f, 0.5f, textScale);
 
-	textRend->renderText("SkewT/LogP (" + soundingFilename + ")", 0.2f, -0.05f, textScale);
-
+	if (showFilenameLabel) {
+		textRend->renderText("SkewT/LogP (" + soundingFilename + ")", 0.2f, -0.05f, textScale);
+	}
 
 }
 
@@ -1587,8 +1597,9 @@ void STLPDiagram::constructDiagramCurvesToolbar(nk_context *ctx, UserInterface *
 	}
 
 	nk_checkbox_label(ctx, "Crop Bounds", &cropBounds);
-
-
+	if (nk_checkbox_label(ctx, "Show Ground Dewpoint Parameter", &showDewpointParameter)) {
+		uploadMainParameterPointsToBuffer();
+	}
 
 }
 
@@ -1747,25 +1758,32 @@ void STLPDiagram::uploadMainParameterPointsToBuffer() {
 		mainParameterPoints.clear();
 	}
 
+	if (!useOrographicParameters) {
+		if (CCLFound) {
+			mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
+		}
+		if (TcFound) {
+			mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
+		}
+		if (ELFound) {
+			mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
+		}
+	} else {
+		if (LCLFound) {
+			mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
+		}
+		if (LFCFound) {
+			mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
+		}
+		if (orographicELFound) {
+			mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
+		}
+	}
+	if (showDewpointParameter) {
+		mainParameterPoints.push_back(glm::vec3(dewpointCurve.vertices[0], 0.0f));
+	}
 
-	if (CCLFound) {
-		mainParameterPoints.push_back(glm::vec3(CCLNormalized, 0.0f));
-	}
-	if (TcFound) {
-		mainParameterPoints.push_back(glm::vec3(TcNormalized, 0.0f));
-	}
-	if (ELFound) {
-		mainParameterPoints.push_back(glm::vec3(ELNormalized, 0.0f));
-	}
-	if (LCLFound) {
-		mainParameterPoints.push_back(glm::vec3(LCLNormalized, 0.0f));
-	}
-	if (LFCFound) {
-		mainParameterPoints.push_back(glm::vec3(LFCNormalized, 0.0f));
-	}
-	if (orographicELFound) {
-		mainParameterPoints.push_back(glm::vec3(orographicELNormalized, 0.0f));
-	}
+
 
 	if (!mainParameterPoints.empty()) {
 		glBindBuffer(GL_ARRAY_BUFFER, mainParameterPointsVBO);

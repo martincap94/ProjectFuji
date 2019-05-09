@@ -81,8 +81,14 @@ public:
 
 	int soundingCurveEditingEnabled = 0;	//!< Whether we are currently editing sounding curves
 	int useOrographicParameters = 0;		//!< Whether to use orographic parameter set to create curve profiles
+	
+	// Helper parameters for UI
 	int useOrographicParametersEdit = 0;		//!< Helper for UI
 	bool useOrographicParametersChanged = false;
+	int showGroundLevelTextLabel = 1;	//!< Whether to display the text label for ground level
+	int showFilenameLabel = 1;			//!< Whether to display the text label for diagram filename
+	int showDewpointParameter = 0;		//!< Whether to show dewpoint parameter in the diagram
+	float textScaleMultiplier = 1.0f;	//!< Multiplies scale of the text
 
 	Curve xaxis;					//!< x axis curve (single line)
 	Curve yaxis;					//!< y axis curve (single line)
@@ -106,6 +112,9 @@ public:
 	int showMoistAdiabats[2] = { 1, 1 };	//!< Whether moist adiabats (general, profiles) are visible in the diagram
 	int showDewpointCurve = 1;				//!< Whether dewpoint curve is visible in the diagram
 	int showAmbientCurve = 1;				//!< Whether ambient temperature curve is visible in the diagram
+
+	float userHelperSlider = 0.0f;	// for quick testing
+
 
 	glm::vec3 isobarsColor = glm::vec3(0.8f, 0.8f, 0.8f);
 	glm::vec3 isothermsColor = glm::vec3(0.8f, 0.8f, 0.8f);
@@ -154,7 +163,7 @@ public:
 
 
 	float dryAdiabatDeltaT = 10.0f;			//!< Default delta T for general dry adiabats
-	float moistAdiabatDeltaT = 10.0f;		//!< Default delta T for general moist adiabats
+	float moistAdiabatDeltaT = 4.0f;		//!< Default delta T for general moist adiabats
 
 	float P0;								//!< Ground pressure for the current sounding file
 	float groundAltitude;					//!< Ground altitude for the current sounding file
