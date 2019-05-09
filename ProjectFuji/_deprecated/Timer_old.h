@@ -16,9 +16,6 @@
 #include <fstream>
 #include <string>
 
-#include <nuklear.h>
-#include "UserInterface.h"
-
 #include "Config.h"
 
 using namespace std;
@@ -33,40 +30,31 @@ typedef chrono::time_point<chrono::high_resolution_clock> Timepoint;
 class Timer {
 public:
 
-	string name;				//!< Name of the timer
-
 	Timepoint startTime;		//!< Start time of the timer
+	Timepoint lastClockTime;	//!< Last time the clock function was called
 
-	string logFilename;			//!< Name of the log file
+	string configString;		//!< Configuration string for naming log files
 
 	double accumulatedTime;		//!< Currently accumulated time that is used for average measurements
 	double avgTime;				//!< Average time measured
-	double maxTime;				//!< Maximum time measured
-	double minTime;				//!< Minimum time measured
-
 	int numMeasurementsForAvg;	//!< Number of measurements (clock calls) for average time computation
 	int measurementCount;		//!< Counter of current measurement count
 
+	bool running;				//!< Whether the timer is running or not
+
 	bool logToFile;				//!< Whether the timer should log to file or not
 	bool printToConsole;		//!< Whether the timer should print to console
-
-	int callsGLFinish = 0;	//!< This gives us the option to (roughly) measure OpenGL rendering
-								//!< If precise timing necessary, glQueries should be used instead		
-	int callsCudaDeviceSynchronize = 0;	//!< This gives us the option to (roughly) measure CUDA operations/blocks of code
 
 	ofstream logFile;			//!< Output file stream for the log file
 
 	//! Constructs timer that can log to file, print to console and measure averages.
 	/*!
 		Constructs timer that can log to file, print to console and measure averages.
-		\param[in] callGLFinish				Whether glFinish() should be called after each clock call.
-		\param[in] callsCudaDeviceSynchronize	Whether cudaDeviceSynchronize() should be called after each clock call.
 		\param[in] logToFile				Whether the timer should log to file.
 		\param[in] printToConsole			Whether the timer should print average time measurements to console.
 		\param[in] numMeasurementsForAvg	Number of measurements needed for average time computation.
 	*/
-	Timer(string name, bool callsGLFinish = false, bool callsCudaDeviceSynchronize = false,
-		  bool logToFile = true, bool printToConsole = false, int numMeasurementsForAvg = 1000);
+	Timer(bool logToFile = false, bool printToConsole = true, int numMeasurementsForAvg = 1000);
 
 	//! Default destructor.
 	~Timer();
@@ -85,30 +73,12 @@ public:
 	*/
 	bool clockAvgEnd();
 
-
-
 	//! Ends the timer.
 	/*!
 		Ends the timer and resets all counters.
+		\param[in] printResults		Prints total time if true.
 	*/
-	void end();
-
-	//! Resets the timer.
-	/*!
-		This is necessary if we want to open a new log file.
-		Uses end() and start() in this order.
-	*/
-	void reset();
-
-
-	void constructUITab(struct nk_context *ctx, UserInterface *ui);
-
-
-private:
-
-	bool running = false;
-
-	void resetValues();
+	void end(bool printResults = false);
 
 
 };

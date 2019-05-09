@@ -152,6 +152,8 @@ public:
 
 	void nk_value_vec3(struct nk_context *ctx, const glm::vec3 &target, std::string label = "", eVecNaming namingConvention = eVecNaming::DEFAULT);
 
+	void nk_val_bool(struct nk_context *ctx, const char* prefix, bool val);
+
 	void nk_label_header(struct nk_context *ctx, const char *headerString, bool resetRowAfter = true, nk_text_alignment textAlignment = nk_text_alignment::NK_TEXT_CENTERED);
 
 	void constructTextureSelection(Texture **targetTexturePtr, std::string nullTextureNameOverride = "", bool useWidgetWidth = false);

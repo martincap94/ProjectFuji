@@ -1,2 +1,0 @@
-number of measurements for avg = 100
-33.5694

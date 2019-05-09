@@ -300,12 +300,12 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveIntParam(blockDim_3D_y, val);
 	} else if (param == "measure_time" || param == "-m") {
 		saveBoolParam(measureTime, val);
-	} else if (param == "avg_frame_count" || param == "-mavg") {
+	/*} else if (param == "avg_frame_count" || param == "-mavg") {
 		timer.numMeasurementsForAvg = stoi(val);
 	} else if (param == "log_measurements_to_file") {
 		timer.logToFile = (val == "true") ? true : false;
 	} else if (param == "print_measurements_to_console") {
-		timer.printToConsole = (val == "true") ? true : false;
+		timer.printToConsole = (val == "true") ? true : false;*/
 	} else if (param == "exit_after_first_avg" || param == "-mexit") {
 		exitAfterFirstAvg = (val == "true") ? true : false;
 	} else if (param == "sounding_file" || param == "-sf") {

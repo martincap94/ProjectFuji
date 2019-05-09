@@ -242,6 +242,7 @@
     <ClCompile Include="Actor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TimerManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid2D.h">
@@ -455,6 +456,7 @@
     <ClInclude Include="MainFramebuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TimerManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.ini">

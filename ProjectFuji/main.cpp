@@ -453,14 +453,6 @@ int runApp() {
 	glfwSetKeyCallback(window, key_callback);
 
 
-	stringstream ss;
-	ss << vars.sceneFilename;
-	ss << "_h=" << vars.latticeHeight;
-	//ss << "_" << particleSystemLBM->numParticles;
-	vars.timer.configString = ss.str();
-	if (vars.measureTime) {
-		vars.timer.start();
-	}
 	double accumulatedTime = 0.0;
 
 	//glActiveTexture(GL_TEXTURE0);
@@ -502,7 +494,6 @@ int runApp() {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
-		CHECK_GL_ERRORS();
 
 		double currentFrameTime = glfwGetTime();
 		deltaTime = currentFrameTime - lastFrameTime;
@@ -529,10 +520,6 @@ int runApp() {
 		ui->camera = camera;
 		ui->constructUserInterface();
 
-
-		if (vars.measureTime) {
-			vars.timer.clockAvgStart();
-		}
 
 
 
@@ -563,7 +550,6 @@ int runApp() {
 
 			glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-			CHECK_GL_ERRORS();
 
 		}
 
@@ -660,10 +646,6 @@ int runApp() {
 			}
 
 
-			CHECK_GL_ERRORS();
-
-
-
 			if (vars.useSkySunColor) {
 				glm::vec3 sc = hosek->getSunColor();
 				//cout << "sun color: " << sc.x << ", " << sc.y << ", " << sc.z << endl;
@@ -722,13 +704,11 @@ int runApp() {
 
 			evsm->postSecondPass();
 
-			CHECK_GL_ERRORS();
 
-
-
-			dirLight->draw();
-
+			// Draw helper structures if not in render mode
 			if (!vars.renderMode) {
+				dirLight->draw();
+
 				particleSystem->drawHelperStructures();
 
 				lbm->draw();
@@ -744,25 +724,28 @@ int runApp() {
 			if (particleRenderer->useVolumetricRendering) {
 	
 
+				// Recalculate half vector to be used for sorting and prepare necessary matrix uniforms
 				particleRenderer->recalcVectors(camera, dirLight);
 				glm::vec3 sortVec = particleRenderer->getSortVec();
 
-
+				// Check if particles are valid (valid positions, not NaN) - repair if necessary
+				// This is important if LBM simulation is active which can become unstable
 				particleSystem->checkParticleValidity();
 
-				// NOW sort particles using the sort vector
+				// Sort particles using the sort half vector 
 				particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
 
+				// Move from MSAA to regular framebuffer for particle rendering
 				mainFramebuffer->blitMultisampledToRegular();
 
+				// Attach the depth texture from the regular main framebuffer to the particle renderer
 				particleRenderer->preSceneRenderImage();
-				//vars.heightMap->draw();
-				//particleRenderer->postSceneRenderImage();
 
-
+				// Draw particles with the half vector slicing method
 				particleRenderer->draw(particleSystem, dirLight, camera);
 				
 			} else {
+				// Draw very simple particles without any sorting
 				particleSystem->draw(camera->position);
 			}
 
@@ -785,7 +768,6 @@ int runApp() {
 		}
 
 
-		CHECK_GL_ERRORS();
 
 
 		mainFramebuffer->drawToScreen();
@@ -832,10 +814,6 @@ int runApp() {
 
 	//nk_glfw3_shutdown();
 	glfwTerminate();
-
-	if (vars.measureTime) {
-		vars.timer.end();
-	}
 
 	return 0;
 

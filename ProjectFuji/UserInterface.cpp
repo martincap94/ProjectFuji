@@ -22,6 +22,7 @@
 #include "PositionalEmitter.h"
 #include "SceneGraph.h"
 #include "EmitterBrushMode.h"
+#include "TimerManager.h"
 
 #define NK_IMPLEMENTATION
 #define NK_GLFW_GL3_IMPLEMENTATION
@@ -244,6 +245,10 @@ void UserInterface::nk_value_vec3(nk_context * ctx, const glm::vec3 & target, st
 	}
 	nk_layout_row_dynamic(ctx, 15, 1);
 
+}
+
+void UserInterface::nk_val_bool(nk_context * ctx, const char* prefix, bool val) {
+	nk_value_bool(ctx, prefix, val);
 }
 
 void UserInterface::nk_label_header(nk_context * ctx, const char * headerString, bool resetRowAfter, nk_text_alignment textAlignment) {
@@ -2090,85 +2095,106 @@ void UserInterface::constructGeneralDebugTab(int side) {
 	ss << "Delta Time: " << fixed << setprecision(4) << prevAvgDeltaTime << " [ms] (" << setprecision(0) << prevAvgFPS << " FPS)";
 	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
 
-	nk_label_header(ctx, "Basic STLP Parameters");
-
-	// Quick info -> creation of the strings should be moved to the Diagram since it only changes when the diagram is changed
-	stringstream().swap(ss);
-	ss << "T_c: " << fixed << setprecision(0) << stlpDiagram->Tc.x << " [deg C] at " << stlpDiagram->Tc.y << " [hPa]";
-	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
-
-	stringstream().swap(ss);
-	ss << "CCL: " << fixed << setprecision(0) << stlpDiagram->CCL.x << " [deg C] at " << stlpDiagram->CCL.y << " [hPa]";
-
-	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
-
-	stringstream().swap(ss);
-	ss << "EL: " << fixed << setprecision(0) << stlpDiagram->EL.x << " [deg C] at " << stlpDiagram->EL.y << " [hPa]";
-	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
-
-	stringstream().swap(ss);
-	ss << "Ground Pressure: " << stlpDiagram->P0 << " [hPa]";
-	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
-
-
 	// OVERLAY TEXTURES
 
-	nk_label_header(ctx, "Overlay Textures", false);
-	vector<OverlayTexture *> *overlayTextures = TextureManager::getOverlayTexturesVectorPtr();
+	//nk_label_header(ctx, "Overlay Textures", false);
 
-	for (int i = 0; i < overlayTextures->size(); i++) {
 
-		if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Overlay Texture " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
-			nk_layout_row_dynamic(ctx, 15, 2);
-			nk_checkbox_label(ctx, "Active", &(*overlayTextures)[i]->active);
-			nk_checkbox_label(ctx, "Show Alpha", &(*overlayTextures)[i]->showAlphaChannel);
-			nk_layout_row_dynamic(ctx, 15, 1);
-			if (nk_combo_begin_label(ctx, (*overlayTextures)[i]->getBoundTextureName().c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
-				nk_layout_row_dynamic(ctx, 15, 1);
-				if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
-					(*overlayTextures)[i]->texture = nullptr;
-				}
-				for (const auto& kv : *textures) {
-					if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
-						(*overlayTextures)[i]->texture = kv.second;
-					}
-				}
-				nk_combo_end(ctx);
-			}
-			nk_tree_pop(ctx);
-		}
+	if (nk_tree_push(ctx, NK_TREE_TAB, "Timers", NK_MAXIMIZED)) {
+		TimerManager::constructTimersUITab(ctx, this);
+		nk_tree_pop(ctx);
 	}
 
-	nk_label_header(ctx, "Camera Info", false);
+	if (nk_tree_push(ctx, NK_TREE_TAB, "Overlay Textures", NK_MAXIMIZED)) {
 
-	nk_layout_row_dynamic(ctx, 15, 3);
+		vector<OverlayTexture *> *overlayTextures = TextureManager::getOverlayTexturesVectorPtr();
 
-	nk_value_float(ctx, "x", camera->position.x);
-	nk_value_float(ctx, "y", camera->position.y);
-	nk_value_float(ctx, "z", camera->position.z);
+		for (int i = 0; i < overlayTextures->size(); i++) {
+
+			if (nk_tree_push_id(ctx, NK_TREE_NODE, ("Overlay Texture " + to_string(i)).c_str(), NK_MAXIMIZED, i)) {
+				nk_layout_row_dynamic(ctx, 15, 2);
+				nk_checkbox_label(ctx, "Active", &(*overlayTextures)[i]->active);
+				nk_checkbox_label(ctx, "Show Alpha", &(*overlayTextures)[i]->showAlphaChannel);
+				nk_layout_row_dynamic(ctx, 15, 1);
+				if (nk_combo_begin_label(ctx, (*overlayTextures)[i]->getBoundTextureName().c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
+					nk_layout_row_dynamic(ctx, 15, 1);
+					if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
+						(*overlayTextures)[i]->texture = nullptr;
+					}
+					for (const auto& kv : *textures) {
+						if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
+							(*overlayTextures)[i]->texture = kv.second;
+						}
+					}
+					nk_combo_end(ctx);
+				}
+				nk_tree_pop(ctx);
+			}
+		}
+		nk_tree_pop(ctx);
+	}
 
 
-	nk_label_header(ctx, "Lattice Dimensions", false);
+	if (nk_tree_push(ctx, NK_TREE_TAB, "Basic Information", NK_MINIMIZED)) {
+		nk_label_header(ctx, "Camera Info", false);
 
-	nk_layout_row_dynamic(ctx, 15, 3);
+		nk_layout_row_dynamic(ctx, 15, 3);
 
-	nk_value_int(ctx, "w", vars->latticeWidth);
-	nk_value_int(ctx, "h", vars->latticeHeight);
-	nk_value_int(ctx, "d", vars->latticeDepth);
-
-	nk_value_int(ctx, "w [m]", (int)(vars->latticeWidth * lbm->scale));
-	nk_value_int(ctx, "h [m]", (int)(vars->latticeHeight * lbm->scale));
-	nk_value_int(ctx, "d [m]", (int)(vars->latticeDepth * lbm->scale));
+		nk_value_float(ctx, "x", camera->position.x);
+		nk_value_float(ctx, "y", camera->position.y);
+		nk_value_float(ctx, "z", camera->position.z);
 
 
-	nk_label_header(ctx, "Terrain Dimensions");
+		nk_label_header(ctx, "Lattice Dimensions", false);
 
-	nk_value_int(ctx, "Terrain Texture Width", vars->heightMap->width);
-	nk_value_int(ctx, "Terrain Texture Height", vars->heightMap->height);
+		nk_layout_row_dynamic(ctx, 15, 3);
 
-	nk_value_int(ctx, "Terrain World Width", (int)vars->heightMap->getWorldWidth());
-	nk_value_int(ctx, "Terrain World Depth", (int)vars->heightMap->getWorldDepth());
+		nk_value_int(ctx, "w", vars->latticeWidth);
+		nk_value_int(ctx, "h", vars->latticeHeight);
+		nk_value_int(ctx, "d", vars->latticeDepth);
 
+		nk_value_int(ctx, "w [m]", (int)(vars->latticeWidth * lbm->scale));
+		nk_value_int(ctx, "h [m]", (int)(vars->latticeHeight * lbm->scale));
+		nk_value_int(ctx, "d [m]", (int)(vars->latticeDepth * lbm->scale));
+
+
+		nk_label_header(ctx, "Terrain Dimensions");
+
+		nk_value_int(ctx, "Terrain Texture Width", vars->heightMap->width);
+		nk_value_int(ctx, "Terrain Texture Height", vars->heightMap->height);
+
+		nk_value_int(ctx, "Terrain World Width", (int)vars->heightMap->getWorldWidth());
+		nk_value_int(ctx, "Terrain World Depth", (int)vars->heightMap->getWorldDepth());
+
+		nk_tree_pop(ctx);
+	}
+
+
+	if (nk_tree_push(ctx, NK_TREE_TAB, "Basic STLP Parameters", NK_MINIMIZED)) {
+		nk_label_header(ctx, "Basic STLP Parameters");
+
+		// Quick info -> creation of the strings should be moved to the Diagram since it only changes when the diagram is changed
+		stringstream().swap(ss);
+		ss << "T_c: " << fixed << setprecision(0) << stlpDiagram->Tc.x << " [deg C] at " << stlpDiagram->Tc.y << " [hPa]";
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+		stringstream().swap(ss);
+		ss << "CCL: " << fixed << setprecision(0) << stlpDiagram->CCL.x << " [deg C] at " << stlpDiagram->CCL.y << " [hPa]";
+
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+		stringstream().swap(ss);
+		ss << "EL: " << fixed << setprecision(0) << stlpDiagram->EL.x << " [deg C] at " << stlpDiagram->EL.y << " [hPa]";
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+		stringstream().swap(ss);
+		ss << "Ground Pressure: " << stlpDiagram->P0 << " [hPa]";
+		nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+
+		nk_tree_pop(ctx);
+	}
+
+	
 
 	if (vars->viewportMode == eViewportMode::VIEWPORT_3D) {
 		if (nk_checkbox_label(ctx, "VSync", &vars->vsync)) {

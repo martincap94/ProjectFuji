@@ -7,12 +7,15 @@
 #include "TextureManager.h"
 #include "MainFramebuffer.h"
 
+#include "TimerManager.h"
 
 using namespace std;
 
 
 ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) : vars(vars), ps(ps) {
 	initFramebuffers();
+
+	timer = TimerManager::createTimer("Particle Renderer", true, false, true, false, 1000);
 
 	/*
 	firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass");

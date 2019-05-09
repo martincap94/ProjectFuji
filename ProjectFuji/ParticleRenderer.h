@@ -20,6 +20,7 @@
 #include "DirectionalLight.h"
 #include "VariableManager.h"
 #include "ParticleSystem.h"
+#include "Timer.h"
 
 //! Class that is used for volumetric particle rendering.
 /*!
@@ -98,6 +99,7 @@ public:
 
 	std::vector<Texture *> spriteTextures;		//!< List of all possible sprite textures
 
+	Timer *timer = nullptr;
 
 	//! Initializes the renderer and prepares all available textures.
 	/*!

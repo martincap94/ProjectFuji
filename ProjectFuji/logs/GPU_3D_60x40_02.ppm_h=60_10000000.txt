@@ -1,1 +1,0 @@
-number of measurements for avg = 100

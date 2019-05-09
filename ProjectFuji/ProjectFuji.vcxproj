@@ -199,6 +199,7 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="TimerManager.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="UserInterface.cpp" />
     <ClCompile Include="Utils.cpp" />
@@ -302,6 +303,7 @@
     <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="TimerManager.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="UIConfig.h" />
     <ClInclude Include="UserInterface.h" />

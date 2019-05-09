@@ -36,7 +36,7 @@ class VariableManager {
 public:
 
 
-	Timer timer;			//!< Timer object for the application
+	//Timer timer;			//!< Timer object for the application
 
 
 	int vsync = 0;			//!< Whether V-Sync is turned on or off

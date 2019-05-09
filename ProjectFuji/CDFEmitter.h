@@ -31,7 +31,7 @@ public:
 		This is useful when we want to initialize the emitter later on, e.g. using the copy constructor.
 		The main usage is in ParticleSystem where we use uninitialized emitters to feed data to emitter creation wizard.
 	*/
-	CDFEmitter();
+	CDFEmitter(); 
 
 	//! Constructs the emitter with the given name.
 	/*!

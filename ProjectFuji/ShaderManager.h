@@ -29,7 +29,6 @@ namespace ShaderManager {
 		//! Add a shader to the manager with the given properties.
 		/*!
 			This is a clunky old function that determines whether the geometry shader is used if the string is empty.
-			Rewrite later...
 
 			\param[in] sName		Name given to the shader (its descriptor).
 			\param[in] vertShader	Path to the vertex shader file.
