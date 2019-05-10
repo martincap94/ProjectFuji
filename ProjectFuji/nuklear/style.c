@@ -125,7 +125,7 @@ set_style(struct nk_context *ctx, enum theme theme)
         table[NK_COLOR_TAB_HEADER] = nk_rgba(48, 83, 111, 255);
         nk_style_from_table(ctx, table);
     } else if (theme == THEME_MARTIN) {
-		table[NK_COLOR_TEXT] = nk_rgba(190, 190, 190, 255);
+		table[NK_COLOR_TEXT] = nk_rgba(220, 220, 220, 255);
 		table[NK_COLOR_WINDOW] = nk_rgba(30, 33, 40, 215);
 		table[NK_COLOR_HEADER] = nk_rgba(181, 45, 69, 220);
 		table[NK_COLOR_BORDER] = nk_rgba(51, 55, 67, 255);

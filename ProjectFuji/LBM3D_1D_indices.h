@@ -149,6 +149,8 @@ public:
 	float *d_heightMap;				//!< Device pointer to heightmap for the simulation
 
 
+
+
 	struct cudaGraphicsResource *cudaParticleVerticesVBO;	//!< Device pointer to the particle vertices VBO
 	struct cudaGraphicsResource *cudaParticleColorsVBO;		//!< Device pointer to the particle colors VBO
 

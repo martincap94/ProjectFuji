@@ -259,6 +259,12 @@ void UserInterface::nk_label_header(nk_context * ctx, const char * headerString,
 	}
 }
 
+void UserInterface::nk_label_time(nk_context * ctx, double time, int precision, const char * prefix, const char * postfix) {
+	stringstream ss;
+	ss << prefix << fixed << setprecision(precision) << time << postfix;
+	nk_label(ctx, ss.str().c_str(), NK_TEXT_LEFT);
+}
+
 
 
 void UserInterface::constructLeftSidebar() {
@@ -2488,6 +2494,7 @@ void UserInterface::constructFormBoxButtonPanel() {
 	wpos.y -= nk_widget_size(ctx).y;
 
 
+
 	if (nk_button_image(ctx, nkEditIcon)) {
 		particleSystem->editingFormBox = true;
 	}
@@ -2553,9 +2560,11 @@ void UserInterface::constructHUD() {
 	if (nk_begin(ctx, "HUD", hudRect, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_NOT_INTERACTIVE | NK_WINDOW_NO_INPUT)) {
 		nk_layout_row_dynamic(ctx, 15.0f, 1);
 
-		struct nk_color tmpColor = ctx->style.text.color;
-		ctx->style.text.color = nk_rgb(190, 255, 160);
-
+		if (viewportMode == eViewportMode::DIAGRAM) {
+			setTextColor(5, 112, 2);
+		} else {
+			setTextColor(190, 255, 160);
+		}
 
 		stringstream ss;
 
@@ -2566,7 +2575,7 @@ void UserInterface::constructHUD() {
 		ss << fixed << setprecision(0) << prevAvgFPS << " FPS";
 		nk_label(ctx, ss.str().c_str(), NK_TEXT_RIGHT);
 
-		ctx->style.text.color = tmpColor;
+		resetTextColorToDefault();
 
 	}
 
@@ -2628,6 +2637,14 @@ void UserInterface::setFullscreen(bool useFullscreen) {
 		const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		glfwSetWindowMonitor(mainWindow, NULL, 10, 20, vars->windowWidth, vars->windowHeight, GLFW_DONT_CARE);
 	}
+}
+
+void UserInterface::setTextColor(int r, int g, int b, int a) {
+	ctx->style.text.color = nk_rgba(r, g, b, a);
+}
+
+void UserInterface::resetTextColorToDefault() {
+	ctx->style.text.color = defaultTextColor;
 }
 
 void UserInterface::constructTauProperty() {

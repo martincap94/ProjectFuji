@@ -40,21 +40,26 @@ public:
 	string logFilename;			//!< Name of the log file
 
 	double accumulatedTime;		//!< Currently accumulated time that is used for average measurements
+	double frameTime;			//!< Last measured frame time
 	double avgTime;				//!< Average time measured
+	double lastAvgTime;			//!< Last measured average time
 	double maxTime;				//!< Maximum time measured
 	double minTime;				//!< Minimum time measured
+	double lastMaxTime = 0.0;	//!< Last measured maximum time
+	double lastMinTime = 0.0;	//!< Last measured minimum time
 
 	int numMeasurementsForAvg;	//!< Number of measurements (clock calls) for average time computation
 	int measurementCount;		//!< Counter of current measurement count
 
-	bool logToFile;				//!< Whether the timer should log to file or not
-	bool printToConsole;		//!< Whether the timer should print to console
+	int logToFile;				//!< Whether the timer should log to file or not
+	int printToConsole;		//!< Whether the timer should print to console
 
 	int callsGLFinish = 0;	//!< This gives us the option to (roughly) measure OpenGL rendering
 								//!< If precise timing necessary, glQueries should be used instead		
 	int callsCudaDeviceSynchronize = 0;	//!< This gives us the option to (roughly) measure CUDA operations/blocks of code
 
-	ofstream logFile;			//!< Output file stream for the log file
+
+	int index = -1;
 
 	//! Constructs timer that can log to file, print to console and measure averages.
 	/*!
@@ -106,9 +111,14 @@ public:
 
 private:
 
+	ofstream logFile;			//!< Output file stream for the log file
+
 	bool running = false;
 
 	void resetValues();
+
+	void pushNoteToLogFile(std::string note);
+	void pushNumMeasurementsForAvgToLogFile();
 
 
 };

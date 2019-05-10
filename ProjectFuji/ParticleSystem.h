@@ -299,8 +299,9 @@ public:
 	//! Loads particle positions from file.
 	/*!
 		\param[in] filename		Binary file where the particle positions are saved.
+		\return					True on success, false if loading failed.
 	*/
-	void loadParticlesFromFile(std::string filename);
+	bool loadParticlesFromFile(std::string filename);
 
 	//! Loads all particle save files stored in the particle saves directory.
 	void loadParticleSaveFiles();

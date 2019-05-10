@@ -99,7 +99,7 @@ public:
 
 	std::vector<Texture *> spriteTextures;		//!< List of all possible sprite textures
 
-	Timer *timer = nullptr;
+	//Timer *timer = nullptr;
 
 	//! Initializes the renderer and prepares all available textures.
 	/*!

@@ -4,6 +4,13 @@
 
 #include <iostream>
 #include <algorithm>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+
+
+//#include <date\date.h>
 
 
 //#include <glad\glad.h>
@@ -227,4 +234,15 @@ void printVec3(const glm::vec3 & v) {
 
 void printVec4(const glm::vec4 & v) {
 	printf("(%0.2f, %0.2f, %0.2f, %0.2f)\n", v.x, v.y, v.z, v.w);
+}
+
+
+std::string getTimeStr() {
+
+	auto now = std::chrono::system_clock::now();
+	auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+	std::stringstream ss;
+	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %H-%M-%S");
+	return ss.str();
 }

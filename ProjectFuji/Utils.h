@@ -262,9 +262,11 @@ void printVec3(const glm::vec3 &v);
 void printVec4(const glm::vec4 &v);
 
 
-
-
-
+//! Returns a formatted time current time string.
+/*!
+	Taken from: https://stackoverflow.com/questions/17223096/outputting-date-and-time-in-c-using-stdchrono
+*/
+std::string getTimeStr();
 
 
 

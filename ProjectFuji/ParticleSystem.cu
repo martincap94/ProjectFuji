@@ -125,8 +125,6 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	formBoxVisShader = ShaderManager::getShaderPtr("singleColorModel");
 	formBoxVisModel = new Model("models/unitbox.fbx");
 
-
-
 }
 
 
@@ -135,6 +133,7 @@ ParticleSystem::~ParticleSystem() {
 
 	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleVerticesVBO));
 	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticleProfilesVBO));
+	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaParticlesEBO));
 	CHECK_ERROR(cudaGraphicsUnregisterResource(cudaDiagramParticleVerticesVBO));
 
 	for (int i = 0; i < emitters.size(); i++) {
@@ -171,16 +170,25 @@ void ParticleSystem::update() {
 
 void ParticleSystem::initBuffers() {
 
+	// Particle vertices
 	glGenVertexArrays(1, &particlesVAO);
 	glBindVertexArray(particlesVAO);
 	glGenBuffers(1, &particleVerticesVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, particleVerticesVBO);
 
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * numParticles, NULL, GL_STATIC_DRAW);
+
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
 
+
+
+	// Particle profiles
 	glGenBuffers(1, &particleProfilesVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, particleProfilesVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(int) * numParticles, NULL, GL_STATIC_DRAW);
+
 
 	glEnableVertexAttribArray(5);
 	glVertexAttribIPointer(5, 1, GL_INT, sizeof(int), (void *)0);
@@ -196,9 +204,6 @@ void ParticleSystem::initBuffers() {
 
 	glBindVertexArray(0);
 
-	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticlesEBO, particlesEBO, cudaGraphicsMapFlagsWriteDiscard));
-
-
 
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -208,6 +213,8 @@ void ParticleSystem::initBuffers() {
 	glBindVertexArray(diagramParticlesVAO);
 	glGenBuffers(1, &diagramParticleVerticesVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, diagramParticleVerticesVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * numParticles, NULL, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void *)0);
@@ -231,6 +238,10 @@ void ParticleSystem::initCUDA() {
 	CHECK_ERROR(cudaMalloc((void**)&d_particleDistances, sizeof(float) * numParticles));
 	CHECK_ERROR(cudaMemset(d_particleDistances, 0, sizeof(float) * numParticles));
 
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticlesEBO, particlesEBO, cudaGraphicsMapFlagsWriteDiscard));
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleProfilesVBO, particleProfilesVBO, cudaGraphicsRegisterFlagsReadOnly)); // this is read only for CUDA!
+	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaDiagramParticleVerticesVBO, diagramParticleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
 
 }
 
@@ -588,10 +599,6 @@ void ParticleSystem::initParticlesWithZeros() {
 void ParticleSystem::initParticlesOnTerrain() {
 
 	refreshParticlesOnTerrain();
-
-	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleVerticesVBO, particleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
-	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaParticleProfilesVBO, particleProfilesVBO, cudaGraphicsRegisterFlagsReadOnly)); // this is read only for CUDA!
-	CHECK_ERROR(cudaGraphicsGLRegisterBuffer(&cudaDiagramParticleVerticesVBO, diagramParticleVerticesVBO, cudaGraphicsRegisterFlagsWriteDiscard));
 
 }
 
@@ -1048,11 +1055,11 @@ void ParticleSystem::constructLoadParticlesWindow(nk_context * ctx, UserInterfac
 
 }
 
-void ParticleSystem::loadParticlesFromFile(std::string filename) {
+bool ParticleSystem::loadParticlesFromFile(std::string filename) {
 	
 	if (!fs::exists(filename) || !fs::is_regular_file(filename)) {
-		cout << "Particle file " << filename << " could not be loaded!" << endl;
-		return;
+		cout << "Particle file '" << filename << "' could not be loaded!" << endl;
+		return false;
 	}
 
 	ifstream infile(filename, ios::binary | ios::in);
@@ -1066,10 +1073,10 @@ void ParticleSystem::loadParticlesFromFile(std::string filename) {
 
 	if (inNumActiveParticles > inNumParticles) {
 		printf("There is something wrong with the loaded file: numParticles (%d) < numActiveParticles (%d)!\n", inNumParticles, inNumActiveParticles);
-		return;
+		return false;
 	} else if (inNumActiveParticles <= 0 || inNumParticles <= 0) {
 		printf("There is something wrong with the loaded file: numParticles (%d) <= 0 || numActiveParticles (%d) <= 0!\n", inNumParticles, inNumActiveParticles);
-		return;
+		return false;
 	}
 
 	bool bufferSubData = false;
@@ -1135,7 +1142,7 @@ void ParticleSystem::loadParticlesFromFile(std::string filename) {
 	delete[] vertexProfiles;
 	
 
-
+	return true;
 	
 
 

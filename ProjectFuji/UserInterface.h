@@ -156,6 +156,8 @@ public:
 
 	void nk_label_header(struct nk_context *ctx, const char *headerString, bool resetRowAfter = true, nk_text_alignment textAlignment = nk_text_alignment::NK_TEXT_CENTERED);
 
+	void nk_label_time(struct nk_context *ctx, double time, int precision, const char *prefix, const char *postfix = " [ms]");
+
 	void constructTextureSelection(Texture **targetTexturePtr, std::string nullTextureNameOverride = "", bool useWidgetWidth = false);
 
 	void nk_property_string(struct nk_context *ctx, std::string &target, char *buffer, int bufferLength, int &length);
@@ -166,6 +168,9 @@ public:
 
 	// All this functionality should be moved to special Window class, no time to do that now...
 	void setFullscreen(bool useFullscreen);
+
+	void setTextColor(int r, int g, int b, int a = 255);
+	void resetTextColorToDefault();
 
 
 private:
@@ -213,6 +218,8 @@ private:
 
 	struct nk_vec2 toolbarMenuSize = nk_vec2(200, 500);
 	struct nk_vec2 standardTexSelectSize = nk_vec2(200, 300);
+
+	struct nk_color defaultTextColor = nk_rgba(220, 220, 220, 255);
 
 	int hierarchyIdCounter = 0;
 	std::vector<Actor *> activeActors;
@@ -285,4 +292,11 @@ private:
 
 
 };
+
+
+
+
+
+
+
 

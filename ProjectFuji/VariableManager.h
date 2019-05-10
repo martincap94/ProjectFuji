@@ -102,8 +102,8 @@ public:
 
 	bool consumeMouseCursor = false;	//!< Whether the window consumes (hides) the mouse cursor
 	
-	string soundingFile;		//!< Name of the sounding file to be loaded at startup
-
+	string soundingFile;				//!< Name of the sounding file to be loaded at startup
+	string startupParticleSaveFile;		//!< Name of the save file to be loaded at startup
 
 	int cloudsCastShadows = 1;	//!< Whether clouds cast shadows
 	float cloudCastShadowAlphaMultiplier = 1.0f;	//!< Multiplier of the cloud cast shadows

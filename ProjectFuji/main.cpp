@@ -58,6 +58,9 @@
 #include "SceneGraph.h"
 #include "PerlinNoiseSampler.h"
 #include "EmitterBrushMode.h"
+#include "Timer.h"
+#include "TimerManager.h"
+
 
 
 #include "HosekSkyModel.h"
@@ -150,6 +153,14 @@ ShaderProgram *pbrTest;						//!< PBR testing shader
 float lastMouseX;	//!< Previous screen x position of the mouse cursor
 float lastMouseY;	//!< Previous screen y position of the mouse cursor
 
+
+
+// TIMERS
+Timer *renderingTimer;
+Timer *lbmTimer;
+Timer *sortingTimer;
+Timer *stlpTimer;
+Timer *globalTimer;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -250,6 +261,8 @@ int runApp() {
 	TextureManager::init(&vars);
 	CHECK_GL_ERRORS();
 
+	TimerManager::init();
+
 	mainFramebuffer = new MainFramebuffer(&vars);
 	vars.mainFramebuffer = mainFramebuffer;
 
@@ -288,6 +301,14 @@ int runApp() {
 	normalsInstancedShader = ShaderManager::getShaderPtr("normals_instanced");
 	grassShader = ShaderManager::getShaderPtr("grass_instanced");
 	pbrTest = ShaderManager::getShaderPtr("pbr_test");
+
+
+	// TIMERS
+	renderingTimer = TimerManager::createTimer("Particle Rendering", true, false);
+	lbmTimer = TimerManager::createTimer("LBM", false, true);
+	stlpTimer = TimerManager::createTimer("STLP", false, true);
+	sortingTimer = TimerManager::createTimer("Particle Sorting", false, true);
+	globalTimer = TimerManager::createTimer("Global Timer", false, false);
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -330,7 +351,7 @@ int runApp() {
 	
 	overlayDiagramCamera = new Camera2D(glm::vec3(0.0f, 0.0f, 100.0f), WORLD_UP, -90.0f, 0.0f);
 	
-	freeRoamCamera = new FreeRoamCamera(glm::vec3(30.0f, vars.terrainHeightRange.y, 30.0f), WORLD_UP, 35.0f, -35.0f);
+	freeRoamCamera = new FreeRoamCamera(glm::vec3(-3000.0f, 2.0f * vars.terrainHeightRange.y, -1500.0f), WORLD_UP, 35.0f, -35.0f);
 	((FreeRoamCamera *)freeRoamCamera)->heightMap = vars.heightMap;
 	freeRoamCamera->movementSpeed = vars.cameraSpeed;
 
@@ -435,10 +456,10 @@ int runApp() {
 
 
 	particleSystem->createPredefinedEmitters();
-	particleSystem->initParticlesOnTerrain();
-	particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
-	//particleSystem->activateAllParticles();
-	particleSystem->numActiveParticles = 500000;
+	if (!particleSystem->loadParticlesFromFile(vars.startupParticleSaveFile)) {
+		particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
+		particleSystem->numActiveParticles = 500000;
+	}
 	particleSystem->activateAllDiagramParticles();
 
 
@@ -487,6 +508,7 @@ int runApp() {
 			glfwPollEvents();
 			continue;
 		}
+		globalTimer->clockAvgStart();
 
 		// enable flags each frame because nuklear disables them when it is rendered	
 		glEnable(GL_MULTISAMPLE);
@@ -587,7 +609,9 @@ int runApp() {
 		// LBM simulation update
 		if (vars.applyLBM) {
 			if (totalFrameCounter % vars.lbmStepFrame == 0) {
+				lbmTimer->clockAvgStart();
 				lbm->doStepCUDA();
+				lbmTimer->clockAvgEnd();
 			}
 			lbm->recalculateVariables(); // recalculate variables based on the updated values
 		}
@@ -595,7 +619,9 @@ int runApp() {
 		// STLP simulation update
 		if (vars.applySTLP) {
 			if (totalFrameCounter % vars.stlpStepFrame == 0) {
+				stlpTimer->clockAvgStart();
 				stlpSimCUDA->doStep();
+				stlpTimer->clockAvgEnd();
 			}
 		}
 
@@ -725,6 +751,7 @@ int runApp() {
 	
 
 				// Recalculate half vector to be used for sorting and prepare necessary matrix uniforms
+				sortingTimer->clockAvgStart();
 				particleRenderer->recalcVectors(camera, dirLight);
 				glm::vec3 sortVec = particleRenderer->getSortVec();
 
@@ -734,6 +761,8 @@ int runApp() {
 
 				// Sort particles using the sort half vector 
 				particleSystem->sortParticlesByProjection(sortVec, eSortPolicy::LEQUAL);
+				sortingTimer->clockAvgEnd();
+
 
 				// Move from MSAA to regular framebuffer for particle rendering
 				mainFramebuffer->blitMultisampledToRegular();
@@ -742,11 +771,15 @@ int runApp() {
 				particleRenderer->preSceneRenderImage();
 
 				// Draw particles with the half vector slicing method
+				renderingTimer->clockAvgStart();
 				particleRenderer->draw(particleSystem, dirLight, camera);
+				renderingTimer->clockAvgEnd();
 				
 			} else {
 				// Draw very simple particles without any sorting
+				renderingTimer->clockAvgStart();
 				particleSystem->draw(camera->position);
+				renderingTimer->clockAvgEnd();
 			}
 
 			if (!vars.renderMode) {
@@ -778,6 +811,9 @@ int runApp() {
 		ui->draw();
 
 		glfwSwapBuffers(window);
+
+		globalTimer->clockAvgEnd();
+		TimerManager::writeToBenchmarkFile();
 
 		CHECK_GL_ERRORS();
 
@@ -811,6 +847,7 @@ int runApp() {
 
 	ShaderManager::tearDown();
 	TextureManager::tearDown();
+	TimerManager::tearDown();
 
 	//nk_glfw3_shutdown();
 	glfwTerminate();

@@ -15,7 +15,7 @@ using namespace std;
 ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) : vars(vars), ps(ps) {
 	initFramebuffers();
 
-	timer = TimerManager::createTimer("Particle Renderer", true, false, true, false, 1000);
+	//timer = TimerManager::createTimer("Particle Renderer", true, false, true, false, 1000);
 
 	/*
 	firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass");
@@ -147,6 +147,7 @@ void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Cam
 	vars->mainFramebuffer->bind();
 	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
+
 }
 
 

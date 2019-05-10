@@ -329,6 +329,8 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveBoolParam(fullscreen, val);
 	} else if (param == "multisampling") {
 		saveIntParam(multisamplingAmount, val);
+	} else if (param == "startup_particle_file") {
+		saveStringParam(startupParticleSaveFile, val);
 	}
 
 
