@@ -331,7 +331,16 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveIntParam(multisamplingAmount, val);
 	} else if (param == "startup_particle_file") {
 		saveStringParam(startupParticleSaveFile, val);
+	} else if (param == "particle_opacity_multiplier") {
+		saveFloatParam(opacityMultiplier, val);
+	} else if (param == "use_blur_pass") {
+		saveBoolParam(volumetricUseBlurPass, val);
+	} else if (param == "blur_amount") {
+		saveFloatParam(volumetricBlurAmount, val);
+	} else if (param == "show_particles_below_CCL") {
+		saveBoolParam(showParticlesBelowCCL, val);
 	}
+
 
 
 }

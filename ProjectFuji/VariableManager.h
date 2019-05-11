@@ -99,6 +99,9 @@ public:
 	int stlpMaxProfiles = 100;	//!< Maximum number of profiles used in STLP
 
 	float opacityMultiplier = 0.03f;	//!< Opacity multiplier of the drawn particles
+	bool volumetricUseBlurPass = true;	//!< Default value of volumetric rendering blur pass enabled value
+	float volumetricBlurAmount = 0.4;	//!< Default value of volumetric rendering blur amount
+	bool showParticlesBelowCCL = false;	//!< Default value of whether to show particles below CCL (which should be hidden)
 
 	bool consumeMouseCursor = false;	//!< Whether the window consumes (hides) the mouse cursor
 	

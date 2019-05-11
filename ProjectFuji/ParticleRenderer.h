@@ -80,7 +80,6 @@ public:
 	int numSecondPassShaderModes = 2;	//!< Number of debug modes in the second pass
 
 	float shadowAlpha100x = 0.5f;					//!< Multiplier of the shadow alpha value (x100)
-	float shadowAlpha = shadowAlpha100x * 0.01f;	//!< Actual multiplier of the shadow alpha value
 
 	int showParticleTextureIdx = 0;		//!< Show particle indices if texture atlas is used
 	int useAtlasTexture = 0;			//!< Whether to use atlas texture
@@ -199,6 +198,8 @@ private:
 	GLuint lightTexture[2];		//!< Two light textures (second is used when using a blur pass)
 	GLuint lightDepthTexture;	//!< Depth texture attachment to the light framebuffer
 
+	float shadowAlpha = shadowAlpha100x * 0.01f;	//!< Actual multiplier of the shadow alpha value
+
 	int prevShaderSet = -1; //!< Previous shader set used
 
 	GLuint quadVAO;		//!< VAO of the quad that is used for compositing
@@ -266,6 +267,9 @@ private:
 
 	//! Blurs the currently active light texture.
 	void blurLightTexture();
+
+	//! Loads configuration variables from the member VariableManager.
+	void loadConfigurationVariables();
 
 
 };

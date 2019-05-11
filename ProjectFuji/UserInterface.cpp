@@ -1920,6 +1920,7 @@ void UserInterface::constructParticleSystemTab(int side) {
 
 	nk_label_header(ctx, "Particle System");
 
+	nk_label_header(ctx, "Load/Save");
 
 	if (nk_button_label(ctx, "Load Particles from File")) {
 		openPopupWindow(loadParticlesWindowOpened);
@@ -1929,7 +1930,8 @@ void UserInterface::constructParticleSystemTab(int side) {
 		openPopupWindow(saveParticlesWindowOpened);
 	}
 
-	nk_layout_row_dynamic(ctx, wh, 1);
+	nk_label_header(ctx, "Active Particles");
+
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();
 	}
@@ -1938,9 +1940,15 @@ void UserInterface::constructParticleSystemTab(int side) {
 	}
 	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
 
+
+	nk_label_header(ctx, "Particle Position");
+
+
 	if (nk_button_label(ctx, "Reset on Terrain")) {
 		particleSystem->refreshParticlesOnTerrain();
 	}
+
+	constructFormBoxButtonPanel();
 
 
 }

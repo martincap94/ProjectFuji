@@ -198,14 +198,6 @@ public:
 	*/
 	void checkParticleValidity();
 
-	//! --- NOT IMPPLEMENTED YET ---
-	void initParticlesWithZeros();
-
-	//! Initializes the particles on terrain.
-	void initParticlesOnTerrain();
-
-	//! --- NOT IMPLEMENTED YET ---
-	void initParticlesAboveTerrain();
 
 	//! Forms a box of particles using current form box settings.
 	void formBox();

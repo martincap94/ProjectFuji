@@ -13,6 +13,9 @@ using namespace std;
 
 
 ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) : vars(vars), ps(ps) {
+
+	loadConfigurationVariables();
+
 	initFramebuffers();
 
 	//timer = TimerManager::createTimer("Particle Renderer", true, false, true, false, 1000);
@@ -522,6 +525,12 @@ void ParticleRenderer::blurLightTexture() {
 	glEnable(GL_DEPTH_TEST);
 	
 
+}
+
+void ParticleRenderer::loadConfigurationVariables() {
+	useBlurPass = vars->volumetricUseBlurPass;
+	blurAmount = vars->volumetricBlurAmount;
+	showParticlesBelowCCL = vars->showParticlesBelowCCL;
 }
 
 void ParticleRenderer::refreshImageBuffer() {

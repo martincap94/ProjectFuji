@@ -19,13 +19,17 @@ namespace TimerManager {
 
 		ofstream benchmarkFile;
 		int benchmarking = 1;
+		int benchmarkFrame = 0;
 		
 		void startBenchmarking() {
 			if (benchmarking) {
+				benchmarkFrame = 0;
 				benchmarkFile.open(LOG_FILENAME_BASE + getTimeStr() + " BENCHMARK" + ".csv");
+				benchmarkFile << "Frame,";
 				for (const auto& kv : timers) {
-					benchmarkFile << kv.second->name << ", ";
+					benchmarkFile << kv.second->name << ",";
 				}
+				
 				benchmarkFile << endl;
 			}
 		}
@@ -79,9 +83,10 @@ namespace TimerManager {
 
 	void writeToBenchmarkFile() {
 		if (benchmarking) {
-
+			benchmarkFrame++;
+			benchmarkFile << benchmarkFrame << ",";
 			for (const auto& kv : timers) {
-				benchmarkFile << kv.second->frameTime << ", ";
+				benchmarkFile << kv.second->frameTime << ",";
 			}
 			benchmarkFile << endl;
 		}
