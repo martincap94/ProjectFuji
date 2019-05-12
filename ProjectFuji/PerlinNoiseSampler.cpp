@@ -124,8 +124,14 @@ void PerlinNoiseSampler::loadPermutationsData(string filename) {
 	in.close();
 }
 
-void PerlinNoiseSampler::constructUIPropertiesTab(nk_context *ctx) {
+void PerlinNoiseSampler::constructUIPropertiesTab(nk_context *ctx, bool showHeader) {
+	if (showHeader) {
+		nk_layout_row_dynamic(ctx, 30, 1);
+		nk_label(ctx, "Perlin Noise Properties", NK_TEXT_CENTERED);
+	}
 	nk_layout_row_dynamic(ctx, 15, 1);
+
+
 	nk_property_float(ctx, "Frequency", 0.01f, &frequency, 100.0f, 0.01f, 0.01f);
 	nk_property_int(ctx, "Num. Octaves", 1, &numOctaves, 10, 1, 1);
 	nk_property_float(ctx, "Persistence", 0.01f, &persistence, 1.0f, 0.01f, 0.01f);

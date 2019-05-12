@@ -139,7 +139,7 @@ public:
 	/*!
 		\param[in] ctx		Nuklear ctx for which this tab is being constructed.
 	*/
-	void constructUIPropertiesTab(struct nk_context *ctx);
+	void constructUIPropertiesTab(struct nk_context *ctx, bool showHeader = false);
 
 	//! Returns the string for the current sampling mode (of this instance).
 	const char *getSamplingModeString();

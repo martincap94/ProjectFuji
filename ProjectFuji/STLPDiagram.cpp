@@ -1382,7 +1382,7 @@ void STLPDiagram::drawText() {
 			textRend->renderText("LFC", LFCNormalized.x, LFCNormalized.y, textScale);
 		}
 		if (orographicELFound) {
-			textRend->renderText("OEL", orographicELNormalized.x, orographicELNormalized.y, textScale);
+			textRend->renderText("EL", orographicELNormalized.x, orographicELNormalized.y, textScale);
 		}
 	}
 

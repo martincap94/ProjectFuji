@@ -126,12 +126,13 @@ void UserInterface::constructUserInterface() {
 	constructEmitterCreationWindow();
 	constructSaveParticlesWindow();
 	constructLoadParticlesWindow();
+	constructBoxEditWindow();
 	constructHUD();
 
 	if (aboutWindowOpened) {
 
 
-		if (nk_begin(ctx, "Orographic Cloud Simulator", nk_rect((float)(vars->screenWidth / 2 - 250), (float)(vars->screenHeight / 2 - 250), 500.0f, 500.0f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE | NK_WINDOW_DYNAMIC)) {
+		if (nk_begin(ctx, "Orographic Cloud Simulator", nk_rect((float)(vars->screenWidth / 2 - 250), (float)(vars->screenHeight / 2 - 250), 500.0f, 500.0f), NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE | NK_WINDOW_DYNAMIC | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE)) {
 			nk_layout_row_dynamic(ctx, 20.0f, 1);
 
 			nk_label(ctx, "Author: Martin Cap", NK_TEXT_LEFT);
@@ -641,6 +642,7 @@ void UserInterface::constructLBMTab(int side) {
 
 		nk_checkbox_label(ctx, "Visible", &sps->visible);
 
+		leftSidebarEditButtonRatio[0] = nk_widget_width(ctx) - 20.0f;
 
 		nk_layout_row(ctx, NK_STATIC, 15, 2, leftSidebarEditButtonRatio);
 
@@ -650,24 +652,25 @@ void UserInterface::constructLBMTab(int side) {
 		struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
 		wpos.x += nk_widget_size(ctx).x;
 		wpos.y -= nk_widget_size(ctx).y;
+		wpos.y -= selectionTabHeight;
 
 		if (nk_button_image(ctx, nkEditIcon)) {
 			sps->editingHorizontalParameters = true;
 		}
 		if (sps->editingHorizontalParameters) {
-			if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Horizontal Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
+			if (nk_popup_begin(ctx, NK_POPUP_DYNAMIC, "Horizontal Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
 				nk_layout_row_dynamic(ctx, 15, 1);
 				nk_label(ctx, "Horizontal Line Params", NK_TEXT_LEFT);
 
 				nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->hParams.xOffset, 0.99f, 0.01f, 0.01f);
 				nk_property_float(ctx, "yOffset (ratio)", 0.0f, &sps->hParams.yOffset, 0.99f, 0.01f, 0.01f);
 
-				if (nk_button_label(ctx, "Save & Apply")) {
+				if (nk_button_label(ctx, "Apply & Close")) {
 					sps->setPositionInHorizontalLine();
 					sps->editingHorizontalParameters = false;
 					nk_popup_close(ctx);
 				}
-				if (nk_button_label(ctx, "Save")) {
+				if (nk_button_label(ctx, "Close")) {
 					sps->editingHorizontalParameters = false;
 					nk_popup_close(ctx);
 				}
@@ -683,23 +686,25 @@ void UserInterface::constructLBMTab(int side) {
 		wpos = nk_widget_position(ctx); // this needs to be before the widget!
 		wpos.x += nk_widget_size(ctx).x;
 		wpos.y -= nk_widget_size(ctx).y;
+		wpos.y -= selectionTabHeight;
+
 		if (nk_button_image(ctx, nkEditIcon)) {
 			sps->editingVerticalParameters = true;
 		}
 		if (sps->editingVerticalParameters) {
-			if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Vertical Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
+			if (nk_popup_begin(ctx, NK_POPUP_DYNAMIC, "Vertical Line Params Popup", 0, nk_rect(wpos.x, wpos.y, 200, 200))) {
 				nk_layout_row_dynamic(ctx, 15, 1);
 				nk_label(ctx, "Vertical Line Params", NK_TEXT_LEFT);
 
 				nk_property_float(ctx, "xOffset (ratio)", 0.0f, &sps->vParams.xOffset, 0.99f, 0.01f, 0.01f);
 				nk_property_float(ctx, "zOffset (ratio)", 0.0f, &sps->vParams.zOffset, 0.99f, 0.01f, 0.01f);
 
-				if (nk_button_label(ctx, "Save & Apply")) {
+				if (nk_button_label(ctx, "Apply & Close")) {
 					sps->setPositionInVerticalLine();
 					sps->editingVerticalParameters = false;
 					nk_popup_close(ctx);
 				}
-				if (nk_button_label(ctx, "Save")) {
+				if (nk_button_label(ctx, "Close")) {
 					sps->editingVerticalParameters = false;
 					nk_popup_close(ctx);
 				}
@@ -1091,14 +1096,19 @@ void UserInterface::constructTerrainGeneratorWindow() {
 		float w = 500.0f;
 		float h = 500.0f;
 		HeightMap *hm = vars->heightMap;
-		if (nk_begin(ctx, "Terrain Generator", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
+		if (nk_begin(ctx, "Terrain Generator", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE)) {
 
 			nk_layout_row_dynamic(ctx, 15, 1);
 
 			nk_property_float(ctx, "Minimum Height", -1000000.0f, &hm->terrainHeightRange.x, hm->terrainHeightRange.y, 100.0f, 100.0f);
 			nk_property_float(ctx, "Maximum Height", hm->terrainHeightRange.x, &hm->terrainHeightRange.y, 1000000.0f, 100.0f, 100.0f);
 
+			nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
 
+			nk_layout_row_push(ctx, 0.2f);
+			nk_label(ctx, "Mode:", NK_TEXT_LEFT);
+
+			nk_layout_row_push(ctx, 0.8f);
 			if (nk_combo_begin_label(ctx, hm->getDataGenerationModeString(), nk_vec2(nk_widget_width(ctx), 200))) {
 				nk_layout_row_dynamic(ctx, 15, 1);
 				for (int i = 0; i < HeightMap::eDataGenerationMode::_NUM_MODES; i++) {
@@ -1110,22 +1120,33 @@ void UserInterface::constructTerrainGeneratorWindow() {
 
 				nk_combo_end(ctx);
 			}
+			nk_layout_row_end(ctx);
+
 
 			if (hm->dataGenerationMode == HeightMap::eDataGenerationMode::HEIGHT_MAP) {
+				nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+
+				nk_layout_row_push(ctx, 0.2f);
+				nk_label(ctx, "File:", NK_TEXT_LEFT);
+
+				nk_layout_row_push(ctx, 0.8f);
 				if (nk_combo_begin_label(ctx, vars->heightMap->heightMapFilename.c_str(), nk_vec2(nk_widget_width(ctx), 200))) {
 					nk_layout_row_dynamic(ctx, 15, 1);
 					for (int i = 0; i < vars->sceneFilenames.size(); i++) {
-						if (nk_combo_item_label(ctx, vars->sceneFilenames[i].c_str(), NK_TEXT_CENTERED)) {
+						if (nk_combo_item_label(ctx, vars->sceneFilenames[i].c_str(), NK_TEXT_LEFT)) {
 							vars->heightMap->heightMapFilename = vars->sceneFilenames[i];
 							nk_combo_close(ctx);
 						}
 					}
 					nk_combo_end(ctx);
 				}
+				nk_layout_row_end(ctx);
 			} else if (hm->dataGenerationMode == HeightMap::eDataGenerationMode::RANDOM_PERLIN) {
+				nk_label_header(ctx, "Perlin Noise Settings", false);
 				hm->constructPerlinGeneratorUITab(ctx);
 			}
 
+			nk_layout_row_dynamic(ctx, wh, 1);
 			if (nk_button_label(ctx, "Generate")) {
 				vars->heightMap->loadAndUpload();
 				lbm->refreshHeightMap();
@@ -1918,7 +1939,7 @@ void UserInterface::addSceneHierarchyActor(Actor * actor) {
 
 void UserInterface::constructParticleSystemTab(int side) {
 
-	nk_label_header(ctx, "Particle System");
+	nk_label_header(ctx, "Particle System", false);
 
 	nk_label_header(ctx, "Load/Save");
 
@@ -2016,7 +2037,7 @@ void UserInterface::constructEmittersTab(int side) {
 				}
 				*/
 
-				if (nk_button_label(ctx, "Delete emitter")) {
+				if (nk_button_label(ctx, "Delete Emitter")) {
 					//particleSystem->deleteEmitter(i);
 					emitterIndicesToDelete.push_back(i); // do not delete when iterating through the vector
 				}
@@ -2057,14 +2078,18 @@ void UserInterface::constructEmitterCreationWindow() {
 		//cout << "Emitter creation window is open" << endl;
 		float w = 500.0f;
 		float h = 500.0f;
-		if (nk_begin(ctx, "Emitter Creation", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
+		if (nk_begin(ctx, "Emitter Creation", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE)) {
 
 			//cout << "Emitter Creation opened successfuly" << endl;
 
-			nk_layout_row_dynamic(ctx, 15, 1);
+			//nk_layout_row_dynamic(ctx, wh, 1);
+			nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+			nk_layout_row_push(ctx, 0.3f);
+			nk_label(ctx, "Type:", NK_TEXT_LEFT);
+			nk_layout_row_push(ctx, 0.7f);
 
 			if (nk_combo_begin_label(ctx, Emitter::getEmitterTypeString(selectedEmitterType), nk_vec2(nk_widget_width(ctx), 400.0f))) {
-				nk_layout_row_dynamic(ctx, 15, 1);
+				nk_layout_row_dynamic(ctx, wh, 1);
 
 				for (int i = 0; i < Emitter::eEmitterType::_NUM_EMITTER_TYPES; i++) {
 					if (nk_combo_item_label(ctx, Emitter::getEmitterTypeString(i), NK_TEXT_CENTERED)) {
@@ -2073,8 +2098,7 @@ void UserInterface::constructEmitterCreationWindow() {
 				}
 				nk_combo_end(ctx);
 			}
-
-			nk_layout_row_dynamic(ctx, 15, 1);
+			nk_layout_row_end(ctx);
 
 			bool closeWindowAfterwards = false;
 			particleSystem->constructEmitterCreationWindow(ctx, this, selectedEmitterType, closeWindowAfterwards);
@@ -2235,23 +2259,24 @@ void UserInterface::constructPropertiesTab(int side) {
 
 	for (const auto &actor : activeActors) {
 
-		nk_layout_row_dynamic(ctx, 15, 1);
-		nk_label(ctx, actor->name.c_str(), NK_TEXT_LEFT);
-		nk_checkbox_label(ctx, "Visible", &actor->visible);
 
-		if (!actor->isChildOfRoot()) {
-			if (nk_button_label(ctx, "Move up a Level (Unparent)")) {
-				actor->unparent();
+
+		nk_layout_row_dynamic(ctx, 400, 1);
+		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC)) {
+
+			nk_label_header(ctx, actor->name.c_str());
+			nk_checkbox_label(ctx, "Visible", &actor->visible);
+
+			if (!actor->isChildOfRoot()) {
+				if (nk_button_label(ctx, "Move up a Level (Unparent)")) {
+					actor->unparent();
+				}
 			}
-		}
-		if (nk_button_label(ctx, "Snap to Ground")) {
-			actor->snapToGround(vars->heightMap);
-		}
+			if (nk_button_label(ctx, "Snap to Ground")) {
+				actor->snapToGround(vars->heightMap);
+			}
 
 
-		nk_layout_row_dynamic(ctx, 250, 1);
-		if (nk_group_begin_titled(ctx, to_string(hierarchyIdCounter).c_str(), "Transform", NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) {
-			nk_layout_row_dynamic(ctx, 15, 1);
 			nk_property_vec3(ctx, -1000000.0f, actor->transform.position, 1000000.0f, 0.01f, 0.1f, "Position");
 			nk_property_vec3(ctx, 0.0f, actor->transform.rotation, 360.0f, 0.1f, 0.1f, "Rotation");
 			nk_property_vec3(ctx, 0.0f, actor->transform.scale, 1000.0f, 0.1f, 0.1f, "Scale");
@@ -2261,18 +2286,20 @@ void UserInterface::constructPropertiesTab(int side) {
 			//actor->transform.scale.y = actor->transform.scale.x;
 			//actor->transform.scale.z = actor->transform.scale.x;
 
+
+			Model *model = dynamic_cast<Model *>(actor);
+
+			if (model) {
+
+				model->constructUserInterfaceTab(ctx, vars->heightMap);
+
+
+			}
+
 			nk_group_end(ctx);
 		}
 
 
-		Model *model = dynamic_cast<Model *>(actor);
-
-		if (model) {
-
-			model->constructUserInterfaceTab(ctx, vars->heightMap);
-
-
-		}
 		
 
 
@@ -2384,7 +2411,7 @@ void UserInterface::constructSaveParticlesWindow() {
 	if (saveParticlesWindowOpened) {
 		float w = 500.0f;
 		float h = 500.0f;
-		if (nk_begin(ctx, "Save Particles to File", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
+		if (nk_begin(ctx, "Save Particles to File", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE)) {
 
 
 
@@ -2410,7 +2437,7 @@ void UserInterface::constructLoadParticlesWindow() {
 	if (loadParticlesWindowOpened) {
 		float w = 500.0f;
 		float h = 500.0f;
-		if (nk_begin(ctx, "Load Particles from File", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR)) {
+		if (nk_begin(ctx, "Load Particles from File", nk_rect((vars->screenWidth - w) / 2.0f, (vars->screenHeight - h) / 2.0f, w, h), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE)) {
 
 			bool closeWindowAfterwards = false;
 			particleSystem->constructLoadParticlesWindow(ctx, this, closeWindowAfterwards);
@@ -2428,6 +2455,43 @@ void UserInterface::constructLoadParticlesWindow() {
 	}
 
 }
+
+void UserInterface::constructBoxEditWindow() {
+
+
+	if (particleSystem->editingFormBox) {
+		if (nk_begin(ctx, "Form Box Settings", nk_rect((vars->screenWidth - pwinw) / 2.0f, (vars->screenHeight - pwinh) / 2.0f, pwinw, pwinh), NK_WINDOW_CLOSABLE | NK_WINDOW_BORDER | NK_WINDOW_DYNAMIC | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE)) {
+
+			nk_property_vec3(ctx, -100000.0f, particleSystem->newFormBoxSettings.position, 100000.0f, 10.0f, 10.0f, "Position");
+			nk_property_vec3(ctx, 100.0f, particleSystem->newFormBoxSettings.size, 100000.0f, 10.0f, 10.0f, "Size");
+
+			if (nk_button_label(ctx, "Save & Apply")) {
+				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
+				particleSystem->formBox();
+				particleSystem->editingFormBox = false;
+				nk_popup_close(ctx);
+			}
+			if (nk_button_label(ctx, "Save")) {
+				particleSystem->formBoxSettings = particleSystem->newFormBoxSettings;
+				particleSystem->editingFormBox = false;
+				nk_popup_close(ctx);
+			}
+			if (nk_button_label(ctx, "Discard")) {
+				particleSystem->newFormBoxSettings = particleSystem->formBoxSettings;
+				particleSystem->editingFormBox = false;
+				nk_popup_close(ctx);
+			}
+
+			nk_popup_end(ctx);
+
+		} else {
+			particleSystem->newFormBoxSettings = particleSystem->formBoxSettings;
+			particleSystem->editingFormBox = false;
+		}
+		nk_end(ctx);
+	}
+}
+
 
 
 void UserInterface::constructDebugTab() {
@@ -2481,31 +2545,25 @@ void UserInterface::constructDirLightPositionPanel() {
 
 void UserInterface::constructFormBoxButtonPanel() {
 
-	//ctx->style.button.touch_padding
-	float ratio_two[] = { vars->leftSidebarWidth - 20.0f,  15.0f };
-	//nk_layout_row_dynamic(ctx, 15, 2);
+	float ratio_two[] = { nk_widget_width(ctx) - 20.0f,  15.0f };
 
 	nk_layout_row(ctx, NK_STATIC, 15, 2, ratio_two);
-
-	// testing
-	float prevButtonRounding = ctx->style.button.rounding;
-	struct nk_vec2 prevButtonPadding = ctx->style.button.padding;
-
-	ctx->style.button.rounding = 0.0f;
-	ctx->style.button.padding = nk_vec2(0.0f, 0.0f);
+	
 	if (nk_button_label(ctx, "Form BOX")) {
 		particleSystem->formBox();
 	}
 
+	if (nk_button_image(ctx, nkEditIcon)) {
+		openPopupWindow(particleSystem->editingFormBox);
+		//particleSystem->editingFormBox = true;
+	}
+
+	/*
 	struct nk_vec2 wpos = nk_widget_position(ctx); // this needs to be before the widget!
 	wpos.x += nk_widget_size(ctx).x;
 	wpos.y -= nk_widget_size(ctx).y;
 
 
-
-	if (nk_button_image(ctx, nkEditIcon)) {
-		particleSystem->editingFormBox = true;
-	}
 	if (particleSystem->editingFormBox) {
 		//static struct nk_rect s = { 20, 100, 200, 200 }
 		if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Form Box Settings", 0, nk_rect(wpos.x, wpos.y, 200, 250))) {
@@ -2533,15 +2591,12 @@ void UserInterface::constructFormBoxButtonPanel() {
 
 			nk_popup_end(ctx);
 		} else {
+			particleSystem->newFormBoxSettings = particleSystem->formBoxSettings;
 			particleSystem->editingFormBox = false;
 		}
 	}
-
-
-	ctx->style.button.rounding = prevButtonRounding;
-	ctx->style.button.padding = prevButtonPadding;
-
-	nk_layout_row_dynamic(ctx, 15, 1);
+	*/
+	nk_layout_row_dynamic(ctx, wh, 1);
 }
 
 void UserInterface::constructDirLightColorPanel() {
@@ -2696,5 +2751,6 @@ void UserInterface::closeAllPopupWindows() {
 	emitterCreationWindowOpened = false;
 	saveParticlesWindowOpened = false;
 	loadParticlesWindowOpened = false;
+	particleSystem->editingFormBox = false;
 }
 

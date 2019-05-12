@@ -221,6 +221,10 @@ private:
 
 	struct nk_color defaultTextColor = nk_rgba(220, 220, 220, 255);
 
+	float pwinw = 500.0f;
+	float pwinh = 500.0f;
+
+
 	int hierarchyIdCounter = 0;
 	std::vector<Actor *> activeActors;
 
@@ -268,6 +272,7 @@ private:
 	void constructSaveParticlesWindow();
 	void constructLoadParticlesWindow();
 
+	void constructBoxEditWindow();
 
 	void constructDebugTab();
 	void constructFavoritesMenu();

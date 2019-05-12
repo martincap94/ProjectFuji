@@ -105,13 +105,12 @@ void PositionalCDFEmitter::changeScale(float scaleChange) {
 
 void PositionalCDFEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
 	PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
-	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_property_float(ctx, "Scale", 0.01f, &scale, 1000.0f, 0.01f, 0.01f);
-	Texture *selectedTexture = nullptr;
-	ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
-	if (selectedTexture != nullptr) {
-		probabilityTexturePath = selectedTexture->filename;
-	}
+	//Texture *selectedTexture = nullptr;
+	//ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
+	//if (selectedTexture != nullptr) {
+	//	probabilityTexturePath = selectedTexture->filename;
+	//}
 	//nk_draw_image(ctx->)
 	if (initialized) {
 		nk_layout_row_static(ctx, 100, 100, 1);

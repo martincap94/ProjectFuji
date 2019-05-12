@@ -120,7 +120,6 @@ void CircleEmitter::initBuffers() {
 
 void CircleEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
 	PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
-	nk_layout_row_dynamic(ctx, 15, 1);
 	nk_property_float(ctx, "Radius", 1.0f, &radius, 100000.0f, 1.0f, 1.0f);
 }
 

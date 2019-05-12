@@ -137,6 +137,7 @@ void Timer::constructUITab(nk_context * ctx, UserInterface * ui) {
 			//ui->nk_property_string(ctx, logFilename, )
 			//nk_label(ctx, name.c_str(), NK_TEXT_LEFT);
 			//ui->nk_val_bool(ctx, "Call glFinish", callsGLFinish);
+			nk_layout_row_dynamic(ctx, 15.0f, 1);
 
 			nk_checkbox_label(ctx, "Calls glFinish()", &callsGLFinish);
 			nk_checkbox_label(ctx, "Calls cudaDeviceSynchronize()", &callsCudaDeviceSynchronize);
@@ -162,7 +163,7 @@ void Timer::constructUITab(nk_context * ctx, UserInterface * ui) {
 				if (nk_button_label(ctx, "Push Note to Log File")) {
 					pushNoteToLogFile(note);
 				}
-				if (nk_button_label(ctx, "Push Num Measurements for Avg Note To Log File")) {
+				if (nk_button_label(ctx, "Push numMeasurementsForAvg Note")) {
 					pushNumMeasurementsForAvgToLogFile();
 				}
 				nk_checkbox_label(ctx, "Log to File", &logToFile);

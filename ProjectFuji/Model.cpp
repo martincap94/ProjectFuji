@@ -205,11 +205,11 @@ void Model::makeInstancedMaterialMap(HeightMap * heightMap, int numInstances, in
 
 void Model::constructUserInterfaceTab(struct nk_context *ctx, HeightMap *hm) {
 	nk_layout_row_dynamic(ctx, 15, 1);
-	nk_checkbox_label(ctx, "cast shadows", &castShadows);
+	nk_checkbox_label(ctx, "Cast Shadows", &castShadows);
 	if (instanced) {
 
 		if (hm != nullptr) {
-			if (nk_button_label(ctx, "Refresh instances")) {
+			if (nk_button_label(ctx, "Refresh Instances")) {
 				makeInstanced(hm, this->numInstances, savedInstanceScaleModifier, glm::vec2(transform.position.x, transform.position.z), savedInstanceAreaSize);
 			}
 		}

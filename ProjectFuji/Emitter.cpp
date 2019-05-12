@@ -147,14 +147,14 @@ void Emitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui
 	nk_layout_row_dynamic(ctx, 15.0f, 1);
 	if (initialized) {
 
-		nk_checkbox_label(ctx, "#enabled", &enabled);
-		nk_checkbox_label(ctx, "#visible", &visible);
+		nk_checkbox_label(ctx, "Enabled", &enabled);
+		nk_checkbox_label(ctx, "Visible", &visible);
 
-		nk_property_int(ctx, "#emit per step", 0, &numParticlesToEmitPerStep, 10000, 10, 10);
+		nk_property_int(ctx, "#Emit per Step", 0, &numParticlesToEmitPerStep, 10000, 10, 10);
 
 
-		nk_property_int(ctx, "#min profile index", 0, &minProfileIndex, maxProfileIndex, 1, 1);
-		nk_property_int(ctx, "#max profile index", minProfileIndex, &maxProfileIndex, owner->stlpSim->stlpDiagram->numProfiles - 1, 1, 1);
+		nk_property_int(ctx, "#Min Profile Index", 0, &minProfileIndex, maxProfileIndex, 1, 1);
+		nk_property_int(ctx, "#Max Profile Index", minProfileIndex, &maxProfileIndex, owner->stlpSim->stlpDiagram->numProfiles - 1, 1, 1);
 	}
 }
 

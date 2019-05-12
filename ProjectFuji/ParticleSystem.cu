@@ -656,11 +656,15 @@ void ParticleSystem::deleteEmitter(int idx) {
 
 // Do not use this, it does not work with the CUDA compiler
 void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterface * ui, int emitterType, bool &closeWindowAfterwards) {
-	nk_layout_row_dynamic(ctx, 30.0f, 1);
+	nk_layout_row_begin(ctx, NK_DYNAMIC, 30.0f, 2);
+	nk_layout_row_push(ctx, 0.3f);
+	nk_label(ctx, "Name:", NK_TEXT_LEFT);
 
+	nk_layout_row_push(ctx, 0.7f);
 	static char nameBuffer[64];
 	static int nameLength;
 	nk_flags event = nk_edit_string(ctx, NK_EDIT_SIMPLE, &nameBuffer[0], &nameLength, 64, nk_filter_default);
+	nk_layout_row_end(ctx);
 
 	if (event & NK_EDIT_ACTIVATED) {
 		vars->generalKeyboardInputEnabled = false;
@@ -671,7 +675,6 @@ void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterf
 	nameBuffer[nameLength] = '\0';
 	string eName = string(nameBuffer);
 	//cout << "|" << eName << "|" << endl;
-	nk_layout_row_dynamic(ctx, 15, 1);
 
 	switch (emitterType) {
 		case Emitter::eEmitterType::CIRCULAR: {
@@ -805,7 +808,7 @@ void ParticleSystem::constructLoadParticlesWindow(nk_context * ctx, UserInterfac
 	static string selectedFile;
 
 	nk_layout_row_dynamic(ctx, 30.0f, 1);
-	if (nk_combo_begin_label(ctx, fileSelected ? selectedFile.c_str() : "Select file...", nk_vec2(nk_widget_width(ctx), 200))) {
+	if (nk_combo_begin_label(ctx, fileSelected ? selectedFile.c_str() : "Select file...", nk_vec2(nk_widget_width(ctx), 600.0f))) {
 		nk_layout_row_dynamic(ctx, 30.0f, 1);
 		if (nk_combo_item_label(ctx, "None", NK_TEXT_LEFT)) {
 			fileSelected = false;

@@ -91,14 +91,16 @@ void CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *u
 	if (!initialized) {
 		nk_checkbox_label(ctx, "Dynamic Sampler", &useDynamicSampler);
 		Texture *selectedTexture = nullptr;
-		ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
+		ui->constructTextureSelection(&selectedTexture, probabilityTexturePath, true);
 		if (selectedTexture != nullptr) {
 			probabilityTexturePath = selectedTexture->filename;
 		}
 	}
 	if (useDynamicSampler) {
-		dsampler->pSampler.constructUIPropertiesTab(ctx);
-		nk_property_float(ctx, "decrease perlin prob.", 0.0f, &dsampler->perlinProbabilityDecrease, 1.0f, 0.01f, 0.01f);
+
+
+		dsampler->pSampler.constructUIPropertiesTab(ctx, true);
+		nk_property_float(ctx, "Decrease Perlin Prob.", 0.0f, &dsampler->perlinProbabilityDecrease, 1.0f, 0.01f, 0.01f);
 
 
 		nk_checkbox_label(ctx, "Use Time as Seed", &dsampler->useTimeAsSeed);

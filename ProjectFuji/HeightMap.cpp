@@ -499,7 +499,7 @@ void HeightMap::initMaterials() {
 
 
 		//materialMap = TextureManager::loadTexture("materialMaps/all.png");
-		materialMap = TextureManager::loadTexture("materialMaps/map.png");
+		materialMap = TextureManager::loadTexture("materialMaps/map_02.png");
 
 		//materialMap = TextureManager::loadTexture("materialMaps/materialMap_1024.png");
 
