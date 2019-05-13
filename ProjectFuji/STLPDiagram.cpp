@@ -210,23 +210,19 @@ void STLPDiagram::initAmbientTemperatureCurve() {
 void STLPDiagram::generateMixingRatioLine() {
 	vector<glm::vec2> vertices;
 
+	// w(T,P) = (eps * e(T)) / (P - e(T))
+	// where
+	//		eps = Rd / Rm
+	//		e(T) ... saturation vapor pressure (can be approx'd by August-Roche-Magnus formula
+	//		e(T) =(approx)= C exp( (A*T) / (T + B))
+	//		where
+	//				A = 17.625
+	//				B = 243.04
+	//				C = 610.94
 
-	float Rd = 287.05307f;	// gas constant for dry air [J kg^-1 K^-1]
-	float Rm = 461.5f;		// gas constant for moist air [J kg^-1 K^-1]
-
-							// w(T,P) = (eps * e(T)) / (P - e(T))
-							// where
-							//		eps = Rd / Rm
-							//		e(T) ... saturation vapor pressure (can be approx'd by August-Roche-Magnus formula
-							//		e(T) =(approx)= C exp( (A*T) / (T + B))
-							//		where
-							//				A = 17.625
-							//				B = 243.04
-							//				C = 610.94
-
-	float A = 17.625f;
-	float B = 243.04f;
-	float C = 610.94f;
+	const float A = 17.625f;
+	const float B = 243.04f;
+	const float C = 610.94f;
 
 	// given that w(T,P) is const., let W = w(T,P), we can express T in terms of P (see Equation 3.13)
 
@@ -239,21 +235,9 @@ void STLPDiagram::generateMixingRatioLine() {
 	float w0 = soundingData[0].data[MIXR];
 
 	float P = soundingData[0].data[PRES];
+	float T = getDenormalizedTemp(findIntersection(groundIsobar, dewpointCurve).x, getNormalizedPres(P));
 
-
-	//float T = soundingData[0].data[DWPT]; // default computation from initial sounding data, does not take changes to curves into consideration
-	float T = getDenormalizedTemp(findIntersection(groundIsobar, dewpointCurve).x, getNormalizedPres(P));	// this is more general (when user changes dewpoint curve for example)
-
-
-
-	float eps = Rd / Rm;
-	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	//float satVP = e_s_degC(T) / 100.0f;
-	//float W = (eps * satVP) / (P - satVP);
 	float W = w_degC(T, P * 100.0f);
-
-	//cout << " -> Computed W = " << W << endl;
-
 	float deltaP = 20.0f;
 
 
@@ -261,7 +245,7 @@ void STLPDiagram::generateMixingRatioLine() {
 	while (P >= MIN_P) {
 
 
-		float fracPart = log((W * P * 100.0f) / (C * (W + eps)));
+		float fracPart = log((W * P * 100.0f) / (C * (W + EPS)));
 		float computedT = (B * fracPart) / (A - fracPart);
 
 		//cout << "P = " << P << "[hPa], T = " << computedT << "[deg C]" << endl;
@@ -269,17 +253,13 @@ void STLPDiagram::generateMixingRatioLine() {
 		y = getNormalizedPres(P);
 		x = getNormalizedTemp(computedT, y);
 
-		//if (x < xmin || x > xmax || y < 0.0f || y > 1.0f) {
-		//	break;
-		//}
-
 		vertices.push_back(glm::vec2(x, y));
 
 
 		float delta = 10.0f; // should be a small integer - produces dashed line (logarithmic)
 							 //float offsetP = P - delta;
 		float offsetP = P - deltaP; // produces continuous line
-		fracPart = log((W * offsetP * 100.0f) / (C * (W + eps)));
+		fracPart = log((W * offsetP * 100.0f) / (C * (W + EPS)));
 		computedT = (B * fracPart) / (A - fracPart);
 
 		y = getNormalizedPres(offsetP);
@@ -300,87 +280,7 @@ void STLPDiagram::generateMixingRatioLine() {
 
 
 void STLPDiagram::generateMixingRatioLineExperimental() {
-	vector<glm::vec2> vertices;
-
-
-	float Rd = 287.05307f;	// gas constant for dry air [J kg^-1 K^-1]
-	float Rm = 461.5f;		// gas constant for moist air [J kg^-1 K^-1]
-
-							// w(T,P) = (eps * e(T)) / (P - e(T))
-							// where
-							//		eps = Rd / Rm
-							//		e(T) ... saturation vapor pressure (can be approx'd by August-Roche-Magnus formula
-							//		e(T) =(approx)= C exp( (A*T) / (T + B))
-							//		where
-							//				A = 17.625
-							//				B = 243.04
-							//				C = 610.94
-
-	float A = 17.625f;
-	float B = 243.04f;
-	float C = 610.94f;
-
-	// given that w(T,P) is const., let W = w(T,P), we can express T in terms of P (see Equation 3.13)
-
-	// to determine the mixing ratio line that passes through (T,P), we calculate the value of the temperature
-	// T(P + delta) where delta is a small integer
-	// -> the points (T,P) nad (T(P + delta), P + delta) define a mixing ratio line, whose points all have the same mixing ratio
-
-
-	// Compute CCL using a mixing ratio line
-	float w0 = soundingData[0].data[MIXR];
-
-	float P = P0;
-
-
-	//float T = soundingData[0].data[DWPT]; // default computation from initial sounding data, does not take changes to curves into consideration
-	float T = getDenormalizedTemp(findIntersection(groundIsobar, dewpointCurve).x, getNormalizedPres(P));	// this is more general (when user changes dewpoint curve for example)
-
-
-
-	float eps = Rd / Rm;
-	//float satVP = C * exp((A * T) / (T + B));	// saturation vapor pressure: e(T)
-	//float satVP = e_s_degC(T) / 100.0f;
-	//float W = (eps * satVP) / (P - satVP);
-	float W = w_degC(T, P * 100.0f);
-
-	//cout << " -> Computed W = " << W << endl;
-
-	float deltaP = 20.0f;
-
-	float segmentDeltaPVis = 10.0f; // should be a small integer - produces dashed line (logarithmic)
-	float segmentDeltaP = deltaP; // for intersection search, we need a continuous line
-
-	float x, y;
-
-	float fracPart = log((W * P * 100.0f) / (C * (W + eps)));
-	float computedT = (B * fracPart) / (A - fracPart);
-
-	y = getNormalizedPres(P);
-	x = getNormalizedTemp(computedT, y);
-
-	mixingCCL.vertices.push_back(glm::vec2(x, y));
-	vertices.push_back(glm::vec2(x, y));
-	
-	while (P >= MIN_P) {
-
-		float offsetP = P - segmentDeltaP; // produces continuous line
-		fracPart = log((W * offsetP * 100.0f) / (C * (W + eps)));
-		computedT = (B * fracPart) / (A - fracPart);
-
-		y = getNormalizedPres(offsetP);
-		x = getNormalizedTemp(computedT, y);
-
-		mixingCCL.vertices.push_back(glm::vec2(x, y));
-		vertices.push_back(glm::vec2(x, y));
-
-		P -= deltaP;
-
-	}
-
-	
-	glBindBuffer(GL_ARRAY_BUFFER, isohumesVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	REPORT_NOT_IMPLEMENTED();
 }
 
 void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2> &vertices, int mode, float P0, vector<int> *edgeCounter, bool incrementCounter, float deltaP, Curve *curve) {

@@ -12,8 +12,8 @@
 #include <cmath>
 #include <algorithm>
 
-#define R_d 287.05307f		//!< Dry air gas constant
-#define R_m 461.5f			//!< Moist air gas constant
+#define R_d 287.05307f		//!< Dry air gas constant [J kg^-1 K^-1]
+#define R_m 461.5f			//!< Moist air gas constant [J kg^-1 K^-1]
 #define R_v R_m				//!< Moist air gas constant (alternate notation)
 #define EPS (R_d / R_m)		//!< Epsilon used for computing saturation mixing ratio
 #define c_pd 1005.7f		//!< Specific heat capacity for dry air at constant pressure
