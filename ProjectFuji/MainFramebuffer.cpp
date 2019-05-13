@@ -23,6 +23,9 @@ MainFramebuffer::~MainFramebuffer() {
 }
 
 void MainFramebuffer::prepareForNextFrame(glm::vec4 clearColor) {
+	if (vars->windowMinimized) {
+		return;
+	}
 	refreshActiveFramebuffer();
 	bind();
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
@@ -31,6 +34,9 @@ void MainFramebuffer::prepareForNextFrame(glm::vec4 clearColor) {
 }
 
 void MainFramebuffer::drawToScreen() {
+	if (vars->windowMinimized) {
+		return;
+	}
 
 	if (activeFramebuffer == multisampledFramebufferId) {
 		blitMultisampledToRegular();
@@ -63,7 +69,7 @@ void MainFramebuffer::drawQuad() {
 }
 
 void MainFramebuffer::blitMultisampledToRegular() {
-	if (useMultisampling) {
+	if (useMultisampling && !vars->windowMinimized) {
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferId);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampledFramebufferId);
 
@@ -171,7 +177,9 @@ void MainFramebuffer::refresh() {
 			glDeleteFramebuffers(1, &multisampledFramebufferId);
 		}
 	}
-	initBuffers();
+	if (!vars->windowMinimized) {
+		initBuffers();
+	}
 }
 
 void MainFramebuffer::bind() {

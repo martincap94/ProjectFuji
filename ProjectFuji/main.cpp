@@ -369,40 +369,20 @@ int runApp() {
 	// TESTING MODELS AND INSTANCED MODELS
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Material testMat(TextureManager::loadTexture("textures/body2.png"), TextureManager::loadTexture("textures/body2_S.png"), TextureManager::loadTexture("textures/body2_N.png"), 32.0f);
-
-	Model testModel("models/housewife.obj", &testMat, ShaderManager::getShaderPtr("normals"));
+	//Material testMat(TextureManager::loadTexture("textures/body2.png"), TextureManager::loadTexture("textures/body2_S.png"), TextureManager::loadTexture("textures/body2_N.png"), 32.0f);
+	//Model testModel("models/housewife.obj", &testMat, ShaderManager::getShaderPtr("normals"));
 
 	Material treeMat(TextureManager::loadTextureTriplet("textures/Bark_Pine_001_COLOR.jpg", "textures/Bark_Pine_001_DISP.png", "textures/Bark_Pine_001_NORM.jpg"), 8.0f);
-
 
 	Texture gdiffuse("textures/grass.png", 0);
 	Texture gspecular("textures/grass_S.png", 1);
 	Material gMat(&gdiffuse, &gspecular, nullptr, 32.0f);
 
 	Model grassModel("models/grass.obj", &gMat, grassShader);
-
 	Model treeModel("models/trees10_01.fbx", &treeMat, normalsInstancedShader);
-
 	Model unitboxModel("models/unitbox.fbx");
 
-	Model houseModel("models/house_model/houselow_r.fbx");
-
-	Texture halbedo("models/house_model/unknown_Base_Color.png", 0);
-	Texture hmr("models/house_model/unknown_MR.png", 1);
-	Texture hnormal("models/house_model/unknown_Normal_OpenGL.png", 2);
-	Texture hao("models/house_model/house_ao.jpg", 3);
-	PBRMaterial hmat(&halbedo, &hmr, &hnormal, &hao);
-
-	houseModel.pbrMaterial = &hmat;
-
-	float hx = 10000.0f;
-	float hz = 10000.0f;
-	houseModel.transform.position = glm::vec3(hx, vars.heightMap->getHeight(hx, hz), hz);
-	houseModel.shader = pbrTest;
-
 	// PBR TESTING
-
 	Model cerberus("models/Cerberus_LP.fbx");
 	cerberus.transform.position = glm::vec3(4000.0f, 15000.0f, 4000.0f);
 	cerberus.transform.scale = glm::vec3(100.0f);
@@ -423,7 +403,7 @@ int runApp() {
 	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(1.0f, 3.0f), glm::vec2(10000.0f), glm::vec2(1000.0f));
 	treeModel.castShadows = 0;
 
-	testModel.transform.position = glm::vec3(1.0f, 0.0f, 5.0f);
+	//testModel.transform.position = glm::vec3(1.0f, 0.0f, 5.0f);
 
 
 	dirLight->position = glm::vec3(140000.0f, 70000.0f, 100000.0f);
@@ -434,10 +414,8 @@ int runApp() {
 	SceneGraph scene;
 	scene.root = new Actor("Root");
 	scene.root->addChild(&cerberus);
-	scene.root->addChild(&houseModel);
 	scene.root->addChild(&treeModel);
 	scene.root->addChild(&grassModel);
-	houseModel.addChild(&testModel);
 
 	grassModel.visible = 0;
 	treeModel.visible = 0;
@@ -456,6 +434,7 @@ int runApp() {
 
 
 	particleSystem->createPredefinedEmitters();
+	particleSystem->refreshParticlesOnTerrain();
 	if (!particleSystem->loadParticlesFromFile(vars.startupParticleSaveFile)) {
 		particleSystem->formBox(glm::vec3(2000.0f), glm::vec3(2000.0f));
 		particleSystem->numActiveParticles = 500000;
@@ -606,6 +585,7 @@ int runApp() {
 
 		particleSystem->update();
 
+
 		// LBM simulation update
 		if (vars.applyLBM) {
 			if (totalFrameCounter % vars.lbmStepFrame == 0) {
@@ -624,8 +604,6 @@ int runApp() {
 				stlpTimer->clockAvgEnd();
 			}
 		}
-
-
 
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			refreshProjectionMatrix();	// reorganize so this can be removed
@@ -682,11 +660,9 @@ int runApp() {
 				dirLight->color = (1.0f - t) * glm::vec3(1.0f) + t * sc;
 			}
 
-
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
 			glDepthFunc(GL_LEQUAL);
-
 
 
 			evsm->preFirstPass();
@@ -706,13 +682,11 @@ int runApp() {
 			evsm->postFirstPass();
 			evsm->preSecondPass();
 
-
 			///////////////////////////////////////////////////////////////
 			// DRAW SCENE (camera view)
 			///////////////////////////////////////////////////////////////
 
 			vars.heightMap->draw();
-
 
 			/*
 				Updating emitter brush mode requires drawing the terrain, hence why it is in the drawing
@@ -742,7 +716,6 @@ int runApp() {
 
 				streamlineParticleSystem->draw();
 			}
-
 
 			///////////////////////////////////////////////////////////////
 			// DRAW PARTICLES
@@ -793,8 +766,6 @@ int runApp() {
 				stlpDiagram->drawOverlayDiagram();
 			}
 
-
-
 			TextureManager::drawOverlayTextures();
 
 
@@ -809,6 +780,7 @@ int runApp() {
 
 		// Render the user interface
 		ui->draw();
+
 
 		glfwSwapBuffers(window);
 

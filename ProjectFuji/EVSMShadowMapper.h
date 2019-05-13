@@ -104,7 +104,7 @@ public:
 	/*!
 		\return	Whether the EVSMShadowMapper is ready for scene rendering.
 	*/
-	bool isReady();
+	bool isReadyAndValid();
 
 	std::vector<ShaderProgram *> firstPassShaders;		//!< List of shaders that can be used in the first pass
 	std::vector<ShaderProgram *> secondPassShaders;		//!< List of shaders that can be used in the second pass

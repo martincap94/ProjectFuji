@@ -91,7 +91,7 @@ namespace TextureManager {
 	}
 
 	void drawOverlayTextures() {
-		if (vars->hideUI) {
+		if (vars->hideUI || vars->windowMinimized) {
 			return;
 		}
 		//cout << "Drawing overlay textures" << endl;

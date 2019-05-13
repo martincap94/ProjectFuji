@@ -95,6 +95,9 @@ UserInterface::~UserInterface() {
 }
 
 void UserInterface::draw() {
+	if (vars->windowMinimized) {
+		return;
+	}
 	nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 }
 
@@ -1439,12 +1442,12 @@ void UserInterface::constructDiagramControlsTab(int side) {
 
 
 	if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram Curves", NK_MINIMIZED)) {
-		nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
+		nk_layout_row_dynamic(ctx, wh, 1);
 		stlpDiagram->constructDiagramCurvesToolbar(ctx, this);
 		nk_tree_pop(ctx);
 	}
 
-	nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
+	nk_layout_row_dynamic(ctx, wh, 1);
 
 
 	if (nk_button_label(ctx, "Reset to Default")) {
@@ -1457,7 +1460,7 @@ void UserInterface::constructDiagramControlsTab(int side) {
 		particleSystem->clearVerticalVelocities();
 	}
 
-	nk_layout_row_dynamic(ctx, 15, 1);
+	nk_layout_row_dynamic(ctx, wh, 1);
 	//nk_property_float(ctx, "Zoom", -1.0f, &vars->diagramProjectionOffset, 1.0f, 0.01f, 0.01f);
 
 	//if (nk_button_label(ctx, "Reset simulation")) {
@@ -1607,7 +1610,7 @@ void UserInterface::constructDiagramControlsTab(int side) {
 	//		//particleSystem->emitters[i]
 	//	}
 	//}
-	nk_layout_row_static(ctx, 15.0f, vars->rightSidebarWidth, 1);
+	nk_layout_row_dynamic(ctx, wh, 1);
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();
 	}

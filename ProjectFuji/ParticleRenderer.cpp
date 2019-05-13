@@ -95,6 +95,9 @@ void ParticleRenderer::setShaderUniforms(ShaderProgram * shader) {
 }
 
 void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Camera *cam) {
+	if (vars->windowMinimized) {
+		return;
+	}
 
 	// Set member variables for later use - must precede all rendering steps
 	this->ps = ps;
@@ -181,7 +184,9 @@ glm::vec3 ParticleRenderer::getSortVec() {
 
 void ParticleRenderer::preSceneRenderImage() {
 
-
+	if (vars->windowMinimized) {
+		return;
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, vars->mainFramebuffer->depthTex, 0);
@@ -289,8 +294,6 @@ void ParticleRenderer::initFramebuffers() {
 
 void ParticleRenderer::drawSlices() {
 
-	CHECK_GL_ERRORS();
-
 	srcLightTexture = 0;
 
 	//cout << "NUM ACTIVE PARTICLES = " << ps->numActiveParticles << endl;
@@ -322,7 +325,6 @@ void ParticleRenderer::drawSlices() {
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	CHECK_GL_ERRORS();
 
 	numDisplayedSlices = min(numDisplayedSlices, numSlices);
 
@@ -331,19 +333,16 @@ void ParticleRenderer::drawSlices() {
 
 	for (int i = 0; i < numDisplayedSlices; i++) {
 		drawSlice(i);
-		CHECK_GL_ERRORS();
 		drawSliceLightView(i);
-		CHECK_GL_ERRORS();
 
 		if (useBlurPass) {
 			blurLightTexture();
 			spriteTexture->use(0);
 		}
-		CHECK_GL_ERRORS();
 	}
 
 
-
+	CHECK_GL_ERRORS();
 
 
 }
@@ -435,6 +434,9 @@ void ParticleRenderer::drawPoints(int start, int count, bool sorted) {
 }
 
 void ParticleRenderer::compositeResult() {
+	if (vars->windowMinimized) {
+		return;
+	}
 
 	vars->mainFramebuffer->bind();
 	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
@@ -534,8 +536,9 @@ void ParticleRenderer::loadConfigurationVariables() {
 }
 
 void ParticleRenderer::refreshImageBuffer() {
-
-	initImageBuffer();
+	if (!vars->windowMinimized) {
+		initImageBuffer();
+	}
 
 }
 

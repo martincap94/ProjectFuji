@@ -33,6 +33,7 @@ void Timer::start() {
 		//logFile << "Number of measurements for average = " << numMeasurementsForAvg << endl;
 	}
 	startTime = chrono::high_resolution_clock::now();
+	lastFrameStartTime = startTime;
 	resetValues();
 	running = true;
 }
@@ -42,12 +43,12 @@ void Timer::clockAvgStart() {
 	if (!running) {
 		return;
 	}
-	//if (callsGLFinish) {
-	//	glFinish();
-	//}
-	//if (callsCudaDeviceSynchronize) {
-	//	cudaDeviceSynchronize();
-	//}
+	if (callsGLFinishBefore) {
+		glFinish();
+	}
+	if (callsCudaDeviceSynchronizeBefore) {
+		cudaDeviceSynchronize();
+	}
 	lastFrameStartTime = chrono::high_resolution_clock::now();
 }
 
@@ -150,8 +151,12 @@ void Timer::constructUITab(nk_context * ctx, UserInterface * ui) {
 			//ui->nk_val_bool(ctx, "Call glFinish", callsGLFinish);
 			nk_layout_row_dynamic(ctx, 15.0f, 1);
 
-			nk_checkbox_label(ctx, "Calls glFinish()", &callsGLFinish);
-			nk_checkbox_label(ctx, "Calls cudaDeviceSynchronize()", &callsCudaDeviceSynchronize);
+
+			nk_checkbox_label(ctx, "Calls glFinish() Before", &callsGLFinishBefore);
+			nk_checkbox_label(ctx, "Calls cudaDeviceSynchronize() Before", &callsCudaDeviceSynchronizeBefore);
+
+			nk_checkbox_label(ctx, "Calls glFinish() After", &callsGLFinish);
+			nk_checkbox_label(ctx, "Calls cudaDeviceSynchronize() After", &callsCudaDeviceSynchronize);
 
 			nk_property_int(ctx, "Num Measurements for Avg", 1, &numMeasurementsForAvg, 100000, 1, 0.2f);
 

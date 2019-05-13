@@ -383,7 +383,7 @@ STLPSimulatorCUDA::STLPSimulatorCUDA(VariableManager * vars, STLPDiagram * stlpD
 
 	initBuffers();
 
-	profileMap = new ppmImage("profileMaps/120x80_pm_01.ppm");
+	profileMap = new ppmImage("profile_maps/120x80_pm_01.ppm");
 
 
 	

@@ -170,7 +170,7 @@ void EVSMShadowMapper::init() {
 }
 
 void EVSMShadowMapper::preFirstPass() {
-	if (!isReady()) {
+	if (!isReadyAndValid()) {
 		return;
 	}
 
@@ -201,7 +201,7 @@ void EVSMShadowMapper::preFirstPass() {
 }
 
 void EVSMShadowMapper::postFirstPass() {
-	if (!isReady()) {
+	if (!isReadyAndValid()) {
 		return;
 	}
 
@@ -244,7 +244,7 @@ void EVSMShadowMapper::postFirstPass() {
 
 
 void EVSMShadowMapper::preSecondPass() {
-	if (!isReady()) {
+	if (!isReadyAndValid()) {
 		return;
 	}
 
@@ -288,7 +288,7 @@ void EVSMShadowMapper::preSecondPass() {
 }
 
 void EVSMShadowMapper::postSecondPass() {
-	if (!isReady()) {
+	if (!isReadyAndValid()) {
 		return;
 	}
 	glEnable(GL_CULL_FACE);
@@ -306,6 +306,6 @@ GLuint EVSMShadowMapper::getZBufferTextureId() {
 }
 
 
-bool EVSMShadowMapper::isReady() {
-	return (dirLight && blurShader);
+bool EVSMShadowMapper::isReadyAndValid() {
+	return (dirLight && blurShader && !vars->windowMinimized);
 }

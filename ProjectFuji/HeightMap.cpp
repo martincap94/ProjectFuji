@@ -498,10 +498,10 @@ void HeightMap::initMaterials() {
 		pbrMaterials[2].textureTiling = 2500.0f;
 
 
-		//materialMap = TextureManager::loadTexture("materialMaps/all.png");
-		materialMap = TextureManager::loadTexture("materialMaps/map_02.png");
+		//materialMap = TextureManager::loadTexture("material_maps/all.png");
+		materialMap = TextureManager::loadTexture("material_maps/map_02.png");
 
-		//materialMap = TextureManager::loadTexture("materialMaps/materialMap_1024.png");
+		//materialMap = TextureManager::loadTexture("material_maps/materialMap_1024.png");
 
 
 	} else {
@@ -538,7 +538,7 @@ void HeightMap::initMaterials() {
 		//materials[2].diffuseTexture = TextureManager::loadTexture("mossy-ground1-albedo.png");
 		//materials[2].normalMap = TextureManager::loadTexture("mossy-ground1-preview.png");
 
-		materialMap = TextureManager::loadTexture("materialMaps/materialMap_02_1024.png");
+		materialMap = TextureManager::loadTexture("material_maps/materialMap_02_1024.png");
 
 	}
 

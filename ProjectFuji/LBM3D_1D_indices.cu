@@ -2154,6 +2154,7 @@ LBM3D_1D_indices::LBM3D_1D_indices(VariableManager *vars, ParticleSystem *partic
 
 	cout << "Creating LBM 3D..." << endl;
 
+	position = vars->latticePosition;
 	tau = vars->tau;
 	sceneFilename = vars->sceneFilename;
 	blockDim = dim3(vars->blockDim_3D_x, vars->blockDim_3D_y, 1);

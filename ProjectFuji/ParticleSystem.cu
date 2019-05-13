@@ -125,7 +125,7 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	formBoxVisShader = ShaderManager::getShaderPtr("singleColorModel");
 	formBoxVisModel = new Model("models/unitbox.fbx");
 
-	testTimer = TimerManager::createTimer("Particle Save/Load", true, false, false, true, 1);
+	//testTimer = TimerManager::createTimer("Particle Save/Load", true, false, false, true, 1);
 
 
 }
@@ -741,7 +741,7 @@ void ParticleSystem::pushParticleToEmit(Particle p) {
 
 void ParticleSystem::saveParticlesToFile(std::string filename, bool saveOnlyActive) {
 
-	testTimer->start();
+	//testTimer->start();
 
 	if (!fs::exists(PARTICLE_DATA_DIR)) {
 		fs::create_directory(PARTICLE_DATA_DIR);
@@ -789,7 +789,7 @@ void ParticleSystem::saveParticlesToFile(std::string filename, bool saveOnlyActi
 	glUnmapNamedBuffer(particleProfilesVBO);
 
 
-	testTimer->end();
+	//testTimer->end();
 
 }
 
@@ -863,7 +863,7 @@ void ParticleSystem::constructLoadParticlesWindow(nk_context * ctx, UserInterfac
 
 bool ParticleSystem::loadParticlesFromFile(std::string filename) {
 	
-	testTimer->start();
+	//testTimer->start();
 
 	if (!fs::exists(filename) || !fs::is_regular_file(filename)) {
 		cout << "Particle file '" << filename << "' could not be loaded!" << endl;
@@ -950,7 +950,7 @@ bool ParticleSystem::loadParticlesFromFile(std::string filename) {
 	delete[] vertexProfiles;
 
 
-	testTimer->end();
+	//testTimer->end();
 
 
 	return true;

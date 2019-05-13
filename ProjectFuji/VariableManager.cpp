@@ -316,7 +316,6 @@ void VariableManager::saveConfigParam(string param, string val) {
 		terrainZOffset = stoi(val);
 	} else if (param == "lattice_position") {
 		saveVec3Param(latticePosition, val);
-		cout << "lattice position: " << latticePosition.x << ", " << latticePosition.y << ", " << latticePosition.z << endl;
 	} else if (param == "texel_world_size") {
 		saveFloatParam(texelWorldSize, val);
 	} else if (param == "terrain_height_range") {

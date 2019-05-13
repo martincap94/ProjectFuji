@@ -43,7 +43,7 @@ public:
 	double accumulatedTime;		//!< Currently accumulated time that is used for average measurements
 	double frameTime;			//!< Last measured frame time
 	double avgTime;				//!< Average time measured
-	double lastAvgTime;			//!< Last measured average time
+	double lastAvgTime = 0.0;			//!< Last measured average time
 	double maxTime;				//!< Maximum time measured
 	double minTime;				//!< Minimum time measured
 	double lastMaxTime = 0.0;	//!< Last measured maximum time
@@ -115,6 +115,10 @@ private:
 	ofstream logFile;			//!< Output file stream for the log file
 
 	double totalDuration = 0.0;		//!< Total duration from start to end
+
+	int callsGLFinishBefore = 0;	//!< This gives us the option to (roughly) measure OpenGL rendering
+	int callsCudaDeviceSynchronizeBefore = 0;	//!< This gives us the option to (roughly) measure CUDA operations/blocks of code
+
 
 	bool running = false;
 
