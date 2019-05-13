@@ -2740,15 +2740,17 @@ void UserInterface::constructTauProperty() {
 
 void UserInterface::constructWalkingPanel() {
 	if (vars->useFreeRoamCamera) {
-		FreeRoamCamera *fcam = (FreeRoamCamera*)camera;
-		int wasWalking = fcam->walking;
-		nk_checkbox_label(ctx, "Walking", &fcam->walking);
-		if (!wasWalking && fcam->walking) {
-			fcam->snapToGround();
-			//fcam->movementSpeed = 1.4f;
-		}
+		FreeRoamCamera *fcam = dynamic_cast<FreeRoamCamera *>(camera);
+		if (fcam) {
+			int wasWalking = fcam->walking;
+			nk_checkbox_label(ctx, "Walking", &fcam->walking);
+			if (!wasWalking && fcam->walking) {
+				fcam->snapToGround();
+				//fcam->movementSpeed = 1.4f;
+			}
 
-		nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
+			nk_property_float(ctx, "Player Height", 0.0f, &fcam->playerHeight, 10.0f, 0.01f, 0.01f);
+		}
 	}
 }
 

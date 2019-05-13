@@ -405,6 +405,7 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2> &vertices, i
 
 	//printf(" P0 = %0.1f\n deltaP = %0.1f\n ", P0, deltaP);
 
+	/*
 	float nextMultipleP = P0 + (deltaP - fmodf(P0, deltaP)) - deltaP;
 	float firstDeltaP = P0 - nextMultipleP;
 
@@ -438,6 +439,23 @@ void STLPDiagram::generateDryAdiabat(float theta, vector<glm::vec2> &vertices, i
 	}
 	//cout << vertexCounter << endl;
 	//cout << ((MAX_P - MIN_P) / CURVE_DELTA_P + 1) << endl;
+	*/
+
+
+	for (int i = 0; i < soundingData.size(); i++) {
+
+		P = soundingData[i].data[PRES];
+		T = computeAbsoluteFromThetaC(theta, P, this->P0);
+
+		y = getNormalizedPres(P);
+		x = getNormalizedTemp(T, y);
+
+		vertices.push_back(glm::vec2(x, y));
+		if (curve != nullptr) {
+			curve->vertices.push_back(glm::vec2(x, y));
+		}
+		vertexCounter++;
+	}
 
 	if (incrementCounter && edgeCounter != nullptr) {
 		numDryAdiabats[mode]++;
