@@ -103,20 +103,33 @@ void PositionalCDFEmitter::changeScale(float scaleChange) {
 	scale = glm::clamp(scale, 0.001f, 100.0f);
 }
 
-void PositionalCDFEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
-	PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
+bool PositionalCDFEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+	bool canBeConstructed = PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
 	nk_property_float(ctx, "Scale", 0.01f, &scale, 1000.0f, 0.01f, 0.01f);
-	//Texture *selectedTexture = nullptr;
-	//ui->constructTextureSelection(&selectedTexture, probabilityTexturePath);
-	//if (selectedTexture != nullptr) {
-	//	probabilityTexturePath = selectedTexture->filename;
-	//}
+
 	//nk_draw_image(ctx->)
+	static Texture *selectedTexture = nullptr;
+
 	if (initialized) {
 		nk_layout_row_static(ctx, 100, 100, 1);
 		nk_button_image(ctx, nkSamplerTexture);
 		nk_layout_row_dynamic(ctx, 15, 1);
+
+	} else {
+		ui->constructTextureSelection_label(&selectedTexture, "Probability Texture: ", 0.3f, probabilityTexturePath);
+		if (selectedTexture != nullptr) {
+			probabilityTexturePath = selectedTexture->filename;
+		}
+		canBeConstructed = canBeConstructed && (selectedTexture != nullptr);
+
+		if (!canBeConstructed) {
+			nk_layout_row_dynamic(ctx, 15.0f, 1);
+			nk_label_colored(ctx, "Please select a probability texture.", NK_TEXT_LEFT, nk_rgb(255, 150, 150));
+		}
 	}
+
+
+	return canBeConstructed;
 
 }
 

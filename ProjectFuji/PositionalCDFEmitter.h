@@ -77,7 +77,7 @@ public:
 	virtual void changeScale(float scaleChange);
 
 
-	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
+	virtual bool constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 	//! Returns the sampler probability texture.
 	Texture *getSamplerTexture();

@@ -118,9 +118,11 @@ void CircleEmitter::initBuffers() {
 	updateVBOPoints();
 }
 
-void CircleEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
-	PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
+bool CircleEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+	bool canBeConstructed = PositionalEmitter::constructEmitterPropertiesTab(ctx, ui);
 	nk_property_float(ctx, "Radius", 1.0f, &radius, 100000.0f, 1.0f, 1.0f);
+
+	return canBeConstructed;
 }
 
 void CircleEmitter::updateVBOPoints() {

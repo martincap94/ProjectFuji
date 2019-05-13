@@ -66,7 +66,7 @@ public:
 
 	virtual void initBuffers();
 
-	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
+	virtual bool constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 protected:
 

@@ -160,6 +160,9 @@ public:
 
 	void constructTextureSelection(Texture **targetTexturePtr, std::string nullTextureNameOverride = "", bool useWidgetWidth = false);
 
+	void constructTextureSelection_label(Texture **targetTexturePtr, const char *label, float ratio = 0.5f, std::string nullTextureNameOverride = "");
+
+
 	void nk_property_string(struct nk_context *ctx, std::string &target, char *buffer, int bufferLength, int &length);
 
 	void setButtonStyle(struct nk_context *ctx, bool active = true);

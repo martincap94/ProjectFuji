@@ -85,15 +85,21 @@ void CDFEmitter::draw(ShaderProgram * shader) {
 void CDFEmitter::initBuffers() {
 }
 
-void CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *ui) {
-	Emitter::constructEmitterPropertiesTab(ctx, ui);
+bool CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *ui) {
+	bool canBeConstructed = Emitter::constructEmitterPropertiesTab(ctx, ui);
 
+	static Texture *selectedTexture = nullptr;
 	if (!initialized) {
 		nk_checkbox_label(ctx, "Dynamic Sampler", &useDynamicSampler);
-		Texture *selectedTexture = nullptr;
-		ui->constructTextureSelection(&selectedTexture, probabilityTexturePath, true);
+		ui->constructTextureSelection_label(&selectedTexture, "Probability Texture: ", 0.3f, probabilityTexturePath);
 		if (selectedTexture != nullptr) {
 			probabilityTexturePath = selectedTexture->filename;
+		}
+		canBeConstructed = canBeConstructed && (selectedTexture != nullptr);
+
+		if (!canBeConstructed) {
+			nk_layout_row_dynamic(ctx, 15.0f, 1);
+			nk_label_colored(ctx, "Please select a probability texture.", NK_TEXT_LEFT, nk_rgb(255, 150, 150));
 		}
 	}
 	if (useDynamicSampler) {
@@ -116,5 +122,6 @@ void CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *u
 		}
 	}
 
+	return canBeConstructed;
 }
 

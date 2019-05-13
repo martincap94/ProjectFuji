@@ -58,14 +58,16 @@ void PositionalEmitter::wigglePosition() {
 }
 
 
-void PositionalEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
-	Emitter::constructEmitterPropertiesTab(ctx, ui);
+bool PositionalEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+	bool canBeConstructed = Emitter::constructEmitterPropertiesTab(ctx, ui);
 
 	nk_checkbox_label(ctx, "Wiggle", &wiggle);
 	nk_property_float(ctx, "x wiggle", 1.0f, &xWiggleRange, 1000.0f, 1.0f, 1.0f);
 	nk_property_float(ctx, "z wiggle", 1.0f, &zWiggleRange, 1000.0f, 1.0f, 1.0f);
 
 	ui->nk_property_vec3(ctx, -1000000.0f, position, 1000000.0f, 1.0f, 1.0f, "Position");
+
+	return canBeConstructed;
 
 	
 

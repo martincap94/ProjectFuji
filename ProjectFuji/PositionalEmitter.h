@@ -75,7 +75,7 @@ public:
 	virtual void changeScale(float scaleChange) = 0;
 
 	// inherited doc
-	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
+	virtual bool constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 
 protected:

@@ -18,6 +18,7 @@
 
 
 #include "TextureManager.h"
+#include "TimerManager.h"
 
 #include <thrust\sort.h>
 #include <thrust\device_ptr.h>
@@ -123,6 +124,9 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 	//formBoxVisModel = new Model("models/unitbox.fbx");
 	formBoxVisShader = ShaderManager::getShaderPtr("singleColorModel");
 	formBoxVisModel = new Model("models/unitbox.fbx");
+
+	testTimer = TimerManager::createTimer("Particle Save/Load", true, false, false, true, 1);
+
 
 }
 
@@ -676,33 +680,48 @@ void ParticleSystem::constructEmitterCreationWindow(nk_context * ctx, UserInterf
 	string eName = string(nameBuffer);
 	//cout << "|" << eName << "|" << endl;
 
+	bool canBeCreated = false;
+
 	switch (emitterType) {
 		case Emitter::eEmitterType::CIRCULAR: {
-			ech.circleEmitter.constructEmitterPropertiesTab(ctx, ui);
+			canBeCreated = ech.circleEmitter.constructEmitterPropertiesTab(ctx, ui);
 			break;
 		}
 		case Emitter::eEmitterType::CDF_TERRAIN: {
-			ech.cdfEmitter.constructEmitterPropertiesTab(ctx, ui);
+			canBeCreated = ech.cdfEmitter.constructEmitterPropertiesTab(ctx, ui);
 			break;
 		}
 		case Emitter::eEmitterType::CDF_POSITIONAL: {
-			ech.pcdfEmitter.constructEmitterPropertiesTab(ctx, ui);
+			canBeCreated = ech.pcdfEmitter.constructEmitterPropertiesTab(ctx, ui);
 			break;
 		}
 		default:
 			break;
 
 	}
+	nk_layout_row_dynamic(ctx, 15.0f, 1);
+	
 
-	nk_layout_row_dynamic(ctx, 15, 1);
+	canBeCreated = canBeCreated && (nameLength > 0);
 
+	if (nameLength <= 0) {
+		nk_label_colored(ctx, "Please name the emitter.", NK_TEXT_LEFT, nk_rgb(255, 150, 150));
+	}
+
+	ui->setButtonStyle(ctx, canBeCreated);
 	if (nk_button_label(ctx, "Create Emitter")) {
-		createEmitter(emitterType, eName);
+		if (canBeCreated) {
+			createEmitter(emitterType, eName);
+		}
 	}
 	if (nk_button_label(ctx, "Create and Close")) {
-		createEmitter(emitterType, eName);
-		closeWindowAfterwards = true;
+		if (canBeCreated) {
+			createEmitter(emitterType, eName);
+			closeWindowAfterwards = true;
+		}
 	}
+	ui->setButtonStyle(ctx, true);
+
 	if (nk_button_label(ctx, "Close")) {
 		closeWindowAfterwards = true;
 	}
@@ -721,6 +740,8 @@ void ParticleSystem::pushParticleToEmit(Particle p) {
 }
 
 void ParticleSystem::saveParticlesToFile(std::string filename, bool saveOnlyActive) {
+
+	testTimer->start();
 
 	if (!fs::exists(PARTICLE_DATA_DIR)) {
 		fs::create_directory(PARTICLE_DATA_DIR);
@@ -768,6 +789,7 @@ void ParticleSystem::saveParticlesToFile(std::string filename, bool saveOnlyActi
 	glUnmapNamedBuffer(particleProfilesVBO);
 
 
+	testTimer->end();
 
 }
 
@@ -841,6 +863,8 @@ void ParticleSystem::constructLoadParticlesWindow(nk_context * ctx, UserInterfac
 
 bool ParticleSystem::loadParticlesFromFile(std::string filename) {
 	
+	testTimer->start();
+
 	if (!fs::exists(filename) || !fs::is_regular_file(filename)) {
 		cout << "Particle file '" << filename << "' could not be loaded!" << endl;
 		return false;
@@ -924,7 +948,10 @@ bool ParticleSystem::loadParticlesFromFile(std::string filename) {
 	}
 	delete[] vertexPositions;
 	delete[] vertexProfiles;
-	
+
+
+	testTimer->end();
+
 
 	return true;
 	

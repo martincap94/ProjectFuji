@@ -48,7 +48,7 @@ void Timer::clockAvgStart() {
 	//if (callsCudaDeviceSynchronize) {
 	//	cudaDeviceSynchronize();
 	//}
-	startTime = chrono::high_resolution_clock::now();
+	lastFrameStartTime = chrono::high_resolution_clock::now();
 }
 
 bool Timer::clockAvgEnd() {
@@ -63,7 +63,7 @@ bool Timer::clockAvgEnd() {
 	}
 
 	auto endTime = chrono::high_resolution_clock::now();
-	double duration = chrono::duration<double, milli>(endTime - startTime).count();
+	double duration = chrono::duration<double, milli>(endTime - lastFrameStartTime).count();
 	frameTime = duration;
 
 	accumulatedTime += duration;
@@ -96,6 +96,16 @@ void Timer::end() {
 		return;
 	}
 	//resetValues();
+	auto endTime = chrono::high_resolution_clock::now();
+	totalDuration = chrono::duration<double, milli>(endTime - startTime).count();
+
+	if (logToFile) {
+		logFile << "Timer stopped. Total duration: " << totalDuration << " [ms]" << endl;
+	}
+	if (printToConsole) {
+		cout << "Timer stopped. Total duration: " << totalDuration << " [ms]" << endl;
+	}
+
 	running = false;
 	if (logToFile && logFile.is_open()) {
 		logFile.close();
@@ -126,7 +136,8 @@ void Timer::constructUITab(nk_context * ctx, UserInterface * ui) {
 			}
 			//nk_label(ctx, "Log Filename:", NK_TEXT_LEFT);
 			//ui->nk_property_string(ctx, logFilename, nameBuffer, bufferLength, nameLength);
-
+			//ui->nk_label_time(ctx, )
+			ui->nk_label_time(ctx, totalDuration, 2, "Total Duration: ");
 			nk_tree_pop(ctx);
 		}
 	}

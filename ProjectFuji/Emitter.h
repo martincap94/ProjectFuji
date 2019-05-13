@@ -147,8 +147,9 @@ public:
 	/*!
 		\param[in] ctx		Nuklear context to be used.
 		\param[in] ui		User interface that is currently in usage.
+		\return				True if the emitter can be built (used when creating emitters), false otherwise.
 	*/
-	virtual void constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
+	virtual bool constructEmitterPropertiesTab(struct nk_context *ctx, UserInterface *ui);
 
 	//! Returns the emitter's name.
 	static const char *getEmitterName(Emitter *emitter);

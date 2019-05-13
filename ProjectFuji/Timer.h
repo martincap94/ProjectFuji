@@ -35,7 +35,8 @@ public:
 
 	string name;				//!< Name of the timer
 
-	Timepoint startTime;		//!< Start time of the timer
+	Timepoint startTime;			//!< Start time of the timer
+	Timepoint lastFrameStartTime;	//!< Start time of the last frame for average measurements
 
 	string logFilename;			//!< Name of the log file
 
@@ -112,6 +113,8 @@ public:
 private:
 
 	ofstream logFile;			//!< Output file stream for the log file
+
+	double totalDuration = 0.0;		//!< Total duration from start to end
 
 	bool running = false;
 

@@ -26,6 +26,7 @@
 #include "CDFEmitter.h"
 //#include "EmitterBrushMode.h"
 #include "PositionalCDFEmitter.h"
+#include "Timer.h"
 
 #include "UserInterface.h"
 #include <nuklear.h>
@@ -125,6 +126,8 @@ public:
 
 	int numDiagramParticlesToDraw = 0;	//!< Number of particles that should be drawn in the diagram
 	glm::vec3 diagramParticlesColor = glm::vec3(1.0f, 0.0f, 0.0f);	//!< Color of particles that are drawn in the diagram
+
+	Timer *testTimer;
 
 
 	// EMITTER TEMPORARY DATA FOR CURRENT FRAME - the indices of particles must correspond

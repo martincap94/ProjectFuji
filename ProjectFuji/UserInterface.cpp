@@ -2665,6 +2665,28 @@ void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string
 	}
 }
 
+void UserInterface::constructTextureSelection_label(Texture ** targetTexturePtr, const char *label, float ratio, std::string nullTextureNameOverride) {
+
+	nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+	nk_layout_row_push(ctx, ratio);
+	nk_label(ctx, label, NK_TEXT_LEFT);
+	nk_layout_row_push(ctx, 1.0f - ratio);
+
+	if (nk_combo_begin_label(ctx, tryGetTextureFilename(*targetTexturePtr, nullTextureNameOverride), nk_vec2(nk_widget_width(ctx), standardTexSelectSize.y))) {
+		nk_layout_row_dynamic(ctx, 15.0f, 1);
+		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
+			*targetTexturePtr = nullptr;
+		}
+		for (const auto& kv : *textures) {
+			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
+				(*targetTexturePtr) = kv.second;
+			}
+		}
+		nk_combo_end(ctx);
+	}
+	nk_layout_row_end(ctx);
+}
+
 void UserInterface::nk_property_string(nk_context * ctx, std::string & target, char *buffer, int bufferLength, int &length) {
 
 	nk_layout_row_dynamic(ctx, 30.0f, 1);

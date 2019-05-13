@@ -142,7 +142,7 @@ const char * Emitter::getEmitterTypeString(int emitterType) {
 	return "None";
 }
 
-void Emitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
+bool Emitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui) {
 
 	nk_layout_row_dynamic(ctx, 15.0f, 1);
 	if (initialized) {
@@ -156,6 +156,7 @@ void Emitter::constructEmitterPropertiesTab(nk_context * ctx, UserInterface * ui
 		nk_property_int(ctx, "#Min Profile Index", 0, &minProfileIndex, maxProfileIndex, 1, 1);
 		nk_property_int(ctx, "#Max Profile Index", minProfileIndex, &maxProfileIndex, owner->stlpSim->stlpDiagram->numProfiles - 1, 1, 1);
 	}
+	return true;
 }
 
 const char * Emitter::getEmitterName(Emitter *emitter) {
