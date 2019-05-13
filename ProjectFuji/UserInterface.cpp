@@ -1103,6 +1103,8 @@ void UserInterface::constructTerrainGeneratorWindow() {
 			nk_property_float(ctx, "Minimum Height", -1000000.0f, &hm->terrainHeightRange.x, hm->terrainHeightRange.y, 100.0f, 100.0f);
 			nk_property_float(ctx, "Maximum Height", hm->terrainHeightRange.x, &hm->terrainHeightRange.y, 1000000.0f, 100.0f, 100.0f);
 
+			nk_property_float(ctx, "Texel World Size", 1.0f, &hm->texelWorldSize, 1000.0f, 0.1f, 0.1f);
+
 			nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
 
 			nk_layout_row_push(ctx, 0.2f);

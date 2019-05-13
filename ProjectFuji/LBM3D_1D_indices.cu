@@ -2281,8 +2281,8 @@ void LBM3D_1D_indices::refreshHeightMap() {
 			xidx = (int)((xidx * scale) + position.x);
 			zidx = (int)((zidx * scale) + position.z);
 
-			xidx /= (int)vars->texelWorldSize;
-			zidx /= (int)vars->texelWorldSize;
+			xidx /= (int)heightMap->texelWorldSize;
+			zidx /= (int)heightMap->texelWorldSize;
 
 			if (xidx < heightMap->width && xidx >= 0 && zidx < heightMap->height && zidx >= 0) {
 				//tempHM[x + z * latticeWidth] = heightMap->data[xidx][zidx];

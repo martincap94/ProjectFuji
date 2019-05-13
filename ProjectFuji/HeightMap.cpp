@@ -176,7 +176,7 @@ void HeightMap::createAndUploadMesh() {
 
 
 
-			float tws = vars->texelWorldSize;
+			float tws = texelWorldSize;
 
 			float y1, y2, y3, y4;
 
@@ -583,8 +583,8 @@ float HeightMap::getHeight(float x, float z, bool worldPosition) {
 		x += vars->terrainXOffset;
 		z += vars->terrainZOffset;
 
-		x /= vars->texelWorldSize;
-		z /= vars->texelWorldSize;
+		x /= texelWorldSize;
+		z /= texelWorldSize;
 	}
 
 
@@ -619,11 +619,11 @@ float HeightMap::getHeight(float x, float z, bool worldPosition) {
 }
 
 float HeightMap::getWorldWidth() {
-	return width * vars->texelWorldSize;
+	return width * texelWorldSize;
 }
 
 float HeightMap::getWorldDepth() {
-	return height * vars->texelWorldSize;
+	return height * texelWorldSize;
 }
 
 void HeightMap::draw() {
@@ -784,13 +784,13 @@ glm::vec3 HeightMap::computeNormal(int x, int z) {
 	//cout << "hLeft = " << hLeft << endl;
 
 	glm::vec3 normal;
-	normal.x = (hLeft - hRight) / vars->texelWorldSize;
+	normal.x = (hLeft - hRight) / texelWorldSize;
 	//normal.x = (hLeft - hRight);
 	//normal.y = hBottom - hTop;
 	//normal.z = -2.0f;
 	normal.y = 2.0f/* * vars->texelWorldSize * 10.0f*/;
 	//rangeToRange(normal.y, 0.0f, 1.0f, vars->terrainHeightRange.x, vars->terrainHeightRange.y);
-	normal.z = (hBottom - hTop) / vars->texelWorldSize;
+	normal.z = (hBottom - hTop) / texelWorldSize;
 	//normal.z = (hTop - hBottom);
 
 
