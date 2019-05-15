@@ -507,12 +507,12 @@ void UserInterface::constructLBMTab(int side) {
 	nk_label_header(ctx, "LBM Controls");
 
 
-	const char *buttonDescription = vars->applyLBM ? "Pause" : "Play";
+	const char *buttonDescription = vars->applyLBM ? "Pause Simulation" : "Run Simulation";
 	if (nk_button_label(ctx, buttonDescription)) {
 		vars->applyLBM = !vars->applyLBM;
 	}
 
-	if (nk_button_label(ctx, "Reset")) {
+	if (nk_button_label(ctx, "Reset Lattice to Default")) {
 		lbm->resetSimulation();
 	}
 
@@ -523,6 +523,7 @@ void UserInterface::constructLBMTab(int side) {
 	constructTauProperty();
 
 	nk_property_int(ctx, "LBM Step Frame", 1, &vars->lbmStepFrame, 100, 1, 1);
+	nk_property_float(ctx, "Velocity Multiplier", 0.01f, &vars->lbmVelocityMultiplier, 10.0f, 0.01f, 0.01f);
 
 
 	nk_label_header(ctx, "Inlet Settings");
@@ -589,9 +590,7 @@ void UserInterface::constructLBMTab(int side) {
 	nk_label_header(ctx, "General");
 
 	nk_checkbox_label(ctx, "Use Subgrid Model (Experimental)", &vars->useSubgridModel);
-
-	nk_property_float(ctx, "Velocity Multiplier", 0.01f, &vars->lbmVelocityMultiplier, 10.0f, 0.01f, 0.01f);
-	nk_checkbox_label(ctx, "Use Alternate Interpolation", &vars->lbmUseCorrectInterpolation);
+	//nk_checkbox_label(ctx, "Use Alternate Interpolation", &vars->lbmUseCorrectInterpolation);
 	nk_checkbox_label(ctx, "Use Extended Collision Step (Unstable)", &vars->lbmUseExtendedCollisionStep);
 
 	nk_label_header(ctx, "Editing");
@@ -885,7 +884,7 @@ void UserInterface::constructTerrainTab(int side) {
 
 	nk_label_header(ctx, "Grunge Map");
 	nk_checkbox_label(ctx, "Use Grunge Map", &hm->useGrungeMap);
-	nk_property_float(ctx, "Grunge Map min", 0.0f, &hm->grungeMapMin, 1.0f, 0.01f, 0.01f);
+	nk_property_float(ctx, "Grunge Map Min", 0.0f, &hm->grungeMapMin, 1.0f, 0.01f, 0.01f);
 	nk_property_float(ctx, "Grunge Map Tiling", 1.0f, &hm->grungeMapTiling, 1000.0f, 0.1f, 0.1f);
 
 	
@@ -909,7 +908,7 @@ void UserInterface::constructTerrainTab(int side) {
 
 	nk_checkbox_label(ctx, "Normals Only", &vars->heightMap->showNormalsOnly);
 	if (vars->heightMap->showNormalsOnly) {
-		nk_property_int(ctx, "Normals Mode", 0, &vars->heightMap->normalsShaderMode, 2, 1, 1);
+		nk_property_int(ctx, "Normals Mode", 0, &vars->heightMap->normalsShaderMode, 1, 1, 1);
 	}
 
 
@@ -1402,9 +1401,40 @@ void UserInterface::constructCloudVisualizationTab(int side) {
 void UserInterface::constructDiagramControlsTab(int side) {
 
 
-	nk_label_header(ctx, "STLP");
+	nk_label_header(ctx, "STLP", false);
+
+	nk_label_header(ctx, "Simulation Settings");
+
+	const char *buttonDescription = vars->applySTLP ? "Pause Simulation" : "Run Simulation";
+	if (nk_button_label(ctx, buttonDescription)) {
+		vars->applySTLP = !vars->applySTLP;
+	}
+
+	//nk_checkbox_label(ctx, "Apply STLP", &vars->applySTLP);
+	nk_property_int(ctx, "STLP step frame", 1, &vars->stlpStepFrame, 100, 1, 1);
+
+	nk_property_float(ctx, "Delta t", 0.001f, &stlpSimCUDA->delta_t, 100.0f, 0.001f, 0.001f);
+	nk_property_float(ctx, "Delta t (Quick)", 0.1f, &stlpSimCUDA->delta_t, 100.0f, 0.1f, 0.1f);
+
+	nk_checkbox_label(ctx, "Divide Previous Velocity", &vars->dividePrevVelocity);
+	if (vars->dividePrevVelocity) {
+		nk_property_float(ctx, "Divisor (x100)", 100.0f, &vars->prevVelocityDivisor, 1000.0f, 0.01f, 0.01f); // [1.0, 10.0]
+	}
 
 
+	if (nk_button_label(ctx, "Clear Vertical Velocities")) {
+		particleSystem->clearVerticalVelocities();
+	}
+
+
+	nk_label_header(ctx, "Diagram Settings", false);
+
+	nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+
+	nk_layout_row_push(ctx, 0.1f);
+	nk_label(ctx, "File: ", NK_TEXT_LEFT);
+
+	nk_layout_row_push(ctx, 0.9f);
 	if (nk_combo_begin_label(ctx, stlpDiagram->getTmpSoundingFilename().c_str(), nk_vec2(nk_widget_width(ctx), 200.0f))) {
 		if (vars->soundingDataFilenames.empty()) {
 			nk_label(ctx, "Empty...", NK_TEXT_LEFT);
@@ -1418,11 +1448,17 @@ void UserInterface::constructDiagramControlsTab(int side) {
 		}
 		nk_combo_end(ctx);
 	}
-	
+	nk_layout_row_end(ctx);
+
+	nk_layout_row_dynamic(ctx, wh, 1);
+
 	nk_checkbox_label(ctx, "Use Orographic Parameters", &stlpDiagram->useOrographicParametersEdit);
 	stlpDiagram->useOrographicParametersChanged = stlpDiagram->useOrographicParametersEdit != stlpDiagram->useOrographicParameters;
 
 	nk_checkbox_label(ctx, "Sounding Curves Editing Enabled", &stlpDiagram->soundingCurveEditingEnabled);
+
+	nk_property_int(ctx, "Number of Profiles", 2, &stlpDiagram->numProfiles, 100, 1, 1.0f); // somewhere bug when only one profile -> FIX!
+	nk_property_float(ctx, "Profile Range", -10.0f, &stlpDiagram->convectiveTempRange, 10.0f, 0.01f, 0.01f);
 
 	if (stlpDiagram->wasSoundingFilenameChanged()) {
 		if (nk_button_label(ctx, "Load Sounding File")) {
@@ -1439,6 +1475,12 @@ void UserInterface::constructDiagramControlsTab(int side) {
 	}
 	//}
 
+	if (nk_button_label(ctx, "Reset to Default")) {
+		stlpDiagram->recalculateAll();
+		stlpSimCUDA->uploadDataFromDiagramToGPU();
+		particleSystem->clearVerticalVelocities();
+	}
+
 
 
 	if (nk_tree_push(ctx, NK_TREE_TAB, "Diagram Curves", NK_MINIMIZED)) {
@@ -1447,46 +1489,14 @@ void UserInterface::constructDiagramControlsTab(int side) {
 		nk_tree_pop(ctx);
 	}
 
-	nk_layout_row_dynamic(ctx, wh, 1);
 
-
-	if (nk_button_label(ctx, "Reset to Default")) {
-		stlpDiagram->recalculateAll();
-		stlpSimCUDA->uploadDataFromDiagramToGPU();
-		particleSystem->clearVerticalVelocities();
-	}
-
-	if (nk_button_label(ctx, "Clear Vertical Velocities")) {
-		particleSystem->clearVerticalVelocities();
-	}
-
-	nk_layout_row_dynamic(ctx, wh, 1);
-	//nk_property_float(ctx, "Zoom", -1.0f, &vars->diagramProjectionOffset, 1.0f, 0.01f, 0.01f);
-
-	//if (nk_button_label(ctx, "Reset simulation")) {
-	//stlpSim->resetSimulation();
-	//}
-
-	//nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
-
-	float delta_t_prev = stlpSimCUDA->delta_t;
-	nk_property_float(ctx, "delta t", 0.001f, &stlpSimCUDA->delta_t, 100.0f, 0.001f, 0.001f);
-	nk_property_float(ctx, "delta t (quick)", 0.1f, &stlpSimCUDA->delta_t, 100.0f, 0.1f, 0.1f);
-
-	//if (stlpSimCUDA->delta_t != delta_t_prev) {
-	//	//stlpSimCUDA->delta_t = stlpSim->delta_t;
-	//	stlpSimCUDA->updateGPU_delta_t();
-	//}
-
-	nk_property_int(ctx, "Number of Profiles", 2, &stlpDiagram->numProfiles, 100, 1, 1.0f); // somewhere bug when only one profile -> FIX!
-
-	nk_property_float(ctx, "Profile Range", -10.0f, &stlpDiagram->convectiveTempRange, 10.0f, 0.01f, 0.01f);
+	nk_label_header(ctx, "Diagram Particles");
 
 	nk_checkbox_label(ctx, "Show Particles in Diagram", &vars->drawOverlayDiagramParticles);
 	if (vars->drawOverlayDiagramParticles) {
 
 		nk_checkbox_label(ctx, "Synchronize with Active Particles", &particleSystem->synchronizeDiagramParticlesWithActiveParticles);
-		
+
 		if (!particleSystem->synchronizeDiagramParticlesWithActiveParticles) {
 			if (nk_button_label(ctx, "Activate All")) {
 				particleSystem->activateAllDiagramParticles();
@@ -1501,31 +1511,57 @@ void UserInterface::constructDiagramControlsTab(int side) {
 
 	}
 
+
+	//nk_property_float(ctx, "Zoom", -1.0f, &vars->diagramProjectionOffset, 1.0f, 0.01f, 0.01f);
+
+	//if (nk_button_label(ctx, "Reset simulation")) {
+	//stlpSim->resetSimulation();
+	//}
+
+	//nk_slider_float(ctx, 0.01f, &stlpSim->simulationSpeedMultiplier, 1.0f, 0.01f);
+
+	//float delta_t_prev = stlpSimCUDA->delta_t;
+	//nk_property_float(ctx, "delta t", 0.001f, &stlpSimCUDA->delta_t, 100.0f, 0.001f, 0.001f);
+	//nk_property_float(ctx, "delta t (quick)", 0.1f, &stlpSimCUDA->delta_t, 100.0f, 0.1f, 0.1f);
+
+	//if (stlpSimCUDA->delta_t != delta_t_prev) {
+	//	//stlpSimCUDA->delta_t = stlpSim->delta_t;
+	//	stlpSimCUDA->updateGPU_delta_t();
+	//}
+
+
 	//nk_property_int(ctx, "max particles", 1, &stlpSim->maxNumParticles, 100000, 1, 10.0f);
 
 	//nk_checkbox_label(ctx, "Simulate wind", &stlpSim->simulateWind);
 
 	//nk_checkbox_label(ctx, "use prev velocity", &stlpSim->usePrevVelocity);
 
-	nk_checkbox_label(ctx, "Divide Previous Velocity", &vars->dividePrevVelocity);
-	if (vars->dividePrevVelocity) {
-		nk_property_float(ctx, "Divisor (x100)", 100.0f, &vars->prevVelocityDivisor, 1000.0f, 0.01f, 0.01f); // [1.0, 10.0]
-	}
 
-	nk_checkbox_label(ctx, "Show CCL Level", &vars->showCCLLevelLayer);
-	nk_checkbox_label(ctx, "Show EL Level", &vars->showELLevelLayer);
+	nk_label_header(ctx, "Overlay Diagram");
 	nk_checkbox_label(ctx, "Show Overlay Diagram", &vars->showOverlayDiagram);
 	if (vars->showOverlayDiagram) {
 
 		float tmp = stlpDiagram->overlayDiagramResolution;
 		float maxDiagramWidth = (float)((vars->screenWidth < vars->screenHeight) ? vars->screenWidth : vars->screenHeight);
+
+
+
+		nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
+
+		nk_layout_row_push(ctx, 0.2f);
+		nk_label(ctx, "Size: ", NK_TEXT_LEFT);
+
+		nk_layout_row_push(ctx, 0.8f);
+
 		nk_slider_float(ctx, 10.0f, &stlpDiagram->overlayDiagramResolution, maxDiagramWidth, 1.0f);
 
+		nk_layout_row_end(ctx);
 
+		nk_layout_row_dynamic(ctx, wh, 1);
 		float prevX = stlpDiagram->overlayDiagramX;
 		float prevY = stlpDiagram->overlayDiagramY;
-		nk_property_float(ctx, "x:", 0.0f, &stlpDiagram->overlayDiagramX, vars->screenWidth - stlpDiagram->overlayDiagramResolution, 0.1f, 0.1f);
-		nk_property_float(ctx, "y:", 0.0f, &stlpDiagram->overlayDiagramY, vars->screenHeight - stlpDiagram->overlayDiagramResolution, 0.1f, 0.1f);
+		nk_property_float(ctx, "Screen x:", 0.0f, &stlpDiagram->overlayDiagramX, vars->screenWidth - stlpDiagram->overlayDiagramResolution, 1.0f, 1.0f);
+		nk_property_float(ctx, "Screen y:", 0.0f, &stlpDiagram->overlayDiagramY, vars->screenHeight - stlpDiagram->overlayDiagramResolution, 1.0f, 1.0f);
 		
 		if (tmp != stlpDiagram->overlayDiagramResolution ||
 			prevX != stlpDiagram->overlayDiagramX ||
@@ -1547,9 +1583,6 @@ void UserInterface::constructDiagramControlsTab(int side) {
 	*/
 
 
-
-	nk_checkbox_label(ctx, "Apply STLP", &vars->applySTLP);
-	nk_property_int(ctx, "STLP step frame", 1, &vars->stlpStepFrame, 100, 1, 1);
 
 	//nk_property_float(ctx, "Point size", 0.1f, &particleSystem->pointSize, 100.0f, 0.1f, 0.1f);
 	//stlpSimCUDA->pointSize = stlpSim->pointSize;
@@ -1610,20 +1643,20 @@ void UserInterface::constructDiagramControlsTab(int side) {
 	//		//particleSystem->emitters[i]
 	//	}
 	//}
-	nk_layout_row_dynamic(ctx, wh, 1);
+
+
+	nk_label_header(ctx, "Layer Visualizations");
+	nk_checkbox_label(ctx, "Show CCL Level", &vars->showCCLLevelLayer);
+	nk_checkbox_label(ctx, "Show EL Level", &vars->showELLevelLayer);
+
+
+	nk_label_header(ctx, "Particle Settings");
 	if (nk_button_label(ctx, "Activate All Particles")) {
 		particleSystem->activateAllParticles();
 	}
 	if (nk_button_label(ctx, "Deactivate All Particles")) {
 		particleSystem->deactivateAllParticles();
 	}
-	if (nk_button_label(ctx, "Enable All Emitters")) {
-		particleSystem->enableAllEmitters();
-	}
-	if (nk_button_label(ctx, "Disable All Emitters")) {
-		particleSystem->disableAllEmitters();
-	}
-
 	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
 
 
@@ -1644,7 +1677,7 @@ void UserInterface::constructDiagramControlsTab(int side) {
 	//	nk_combo_end(ctx);
 	//}
 
-
+	nk_label_header(ctx, "Parameter Information");
 
 	nk_value_bool(ctx, "Tc Found", stlpDiagram->TcFound);
 	nk_value_bool(ctx, "EL Found", stlpDiagram->ELFound);
@@ -1658,7 +1691,7 @@ void UserInterface::constructDiagramControlsTab(int side) {
 		nk_checkbox_label(ctx, "Ground Level Label", &stlpDiagram->showGroundLevelTextLabel);
 		nk_checkbox_label(ctx, "Show Filename Label", &stlpDiagram->showFilenameLabel);
 
-		nk_property_float(ctx, "test", -100.0f, &stlpDiagram->userHelperSlider, 100.0f, 0.01f, 0.01f);
+		//nk_property_float(ctx, "test", -100.0f, &stlpDiagram->userHelperSlider, 100.0f, 0.01f, 0.01f);
 
 		nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
 		nk_layout_row_push(ctx, 0.5f);
@@ -2514,7 +2547,7 @@ void UserInterface::constructFavoritesMenu() {
 
 		nk_checkbox_label(ctx, "Apply LBM", &vars->applyLBM);
 		nk_checkbox_label(ctx, "Apply STLP", &vars->applySTLP);
-		nk_property_float(ctx, "delta t (quick)", 0.1f, &stlpSimCUDA->delta_t, 100.0f, 0.1f, 0.1f);
+		nk_property_float(ctx, "Delta t (Quick)", 0.1f, &stlpSimCUDA->delta_t, 100.0f, 0.1f, 0.1f);
 
 		constructWalkingPanel();
 
