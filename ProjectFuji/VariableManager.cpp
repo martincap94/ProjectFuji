@@ -138,6 +138,22 @@ std::string VariableManager::getFogModeString(int fogMode) {
 	return "NONE";
 }
 
+void VariableManager::setProjectionMode(int newProjMode) {
+	if (newProjMode == projectionMode) {
+		return;
+	}
+	projectionMode = newProjMode;
+	if (projectionMode == eProjectionMode::ORTHOGRAPHIC) {
+		if (useFreeRoamCamera) {
+			prevUseFreeRoamCamera = useFreeRoamCamera;
+			useFreeRoamCamera = useFreeRoamCamera == 0;
+		}
+	} else {
+		useFreeRoamCamera = prevUseFreeRoamCamera;
+	}
+
+}
+
 
 void VariableManager::printHelpMessage(string errorMsg) {
 

@@ -582,6 +582,11 @@ void ParticleSystem::deactivateAllParticles() {
 	numActiveParticles = 0;
 }
 
+void ParticleSystem::changeNumActiveParticles(int delta) {
+	numActiveParticles += delta;
+	numActiveParticles = glm::clamp(numActiveParticles, 0, numParticles);
+}
+
 void ParticleSystem::activateAllDiagramParticles() {
 	numDiagramParticlesToDraw = numActiveParticles;
 }

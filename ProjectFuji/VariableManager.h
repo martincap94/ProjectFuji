@@ -234,6 +234,13 @@ public:
 	static std::string getFogModeString(int fogMode);
 
 
+	//! Sets the projection mode, should be later moved to separate module.
+	/*!
+		\param[in] newProjMode		The projection mode to be set.
+	*/
+	void setProjectionMode(int newProjMode);
+
+
 private:
 	bool ready = false;		//!< Whether the VariableManager is ready and initialized
 

@@ -227,6 +227,13 @@ public:
 	//! Deactivates all particles.
 	void deactivateAllParticles();
 
+	//! Changes the number of active particles by given delta value.
+	/*!
+		Clamps to [0, numParticles].
+		\param[in] delta	Determines how many particles are to be activated or deactivated (if negative).
+	*/
+	void changeNumActiveParticles(int delta);
+
 	//! Activates all diagram particles.
 	void activateAllDiagramParticles();
 

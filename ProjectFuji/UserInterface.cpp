@@ -357,13 +357,13 @@ void UserInterface::constructHorizontalBar() {
 
 			if (!vars->useFreeRoamCamera) {
 				nk_label(ctx, "Camera Settings", NK_TEXT_CENTERED);
-				if (nk_menu_item_label(ctx, "Front View (I)", NK_TEXT_LEFT)) {
+				if (nk_menu_item_label(ctx, "Front View (num 1)", NK_TEXT_LEFT)) {
 					camera->setView(Camera::VIEW_FRONT);
 				}
-				if (nk_menu_item_label(ctx, "Side View (O)", NK_TEXT_LEFT)) {
+				if (nk_menu_item_label(ctx, "Side View (num 3)", NK_TEXT_LEFT)) {
 					camera->setView(Camera::VIEW_SIDE);
 				}
-				if (nk_menu_item_label(ctx, "Top View (P)", NK_TEXT_LEFT)) {
+				if (nk_menu_item_label(ctx, "Top View (num 9)", NK_TEXT_LEFT)) {
 					camera->setView(Camera::VIEW_TOP);
 				}
 			}
@@ -2366,35 +2366,13 @@ void UserInterface::constructViewTab(int side) {
 	if (nk_combo_begin_label(ctx, vars->projectionMode == ORTHOGRAPHIC ? "Orthographic" : "Perspective", nk_vec2(nk_widget_width(ctx), 200.0f))) {
 		nk_layout_row_dynamic(ctx, wh, 1);
 		if (nk_combo_item_label(ctx,  "Orthographic", NK_TEXT_LEFT)) {
-			vars->projectionMode = ORTHOGRAPHIC;
-			if (vars->useFreeRoamCamera) {
-				vars->prevUseFreeRoamCamera = vars->useFreeRoamCamera;
-				vars->useFreeRoamCamera = vars->useFreeRoamCamera == 0;
-			}
+			vars->setProjectionMode(eProjectionMode::ORTHOGRAPHIC);
 		}
 		if (nk_combo_item_label(ctx, "Perspective", NK_TEXT_LEFT)) {
-			vars->projectionMode = PERSPECTIVE;
-			vars->useFreeRoamCamera = vars->prevUseFreeRoamCamera;
+			vars->setProjectionMode(eProjectionMode::PERSPECTIVE);
 		}
 		nk_combo_end(ctx);
 	}
-
-	/*
-	nk_layout_row_dynamic(ctx, wh, 2);
-	if (nk_option_label(ctx, "Orthographic", vars->projectionMode == ORTHOGRAPHIC)) {
-		vars->projectionMode = ORTHOGRAPHIC;
-		if (vars->useFreeRoamCamera) {
-			vars->prevUseFreeRoamCamera = vars->useFreeRoamCamera;
-			vars->useFreeRoamCamera = vars->useFreeRoamCamera == 0;
-		}
-	}
-	if (nk_option_label(ctx, "Perspective", vars->projectionMode == PERSPECTIVE)) {
-		vars->projectionMode = PERSPECTIVE;
-		if (vars->useFreeRoamCamera != vars->prevUseFreeRoamCamera) {
-			vars->useFreeRoamCamera = vars->prevUseFreeRoamCamera;
-		}
-	}
-	*/
 
 	if (vars->projectionMode == PERSPECTIVE) {
 		nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
@@ -2429,13 +2407,13 @@ void UserInterface::constructViewTab(int side) {
 
 	if (!vars->useFreeRoamCamera) {
 		nk_label(ctx, "Camera Settings", NK_TEXT_CENTERED);
-		if (nk_button_label(ctx, "Front View (I)")) {
+		if (nk_button_label(ctx, "Front View (num 1)")) {
 			camera->setView(Camera::VIEW_FRONT);
 		}
-		if (nk_button_label(ctx, "Side View (O)")) {
+		if (nk_button_label(ctx, "Side View (num 3)")) {
 			camera->setView(Camera::VIEW_SIDE);
 		}
-		if (nk_button_label(ctx, "Top View (P)")) {
+		if (nk_button_label(ctx, "Top View (num 9)")) {
 			camera->setView(Camera::VIEW_TOP);
 		}
 	}

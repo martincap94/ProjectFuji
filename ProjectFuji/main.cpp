@@ -916,14 +916,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			vars.applySTLP = abs(vars.applySTLP - 1);
 		}
 
-		if (key == GLFW_KEY_I) {
+		if (key == GLFW_KEY_KP_1) {
 			camera->setView(Camera::VIEW_FRONT);
 		}
-		if (key == GLFW_KEY_O) {
+		if (key == GLFW_KEY_KP_3) {
 			camera->setView(Camera::VIEW_SIDE);
 		}
-		if (key == GLFW_KEY_P) {
+		if (key == GLFW_KEY_KP_9) {
 			camera->setView(Camera::VIEW_TOP);
+		}
+		if (key == GLFW_KEY_KP_5) {
+			vars.setProjectionMode(abs(1 - vars.projectionMode));
 		}
 
 		if (key == GLFW_KEY_1) {
@@ -948,13 +951,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			ebm->toggleActive();
 		}
 		if (key == GLFW_KEY_KP_ADD) {
-			//vars.opacityMultiplier += 0.1f;
-			//if (vars.opacityMultiplier > 3.0f) {
-			//	vars.opacityMultiplier = 3.0f;
-			//}
+			particleSystem->changeNumActiveParticles(10000);
 		}
 		if (key == GLFW_KEY_KP_SUBTRACT) {
-			//vars.opacityMultiplier -= 
+			particleSystem->changeNumActiveParticles(-10000);
 		}
 
 
@@ -974,13 +974,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				}
 			}
 		}
+		if (key == GLFW_KEY_B) {
+			particleSystem->formBox();
+		}
 
 	} else if (action == GLFW_PRESS && mods & GLFW_MOD_CONTROL) {
 
 		if (key == GLFW_KEY_B) {
 			particleRenderer->showParticlesBelowCCL = !particleRenderer->showParticlesBelowCCL;
 		}
-
+		if (key == GLFW_KEY_KP_ADD) {
+			vars.opacityMultiplier += 0.025f;
+			vars.opacityMultiplier = glm::min(3.0f, vars.opacityMultiplier);
+		}
+		if (key == GLFW_KEY_KP_SUBTRACT) {
+			vars.opacityMultiplier -= 0.025f;
+			vars.opacityMultiplier = glm::max(0.0f, vars.opacityMultiplier);
+		}
 
 	}
 
