@@ -190,8 +190,16 @@ void EmitterBrushMode::constructBrushSelectionUIPanel(nk_context * ctx, UserInte
 	if (activeBrush) {
 
 		//nk_value_int(ctx, "test", numParticlesEmittedPerFrame);
-		nk_slider_int(ctx, 1, &numParticlesEmittedPerFrame, maxNumParticlesEmittedPerFrame, 1);
+
+		nk_layout_row_begin(ctx, NK_DYNAMIC, 15.0f, 2);
+		nk_layout_row_push(ctx, 0.2f);
+		nk_label(ctx, "Opacity: ", NK_TEXT_LEFT);
+
+		nk_layout_row_push(ctx, 0.8f);
 		
+		nk_slider_int(ctx, 1, &numParticlesEmittedPerFrame, maxNumParticlesEmittedPerFrame, 1);
+		nk_layout_row_end(ctx);
+
 
 
 		activeBrush->constructEmitterPropertiesTab(ctx, ui);

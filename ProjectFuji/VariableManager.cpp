@@ -30,15 +30,19 @@ VariableManager::~VariableManager() {
 	}
 }
 
-void VariableManager::init(int argc, char **argv) {
+bool VariableManager::init(int argc, char **argv) {
 
 	loadConfigFile();
-	parseArguments(argc, argv);
+	if (!parseArguments(argc, argv)) {
+		return false;
+	}
 
 	loadSceneFilenames();
 	loadSoundingDataFilenames();
 
 	ready = true;
+
+	return true;
 }
 
 
@@ -137,130 +141,49 @@ std::string VariableManager::getFogModeString(int fogMode) {
 
 void VariableManager::printHelpMessage(string errorMsg) {
 
-	if (errorMsg == "") {
-		cout << "Lattice Boltzmann command line argument options:" << endl;
+	if (errorMsg.empty()) {
+		cout << "Project Fuji command line parameters:" << endl;
 	} else {
 		cout << "Incorrect usage of parameter: " << errorMsg << ". Please refer to the options below." << endl;
 	}
-	cout << " -h, -help, --help:" << endl << "  show this help message" << endl;
-	cout << " -t:" << endl << "  LBM type: 2D (or 2) and 3D (or 3)" << endl;
-	cout << " -s" << endl << "  scene filename: *.ppm" << endl;
-	cout << " -c:" << endl << "   use CUDA: 'true' or 'false'" << endl;
-	cout << " -lh: " << endl << "   lattice height (int value)" << endl;
-	cout << " -m: " << endl << "   measure times (true or false)" << endl;
-	cout << " -p: " << endl << "   number of particles (int value)" << endl;
-	cout << " -mavg: " << endl << "   number of measurements for average time" << endl;
-	cout << " -mexit: " << endl << "   exit after first average measurement finished (true or false)" << endl;
-	cout << " -autoplay, -auto, -a: " << endl << "   start simulation right away (true or false)" << endl;
-	cout << " -tau:" << endl << "   value of tau (float between 0.51 and 10.0)" << endl;
-	cout << " -sf:" << endl << "  Sounding filename (with extension)" << endl;
+	cout << " -h, -help, --help:" << endl << "    show this help message" << endl;
+	cout << " -s, -scene_filename" << endl << "    scene filename (heightmap image: *.png/jpg)" << endl;
+	cout << " -lw, -lattice_width: " << endl << "    lattice width (int value)" << endl;
+	cout << " -lh, -lattice_height: " << endl << "    lattice height (int value)" << endl;
+	cout << " -ld, -lattice_depth: " << endl << "    lattice depth (int value)" << endl;
+	cout << " -ls, -lattice_scale: " << endl << "    lattice scale (float value)" << endl;
+	cout << " -p, -num_particles: " << endl << "    number of particles (int value)" << endl;
+	cout << " -tau:" << endl << "    value of tau (float between 0.51 and 10.0)" << endl;
+	cout << " -sf, -sounding_file:" << endl << "    sounding filename (with extension: *.txt)" << endl;
+	cout << " -msaa, -multisampling:" << endl << "    multisampling (MSAA) sample count (int value in range [1, 12])" << endl;
+	cout << " -fs, -fullscreen: " << endl << "    fullscreen (true or false)" << endl;
 
+	//cout << " -fs, -fullscreen"
 }
 
-void VariableManager::parseArguments(int argc, char **argv) {
+bool VariableManager::parseArguments(int argc, char **argv) {
 	if (argc <= 1) {
-		return;
+		cout << argc << endl;
+		return true;
 	}
 	cout << "Parsing command line arguments..." << endl;
 	string arg;
 	string val;
-	string vallw;
+	//string vallw;
 	for (int i = 1; i < argc; i++) {
 		arg = (string)argv[i];
 		if (arg == "-h" || arg == "-help" || arg == "--help") {
 			printHelpMessage();
-		} else if (arg == "-t") {
+			return false;
+		} else {
 			if (i + 1 < argc) {
 				val = argv[i + 1];
-				if (val == "2D" || val == "2" || val == "3D" || val == "3") {
-					saveConfigParam(arg, val);
-				} else {
-					printHelpMessage("-t");
-				}
-				i++;
-			}
-		} else if (arg == "-s") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				saveConfigParam(arg, val);
-				i++;
-			}
-		} else if (arg == "-c") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				transform(val.begin(), val.end(), val.begin(), [](char c) { return tolower(c); });
-				if (val == "true" || val == "false") {
-					saveConfigParam(arg, val);
-				} else {
-					printHelpMessage("-c");
-				}
-				i++;
-			}
-		} else if (arg == "-m") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				transform(val.begin(), val.end(), val.begin(), [](char c) { return tolower(c); });
-				if (val == "true" || val == "false") {
-					saveConfigParam(arg, val);
-				} else {
-					printHelpMessage("-m");
-				}
-				i++;
-			}
-		} else if (arg == "-lh") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				saveConfigParam(arg, val);
-				i++;
-			}
-		} else if (arg == "-p") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				saveConfigParam(arg, val);
-				i++;
-			}
-		} else if (arg == "-mavg") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				saveConfigParam(arg, val);
-				i++;
-			}
-		} else if (arg == "-mexit") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				transform(val.begin(), val.end(), val.begin(), [](char c) { return tolower(c); });
-				if (val == "true" || val == "false") {
-					saveConfigParam(arg, val);
-				} else {
-					printHelpMessage("-mexit");
-				}
-				i++;
-			}
-		} else if (arg == "-autoplay" || arg == "-auto" || arg == "-a") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				transform(val.begin(), val.end(), val.begin(), [](char c) { return tolower(c); });
-				if (val == "true" || val == "false") {
-					saveConfigParam(arg, "autoplay");
-				} else {
-					printHelpMessage("-autoplay");
-				}
-				i++;
-			}
-		} else if (arg == "-tau") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				saveConfigParam(arg, val);
-				i++;
-			}
-		} else if (arg == "-sf") {
-			if (i + 1 < argc) {
-				val = argv[i + 1];
-				saveConfigParam(arg, val);
+				saveConfigParam(arg.substr(1), val);
 				i++;
 			}
 		}
 	}
+	return true;
 
 
 }
@@ -270,21 +193,21 @@ void VariableManager::saveConfigParam(string param, string val) {
 
 	if (param == "VSync") {
 		saveIntParam(vsync, val);
-	} else if (param == "num_particles" || param == "-p") {
+	} else if (param == "num_particles" || param == "p") {
 		saveIntParam(numParticles, val);
-	} else if (param == "scene_filename" || param == "-s") {
+	} else if (param == "scene_filename" || param == "s") {
 		saveStringParam(sceneFilename, val);
 	} else if (param == "window_width") {
 		saveIntParam(windowWidth, val);
 	} else if (param == "window_height") {
 		saveIntParam(windowHeight, val);
-	} else if (param == "lattice_width") {
+	} else if (param == "lattice_width" || param == "lw") {
 		saveIntParam(latticeWidth, val);
-	} else if (param == "lattice_height" || param == "-lh") {
+	} else if (param == "lattice_height" || param == "lh") {
 		saveIntParam(latticeHeight, val);
-	} else if (param == "lattice_depth") {
+	} else if (param == "lattice_depth" || param == "ld") {
 		saveIntParam(latticeDepth, val);
-	} else if (param == "tau" || param == "-tau") {
+	} else if (param == "tau") {
 		saveFloatParam(tau, val);
 	} else if (param == "draw_streamlines") {
 		saveBoolParam(drawStreamlines, val);
@@ -298,7 +221,7 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveIntParam(blockDim_3D_x, val);
 	} else if (param == "block_dim_3D_y") {
 		saveIntParam(blockDim_3D_y, val);
-	} else if (param == "measure_time" || param == "-m") {
+	} else if (param == "measure_time" || param == "m") {
 		saveBoolParam(measureTime, val);
 	/*} else if (param == "avg_frame_count" || param == "-mavg") {
 		timer.numMeasurementsForAvg = stoi(val);
@@ -306,9 +229,9 @@ void VariableManager::saveConfigParam(string param, string val) {
 		timer.logToFile = (val == "true") ? true : false;
 	} else if (param == "print_measurements_to_console") {
 		timer.printToConsole = (val == "true") ? true : false;*/
-	} else if (param == "exit_after_first_avg" || param == "-mexit") {
+	} else if (param == "exit_after_first_avg" || param == "mexit") {
 		exitAfterFirstAvg = (val == "true") ? true : false;
-	} else if (param == "sounding_file" || param == "-sf") {
+	} else if (param == "sounding_file" || param == "sf") {
 		soundingFile = val;
 	} else if (param == "terrain_x_offset") {
 		terrainXOffset = stoi(val);
@@ -324,9 +247,9 @@ void VariableManager::saveConfigParam(string param, string val) {
 		saveFloatParam(latticeScale, val);
 	} else if (param == "use_monitor_resolution") {
 		saveBoolParam(useMonitorResolution, val);
-	} else if (param == "fullscreen") {
+	} else if (param == "fullscreen" || param == "fs") {
 		saveBoolParam(fullscreen, val);
-	} else if (param == "multisampling") {
+	} else if (param == "multisampling" || param == "msaa") {
 		saveIntParam(multisamplingAmount, val);
 	} else if (param == "startup_particle_file") {
 		saveStringParam(startupParticleSaveFile, val);

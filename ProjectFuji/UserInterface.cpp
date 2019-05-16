@@ -1301,8 +1301,8 @@ void UserInterface::constructCloudVisualizationTab(int side) {
 
 	constructFormBoxButtonPanel();
 
-	nk_property_float(ctx, "Point Size", 0.1f, &particleSystem->pointSize, 100000.0f, 0.1f, 0.1f);
-	nk_property_float(ctx, "Opacity Multiplier", 0.01f, &vars->opacityMultiplier, 10.0f, 0.01f, 0.01f);
+	nk_property_float(ctx, "Point Size", 0.1f, &particleSystem->pointSize, 5000.0f, 0.1f, 0.1f);
+	nk_property_float(ctx, "Opacity Multiplier", 0.01f, &vars->opacityMultiplier, 3.0f, 0.01f, 0.01f);
 
 	nk_checkbox_label(ctx, "Show Particles Below CCL", &particleRenderer->showParticlesBelowCCL);
 	particleSystem->showHiddenParticles = particleRenderer->showParticlesBelowCCL;

@@ -216,7 +216,10 @@ public:
 	~VariableManager();
 
 	//! Initializes the VariableManager with command line arguments.
-	void init(int argc, char **argv);
+	/*!
+		\return		True if application should continue, false otherwise.
+	*/
+	bool init(int argc, char **argv);
 
 
 	//! Loads the configuration file and parses all valid parameters.
@@ -246,9 +249,10 @@ private:
 		"-c" then do not is not possible. This approach would mean that if "-c" is defined, then we overwrite configuration parameter
 		and tell the simulator that we want to use CUDA, but if were to omit "-c" it would not set use CUDA to false, but it would use
 		the config.ini value which could be both true or false.
+		\return		True if application should continue, false otherwise.
 
 	*/
-	void parseArguments(int argc, char **argv);
+	bool parseArguments(int argc, char **argv);
 
 
 	//! Parses parameter and its value from the configuration file. Assumes correct format for each parameter.

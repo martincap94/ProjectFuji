@@ -184,8 +184,6 @@ float projHeight;			//!< Height of the ortographic projection
 float projectionRange;		//!< General projection range for 3D (largest value of lattice width, height and depth)
 
 
-int pauseKey = GLFW_KEY_T;				//!< Pause LBM key
-int resetKey = GLFW_KEY_R;				//!< Reset LBM key
 int mouseCursorKey = GLFW_KEY_C;		//!< Consume mouse cursor key
 
 bool leftMouseButtonDown = false;		//!< Holds whether the left mouse button is being held down
@@ -201,7 +199,9 @@ int main(int argc, char **argv) {
 
 	// Load the permutations data for Perlin Noise from file
 	PerlinNoiseSampler::loadPermutationsData("resources/perlin_noise_permutations.txt");
-	vars.init(argc, argv);
+	if (!vars.init(argc, argv)) {
+		return EXIT_SUCCESS;
+	}
 
 	return runApp();
 }
@@ -900,7 +900,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (action == GLFW_PRESS && mods == 0) {
 		if (key == GLFW_KEY_G) {
-			if (vars.useFreeRoamCamera) {
+			if (vars.useFreeRoamCamera && ui->viewportMode == eViewportMode::VIEWPORT_3D) {
 				((FreeRoamCamera*)camera)->snapToGround();
 				//((FreeRoamCamera*)camera)->walking = !((FreeRoamCamera*)camera)->walking;
 			}
@@ -925,12 +925,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_P) {
 			camera->setView(Camera::VIEW_TOP);
 		}
-		if (key == resetKey) {
-			lbm->resetSimulation();
-		}
-		if (key == pauseKey) {
-			vars.paused = !vars.paused;
-		}
+
 		if (key == GLFW_KEY_1) {
 			ui->viewportMode = 0;
 			glfwSwapInterval(vars.vsync);
@@ -952,13 +947,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_B) {
 			ebm->toggleActive();
 		}
+		if (key == GLFW_KEY_KP_ADD) {
+			//vars.opacityMultiplier += 0.1f;
+			//if (vars.opacityMultiplier > 3.0f) {
+			//	vars.opacityMultiplier = 3.0f;
+			//}
+		}
+		if (key == GLFW_KEY_KP_SUBTRACT) {
+			//vars.opacityMultiplier -= 
+		}
+
+
+
 	} else if (action == GLFW_PRESS && mods & GLFW_MOD_SHIFT) {
 
 		if (key == GLFW_KEY_F) {
 			ui->setFullscreen(!vars.fullscreen);
 		}
 		if (key == GLFW_KEY_G) {
-			if (vars.useFreeRoamCamera) {
+			if (vars.useFreeRoamCamera && ui->viewportMode == eViewportMode::VIEWPORT_3D) {
 				FreeRoamCamera *fcam = (FreeRoamCamera*)freeRoamCamera;
 				int wasWalking = fcam->walking;
 				fcam->walking = fcam->walking == 0;
@@ -967,6 +974,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				}
 			}
 		}
+
+	} else if (action == GLFW_PRESS && mods & GLFW_MOD_CONTROL) {
+
+		if (key == GLFW_KEY_B) {
+			particleRenderer->showParticlesBelowCCL = !particleRenderer->showParticlesBelowCCL;
+		}
+
 
 	}
 
