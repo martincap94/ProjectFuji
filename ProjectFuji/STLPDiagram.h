@@ -445,7 +445,16 @@ public:
 	bool wasDiagramChanged();
 
 	//! Sets whether the diagram has changed (been edited).
+	/*!
+		\param[in] diagramChanged	Whether the diagram has been changed/edited.
+	*/
 	void setDiagramChanged(bool diagramChanged);
+
+	//! Sets whether the visualization points should be visible.
+	/*!
+		\param[in] showVisualizationPoints	The new value to be set.
+	*/
+	void setShowVisualizationPoints(bool showVisualizationPoints);
 
 private:
 
@@ -510,6 +519,8 @@ private:
 	const float xmax = 1.0f;				//!< Maximum normalized diagram x coordinate
 	float ymin;								//!< Minimum normalized diagram y coordinate
 	float ymax;								//!< Maximum normalized diagram y coordinate
+
+	bool showVisualizationPoints = false;	//!< Whether to show visualization points
 
 	//! Generates temperature notches for the diagram visualization.
 	void generateTemperatureNotches();

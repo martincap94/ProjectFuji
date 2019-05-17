@@ -1255,7 +1255,7 @@ void STLPDiagram::draw() {
 
 
 
-	if (!visualizationPoints.empty()) {
+	if (!visualizationPoints.empty() && showVisualizationPoints) {
 		glPointSize(3.0f);
 		singleColorShaderVBO->use();
 		glBindVertexArray(visPointsVAO);
@@ -1448,14 +1448,18 @@ void STLPDiagram::moveSelectedPoint(glm::vec2 mouseCoords) {
 	Curve *curvePtr = selectedPoint.first;
 	int pointIndex = selectedPoint.second;
 	curvePtr->vertices[pointIndex].x = mouseCoords.x;
+	glm::vec3 pointColor = glm::vec3(0.0f);
 	if (curvePtr == &ambientCurve) {
 		glBindBuffer(GL_ARRAY_BUFFER, ambientTemperatureVBO);
 		glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * pointIndex, sizeof(glm::vec2), &curvePtr->vertices[pointIndex]);
+		pointColor = ambientCurveColor;
 	} else if (curvePtr == &dewpointCurve) {
 		glBindBuffer(GL_ARRAY_BUFFER, dewTemperatureVBO);
 		glBufferSubData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * pointIndex, sizeof(glm::vec2), &curvePtr->vertices[pointIndex]);
+		pointColor = dewpointCurveColor;
 	}
-	setVisualizationPoint(glm::vec3(curvePtr->vertices[pointIndex], 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 3, true);
+	setVisualizationPoint(glm::vec3(curvePtr->vertices[pointIndex], 0.0f), pointColor, 0, true);
+	showVisualizationPoints = true;
 	diagramChanged = true;
 
 
@@ -1543,6 +1547,10 @@ bool STLPDiagram::wasDiagramChanged() {
 
 void STLPDiagram::setDiagramChanged(bool diagramChanged) {
 	this->diagramChanged = diagramChanged;
+}
+
+void STLPDiagram::setShowVisualizationPoints(bool showVisualizationPoints) {
+	this->showVisualizationPoints = showVisualizationPoints;
 }
 
 
