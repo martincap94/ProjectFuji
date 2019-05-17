@@ -447,8 +447,7 @@ void ParticleSystem::sortParticlesByDistance(glm::vec3 referencePoint, eSortPoli
 }
 
 void ParticleSystem::sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy sortPolicy) {
-
-
+	
 	glm::vec3 *d_mappedParticleVerticesVBO;
 	unsigned int *d_mappedParticlesEBO;
 
@@ -489,8 +488,6 @@ void ParticleSystem::sortParticlesByProjection(glm::vec3 sortVector, eSortPolicy
 
 	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticleVerticesVBO, 0));
 	CHECK_ERROR(cudaGraphicsUnmapResources(1, &cudaParticlesEBO, 0));
-
-
 
 }
 

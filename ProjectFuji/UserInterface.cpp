@@ -2285,7 +2285,7 @@ void UserInterface::constructGeneralDebugTab(int side) {
 
 	
 
-	if (vars->viewportMode == eViewportMode::VIEWPORT_3D) {
+	if (viewportMode == eViewportMode::VIEWPORT_3D) {
 		if (nk_checkbox_label(ctx, "VSync", &vars->vsync)) {
 			glfwSwapInterval(vars->vsync);
 		}
