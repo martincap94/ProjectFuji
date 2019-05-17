@@ -150,13 +150,19 @@ void UserInterface::constructUserInterface() {
 		nk_end(ctx);
 	}
 	constructHorizontalBar();
-
-
+	anyItemActiveInLastFrame = nk_item_is_any_active(ctx);
 }
 
 bool UserInterface::isAnyWindowHovered() {
 	return nk_window_is_any_hovered(ctx) != 0;
 }
+
+bool UserInterface::isAnyItemActive() {
+	return anyItemActiveInLastFrame;
+}
+
+
+
 
 void UserInterface::nk_property_vec2(nk_context * ctx, float min, glm::vec2 & target, float max, float step, float pixStep, std::string label, bool labelIsHeader, eVecNaming namingConvention) {
 	if (!label.empty()) {
@@ -1234,16 +1240,23 @@ void UserInterface::constructSkyTab(int side) {
 	nk_value_float(ctx, "Sun Theta", (float)hosek->sunTheta);
 	nk_value_float(ctx, "Sun Theta (degrees)", glm::degrees((float)hosek->sunTheta));
 
+	nk_label_header(ctx, "Sun Simulation", true);
 	nk_checkbox_label(ctx, "Simulate sun", &vars->simulateSun);
 	nk_checkbox_label(ctx, "Skip night", &dirLight->skipNightTime);
 	nk_property_float(ctx, "Sun speed", 0.1f, &dirLight->circularMotionSpeed, 1000.0f, 0.1f, 0.1f);
+	nk_property_float(ctx, "Rotation Radius:", 10000.0f, &dirLight->radius, 500000.0f, 100.0f, 100.0f);
+	nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 3);
+	nk_layout_row_push(ctx, 0.3f);
+	nk_label(ctx, "Rotation Axis:", NK_TEXT_LEFT);
+	nk_layout_row_push(ctx, 0.3f);
 	if (nk_option_label(ctx, "y axis", dirLight->rotationAxis == DirectionalLight::Y_AXIS)) {
 		dirLight->rotationAxis = DirectionalLight::Y_AXIS;
 	}
+	nk_layout_row_push(ctx, 0.3f);
 	if (nk_option_label(ctx, "z axis", dirLight->rotationAxis == DirectionalLight::Z_AXIS)) {
 		dirLight->rotationAxis = DirectionalLight::Z_AXIS;
 	}
-	nk_property_float(ctx, "Rotation Radius:", 10000.0f, &dirLight->radius, 500000.0f, 100.0f, 100.0f);
+	nk_layout_row_end(ctx);
 
 	constructDirLightColorPanel();
 
@@ -2419,7 +2432,6 @@ void UserInterface::constructViewTab(int side) {
 	}
 
 	constructWalkingPanel();
-
 
 }
 

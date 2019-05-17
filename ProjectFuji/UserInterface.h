@@ -141,6 +141,7 @@ public:
 
 	void constructUserInterface();
 	bool isAnyWindowHovered();
+	bool isAnyItemActive();
 
 	void nk_property_vec2(struct nk_context *ctx, float min, glm::vec2 &target, float max, float step, float pixStep, std::string label = "", bool labelIsHeader = true, eVecNaming namingConvention = eVecNaming::DEFAULT);
 	void nk_property_vec3(struct nk_context *ctx, float min, glm::vec3 &target, float max, float step, float pixStep, std::string label = "", bool labelIsHeader = true, eVecNaming namingConvention = eVecNaming::DEFAULT);
@@ -196,6 +197,8 @@ private:
 	const float selectionTabHeight = 65.0f;
 
 	float leftSidebarWidth;
+
+	bool anyItemActiveInLastFrame = false;
 
 	//bool streamlinesAvailable = false;
 	bool streamlineInitMode = false;

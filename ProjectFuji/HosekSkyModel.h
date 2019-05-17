@@ -130,20 +130,28 @@ private:
 
 	//! Recalculates the parameters using the given sun direction.
 	/*!
-		\param[in] sunDir	Direction of the sun.	
+		\param[in] sunDir	Direction of the sun.
+		Based on: https://github.com/benanders/Hosek-Wilkie by Ben Anderson
 	*/
 	void recalculateParams(glm::vec3 sunDir);
 
 	// stride only different for radiosity dataset, otherwise always 9
 	//! Calculates param using the given dataset and stride.
+	/*!
+		Based on: https://github.com/benanders/Hosek-Wilkie by Ben Anderson
+	*/
 	float calculateParam(double *dataset, int stride);
 
 	//! Calculates the bezier interpolation using the given dataset, start and stride values.
+	/*!
+		Based on: https://github.com/benanders/Hosek-Wilkie by Ben Anderson
+	*/
 	double calculateBezier(double *dataset, int start, int stride);
 
 	//! Uses the normalization process shown in Anderson's Rust implementation.
 	/*!
 		\param[in] sunDir	Direction of the sun.
+		Based on: https://github.com/benanders/Hosek-Wilkie by Ben Anderson
 	*/
 	void normalizeRGBParams(glm::vec3 sunDir);
 

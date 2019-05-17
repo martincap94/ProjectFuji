@@ -970,7 +970,7 @@ __global__ void collisionStepKernel(Node3D *backLattice, glm::vec3 *velocities, 
 			f[17] = (backLattice[idx].adj[DIR_BOTTOM_RIGHT_EDGE] - bottomRightEq);
 			f[18] = (backLattice[idx].adj[DIR_BOTTOM_LEFT_EDGE] - bottomLeftEq);
 
-			float tmp = -1.0f / (2.0f * d_tau);
+			float tmp = -1.0f / (2.0f * d_tau * macroDensity);
 
 			float sxx = f[3] + f[4] + f[7] + f[8] + f[9] + f[10] + f[15] + f[16] + f[17] + f[18];
 			float sxz = f[9] - f[8] - f[10] + f[7];

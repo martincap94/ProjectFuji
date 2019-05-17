@@ -125,6 +125,13 @@ __device__ float getMappedFromSimulationBox_dev(float val) {
 }
 
 
+//! Finds an intersection of a curve with an isobar defined by its normalized pressure value.
+/*!
+	\param[in] curveVertices		Device pointer to array of curve vertices.
+	\param[in] numCurveVertices		Length of the array containing the curve vertices.
+	\param[in] normP				Normalized pressure value of the isobar.
+	\return							Intersection point clamped to diagram bounds.
+*/
 __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int numCurveVertices, float normP) {
 #define USE_BINARY_ISOBAR_INTERSECTION_SEARCH
 #ifndef USE_BINARY_ISOBAR_INTERSECTION_SEARCH
@@ -178,7 +185,25 @@ __device__ glm::vec2 getIntersectionWithIsobar(glm::vec2 *curveVertices, int num
 }
 
 
-
+//! Runs the STLP simulation inside a kernel.
+/*!
+	\param[in] particleVertices		Device pointer to particle vertices array.
+	\param[in] numParticles			Number of particles that should be simulated (numActiveParticles).
+	\param[in] delta_t				Delta time to be used by the simulator.
+	\param[in] verticalVelocities	Device pointer to vertical velocities array of the particles.
+	\param[in] profileIndices		Device pointer to profile indices of the particles.
+	\param[in] ambientTempCurve		Array of vertices of the ambient temperature sounding curve.
+	\param[in] numAmbientTempCurveVertices		Number of vertices of the ambient temperature sounding curve.
+	\param[in] dryAdiabatProfiles	Array of all dry adiabat profile curves.
+	\param[in] dryAdiabatOffsetsAndLengths		Array of all dry adiabat curve offsets and lengths.
+	\param[in] moistAdiabatProfiles	Array of all moist adiabat profile curves.
+	\param[in] moistAdiabatOffsetsAndLengths	Array of all moist adiabat curve offsets and lengths.
+	\param[in] CCLProfiles			Array of all CCL (convective condensation level) points for all profiles.
+	\param[in] TcProfiles			Array of all Tc (convective temperature) points for all profiles.
+	\param[in] diagramParticleVertices		Array of particle vertices that are shown in the diagram.
+	\param[in] dividePrevVelocity	Whether to divide previous velocity in the simulation to produce artificial damping.
+	\param[in] prevVelocityDivisor	By how much the previous velocity is divided if dividePrevVelocity is enabled.
+*/
 __global__ void simulationStepKernel(glm::vec3 *particleVertices, int numParticles, float delta_t, float *verticalVelocities, int *profileIndices, /*float *particlePressures, */glm::vec2 *ambientTempCurve, int numAmbientTempCurveVertices, glm::vec2 *dryAdiabatProfiles, glm::ivec2 *dryAdiabatOffsetsAndLengths, glm::vec2 *moistAdiabatProfiles, glm::ivec2 *moistAdiabatOffsetsAndLengths, glm::vec2 *CCLProfiles, glm::vec2 *TcProfiles, glm::vec2 *diagramParticleVertices, bool dividePrevVelocity, float prevVelocityDivisor) {
 
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;

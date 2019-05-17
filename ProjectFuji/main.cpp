@@ -224,7 +224,6 @@ int runApp() {
 	// No need since we use auxiliary framebuffer (main framebuffer)
 	//glfwWindowHint(GLFW_SAMPLES, 12); // enable MSAA with 4 samples
 
-	// Set 
 	if (vars.useMonitorResolution || vars.fullscreen) {
 		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
@@ -340,7 +339,7 @@ int runApp() {
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxNumTextureUnits);
 	cout << "Maximum number of texture units (combined) = " << maxNumTextureUnits << endl;*/
 
-	float cameraRadius = sqrtf((float)(tww * tww + twd * twd)) + 10.0f;
+	float cameraRadius = sqrtf((float)(tww * tww + twd * twd)) + 10.0f - 2000.0f;
 
 	orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(tww / 2.0f, (vars.heightMap->terrainHeightRange.x + vars.heightMap->terrainHeightRange.y) / 2.0f, twd / 2.0f), cameraRadius);
 
@@ -529,7 +528,6 @@ int runApp() {
 			view = overlayDiagramCamera->getViewMatrix();
 			ShaderManager::updatePVMatrixUniforms(overlayDiagramProjection, view);
 
-
 			GLint res = stlpDiagram->textureResolution;
 			glViewport(0, 0, res, res);
 			glBindFramebuffer(GL_FRAMEBUFFER, stlpDiagram->diagramMultisampledFramebuffer);
@@ -542,23 +540,12 @@ int runApp() {
 			if (vars.drawOverlayDiagramParticles) {
 				particleSystem->drawDiagramParticles();
 			}
-
-
-
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, stlpDiagram->diagramFramebuffer);
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, stlpDiagram->diagramMultisampledFramebuffer);
 
-
 			glBlitFramebuffer(0, 0, res, res, 0, 0, res, res, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-
 		}
 
-
-
-
-		//cout << " Delta time = " << (deltaTime * 1000.0f) << " [ms]" << endl;
-		//cout << " Framerate = " << (1.0f / deltaTime) << endl;
 		glm::vec4 clearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		if (ui->viewportMode == eViewportMode::DIAGRAM) {
 			clearColor = glm::vec4(1.0f);
@@ -916,17 +903,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			vars.applySTLP = abs(vars.applySTLP - 1);
 		}
 
-		if (key == GLFW_KEY_KP_1) {
-			camera->setView(Camera::VIEW_FRONT);
-		}
-		if (key == GLFW_KEY_KP_3) {
-			camera->setView(Camera::VIEW_SIDE);
-		}
-		if (key == GLFW_KEY_KP_9) {
-			camera->setView(Camera::VIEW_TOP);
-		}
-		if (key == GLFW_KEY_KP_5) {
-			vars.setProjectionMode(abs(1 - vars.projectionMode));
+		if (!ui->isAnyItemActive()) {
+			if (key == GLFW_KEY_KP_1) {
+				camera->setView(Camera::VIEW_FRONT);
+			}
+			if (key == GLFW_KEY_KP_3) {
+				camera->setView(Camera::VIEW_SIDE);
+			}
+			if (key == GLFW_KEY_KP_9 || key == GLFW_KEY_KP_7) {
+				camera->setView(Camera::VIEW_TOP);
+			}
+			if (key == GLFW_KEY_KP_5) {
+				vars.setProjectionMode(abs(1 - vars.projectionMode));
+			}
 		}
 
 		if (key == GLFW_KEY_1) {

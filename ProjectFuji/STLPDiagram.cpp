@@ -707,7 +707,7 @@ void STLPDiagram::initCurves() {
 
 	generateMixingRatioLine();
 
-	CCLFound = findIntersectionNew(mixingCCL, ambientCurve, CCLNormalized);
+	CCLFound = findIntersectionNew(mixingCCL, ambientCurve, CCLNormalized, 1, true);
 	if (CCLFound) {
 		CCL = getDenormalizedCoords(CCLNormalized);
 	}
@@ -925,6 +925,8 @@ void STLPDiagram::initCurves() {
 	//visualizationPoints.push_back(glm::vec3(dewpointCurve.getIntersectionWithIsobar(normP), 0.0f)); // point
 	//visualizationPoints.push_back(glm::vec3(0.0f, 0.0f, 1.0f)); // color
 
+	visualizationPoints.push_back(glm::vec3(0.0f)); // point
+	visualizationPoints.push_back(glm::vec3(1.0f, 0.0f, 0.0f)); // color
 
 	glGenVertexArrays(1, &visPointsVAO);
 	glBindVertexArray(visPointsVAO);
@@ -943,7 +945,6 @@ void STLPDiagram::initCurves() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void *)(sizeof(glm::vec3)));
 
 	glBindVertexArray(0);
-
 
 
 
@@ -969,8 +970,10 @@ void STLPDiagram::recalculateParameters() {
 
 	generateMixingRatioLine();
 
-	CCLNormalized = findIntersection(mixingCCL, ambientCurve);
-	CCL = getDenormalizedCoords(CCLNormalized);
+	CCLFound = findIntersectionNew(mixingCCL, ambientCurve, CCLNormalized, 1, true);
+	if (CCLFound) {
+		CCL = getDenormalizedCoords(CCLNormalized);
+	}
 
 
 	vector<glm::vec2> vertices;
