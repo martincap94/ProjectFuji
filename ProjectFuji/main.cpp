@@ -945,7 +945,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_KP_SUBTRACT) {
 			particleSystem->changeNumActiveParticles(-10000);
 		}
-
+		if (key == GLFW_KEY_R) {
+			vars.renderMode = abs(1 - vars.renderMode);
+		}
+		if (key == GLFW_KEY_O) {
+			vars.showOverlayDiagram = abs(1 - vars.showOverlayDiagram);
+		}
+		if (key == GLFW_KEY_T) {
+			ui->toggleTerrainGeneratorWindowOpened();
+		}
 
 
 	} else if (action == GLFW_PRESS && mods & GLFW_MOD_SHIFT) {
@@ -966,6 +974,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		if (key == GLFW_KEY_B) {
 			particleSystem->formBox();
 		}
+		if (key == GLFW_KEY_P) {
+			particleSystem->activateAllParticles();
+		}
 
 	} else if (action == GLFW_PRESS && mods & GLFW_MOD_CONTROL) {
 
@@ -980,6 +991,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			vars.opacityMultiplier -= 0.025f;
 			vars.opacityMultiplier = glm::max(0.0f, vars.opacityMultiplier);
 		}
+		if (key == GLFW_KEY_P) {
+			particleSystem->deactivateAllParticles();
+		}
+		if (key == GLFW_KEY_R) {
+			particleSystem->refreshParticlesOnTerrain();
+		}
+
 
 	}
 

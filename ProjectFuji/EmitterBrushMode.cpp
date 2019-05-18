@@ -158,6 +158,8 @@ void EmitterBrushMode::setActive(bool active) {
 		loadBrushes();
 		if (activeBrush) {
 			setActiveBrush(activeBrush);
+		} else if (!brushes.empty()) {
+			setActiveBrush(brushes.front());
 		}
 	} else {
 		//setActiveBrush(nullptr);

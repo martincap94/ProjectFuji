@@ -346,7 +346,20 @@ void UserInterface::constructHorizontalBar() {
 		if (nk_menu_begin_label(ctx, "View", NK_TEXT_CENTERED, toolbarMenuSize)) {
 			nk_layout_row_dynamic(ctx, 15, 1);
 
-			nk_checkbox_label(ctx, "Render Mode", &vars->renderMode);
+			nk_checkbox_label(ctx, "Render Mode (R)", &vars->renderMode);
+			if (nk_menu_item_label(ctx, "Hide UI (F)", NK_TEXT_LEFT)) {
+				vars->hideUI = 1;
+			}
+
+			if (vars->fullscreen) {
+				if (nk_menu_item_label(ctx, "Windowed (Shift + F)", NK_TEXT_LEFT)) {
+					setFullscreen(false);
+				}
+			} else {
+				if (nk_menu_item_label(ctx, "Fullscreen (Shift + F)", NK_TEXT_LEFT)) {
+					setFullscreen(true);
+				}
+			}
 
 			if (viewportMode == eViewportMode::VIEWPORT_3D) {
 				if (nk_menu_item_label(ctx, "Diagram View (2)", NK_TEXT_LEFT)) {
@@ -513,7 +526,7 @@ void UserInterface::constructLBMTab(int side) {
 	nk_label_header(ctx, "LBM Controls");
 
 
-	const char *buttonDescription = vars->applyLBM ? "Pause Simulation" : "Run Simulation";
+	const char *buttonDescription = vars->applyLBM ? "Pause Simulation (L)" : "Run Simulation (L)";
 	if (nk_button_label(ctx, buttonDescription)) {
 		vars->applyLBM = !vars->applyLBM;
 	}
@@ -867,7 +880,7 @@ void UserInterface::constructTerrainTab(int side) {
 
 	HeightMap *hm = vars->heightMap;
 
-	if (nk_button_label(ctx, "Terrain Generator")) {
+	if (nk_button_label(ctx, "Terrain Generator (T)")) {
 		openPopupWindow(terrainGeneratorWindowOpened);
 	}
 
@@ -1317,7 +1330,7 @@ void UserInterface::constructCloudVisualizationTab(int side) {
 	nk_property_float(ctx, "Point Size", 0.1f, &particleSystem->pointSize, 5000.0f, 0.1f, 0.1f);
 	nk_property_float(ctx, "Opacity Multiplier", 0.01f, &vars->opacityMultiplier, 3.0f, 0.01f, 0.01f);
 
-	nk_checkbox_label(ctx, "Show Particles Below CCL", &particleRenderer->showParticlesBelowCCL);
+	nk_checkbox_label(ctx, "Show Particles Below CCL (Ctrl + B)", &particleRenderer->showParticlesBelowCCL);
 	particleSystem->showHiddenParticles = particleRenderer->showParticlesBelowCCL;
 
 	nk_property_color_rgb(ctx, vars->tintColor, "Tint Color:");
@@ -1418,7 +1431,7 @@ void UserInterface::constructDiagramControlsTab(int side) {
 
 	nk_label_header(ctx, "Simulation Settings");
 
-	const char *buttonDescription = vars->applySTLP ? "Pause Simulation" : "Run Simulation";
+	const char *buttonDescription = vars->applySTLP ? "Pause Simulation (K)" : "Run Simulation (K)";
 	if (nk_button_label(ctx, buttonDescription)) {
 		vars->applySTLP = !vars->applySTLP;
 	}
@@ -1551,7 +1564,7 @@ void UserInterface::constructDiagramControlsTab(int side) {
 
 
 	nk_label_header(ctx, "Overlay Diagram");
-	nk_checkbox_label(ctx, "Show Overlay Diagram", &vars->showOverlayDiagram);
+	nk_checkbox_label(ctx, "Show Overlay Diagram (O)", &vars->showOverlayDiagram);
 	if (vars->showOverlayDiagram) {
 
 		float tmp = stlpDiagram->overlayDiagramResolution;
@@ -1664,10 +1677,10 @@ void UserInterface::constructDiagramControlsTab(int side) {
 
 
 	nk_label_header(ctx, "Particle Settings");
-	if (nk_button_label(ctx, "Activate All Particles")) {
+	if (nk_button_label(ctx, "Activate All Particles (Shift + P)")) {
 		particleSystem->activateAllParticles();
 	}
-	if (nk_button_label(ctx, "Deactivate All Particles")) {
+	if (nk_button_label(ctx, "Deactivate All Particles (Ctrl + P)")) {
 		particleSystem->deactivateAllParticles();
 	}
 	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
@@ -2004,10 +2017,10 @@ void UserInterface::constructParticleSystemTab(int side) {
 
 	nk_label_header(ctx, "Active Particles");
 
-	if (nk_button_label(ctx, "Activate All Particles")) {
+	if (nk_button_label(ctx, "Activate All Particles (Shift + P)")) {
 		particleSystem->activateAllParticles();
 	}
-	if (nk_button_label(ctx, "Deactivate All Particles")) {
+	if (nk_button_label(ctx, "Deactivate All Particles (Ctrl + P)")) {
 		particleSystem->deactivateAllParticles();
 	}
 	nk_property_int(ctx, "Active Particles", 0, &particleSystem->numActiveParticles, particleSystem->numParticles, 1000, 100);
@@ -2016,7 +2029,7 @@ void UserInterface::constructParticleSystemTab(int side) {
 	nk_label_header(ctx, "Particle Position");
 
 
-	if (nk_button_label(ctx, "Reset on Terrain")) {
+	if (nk_button_label(ctx, "Reset on Terrain (Ctrl + R)")) {
 		particleSystem->refreshParticlesOnTerrain();
 	}
 
@@ -2036,7 +2049,7 @@ void UserInterface::constructEmittersTab(int side) {
 
 	if (ebm->isActive()) {
 
-		if (nk_button_label(ctx, "Disable Brush Mode")) {
+		if (nk_button_label(ctx, "Disable Brush Mode (B)")) {
 			ebm->setActive(false);
 		}
 
@@ -2046,7 +2059,7 @@ void UserInterface::constructEmittersTab(int side) {
 	} else {
 
 
-		if (nk_button_label(ctx, "Enable Brush Mode")) {
+		if (nk_button_label(ctx, "Enable Brush Mode (B)")) {
 			ebm->setActive(true);
 		}
 
@@ -2106,10 +2119,10 @@ void UserInterface::constructEmittersTab(int side) {
 	}
 	nk_label_header(ctx, "Particle Settings");
 
-	if (nk_button_label(ctx, "Activate All Particles")) {
+	if (nk_button_label(ctx, "Activate All Particles (Shift + P)")) {
 		particleSystem->activateAllParticles();
 	}
-	if (nk_button_label(ctx, "Deactivate All Particles")) {
+	if (nk_button_label(ctx, "Deactivate All Particles (Ctrl + P)")) {
 		particleSystem->deactivateAllParticles();
 	}
 	if (nk_button_label(ctx, "Enable All Emitters")) {
@@ -2404,7 +2417,22 @@ void UserInterface::constructViewTab(int side) {
 		}
 	}
 
-	nk_checkbox_label(ctx, "Render Mode", &vars->renderMode);
+	nk_checkbox_label(ctx, "Render Mode (R)", &vars->renderMode);
+
+	if (nk_button_label(ctx, "Hide UI (F)")) {
+		vars->hideUI = 1;
+	}
+
+	if (vars->fullscreen) {
+		if (nk_button_label(ctx, "Windowed (Shift + F)")) {
+			setFullscreen(false);
+		}
+	} else {
+		if (nk_button_label(ctx, "Fullscreen (Shift + F)")) {
+			setFullscreen(true);
+		}
+	}
+
 
 	if (viewportMode == eViewportMode::VIEWPORT_3D) {
 		if (nk_button_label(ctx, "Diagram View (2)")) {
@@ -2531,7 +2559,7 @@ void UserInterface::constructFavoritesMenu() {
 		nk_layout_row_dynamic(ctx, wh, 1);
 
 		constructTauProperty();
-		if (nk_button_label(ctx, "Form BOX")) {
+		if (nk_button_label(ctx, "Form BOX (Shift + B)")) {
 			particleSystem->formBox();
 		}
 
@@ -2547,14 +2575,13 @@ void UserInterface::constructFavoritesMenu() {
 		nk_checkbox_label(ctx, "Cloud Cast Shadows", &vars->cloudsCastShadows);
 
 		if (vars->fullscreen) {
-			if (nk_button_label(ctx, "Windowed")) {
+			if (nk_button_label(ctx, "Windowed (Shift + F)")) {
 				setFullscreen(false);
 			}
 		} else {
-			if (nk_button_label(ctx, "Fullscreen")) {
+			if (nk_button_label(ctx, "Fullscreen (Shift + F)")) {
 				setFullscreen(true);
 			}
-			
 		}
 
 
@@ -2577,7 +2604,7 @@ void UserInterface::constructFormBoxButtonPanel() {
 
 	nk_layout_row(ctx, NK_STATIC, 15, 2, ratio_two);
 	
-	if (nk_button_label(ctx, "Form BOX")) {
+	if (nk_button_label(ctx, "Form BOX (Shift + B)")) {
 		particleSystem->formBox();
 	}
 
@@ -2758,6 +2785,14 @@ void UserInterface::setTextColor(int r, int g, int b, int a) {
 
 void UserInterface::resetTextColorToDefault() {
 	ctx->style.text.color = defaultTextColor;
+}
+
+void UserInterface::setTerrainGeneratorWindowOpened(bool opened) {
+	terrainGeneratorWindowOpened = opened;
+}
+
+void UserInterface::toggleTerrainGeneratorWindowOpened() {
+	terrainGeneratorWindowOpened = !terrainGeneratorWindowOpened;
 }
 
 void UserInterface::constructTauProperty() {

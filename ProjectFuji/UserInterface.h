@@ -176,6 +176,8 @@ public:
 	void setTextColor(int r, int g, int b, int a = 255);
 	void resetTextColorToDefault();
 
+	void setTerrainGeneratorWindowOpened(bool opened);
+	void toggleTerrainGeneratorWindowOpened();
 
 private:
 
