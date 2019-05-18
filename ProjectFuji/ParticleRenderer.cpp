@@ -17,26 +17,20 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) :
 	loadConfigurationVariables();
 
 	initFramebuffers();
-
-	//timer = TimerManager::createTimer("Particle Renderer", true, false, true, false, 1000);
-
-	/*
-	firstPassShader = ShaderManager::getShaderPtr("volume_1st_pass");
-	secondPassShader = ShaderManager::getShaderPtr("volume_2nd_pass");
-	*/
 	updateShaderSet();
 
 
 	passThruShader = ShaderManager::getShaderPtr("pass_thru_alpha");
 	blurShader = ShaderManager::getShaderPtr("blur_basic");
 
+	// Preload some of our cloud sprites so they can be easily switched at runtime
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "grad.png"));
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture.png"));
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture2.png"));
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_1024.png"));
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_256.png"));
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture3_256.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture3.png")); // still the best looking I would say
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture3.png"));
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture4.png"));
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture5.png"));
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture6.png"));
@@ -108,21 +102,11 @@ void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Cam
 
 	setLightTextureBorders(dirLight);
 
-
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//glClear(GL_DEPTH_BUFFER_BIT);
-
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	/*
-	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	*/
-
 	setShaderUniforms(firstPassShader);
-	// here, we know that the firstPassShader was used
-	firstPassShader->use(); // just to be sure, later reorganize
+	firstPassShader->use();
 	firstPassShader->setViewMatrix(lightViewMatrix);
 	firstPassShader->setProjectionMatrix(lightProjectionMatrix);
 	firstPassShader->setInt("u_Mode", firstPassShaderMode);
@@ -130,19 +114,12 @@ void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Cam
 
 	setShaderUniforms(secondPassShader);
 	secondPassShader->use();
-	//secondPassShader->setMat4fv("u_LightSpaceView", lightViewMatrix);
-	//secondPassShader->setMat4fv("u_LightSpaceProjection", lightProjectionMatrix);
 	glm::mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
 	secondPassShader->setMat4fv("u_LightSpaceMatrix", lightSpaceMatrix);
 	secondPassShader->setInt("u_Mode", secondPassShaderMode);
 
 	spriteTexture->use(0);
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, spriteTexture->id);
-
 	atlasSpriteTexture->use(2);
-	//glActiveTexture(GL_TEXTURE2);
-	//glBindTexture(GL_TEXTURE_2D, atlasSpriteTexture->id);
 
 	drawSlices();
 
@@ -151,7 +128,6 @@ void ParticleRenderer::draw(ParticleSystem * ps, DirectionalLight *dirLight, Cam
 
 
 	vars->mainFramebuffer->bind();
-	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
 
 }
@@ -191,20 +167,11 @@ void ParticleRenderer::preSceneRenderImage() {
 	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, vars->mainFramebuffer->depthTex, 0);
 
-
-	//glViewport(0, 0, imageWidth, imageHeight);
-
-	//glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-	//glDepthMask(GL_TRUE);
-	//glClear(GL_DEPTH_BUFFER_BIT);
-
-
 }
 
 void ParticleRenderer::postSceneRenderImage() {
 
 	vars->mainFramebuffer->bind();
-	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
@@ -232,9 +199,6 @@ void ParticleRenderer::updateShaderSet() {
 				break;
 		}
 		prevShaderSet = shaderSet;
-
-		//ps->stlpSim->uploadProfileIndicesUniforms(firstPassShader);
-		//ps->stlpSim->uploadProfileIndicesUniforms(secondPassShader);
 
 	}
 }
@@ -305,20 +269,10 @@ void ParticleRenderer::drawSlices() {
 	//cout << "BATCH SIZE = " << batchSize << endl;
 
 	// clear light buffer
-	
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFramebuffer);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[srcLightTexture], 0);
 	glClearColor(1.0f - dirLight->color.x, 1.0f - dirLight->color.y, 1.0f - dirLight->color.z, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	/*
-	// this is redundant
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[1 - srcLightTexture], 0);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, lightTexture[srcLightTexture], 0);
-	*/
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, imageFramebuffer);
@@ -329,15 +283,13 @@ void ParticleRenderer::drawSlices() {
 	numDisplayedSlices = min(numDisplayedSlices, numSlices);
 
 
-	//glActiveTexture(GL_TEXT)
-
 	for (int i = 0; i < numDisplayedSlices; i++) {
 		drawSlice(i);
 		drawSliceLightView(i);
 
 		if (useBlurPass) {
 			blurLightTexture();
-			spriteTexture->use(0);
+			spriteTexture->use(0);	// switch back to the sprite texture for rendering
 		}
 	}
 
@@ -395,7 +347,7 @@ void ParticleRenderer::drawPointSprites(ShaderProgram * shader, int start, int c
 		glActiveTexture(GL_TEXTURE0 + 1);
 		glBindTexture(GL_TEXTURE_2D, lightTexture[srcLightTexture]);
 
-		// TESTING - this is for cloud shadow rendering on the terrain!
+		// This is for cloud shadow rendering on the terrain!
 		glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT_CLOUD_SHADOW_MAP);
 		glBindTexture(GL_TEXTURE_2D, lightTexture[srcLightTexture]);
 	}
@@ -414,8 +366,6 @@ void ParticleRenderer::drawPoints(int start, int count, bool sorted) {
 	}
 
 	glBindVertexArray(ps->particlesVAO);
-
-	// they have positions, colors (each particle has a color?) and velocities -> use vertex attribute arrays
 
 	if (start + count > ps->numActiveParticles) {
 		count = ps->numActiveParticles - start;
@@ -439,7 +389,6 @@ void ParticleRenderer::compositeResult() {
 	}
 
 	vars->mainFramebuffer->bind();
-	/*glBindFramebuffer(GL_FRAMEBUFFER, 0)*/;
 	glViewport(0, 0, vars->screenWidth, vars->screenHeight);
 	glDisable(GL_DEPTH_TEST);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -579,8 +528,6 @@ void ParticleRenderer::initImageBuffer() {
 void ParticleRenderer::initLightBuffers() {
 	// LIGHT FRAMEBUFFER
 	GLint format = GL_RGBA16F;
-
-	//GLint format = GL_RGBA16F;
 
 	lightTexture[0] = createTextureHelper(GL_TEXTURE_2D, lightBufferResolution, lightBufferResolution, format, GL_RGBA);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);

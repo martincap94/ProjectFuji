@@ -339,7 +339,7 @@ int runApp() {
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxNumTextureUnits);
 	cout << "Maximum number of texture units (combined) = " << maxNumTextureUnits << endl;*/
 
-	float cameraRadius = sqrtf((float)(tww * tww + twd * twd)) + 10.0f - 2000.0f;
+	float cameraRadius = sqrtf((float)(tww * tww + twd * twd)) + 10.0f;
 
 	orbitCamera = new OrbitCamera(glm::vec3(0.0f, 0.0f, 0.0f), WORLD_UP, 45.0f, 80.0f, glm::vec3(tww / 2.0f, (vars.heightMap->terrainHeightRange.x + vars.heightMap->terrainHeightRange.y) / 2.0f, twd / 2.0f), cameraRadius);
 
@@ -893,14 +893,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			}
 		}
 		if (key == vars.hideUIKey) {
-			vars.hideUI = abs(vars.hideUI - 1);
+			vars.hideUI = 1 - vars.hideUI;
 		}
 
 		if (key == vars.toggleLBMStateKey) {
-			vars.applyLBM = abs(vars.applyLBM - 1);
+			vars.applyLBM = 1 - vars.applyLBM;
 		}
 		if (key == vars.toggleSTLPStateKey) {
-			vars.applySTLP = abs(vars.applySTLP - 1);
+			vars.applySTLP = 1 - vars.applySTLP;
 		}
 
 		if (!ui->isAnyItemActive()) {
@@ -914,7 +914,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				camera->setView(Camera::VIEW_TOP);
 			}
 			if (key == GLFW_KEY_KP_5) {
-				vars.setProjectionMode(abs(1 - vars.projectionMode));
+				vars.setProjectionMode(1 - vars.projectionMode);
 			}
 		}
 
@@ -946,10 +946,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			particleSystem->changeNumActiveParticles(-10000);
 		}
 		if (key == GLFW_KEY_R) {
-			vars.renderMode = abs(1 - vars.renderMode);
+			vars.renderMode = 1 - vars.renderMode;
 		}
 		if (key == GLFW_KEY_O) {
-			vars.showOverlayDiagram = abs(1 - vars.showOverlayDiagram);
+			vars.showOverlayDiagram = 1 - vars.showOverlayDiagram;
 		}
 		if (key == GLFW_KEY_T) {
 			ui->toggleTerrainGeneratorWindowOpened();
