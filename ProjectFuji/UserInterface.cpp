@@ -2417,6 +2417,15 @@ void UserInterface::constructViewTab(int side) {
 		}
 	}
 
+	if (nk_button_label(ctx, vars->consumeMouseCursor ? "Use Mouse Cursor (C)" : "Consume Mouse Cursor (C)")) {
+		vars->consumeMouseCursor = !vars->consumeMouseCursor;
+		if (vars->consumeMouseCursor) {
+			glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		} else {
+			glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+	}
+
 	nk_checkbox_label(ctx, "Render Mode (R)", &vars->renderMode);
 
 	if (nk_button_label(ctx, "Hide UI (F)")) {
