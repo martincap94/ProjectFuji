@@ -91,7 +91,7 @@ bool CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *u
 	static Texture *selectedTexture = nullptr;
 	if (!initialized) {
 		nk_checkbox_label(ctx, "Dynamic Sampler", &useDynamicSampler);
-		ui->constructTextureSelection_label(&selectedTexture, "Probability Texture: ", 0.3f, probabilityTexturePath);
+		ui->constructTextureSelection_label(&selectedTexture, "Probability Texture: ", 0.3f, probabilityTexturePath, true);
 		if (selectedTexture != nullptr) {
 			probabilityTexturePath = selectedTexture->filename;
 		}
@@ -101,24 +101,25 @@ bool CDFEmitter::constructEmitterPropertiesTab(nk_context *ctx, UserInterface *u
 			nk_layout_row_dynamic(ctx, 15.0f, 1);
 			nk_label_colored(ctx, "Please select a probability texture.", NK_TEXT_LEFT, nk_rgb(255, 150, 150));
 		}
-	}
-	if (useDynamicSampler) {
+	} else {
+		if (useDynamicSampler) {
 
 
-		dsampler->pSampler.constructUIPropertiesTab(ctx, true);
-		nk_property_float(ctx, "Decrease Perlin Prob.", 0.0f, &dsampler->perlinProbabilityDecrease, 1.0f, 0.01f, 0.01f);
+			dsampler->pSampler.constructUIPropertiesTab(ctx, true);
+			nk_property_float(ctx, "Decrease Perlin Prob.", 0.0f, &dsampler->perlinProbabilityDecrease, 1.0f, 0.01f, 0.01f);
 
 
-		nk_checkbox_label(ctx, "Use Time as Seed", &dsampler->useTimeAsSeed);
-		if (!dsampler->useTimeAsSeed) {
-			nk_property_int(ctx, "Seed", 0, &dsampler->seed, 10000, 1, 1);
-		}
+			nk_checkbox_label(ctx, "Use Time as Seed", &dsampler->useTimeAsSeed);
+			if (!dsampler->useTimeAsSeed) {
+				nk_property_int(ctx, "Seed", 0, &dsampler->seed, 10000, 1, 1);
+			}
 
-		if (nk_button_label(ctx, "Generate New Noise Func. * CDF Texture")) {
-			dsampler->updatePerlinNoiseCPU(false);
-		}
-		if (nk_button_label(ctx, "Generate New Noise Func.")) {
-			dsampler->updatePerlinNoiseCPU(true);
+			if (nk_button_label(ctx, "Generate New Noise Func. * CDF Texture")) {
+				dsampler->updatePerlinNoiseCPU(false);
+			}
+			if (nk_button_label(ctx, "Generate New Noise Func.")) {
+				dsampler->updatePerlinNoiseCPU(true);
+			}
 		}
 	}
 

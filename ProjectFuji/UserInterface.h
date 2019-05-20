@@ -159,9 +159,9 @@ public:
 
 	void nk_label_time(struct nk_context *ctx, double time, int precision, const char *prefix, const char *postfix = " [ms]");
 
-	void constructTextureSelection(Texture **targetTexturePtr, std::string nullTextureNameOverride = "", bool useWidgetWidth = false);
+	void constructTextureSelection(Texture **targetTexturePtr, std::string nullTextureNameOverride = "", bool useWidgetWidth = false, bool showOnlyTexturesLoadedFromFile = false);
 
-	void constructTextureSelection_label(Texture **targetTexturePtr, const char *label, float ratio = 0.5f, std::string nullTextureNameOverride = "");
+	void constructTextureSelection_label(Texture **targetTexturePtr, const char *label, float ratio = 0.5f, std::string nullTextureNameOverride = "", bool showOnlyTexturesLoadedFromFile = false);
 
 
 	void nk_property_string(struct nk_context *ctx, std::string &target, char *buffer, int bufferLength, int &length);

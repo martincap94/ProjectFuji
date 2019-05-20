@@ -150,7 +150,7 @@ void UserInterface::constructUserInterface() {
 		nk_end(ctx);
 	}
 	constructHorizontalBar();
-	anyItemActiveInLastFrame = nk_item_is_any_active(ctx);
+	anyItemActiveInLastFrame = nk_item_is_any_active(ctx) != 0;
 }
 
 bool UserInterface::isAnyWindowHovered() {
@@ -2714,13 +2714,16 @@ void UserInterface::constructHUD() {
 
 }
 
-void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string nullTextureNameOverride, bool useWidgetWidth) {
+void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string nullTextureNameOverride, bool useWidgetWidth, bool showOnlyTexturesLoadedFromFile) {
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(*targetTexturePtr, nullTextureNameOverride), useWidgetWidth ? nk_vec2(nk_widget_width(ctx), standardTexSelectSize.y) : standardTexSelectSize)) {
 		nk_layout_row_dynamic(ctx, 15.0f, 1);
 		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
 			*targetTexturePtr = nullptr;
 		}
 		for (const auto& kv : *textures) {
+			if (showOnlyTexturesLoadedFromFile && !kv.second->loadedFromFile) {
+				continue;
+			}
 			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
 				(*targetTexturePtr) = kv.second;
 			}
@@ -2729,7 +2732,7 @@ void UserInterface::constructTextureSelection(Texture **targetTexturePtr, string
 	}
 }
 
-void UserInterface::constructTextureSelection_label(Texture ** targetTexturePtr, const char *label, float ratio, std::string nullTextureNameOverride) {
+void UserInterface::constructTextureSelection_label(Texture ** targetTexturePtr, const char *label, float ratio, std::string nullTextureNameOverride, bool showOnlyTexturesLoadedFromFile) {
 
 	nk_layout_row_begin(ctx, NK_DYNAMIC, wh, 2);
 	nk_layout_row_push(ctx, ratio);
@@ -2742,6 +2745,9 @@ void UserInterface::constructTextureSelection_label(Texture ** targetTexturePtr,
 			*targetTexturePtr = nullptr;
 		}
 		for (const auto& kv : *textures) {
+			if (showOnlyTexturesLoadedFromFile && !kv.second->loadedFromFile) {
+				continue;
+			}
 			if (nk_combo_item_label(ctx, kv.second->filename.c_str(), NK_TEXT_LEFT)) {
 				(*targetTexturePtr) = kv.second;
 			}

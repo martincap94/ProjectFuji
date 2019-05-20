@@ -73,6 +73,10 @@ Texture * CDFSampler::getTexture() {
 	return tex;
 }
 
+bool CDFSampler::isInitialized() {
+	return initialized;
+}
+
 
 
 

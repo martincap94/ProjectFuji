@@ -13,7 +13,7 @@ Texture::Texture() {
 	//loadTexture("SP_MissingThumbnail.png");
 }
 
-Texture::Texture(unsigned int id, int width, int height, int numChannels, string filename, unsigned int textureUnit) : id(id), textureUnit(textureUnit), width(width), height(height), numChannels(numChannels), filename(filename) {
+Texture::Texture(unsigned int id, int width, int height, int numChannels, string filename, unsigned int textureUnit, bool loadedFromFile) : id(id), textureUnit(textureUnit), width(width), height(height), numChannels(numChannels), filename(filename), loadedFromFile(loadedFromFile) {
 	if (filename.empty()) {
 		filename = to_string(id);
 	}
@@ -89,6 +89,7 @@ bool Texture::loadTexture(const char *path, bool sRGB, bool clampEdges) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 					
 	stbi_image_free(data);
+	loadedFromFile = true;
 	return retVal;
 
 }

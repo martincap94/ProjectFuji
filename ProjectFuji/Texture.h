@@ -35,6 +35,8 @@ public:
 	int height;					//!< Height of the texture image
 	int numChannels;			//!< Number of channels of the texture image
 	std::string filename;		//!< Filename associated with this texture
+	
+	bool loadedFromFile = false;	//!< Whether this texture was loaded from a file
 
 	//! Default constructor.
 	Texture();
@@ -48,8 +50,9 @@ public:
 		\param[in] numChannels	Number of channels the texture uses.
 		\param[in] filename		Filename/name associated with the texture to be displayed in UI.
 		\param[in] textureUnit	Default texture unit to be used when this texture is bound.
+		\param[in] loadedFromFile	Determines whether the texture was loaded from a file.
 	*/
-	Texture(unsigned int id, int width, int height, int numChannels, std::string filename = "", unsigned int textureUnit = 0);
+	Texture(unsigned int id, int width, int height, int numChannels, std::string filename = "", unsigned int textureUnit = 0, bool loadedFromFile = false);
 
 	//! Constructs Texture instance and loads the texture right away.
 	/*!

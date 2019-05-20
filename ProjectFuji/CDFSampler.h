@@ -53,6 +53,9 @@ public:
 	//! Returns the sampler texture.
 	Texture *getTexture();
 
+	//! Returns whether the sampler is initialized.
+	bool isInitialized();
+
 protected:
 
 	float *sums = nullptr;		//!< Flattened array of inclusive prefix sums

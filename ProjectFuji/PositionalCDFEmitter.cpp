@@ -27,8 +27,10 @@ PositionalCDFEmitter::~PositionalCDFEmitter() {
 
 void PositionalCDFEmitter::init() {
 	sampler = new CDFSampler(probabilityTexturePath);
-	nkSamplerTexture = nk_image_id(sampler->getTexture()->id);
-	
+	if (sampler->isInitialized()) {
+		nkSamplerTexture = nk_image_id(sampler->getTexture()->id);
+	}
+
 	initBuffers();
 
 	shader = ShaderManager::getShaderPtr("singleColor");
@@ -111,12 +113,18 @@ bool PositionalCDFEmitter::constructEmitterPropertiesTab(nk_context * ctx, UserI
 	static Texture *selectedTexture = nullptr;
 
 	if (initialized) {
-		nk_layout_row_static(ctx, 100, 100, 1);
-		nk_button_image(ctx, nkSamplerTexture);
-		nk_layout_row_dynamic(ctx, 15, 1);
+
+		if (sampler->isInitialized()) {
+			nk_layout_row_static(ctx, 100.0f, 100, 1);
+			nk_button_image(ctx, nkSamplerTexture);
+			nk_layout_row_dynamic(ctx, 15.0f, 1);
+		} else {
+			nk_layout_row_dynamic(ctx, 30.0f, 1);
+			nk_label_colored_wrap(ctx, "This emitter does not have a correct/initialized sampler!", nk_rgba(255, 155, 155, 255));
+		}
 
 	} else {
-		ui->constructTextureSelection_label(&selectedTexture, "Probability Texture: ", 0.3f, probabilityTexturePath);
+		ui->constructTextureSelection_label(&selectedTexture, "Probability Texture: ", 0.3f, probabilityTexturePath, true);
 		if (selectedTexture != nullptr) {
 			probabilityTexturePath = selectedTexture->filename;
 		}

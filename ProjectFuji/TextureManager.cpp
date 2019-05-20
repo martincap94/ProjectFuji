@@ -45,7 +45,7 @@ namespace TextureManager {
 		if (textures.count(name) > 0) {
 			return textures[name];
 		}
-		Texture *tex = new Texture(texId, width, height, numChannels, name, textureUnit);
+		Texture *tex = new Texture(texId, width, height, numChannels, name, textureUnit, false);
 		textures.insert(make_pair(tex->filename, tex));
 		return tex;
 	}
