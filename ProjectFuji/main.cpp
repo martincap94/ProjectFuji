@@ -450,13 +450,6 @@ int runApp() {
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetKeyCallback(window, key_callback);
 
-
-	double accumulatedTime = 0.0;
-
-	//glActiveTexture(GL_TEXTURE0);
-
-
-
 	// Preset overlay textures that are useful for debugging
 	TextureManager::setOverlayTexture(TextureManager::loadTexture("lightTexture[0]"), 0);
 	TextureManager::setOverlayTexture(TextureManager::loadTexture("imageTexture"), 1);
@@ -478,7 +471,7 @@ int runApp() {
 	ui->ebm = ebm;
 	ui->mainWindow = window;
 
-
+	double accumulatedTime = 0.0;
 	while (!glfwWindowShouldClose(window) && vars.appRunning) {
 
 		if (vars.windowMinimized) {

@@ -179,7 +179,6 @@ void VariableManager::printHelpMessage(string errorMsg) {
 
 bool VariableManager::parseArguments(int argc, char **argv) {
 	if (argc <= 1) {
-		cout << argc << endl;
 		return true;
 	}
 	cout << "Parsing command line arguments..." << endl;

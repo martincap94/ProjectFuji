@@ -652,6 +652,11 @@ void ParticleSystem::deleteEmitter(int idx) {
 		return;
 	}
 	if (emitters[idx]) {
+
+		if (emitters[idx] == ebm->getActiveBrushPtr()) {
+			ebm->setActiveBrush(nullptr);
+		}
+
 		delete emitters[idx];
 	}
 	emitters.erase(emitters.begin() + idx);
