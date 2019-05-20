@@ -31,7 +31,7 @@ STLPSimulator::STLPSimulator(VariableManager *vars, STLPDiagram *stlpDiagram) : 
 	profileMap = new ppmImage("profile_maps/120x80_pm_02.ppm");
 
 	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "pointTex.png").c_str());
-	spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
+	spriteTexture.loadTexture(((string)TEXTURES_DIR + "cloud_particle_06_256.png").c_str());
 
 
 }

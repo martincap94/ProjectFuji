@@ -103,25 +103,15 @@ ParticleSystem::ParticleSystem(VariableManager *vars) : vars(vars) {
 
 
 	numActiveParticles = 0;
-	//numActiveParticles = numParticles;
 
 	initBuffers();
 	initCUDA();
 
-	//spriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "radial-gradient-white-2.png");
-	//secondarySpriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "radial-gradient-white-2.png");
-
-	spriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture.png");
-	secondarySpriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture2.png");
-
-
-	//spriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture.png").c_str());
-	//secondarySpriteTexture.loadTexture(((string)TEXTURES_DIR + "testTexture2.png").c_str());
-
+	spriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_06_256.png");
+	secondarySpriteTexture = TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_07_256.png");
 
 	disableAllEmitters();
 
-	//formBoxVisModel = new Model("models/unitbox.fbx");
 	formBoxVisShader = ShaderManager::getShaderPtr("singleColorModel");
 	formBoxVisModel = new Model("models/unitbox.fbx");
 

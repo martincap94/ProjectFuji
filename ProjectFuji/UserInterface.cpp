@@ -2742,7 +2742,7 @@ void UserInterface::constructTextureSelection_label(Texture ** targetTexturePtr,
 	if (nk_combo_begin_label(ctx, tryGetTextureFilename(*targetTexturePtr, nullTextureNameOverride), nk_vec2(nk_widget_width(ctx), standardTexSelectSize.y))) {
 		nk_layout_row_dynamic(ctx, 15.0f, 1);
 		if (nk_combo_item_label(ctx, "NONE", NK_TEXT_LEFT)) {
-			*targetTexturePtr = nullptr;
+			(*targetTexturePtr) = nullptr;
 		}
 		for (const auto& kv : *textures) {
 			if (showOnlyTexturesLoadedFromFile && !kv.second->loadedFromFile) {

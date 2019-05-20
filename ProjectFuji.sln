@@ -4,8 +4,6 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProjectFuji", "ProjectFuji\ProjectFuji.vcxproj", "{87BE7E10-5956-4898-9C91-2CE666380ED8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestingZone", "TestingZone\TestingZone.vcxproj", "{9E29E667-DD3D-468F-8250-C46FCF51E6E7}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -16,10 +14,6 @@ Global
 		{87BE7E10-5956-4898-9C91-2CE666380ED8}.Debug|x64.Build.0 = Debug|x64
 		{87BE7E10-5956-4898-9C91-2CE666380ED8}.Release|x64.ActiveCfg = Release|x64
 		{87BE7E10-5956-4898-9C91-2CE666380ED8}.Release|x64.Build.0 = Release|x64
-		{9E29E667-DD3D-468F-8250-C46FCF51E6E7}.Debug|x64.ActiveCfg = Debug|x64
-		{9E29E667-DD3D-468F-8250-C46FCF51E6E7}.Debug|x64.Build.0 = Debug|x64
-		{9E29E667-DD3D-468F-8250-C46FCF51E6E7}.Release|x64.ActiveCfg = Release|x64
-		{9E29E667-DD3D-468F-8250-C46FCF51E6E7}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
