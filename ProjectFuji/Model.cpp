@@ -23,7 +23,7 @@ bool Model::draw() {
 	}
 
 	if (!shader) {
-		cerr << "No shader attributed to the model" << endl;
+		//cerr << "No shader attributed to the model" << endl;
 		return false;
 	}
 	shader->use();

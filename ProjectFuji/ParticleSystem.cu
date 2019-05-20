@@ -610,11 +610,11 @@ void ParticleSystem::createPredefinedEmitters() {
 	//ech.cdfEmitter = new CDFEmitter();
 
 
-	emitters.push_back(new CircleEmitter("Circle test", this, glm::vec3(4000.0f, 0.0f, 4000.0f), 2000.0f));
-	emitters.push_back(new CDFEmitter("CDF test", this, "textures/cdf2.png"));
-	emitters.push_back(new PositionalCDFEmitter("Positional CDF test", this, "icons/edit.png"));
+	emitters.push_back(new CircleEmitter("Circle Emitter", this, glm::vec3(4000.0f, 0.0f, 4000.0f), 2000.0f));
+	emitters.push_back(new CDFEmitter("CDF", this, "textures/cdf2.png"));
+	emitters.push_back(new PositionalCDFEmitter("Positional CDF", this, "icons/edit.png"));
 	emitters.push_back(new CDFEmitter("CDF Dynamic", this, "textures/cdf2.png", true));
-	emitters.push_back(new PositionalCDFEmitter("DCGI", this, "textures/dcgi_cdf_mirrored.png"));
+	emitters.push_back(new PositionalCDFEmitter("DCGI Logo", this, "textures/dcgi_cdf_mirrored.png"));
 	TextureManager::loadTexture("textures/dcgi_cdf.png");
 }
 

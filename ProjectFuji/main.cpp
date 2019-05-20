@@ -378,14 +378,13 @@ int runApp() {
 	Material gMat(&gdiffuse, &gspecular, nullptr, 32.0f);
 
 	Model grassModel("models/grass.obj", &gMat, grassShader);
-	Model treeModel("models/trees10_01.fbx", &treeMat, normalsInstancedShader);
+	Model treeModel("models/tree.fbx", &treeMat, normalsInstancedShader);
 	Model unitboxModel("models/unitbox.fbx");
 
 	// PBR TESTING
-	Model cerberus("models/Cerberus_LP.fbx");
+	Model cerberus("models/Cerberus.fbx");
 	cerberus.transform.position = glm::vec3(4000.0f, 15000.0f, 4000.0f);
 	cerberus.transform.scale = glm::vec3(100.0f);
-
 
 	Texture *calbedo = TextureManager::loadTexture("textures/Cerberus/Cerberus_A.png");
 	Texture *cnormalMap = TextureManager::loadTexture("textures/Cerberus/Cerberus_N.png");
@@ -397,7 +396,7 @@ int runApp() {
 	cerberus.visible = 0;
 
 
-	grassModel.makeInstanced(vars.heightMap, 500000, glm::vec2(0.5f, 2.0f), glm::vec2(10000.0f), glm::vec2(1000.0f));
+	grassModel.makeInstanced(vars.heightMap, 100000, glm::vec2(0.5f, 2.0f), glm::vec2(10000.0f), glm::vec2(1000.0f));
 	grassModel.castShadows = 0;
 	treeModel.makeInstanced(vars.heightMap, 1000, glm::vec2(1.0f, 3.0f), glm::vec2(10000.0f), glm::vec2(1000.0f));
 	treeModel.castShadows = 0;
