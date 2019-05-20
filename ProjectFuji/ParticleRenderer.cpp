@@ -25,15 +25,15 @@ ParticleRenderer::ParticleRenderer(VariableManager * vars, ParticleSystem *ps) :
 
 	// Preload some of our cloud sprites so they can be easily switched at runtime
 	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "grad.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture2.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_1024.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_256.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture3_256.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture3.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture4.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture5.png"));
-	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "testTexture6.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_01.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_02.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_07_1024.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_07_256.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_03.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_04.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_05.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_06.png"));
+	spriteTextures.push_back(TextureManager::loadTexture((string)TEXTURES_DIR + "cloud_particle_06_256.png"));
 
 
 	spriteTexture = spriteTextures.back();
