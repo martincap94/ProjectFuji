@@ -564,6 +564,8 @@ void ParticleSystem::refreshParticlesOnTerrain() {
 	glNamedBufferData(particleProfilesVBO, sizeof(int) * particleProfiles.size(), &particleProfiles[0], GL_STATIC_DRAW);
 	glNamedBufferData(particleVerticesVBO, sizeof(glm::vec3) * numParticles, particleVertices.data(), GL_STATIC_DRAW);
 	glNamedBufferData(diagramParticleVerticesVBO, sizeof(glm::vec2) * numParticles, diagramParticleVertices.data(), GL_STATIC_DRAW);
+	clearVerticalVelocities();
+
 
 }
 
@@ -956,6 +958,7 @@ bool ParticleSystem::loadParticlesFromFile(std::string filename) {
 	delete[] vertexPositions;
 	delete[] vertexProfiles;
 
+	clearVerticalVelocities();
 
 	//testTimer->end();
 
