@@ -59,6 +59,10 @@ public:
 								//!< If precise timing necessary, glQueries should be used instead		
 	int callsCudaDeviceSynchronize = 0;	//!< This gives us the option to (roughly) measure CUDA operations/blocks of code
 
+	int callsGLFinishBefore = 0;	//!< This gives us the option to (roughly) measure OpenGL rendering
+	int callsCudaDeviceSynchronizeBefore = 0;	//!< This gives us the option to (roughly) measure CUDA operations/blocks of code
+
+
 
 	int index = -1;
 
@@ -115,10 +119,6 @@ private:
 	ofstream logFile;			//!< Output file stream for the log file
 
 	double totalDuration = 0.0;		//!< Total duration from start to end
-
-	int callsGLFinishBefore = 0;	//!< This gives us the option to (roughly) measure OpenGL rendering
-	int callsCudaDeviceSynchronizeBefore = 0;	//!< This gives us the option to (roughly) measure CUDA operations/blocks of code
-
 
 	bool running = false;
 

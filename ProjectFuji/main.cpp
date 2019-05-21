@@ -307,6 +307,7 @@ int runApp() {
 	lbmTimer = TimerManager::createTimer("LBM", false, true);
 	stlpTimer = TimerManager::createTimer("STLP", false, true);
 	sortingTimer = TimerManager::createTimer("Particle Sorting", false, true);
+	sortingTimer->callsGLFinishBefore = true;
 	globalTimer = TimerManager::createTimer("Global Timer", false, false);
 
 
