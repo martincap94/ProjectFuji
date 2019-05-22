@@ -210,3 +210,7 @@ void EmitterBrushMode::constructBrushSelectionUIPanel(nk_context * ctx, UserInte
 
 
 }
+
+void EmitterBrushMode::refreshFramebuffers() {
+	tPicker->initFramebuffer();
+}

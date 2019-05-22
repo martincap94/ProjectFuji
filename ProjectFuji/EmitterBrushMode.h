@@ -136,6 +136,12 @@ public:
 	*/
 	void constructBrushSelectionUIPanel(struct nk_context *ctx, UserInterface *ui);
 
+	//! Refreshes the brush mode by refreshing all its subsystems' framebuffers.
+	/*!
+		Should be called on screen change.
+	*/
+	void refreshFramebuffers();
+
 
 private:
 

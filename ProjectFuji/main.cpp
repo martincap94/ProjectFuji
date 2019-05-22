@@ -1184,6 +1184,10 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 
 	vars.windowMinimized = (width == 0 || height == 0);
 
+	if (vars.windowMinimized) {
+		return;
+	}
+
 	if (!vars.fullscreen) {
 		vars.windowWidth = width;
 		vars.windowHeight = height;
@@ -1206,6 +1210,8 @@ void window_size_callback(GLFWwindow* window, int width, int height) {
 	TextureManager::refreshOverlayTextures();
 	stlpDiagram->refreshOverlayDiagram((float)vars.screenWidth, (float)vars.screenHeight);
 	ui->refreshWidgets();
+	ebm->refreshFramebuffers();
+	
 }
 
 

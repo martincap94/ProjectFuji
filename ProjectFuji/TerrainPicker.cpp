@@ -37,6 +37,17 @@ void TerrainPicker::drawTerrain(HeightMap *heightMap) {
 
 void TerrainPicker::initFramebuffer() {
 
+	if (framebuffer) {
+		glDeleteFramebuffers(1, &framebuffer);
+	}
+	if (texture) {
+		glDeleteTextures(1, &texture);
+		//TextureManager::deleteTexture("Terrain Picker Data");
+	}
+	if (depthTexture) {
+		glDeleteTextures(1, &depthTexture);
+	}
+
 	glGenFramebuffers(1, &framebuffer);
 	
 	glGenTextures(1, &texture);
@@ -66,7 +77,7 @@ void TerrainPicker::initFramebuffer() {
 	vars->mainFramebuffer->bind();
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	TextureManager::pushCustomTexture(texture, vars->screenWidth, vars->screenHeight, 4, "Terrain Picker Data");
+	//TextureManager::pushCustomTexture(texture, vars->screenWidth, vars->screenHeight, 4, "Terrain Picker Data");
 
 
 
